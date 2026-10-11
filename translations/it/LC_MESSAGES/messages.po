@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-11 22:13+0200\n"
+"POT-Creation-Date: 2026-10-11 22:33+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -147,7 +147,7 @@ msgid "Vince %(nome)s"
 msgstr ""
 
 #: models/campionato/showcase_view.py:130
-#: templates/components/_bracket_view.html:40
+#: templates/components/_bracket_view.html:41
 #: templates/components/_campionato_gare.html:28
 #: templates/components/_gara_matches.html:49
 #: templates/components/_match_card.html:26
@@ -169,7 +169,7 @@ msgstr ""
 #: templates/istruttore/gruppi.html:54
 #: templates/player/challenge_attempt_detail.html:24
 #: templates/public/campionatos_list.html:27
-#: templates/public/schermo_sala.html:137
+#: templates/public/schermo_sala.html:138
 msgid "In corso"
 msgstr ""
 
@@ -1041,11 +1041,11 @@ msgstr ""
 #: models/classification/ordinamento.py:716 models/storia/etichette.py:170
 #: templates/admin/campionato_wizard_step2.html:30
 #: templates/admin/users_list.html:152 templates/admin/users_list.html:248
-#: templates/components/_classification_mobile.html:28
-#: templates/components/_classification_mobile.html:65
-#: templates/components/_classification_mobile.html:96
-#: templates/components/_detailed_classification.html:31
-#: templates/components/_detailed_classification.html:84
+#: templates/components/_classification_mobile.html:31
+#: templates/components/_classification_mobile.html:68
+#: templates/components/_classification_mobile.html:99
+#: templates/components/_detailed_classification.html:32
+#: templates/components/_detailed_classification.html:85
 #: templates/components/_gara_edit_form.html:71
 #: templates/components/_gara_edit_form.html:82
 #: templates/components/_history_filters.html:95
@@ -1064,21 +1064,21 @@ msgstr ""
 #: models/classification/ordinamento.py:718 models/storia/etichette.py:174
 #: templates/admin/campionato_wizard_step2.html:32
 #: templates/components/_campionato_general_classification.html:78
-#: templates/components/_classification_mobile.html:26
-#: templates/components/_classification_mobile.html:63
-#: templates/components/_classification_mobile.html:94
-#: templates/components/_detailed_classification.html:30
-#: templates/components/_detailed_classification.html:83
+#: templates/components/_classification_mobile.html:29
+#: templates/components/_classification_mobile.html:66
+#: templates/components/_classification_mobile.html:97
+#: templates/components/_detailed_classification.html:31
+#: templates/components/_detailed_classification.html:84
 #: templates/components/_gara_edit_form.html:73
 #: templates/components/_gara_edit_form.html:84
 #: templates/components/_playoff_config_form.html:72
-#: templates/direttore/_classifica.html:92
+#: templates/direttore/_classifica.html:93
 msgid "Punti"
 msgstr ""
 
 #: models/classification/ordinamento.py:719
-#: templates/components/_classification_mobile.html:30
-#: templates/components/_classification_mobile.html:67
+#: templates/components/_classification_mobile.html:33
+#: templates/components/_classification_mobile.html:70
 msgid "Differenza triangoli"
 msgstr ""
 
@@ -2197,7 +2197,7 @@ msgstr ""
 
 #: models/dashboard/activity_feedback.py:164
 #: templates/direttore/_classifica.html:52
-#: templates/direttore/_fase_gioco.html:80
+#: templates/direttore/_fase_gioco.html:85
 #: templates/individual_match/statistics.html:185
 msgid "pari"
 msgstr ""
@@ -4666,11 +4666,11 @@ msgstr ""
 #: templates/admin/venues_list.html:33
 #: templates/components/_gara_edit_form.html:290
 #: templates/components/_new_gara_modal.html:171
-#: templates/direttore/_fase_gioco.html:149
-#: templates/direttore/_fase_gioco.html:238
+#: templates/direttore/_fase_gioco.html:156
+#: templates/direttore/_fase_gioco.html:245
 #: templates/direttore/_fase_iscrizioni.html:122
 #: templates/direttore/_fase_preparazione.html:158
-#: templates/player/venues.html:29 templates/public/schermo_sala.html:124
+#: templates/player/venues.html:29 templates/public/schermo_sala.html:125
 msgid "Tavoli"
 msgstr ""
 
@@ -4869,7 +4869,7 @@ msgid "Gironi"
 msgstr ""
 
 #: models/storia/etichette.py:62 templates/components/_campo_gironi.html:63
-#: templates/direttore/_avvia_gara.html:128
+#: templates/direttore/_avvia_gara.html:137
 msgid "Composizione dei gironi"
 msgstr ""
 
@@ -5035,8 +5035,8 @@ msgstr ""
 #: templates/direttore/_classifica_bande.html:18
 #: templates/direttore/_fase_conclusa.html:47
 #: templates/direttore/_fase_conclusa.html:63
-#: templates/public/schermo_sala.html:216
-#: templates/public/schermo_sala.html:256
+#: templates/public/schermo_sala.html:239
+#: templates/public/schermo_sala.html:281
 #: templates/public/vetrina_campionato.html:54
 #: templates/public/vetrina_gara.html:103
 msgid "Classifica finale"
@@ -5062,10 +5062,10 @@ msgstr ""
 #: templates/admin/users_list.html:188
 #: templates/admin/venue_manager_requests.html:48
 #: templates/components/_campionato_general_classification.html:73
-#: templates/components/_detailed_classification.html:29
-#: templates/components/_detailed_classification.html:82
+#: templates/components/_detailed_classification.html:30
+#: templates/components/_detailed_classification.html:83
 #: templates/components/_user_info_card.html:27
-#: templates/dashboard/base.html:19 templates/direttore/_classifica.html:91
+#: templates/dashboard/base.html:19 templates/direttore/_classifica.html:92
 #: templates/player/profile.html:80
 msgid "Giocatore"
 msgstr ""
@@ -5346,7 +5346,7 @@ msgstr ""
 
 #: models/training_sheet/measure.py:132
 #: templates/components/_campionato_general_classification.html:81
-#: templates/direttore/_classifica.html:92
+#: templates/direttore/_classifica.html:93
 msgid "Vinte"
 msgstr ""
 
@@ -6240,7 +6240,7 @@ msgstr ""
 #: templates/challenge/catalog.html:58 templates/challenge/catalog.html:85
 #: templates/challenge/catalog.html:89 templates/challenge/catalog.html:93
 #: templates/challenge/today.html:125
-#: templates/components/_classification_mobile.html:43
+#: templates/components/_classification_mobile.html:46
 #: templates/components/_history_filters.html:79
 #: templates/components/_history_filters.html:93
 #: templates/components/_history_filters.html:125
@@ -8127,8 +8127,8 @@ msgstr ""
 msgid "Grazie: la tua iscrizione è confermata."
 msgstr ""
 
-#: routes/player/exports.py:82 templates/components/_bracket_view.html:41
-#: templates/components/_bracket_view.html:60
+#: routes/player/exports.py:82 templates/components/_bracket_view.html:42
+#: templates/components/_bracket_view.html:61
 #: templates/components/_match_bye.html:16
 #: templates/components/_match_card.html:22
 #: templates/components/_match_card.html:47
@@ -8147,7 +8147,7 @@ msgstr ""
 #: templates/direttore/_card_partita.html:106
 #: templates/direttore/_partite.html:45 templates/direttore/_tabellino.html:38
 #: templates/match_detail.html:13 templates/match_detail.html:50
-#: templates/match_detail.html:123 templates/public/schermo_sala.html:119
+#: templates/match_detail.html:123 templates/public/schermo_sala.html:120
 #: utils/jinja.py:482
 msgid "X a tavolino"
 msgstr ""
@@ -8804,12 +8804,12 @@ msgstr ""
 
 #: templates/components/_campo_gironi.html:101
 #: templates/direttore/_fase_conclusa.html:101
-#: templates/direttore/_fase_gioco.html:205
+#: templates/direttore/_fase_gioco.html:212
 #: templates/direttore/_fase_iscrizioni.html:133
 #: templates/direttore/_fase_preparazione.html:182
 #: templates/direttore/_tabellino.html:46 templates/gara_bracket.html:4
 #: templates/gara_bracket.html:12 templates/gara_detail.html:142
-#: templates/public/schermo_sala.html:173
+#: templates/public/schermo_sala.html:174
 msgid "Tabellone"
 msgstr ""
 
@@ -8833,6 +8833,26 @@ msgstr ""
 #: templates/individual_match/admin_overview.html:20
 #: templates/player/history.html:22
 msgid "Partite"
+msgstr ""
+
+#: templates/direttore/_fase_gioco.html:269 templates/gara_bracket.html:35
+#: templates/public/schermo_sala.html:212
+msgid "Classifiche dei gironi"
+msgstr ""
+
+#: templates/gara_bracket.html:36
+msgid "chi è passato al tabellone"
+msgstr ""
+
+#: templates/components/_classification_mobile.html:19
+#: templates/components/_detailed_classification.html:24
+#: templates/direttore/_card_partita.html:223
+#: templates/direttore/_classifica.html:101
+#: templates/direttore/_partite.html:52 templates/gara_bracket.html:41
+#: templates/public/schermo_sala.html:216
+#: templates/public/schermo_sala.html:263
+#, python-format
+msgid "Girone %(nome)s"
 msgstr ""
 
 #: templates/admin/users_list.html:263 templates/admin/venues_list.html:113
@@ -8864,10 +8884,10 @@ msgstr ""
 #: templates/admin/campionato_wizard_step2.html:28
 #: templates/admin/gara_challenge_classification.html:21
 #: templates/admin/gara_create_standalone.html:337
-#: templates/components/_classification_mobile.html:15
-#: templates/components/_classification_mobile.html:40
+#: templates/components/_classification_mobile.html:16
+#: templates/components/_classification_mobile.html:43
 #: templates/components/_tessera_campionato.html:125
-#: templates/direttore/_classifica.html:76 templates/gara_detail.html:49
+#: templates/direttore/_classifica.html:77 templates/gara_detail.html:49
 #: templates/public/campionato_detail.html:51
 #: templates/public/vetrina_campionato.html:57
 msgid "Classifica"
@@ -8877,13 +8897,13 @@ msgstr ""
 #: templates/components/_gara_inscriptions.html:126
 #: templates/components/_nearby_gare.html:137
 #: templates/direttore/_fase_conclusa.html:116
-#: templates/direttore/_fase_gioco.html:275
+#: templates/direttore/_fase_gioco.html:287
 #: templates/direttore/_fase_spareggio.html:90 templates/gara_detail.html:52
 msgid "Iscritti"
 msgstr ""
 
 #: templates/direttore/_fase_conclusa.html:101
-#: templates/direttore/_fase_gioco.html:205
+#: templates/direttore/_fase_gioco.html:212
 #: templates/direttore/_tabellino.html:74 templates/gara_detail.html:143
 msgid "Il percorso della gara, turno per turno"
 msgstr ""
@@ -9775,7 +9795,7 @@ msgstr ""
 #: templates/components/_unified_cards.html:114
 #: templates/components/_unified_cards.html:125
 #: templates/direttore/_dal_campionato.html:23
-#: templates/direttore/_fase_gioco.html:238
+#: templates/direttore/_fase_gioco.html:245
 #: templates/direttore/_fase_preparazione.html:173
 #: templates/direttore/impostazioni.html:27
 #: templates/gamification/admin/config_dashboard.html:75
@@ -9908,7 +9928,7 @@ msgid "Gare di playoff"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:184
-#: templates/public/schermo_sala.html:60
+#: templates/public/schermo_sala.html:61
 msgid "conclusa"
 msgstr ""
 
@@ -10692,10 +10712,10 @@ msgid "Passo 2 di 2"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:31
-#: templates/components/_classification_mobile.html:30
-#: templates/components/_classification_mobile.html:67
-#: templates/components/_detailed_classification.html:32
-#: templates/components/_detailed_classification.html:85
+#: templates/components/_classification_mobile.html:33
+#: templates/components/_classification_mobile.html:70
+#: templates/components/_detailed_classification.html:33
+#: templates/components/_detailed_classification.html:86
 #: templates/components/_gara_edit_form.html:72
 #: templates/components/_gara_edit_form.html:83
 #: templates/components/_playoff_config_form.html:71
@@ -11052,7 +11072,7 @@ msgstr ""
 #: templates/components/_gara_challenges_display.html:24
 #: templates/components/_match_challenge_input.html:95
 #: templates/components/_public_challenges.html:19
-#: templates/direttore/_classifica.html:78
+#: templates/direttore/_classifica.html:79
 #: templates/direttore/_esercizi_turni.html:104
 #: templates/direttore/_fase_preparazione.html:113
 #: templates/direttore/preparazione/_esercizi.html:31
@@ -13573,7 +13593,7 @@ msgid "Togli il tratto"
 msgstr ""
 
 #: templates/challenge/builder.html:268 templates/challenge/builder.html:302
-#: templates/components/_bracket_view.html:42
+#: templates/components/_bracket_view.html:43
 #: templates/components/_gara_matches.html:66
 #: templates/components/_gara_matches.html:100
 #: templates/components/_gara_my_match.html:14
@@ -13589,10 +13609,10 @@ msgstr ""
 #: templates/direttore/_card_partita.html:232
 #: templates/direttore/_card_partita.html:239
 #: templates/direttore/_card_partita.html:242
-#: templates/direttore/_fase_gioco.html:243
+#: templates/direttore/_fase_gioco.html:250
 #: templates/direttore/_partite.html:31 templates/direttore/_partite.html:67
-#: templates/direttore/_scripts.html:84 templates/public/schermo_sala.html:110
-#: templates/public/schermo_sala.html:129
+#: templates/direttore/_scripts.html:84 templates/public/schermo_sala.html:111
+#: templates/public/schermo_sala.html:130
 msgid "Tavolo"
 msgstr ""
 
@@ -14830,54 +14850,54 @@ msgid ""
 "momento del sorteggio."
 msgstr ""
 
-#: templates/components/_bracket_view.html:26
+#: templates/components/_bracket_view.html:27
 msgid "Da definire"
 msgstr ""
 
-#: templates/components/_bracket_view.html:60
+#: templates/components/_bracket_view.html:61
 msgid "Se serve"
 msgstr ""
 
-#: templates/components/_bracket_view.html:82
+#: templates/components/_bracket_view.html:83
 #: templates/direttore/_tabellino.html:55
-#: templates/public/schermo_sala.html:186
+#: templates/public/schermo_sala.html:187
 msgid "Vincenti"
 msgstr ""
 
-#: templates/components/_bracket_view.html:82
+#: templates/components/_bracket_view.html:83
 #: templates/direttore/_tabellino.html:55
-#: templates/public/schermo_sala.html:186
+#: templates/public/schermo_sala.html:187
 msgid "Ripescati"
 msgstr ""
 
-#: templates/components/_bracket_view.html:110
+#: templates/components/_bracket_view.html:111
 msgid "Tabellone non ancora sorteggiato"
 msgstr ""
 
-#: templates/components/_bracket_view.html:112
+#: templates/components/_bracket_view.html:113
 msgid ""
 "Il tabellone compare quando il direttore di gara avvia il primo turno: è "
 "quello il momento in cui viene estratto."
 msgstr ""
 
-#: templates/components/_bracket_view.html:120
+#: templates/components/_bracket_view.html:121
 #: templates/direttore/_tabellino.html:51
-#: templates/public/schermo_sala.html:180
+#: templates/public/schermo_sala.html:181
 #, python-format
 msgid "Girone %(num)s"
 msgstr ""
 
-#: templates/components/_bracket_view.html:121
+#: templates/components/_bracket_view.html:122
 msgid "Qualificano in quattro: due imbattuti e due ripescati"
 msgstr ""
 
-#: templates/components/_bracket_view.html:125
+#: templates/components/_bracket_view.html:126
 #: templates/direttore/_tabellino.html:52
-#: templates/public/schermo_sala.html:181
+#: templates/public/schermo_sala.html:182
 msgid "Tabellone finale"
 msgstr ""
 
-#: templates/components/_bracket_view.html:126
+#: templates/components/_bracket_view.html:127
 msgid "Fra i qualificati dei gironi"
 msgstr ""
 
@@ -14901,7 +14921,7 @@ msgstr ""
 #: templates/components/_tessera_gara.html:190
 #: templates/components/_user_recent_matches_table.html:15
 #: templates/public/garas_list.html:14 templates/public/garas_list.html:38
-#: templates/public/schermo_sala.html:48
+#: templates/public/schermo_sala.html:49
 msgid "Turno"
 msgstr ""
 
@@ -15339,20 +15359,20 @@ msgid "Nessun motivo indicato."
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:65
-#: templates/direttore/_classifica.html:83
+#: templates/direttore/_classifica.html:84
 #, python-format
 msgid "Prime %(n)s"
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:66
-#: templates/direttore/_classifica.html:84
+#: templates/direttore/_classifica.html:85
 #, python-format
 msgid "Tutti (%(n)s)"
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:79
 #: templates/components/_campionato_general_classification.html:82
-#: templates/direttore/_classifica.html:93
+#: templates/direttore/_classifica.html:94
 msgid "Diff"
 msgstr ""
 
@@ -15452,7 +15472,7 @@ msgid "Triangoli Totali Giocati:"
 msgstr ""
 
 #: templates/components/_campo_gironi.html:55
-#: templates/direttore/_avvia_gara.html:100
+#: templates/direttore/_avvia_gara.html:109
 msgid "Girone unico"
 msgstr ""
 
@@ -15575,47 +15595,38 @@ msgstr ""
 msgid "Riuscita o no"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:18
-#: templates/components/_detailed_classification.html:23
-#: templates/direttore/_card_partita.html:223
-#: templates/direttore/_classifica.html:100
-#: templates/direttore/_partite.html:52 templates/public/schermo_sala.html:240
-#, python-format
-msgid "Girone %(nome)s"
-msgstr ""
-
-#: templates/components/_classification_mobile.html:42
+#: templates/components/_classification_mobile.html:45
 msgid "Prime 6"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:55
-#: templates/components/_classification_mobile.html:86
-#: templates/components/_detailed_classification.html:116
+#: templates/components/_classification_mobile.html:58
+#: templates/components/_classification_mobile.html:89
+#: templates/components/_detailed_classification.html:117
 #: templates/direttore/_classifica.html:40
 msgid "Posizione nel girone"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:55
-#: templates/components/_classification_mobile.html:86
-#: templates/components/_detailed_classification.html:116
+#: templates/components/_classification_mobile.html:58
+#: templates/components/_classification_mobile.html:89
+#: templates/components/_detailed_classification.html:117
 #: templates/direttore/_classifica.html:40
-#: templates/public/schermo_sala.html:267
+#: templates/public/schermo_sala.html:292
 #, python-format
 msgid "%(pos)sº girone %(nome)s"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:59
-#: templates/components/_classification_mobile.html:90
+#: templates/components/_classification_mobile.html:62
+#: templates/components/_classification_mobile.html:93
 msgid "Spot Shot Rally"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:72
+#: templates/components/_classification_mobile.html:75
 #, python-format
 msgid "Mostra tutti (%(count)s)"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:102
-#: templates/components/_classification_mobile.html:112
+#: templates/components/_classification_mobile.html:105
+#: templates/components/_classification_mobile.html:115
 msgid "Turno precedente"
 msgstr ""
 
@@ -15662,65 +15673,65 @@ msgid ""
 "le gare nella tua zona."
 msgstr ""
 
-#: templates/components/_detailed_classification.html:17
-#: templates/public/schermo_sala.html:236
-#: templates/public/schermo_sala.html:257
+#: templates/components/_detailed_classification.html:18
+#: templates/public/schermo_sala.html:259
+#: templates/public/schermo_sala.html:282
 msgid "Classifica complessiva"
 msgstr ""
 
-#: templates/components/_detailed_classification.html:17
+#: templates/components/_detailed_classification.html:18
 #, python-format
 msgid "Classifica dopo il turno %(num)s"
 msgstr ""
 
-#: templates/components/_detailed_classification.html:28
-#: templates/components/_detailed_classification.html:81
+#: templates/components/_detailed_classification.html:29
+#: templates/components/_detailed_classification.html:82
 msgid "Pos."
 msgstr ""
 
-#: templates/components/_detailed_classification.html:32
-#: templates/components/_detailed_classification.html:85
+#: templates/components/_detailed_classification.html:33
+#: templates/components/_detailed_classification.html:86
 msgid "Diff. triangoli"
 msgstr ""
 
-#: templates/components/_detailed_classification.html:33
-#: templates/components/_detailed_classification.html:98
+#: templates/components/_detailed_classification.html:34
+#: templates/components/_detailed_classification.html:99
 msgid "Turno prec."
 msgstr ""
 
-#: templates/components/_detailed_classification.html:60
-#: templates/components/_detailed_classification.html:152
+#: templates/components/_detailed_classification.html:61
+#: templates/components/_detailed_classification.html:153
 #, python-format
 msgid "Sale di %(num)d posizione"
 msgid_plural "Sale di %(num)d posizioni"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_detailed_classification.html:63
-#: templates/components/_detailed_classification.html:155
+#: templates/components/_detailed_classification.html:64
+#: templates/components/_detailed_classification.html:156
 #, python-format
 msgid "Scende di %(num)d posizione"
 msgid_plural "Scende di %(num)d posizioni"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_detailed_classification.html:86
+#: templates/components/_detailed_classification.html:87
 msgid "Spot Shot Rally - punteggio spareggio"
 msgstr ""
 
-#: templates/components/_detailed_classification.html:140
+#: templates/components/_detailed_classification.html:141
 msgid "Punteggio Spot Shot Rally"
 msgstr ""
 
-#: templates/components/_detailed_classification.html:169
+#: templates/components/_detailed_classification.html:170
 msgid "Classifica non ancora calcolata"
 msgstr ""
 
-#: templates/components/_detailed_classification.html:172
+#: templates/components/_detailed_classification.html:173
 msgid "Serve che tutte le partite del turno siano concluse."
 msgstr ""
 
-#: templates/components/_detailed_classification.html:174
+#: templates/components/_detailed_classification.html:175
 msgid "Verrà calcolata quando il turno sarà giocato."
 msgstr ""
 
@@ -16279,13 +16290,13 @@ msgid "Non attivo"
 msgstr ""
 
 #: templates/components/_gara_info.html:73
-#: templates/direttore/_avvia_gara.html:84
+#: templates/direttore/_avvia_gara.html:93
 msgid "Numero dispari"
 msgstr ""
 
 #: templates/components/_gara_info.html:82
 #: templates/components/_gara_inscriptions.html:127
-#: templates/direttore/_fase_gioco.html:276
+#: templates/direttore/_fase_gioco.html:288
 #: templates/direttore/_fase_spareggio.html:91
 #, python-format
 msgid "%(n)d attivo"
@@ -16507,8 +16518,8 @@ msgstr ""
 #: templates/direttore/_partite.html:31 templates/direttore/_partite.html:84
 #: templates/direttore/preparazione/_turni.html:46
 #: templates/direttore/preparazione/_turni.html:72
-#: templates/public/schermo_sala.html:284
-#: templates/public/schermo_sala.html:292
+#: templates/public/schermo_sala.html:309
+#: templates/public/schermo_sala.html:317
 #, python-format
 msgid "Turno %(num)s"
 msgstr ""
@@ -16541,7 +16552,7 @@ msgstr ""
 #: templates/direttore/_partite.html:89
 #: templates/individual_match/match_detail.html:229
 #: templates/individual_match/matches.html:125
-#: templates/public/schermo_sala.html:293
+#: templates/public/schermo_sala.html:318
 msgid "Concluso"
 msgstr ""
 
@@ -18625,7 +18636,7 @@ msgstr ""
 
 #: templates/components/_ssr_section.html:27
 #: templates/public/campionato_detail.html:86
-#: templates/public/schermo_sala.html:43
+#: templates/public/schermo_sala.html:44
 #, python-format
 msgid "%(n)d giocatore"
 msgid_plural "%(n)d giocatori"
@@ -18797,7 +18808,7 @@ msgstr ""
 #: templates/components/_tabellone_macros.html:52
 #: templates/components/_tabellone_macros.html:60
 #: templates/components/_tessera_gara.html:359
-#: templates/direttore/_fase_gioco.html:132
+#: templates/direttore/_fase_gioco.html:139
 #, python-format
 msgid "Avvia il turno %(n)s"
 msgstr ""
@@ -18852,7 +18863,7 @@ msgstr ""
 
 #: templates/components/_tabellone_macros.html:79
 #: templates/direttore/_tabellino.html:30
-#: templates/public/schermo_sala.html:114
+#: templates/public/schermo_sala.html:115
 msgid "da definire"
 msgstr ""
 
@@ -18980,6 +18991,18 @@ msgstr ""
 #: templates/components/_tabellone_macros.html:120
 #, python-format
 msgid "esce al turno %(num)s"
+msgstr ""
+
+#: templates/components/_taglio.html:13
+msgid "sopra il taglio: al tabellone"
+msgstr ""
+
+#: templates/components/_taglio.html:17
+msgid "al tabellone"
+msgstr ""
+
+#: templates/components/_taglio.html:18
+msgid "fuori"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:21
@@ -19225,17 +19248,17 @@ msgstr ""
 
 #: templates/components/_tessera_gara.html:357
 #: templates/direttore/_avvia_gara.html:37
-#: templates/direttore/_avvia_gara.html:159 templates/direttore/_macros.html:50
+#: templates/direttore/_avvia_gara.html:168 templates/direttore/_macros.html:50
 msgid "Avvia la gara"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:360
-#: templates/direttore/_fase_gioco.html:59
+#: templates/direttore/_fase_gioco.html:64
 msgid "Avvia lo spareggio"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:361
-#: templates/direttore/_fase_gioco.html:63
+#: templates/direttore/_fase_gioco.html:68
 #: templates/direttore/_fase_spareggio.html:42
 msgid "Termina la gara"
 msgstr ""
@@ -19401,7 +19424,7 @@ msgstr ""
 #: templates/components/_trio_rack_input.html:351
 #: templates/components/_unified_rack_input.html:184
 #: templates/components/_unified_rack_input.html:217
-#: templates/public/schermo_sala.html:148
+#: templates/public/schermo_sala.html:149
 msgid "Partita conclusa"
 msgstr ""
 
@@ -19564,7 +19587,7 @@ msgid "Inizia il set"
 msgstr ""
 
 #: templates/components/_unified_rack_input.html:174
-#: templates/public/schermo_sala.html:56
+#: templates/public/schermo_sala.html:57
 msgid "concluso"
 msgstr ""
 
@@ -19771,7 +19794,7 @@ msgid "Ciao"
 msgstr ""
 
 #: templates/direttore/_avvia_gara.html:37
-#: templates/direttore/_avvia_gara.html:159 templates/direttore/_macros.html:50
+#: templates/direttore/_avvia_gara.html:168 templates/direttore/_macros.html:50
 msgid "Sorteggia il tabellone"
 msgstr ""
 
@@ -19799,186 +19822,186 @@ msgstr ""
 msgid "con gli iscritti di adesso"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:60
-msgid "Il calendario si fissa adesso"
-msgstr ""
-
-#: templates/direttore/_avvia_gara.html:61
-msgid ""
-"ognuno incontra tutti gli altri del suo girone; i gironi giocano in "
-"parallelo"
-msgstr ""
-
-#: templates/direttore/_avvia_gara.html:61
+#: templates/direttore/_avvia_gara.html:63
 msgid ""
 "ognuno incontra tutti gli altri una volta; i turni si giocano uno alla "
 "volta"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:63
+#: templates/direttore/_avvia_gara.html:64
+msgid ""
+"ognuno incontra tutti gli altri del suo girone; i gironi giocano in "
+"parallelo"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:70
+msgid "Il calendario si fissa adesso"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:72
 #, python-format
 msgid "%(n)d turno generato adesso"
 msgid_plural "%(n)d turni generati adesso"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_avvia_gara.html:64
+#: templates/direttore/_avvia_gara.html:73
 msgid "la formula casuale crea tutti i turni all’avvio"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:66
+#: templates/direttore/_avvia_gara.html:75
 msgid "Il turno 1 si sorteggia adesso"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:67
+#: templates/direttore/_avvia_gara.html:76
 msgid "i turni dopo nascono dai risultati, uno alla volta"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:70
+#: templates/direttore/_avvia_gara.html:79
 #, python-format
 msgid "Poi il tabellone fra i primi di ogni girone"
 msgid_plural "Poi il tabellone fra i primi %(num)d di ogni girone"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_avvia_gara.html:71
+#: templates/direttore/_avvia_gara.html:80
 msgid "a eliminazione diretta, con la finalina; con un girone solo non si gioca"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:71
+#: templates/direttore/_avvia_gara.html:80
 msgid "a eliminazione diretta; con un girone solo non si gioca"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:77 utils/jinja.py:479
+#: templates/direttore/_avvia_gara.html:86 utils/jinja.py:479
 msgid "Riposo, non vale punti"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:78
+#: templates/direttore/_avvia_gara.html:87
 msgid "in un girone dispari ognuno riposa una volta"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:81
+#: templates/direttore/_avvia_gara.html:90
 msgid "Un giocatore riposa"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:82
+#: templates/direttore/_avvia_gara.html:91
 msgid ""
 "gli iscritti sono dispari: uno prende la X del primo turno, scegli chi "
 "qui sotto"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:85
+#: templates/direttore/_avvia_gara.html:94
 #, python-format
 msgid "chi riposa lo decide la formula: %(policy)s"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:87
+#: templates/direttore/_avvia_gara.html:96
 msgid "Numero pari"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:87
+#: templates/direttore/_avvia_gara.html:96
 msgid "nessuno riposa al primo turno"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:90
+#: templates/direttore/_avvia_gara.html:99
 #, python-format
 msgid "Tavoli %(tavoli)s"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:90
+#: templates/direttore/_avvia_gara.html:99
 msgid "Nessun tavolo"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:91
+#: templates/direttore/_avvia_gara.html:100
 msgid "in quest’ordine: il primo alla partita di cartello"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:91
+#: templates/direttore/_avvia_gara.html:100
 msgid "le partite si avviano dal segnapunti, senza assegnazione"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:101
+#: templates/direttore/_avvia_gara.html:110
 msgid "tutti contro tutti"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:104
+#: templates/direttore/_avvia_gara.html:113
 msgid "il tabellone non si gioca: la gara finisce col girone"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:107
+#: templates/direttore/_avvia_gara.html:116
 #, python-format
 msgid "%(n)s gironi"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:109
+#: templates/direttore/_avvia_gara.html:118
 #, python-format
 msgid "Girone %(nome)s: %(n)s"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:112
+#: templates/direttore/_avvia_gara.html:121
 msgid "poi il tabellone"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:115
+#: templates/direttore/_avvia_gara.html:124
 #, python-format
 msgid "%(num)d turno"
 msgid_plural "%(num)d turni"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_avvia_gara.html:116
+#: templates/direttore/_avvia_gara.html:125
 msgid "proposta"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:120
+#: templates/direttore/_avvia_gara.html:129
 msgid "Quanti gironi?"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:121
+#: templates/direttore/_avvia_gara.html:130
 #, python-format
 msgid ""
 "La gara ammette fino a %(tetto)s gironi: con %(n)s iscritti ne stanno al "
 "massimo %(max)s, almeno 3 per girone."
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:121
+#: templates/direttore/_avvia_gara.html:130
 msgid ""
 "Almeno 3 giocatori per girone. I gironi non cambiano più, nemmeno con un "
 "ritiro."
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:129
+#: templates/direttore/_avvia_gara.html:138
 msgid "I compagni di squadra finiscono in gironi diversi, quando si può."
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:137
+#: templates/direttore/_avvia_gara.html:146
 msgid "A chi va la X del primo turno?"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:139
+#: templates/direttore/_avvia_gara.html:148
 msgid "A sorteggio"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:140
+#: templates/direttore/_avvia_gara.html:149
 msgid "La decide l'algoritmo insieme agli abbinamenti, come sempre."
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:142
+#: templates/direttore/_avvia_gara.html:151
 #, python-format
 msgid "A %(username)s"
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:143
+#: templates/direttore/_avvia_gara.html:152
 msgid "L'ultimo iscritto alla gara."
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:152
+#: templates/direttore/_avvia_gara.html:161
 msgid ""
 "Da qui gli inviti senza risposta scadono e gli abbinamenti sono fissati. "
 "Finché nessun risultato è inserito puoi ancora annullare l’avvio."
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:154
+#: templates/direttore/_avvia_gara.html:163
 msgid ""
 "Da qui le iscrizioni si chiudono e gli abbinamenti sono fissati. Finché "
 "nessun risultato è inserito puoi ancora annullare l’avvio."
@@ -20169,91 +20192,109 @@ msgstr ""
 msgid "Spot Shot Rally: %(punti)s punti"
 msgstr ""
 
-#: templates/direttore/_classifica.html:76
+#: templates/direttore/_classifica.html:77
 msgid "Classifica (triangoli)"
 msgstr ""
 
-#: templates/direttore/_classifica.html:78
+#: templates/direttore/_classifica.html:79
 msgid "complessiva"
 msgstr ""
 
-#: templates/direttore/_classifica.html:92
+#: templates/direttore/_classifica.html:93
 msgid "Vinti"
 msgstr ""
 
-#: templates/direttore/_classifica.html:93
+#: templates/direttore/_classifica.html:94
 msgid "Persi"
 msgstr ""
 
-#: templates/direttore/_classifica.html:127
+#: templates/direttore/_classifica.html:129
 msgid ""
 "Sistema a triangoli: ordinata per triangoli vinti in tutta la gara, poi "
 "punti SSR. Il riposo vale zero triangoli."
 msgstr ""
 
-#: templates/direttore/_classifica.html:128
+#: templates/direttore/_classifica.html:130
 msgid ""
 "Sistema a triangoli: ordinata per triangoli vinti in tutta la gara, poi "
 "punti SSR. La X a tavolino vale zero triangoli."
 msgstr ""
 
-#: templates/direttore/_classifica.html:129
+#: templates/direttore/_classifica.html:131
 msgid "Ordinata per piazzamento nel tabellone."
 msgstr ""
 
-#: templates/direttore/_classifica.html:130
+#: templates/direttore/_classifica.html:132
 #, python-format
 msgid ""
 "Ordinata per punti: %(punti)s. A pari punti decidono i criteri dei pari "
 "merito. Il riposo non vale punti."
 msgstr ""
 
-#: templates/direttore/_classifica.html:131
+#: templates/direttore/_classifica.html:133
 #, python-format
 msgid ""
 "Ordinata per punti: %(punti)s. A pari punti decidono i criteri dei pari "
 "merito. La X a tavolino vale una vittoria."
 msgstr ""
 
-#: templates/direttore/_classifica.html:132
+#: templates/direttore/_classifica.html:134
 msgid ""
 "Ordinata per vittorie, poi differenza triangoli. Il riposo non vale "
 "niente: né vittorie né triangoli."
 msgstr ""
 
-#: templates/direttore/_classifica.html:133
+#: templates/direttore/_classifica.html:135
 msgid ""
 "Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una"
 " vittoria e zero differenza."
 msgstr ""
 
-#: templates/direttore/_classifica.html:134
+#: templates/direttore/_classifica.html:138
+#, python-format
+msgid ""
+"Ogni girone ha la sua classifica: il primo di ogni girone va al "
+"tabellone, che decide il podio."
+msgid_plural ""
+"Ogni girone ha la sua classifica: i primi %(num)d di ogni girone vanno al"
+" tabellone, che decide il podio."
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/direttore/_classifica.html:139
 msgid ""
 "Ogni girone ha la sua classifica: a gara finita vengono prima i primi di "
 "ogni girone, poi i secondi, confrontati per partita giocata."
 msgstr ""
 
-#: templates/direttore/_classifica.html:135
+#: templates/direttore/_classifica.html:140
+msgid ""
+"In cima chi ha giocato il tabellone, nell’ordine in cui ne è uscito; poi "
+"gli altri, prima i primi di ogni girone e poi i secondi. Accanto al nome,"
+" la posizione nel girone."
+msgstr ""
+
+#: templates/direttore/_classifica.html:141
 msgid ""
 "Prima i primi di ogni girone, poi i secondi, e così via, confrontati per "
 "partita giocata; accanto al nome, la posizione nel girone."
 msgstr ""
 
-#: templates/direttore/_classifica.html:136
+#: templates/direttore/_classifica.html:142
 #, python-format
 msgid "La freccia confronta con la classifica dopo il turno %(n)s."
 msgstr ""
 
-#: templates/direttore/_classifica.html:137
+#: templates/direttore/_classifica.html:143
 msgid "La freccia confronta con il turno prima."
 msgstr ""
 
-#: templates/direttore/_classifica.html:138
+#: templates/direttore/_classifica.html:144
 msgid "SSR segna chi è stato messo in ordine dallo spareggio."
 msgstr ""
 
 #: templates/direttore/_classifica_bande.html:19
-#: templates/public/schermo_sala.html:217
+#: templates/public/schermo_sala.html:240
 msgid "dal tabellone"
 msgstr ""
 
@@ -20471,195 +20512,211 @@ msgid_plural "elenco definitivo · %(n)d"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_gioco.html:32
+#: templates/direttore/_fase_gioco.html:37
 #, python-format
 msgid "Tutte le %(n)s partite concluse"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:33
+#: templates/direttore/_fase_gioco.html:38
 #, python-format
 msgid "Tabellone concluso · %(n)d turno giocato"
 msgid_plural "Tabellone concluso · %(n)d turni giocati"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_gioco.html:34
+#: templates/direttore/_fase_gioco.html:39
 #, python-format
 msgid "Tutti i %(n)s turni conclusi"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:38
+#: templates/direttore/_fase_gioco.html:43
 msgid "Prima di chiudere la gara"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:40
-#: templates/direttore/_fase_gioco.html:111
+#: templates/direttore/_fase_gioco.html:45
+#: templates/direttore/_fase_gioco.html:116
 #, python-format
 msgid "Le partite sono chiuse, ma mancano ancora: %(cosa)s."
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:41
+#: templates/direttore/_fase_gioco.html:46
 msgid "Sono punteggi della classifica finale: li trovi qui sotto."
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:44
+#: templates/direttore/_fase_gioco.html:49
 msgid "Serve uno spareggio"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:46
+#: templates/direttore/_fase_gioco.html:51
 #, python-format
 msgid ""
 "Ci sono giocatori a pari merito fino al %(pos)s° posto. Lo spareggio si "
 "gioca a Spot Shot Rally: tu inserisci i punti."
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:49
+#: templates/direttore/_fase_gioco.html:54
 #: templates/direttore/_fase_spareggio.html:25
 msgid "Puoi chiudere la gara"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:51
+#: templates/direttore/_fase_gioco.html:56
 #: templates/direttore/_fase_spareggio.html:71
 msgid "La classifica diventa definitiva e i giocatori ricevono la notifica."
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:75
+#: templates/direttore/_fase_gioco.html:80
 msgid "Parimerito"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:75
+#: templates/direttore/_fase_gioco.html:80
 #: templates/direttore/_fase_spareggio.html:80
 #, python-format
 msgid "fino al %(pos)s° posto"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:93
+#: templates/direttore/_fase_gioco.html:98
 #, python-format
 msgid "Azzera i risultati del turno %(n)s"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:95
+#: templates/direttore/_fase_gioco.html:100
 msgid ""
 "Se un punteggio è sbagliato, correggilo prima dello spareggio o della "
 "chiusura."
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:107
+#: templates/direttore/_fase_gioco.html:112
 #, python-format
 msgid "Turno %(n)s di %(tot)s · concluso"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:109
+#: templates/direttore/_fase_gioco.html:114
 #, python-format
 msgid "Prima di avviare il turno %(n)s"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:112
+#: templates/direttore/_fase_gioco.html:117
 msgid ""
 "Il turno dopo si abbina sulla classifica, e quei punteggi ne fanno parte:"
 " li trovi qui sotto."
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:115
+#: templates/direttore/_fase_gioco.html:120
 #, python-format
 msgid "Puoi avviare il turno %(n)s"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:118
+#: templates/direttore/_fase_gioco.html:123
+#, python-format
+msgid ""
+"I gironi sono finiti. All’avvio si sorteggia il tabellone fra il primo di"
+" ogni girone."
+msgid_plural ""
+"I gironi sono finiti. All’avvio si sorteggia il tabellone fra i primi "
+"%(num)d di ogni girone."
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/direttore/_fase_gioco.html:125
 msgid ""
 "La finale l’ha vinta chi arrivava dai ripescati. Nel doppio KO si esce "
 "alla seconda sconfitta, quindi i due si rigiocano la partita da pari."
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:120
-#: templates/direttore/_fase_gioco.html:122
+#: templates/direttore/_fase_gioco.html:127
+#: templates/direttore/_fase_gioco.html:129
 msgid "Tutte le partite del turno sono chiuse."
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:120
+#: templates/direttore/_fase_gioco.html:127
 msgid "Gli incroci sono già fissati dal tabellone."
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:125
+#: templates/direttore/_fase_gioco.html:132
 #, python-format
 msgid "Gli abbinamenti del turno %(n)s sono già fissati dal sorteggio iniziale."
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:126
+#: templates/direttore/_fase_gioco.html:133
 #, python-format
 msgid ""
 "Gli abbinamenti del turno %(n)s si calcolano all’avvio, sulla classifica "
 "di adesso."
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:142
-#: templates/public/schermo_sala.html:53
+#: templates/direttore/_fase_gioco.html:149
+#: templates/public/schermo_sala.html:54
 #, python-format
 msgid "Turno %(n)s di %(tot)s"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:145
+#: templates/direttore/_fase_gioco.html:152
 msgid "partite chiuse"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:165
+#: templates/direttore/_fase_gioco.html:172
 #: templates/direttore/_simulazione.html:17
 msgid "Simulazione"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:165
+#: templates/direttore/_fase_gioco.html:172
 msgid "solo nelle prove"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:167
+#: templates/direttore/_fase_gioco.html:174
 msgid "Fai giocare i fittizi"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:167
+#: templates/direttore/_fase_gioco.html:174
 msgid "una partita, il turno o tutta la gara"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:180
+#: templates/direttore/_fase_gioco.html:187
 msgid "Da fare adesso"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:183
+#: templates/direttore/_fase_gioco.html:190
 #, python-format
 msgid "%(n)d risultato da validare"
 msgid_plural "%(n)d risultati da validare"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_gioco.html:184
+#: templates/direttore/_fase_gioco.html:191
 msgid "chiuso dal segnapunti dei giocatori senza la doppia conferma"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:187
+#: templates/direttore/_fase_gioco.html:194
 #, python-format
 msgid "%(n)d partita aspetta un tavolo"
 msgid_plural "%(n)d partite aspettano un tavolo"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_gioco.html:188
+#: templates/direttore/_fase_gioco.html:195
 msgid "nessun tavolo libero: si assegna da sé quando uno si libera"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:188
+#: templates/direttore/_fase_gioco.html:195
 msgid "c’è un tavolo libero: assegnalo dalla card"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:228
+#: templates/direttore/_fase_gioco.html:235
 #: templates/public/schermo_sala.html:22
 msgid "Schermo in sala"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:228
+#: templates/direttore/_fase_gioco.html:235
 msgid "da aprire sulla TV della sala: tavoli e classifica, senza menu"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:245
+#: templates/direttore/_fase_gioco.html:252
 msgid "libero"
+msgstr ""
+
+#: templates/direttore/_fase_gioco.html:270
+#: templates/public/schermo_sala.html:213
+msgid "finali"
 msgstr ""
 
 #: templates/direttore/_fase_iscrizioni.html:28
@@ -24824,7 +24881,7 @@ msgstr ""
 #: templates/individual_match/edit_match.html:74
 #: templates/individual_match/match_detail.html:201
 #: templates/individual_match/quick_match.html:166
-#: templates/public/schermo_sala.html:138
+#: templates/public/schermo_sala.html:139
 msgid "Libero"
 msgstr ""
 
@@ -27524,91 +27581,91 @@ msgstr ""
 msgid "Turni %(dal)s–%(al)s"
 msgstr ""
 
-#: templates/public/schermo_sala.html:34 templates/public/vetrina_gara.html:56
+#: templates/public/schermo_sala.html:35 templates/public/vetrina_gara.html:56
 #, python-format
 msgid "Locandina di %(gara)s"
 msgstr ""
 
-#: templates/public/schermo_sala.html:50 templates/public/schermo_sala.html:56
+#: templates/public/schermo_sala.html:51 templates/public/schermo_sala.html:57
 msgid "in corso"
 msgstr ""
 
-#: templates/public/schermo_sala.html:58
+#: templates/public/schermo_sala.html:59
 msgid "spareggio in corso"
 msgstr ""
 
-#: templates/public/schermo_sala.html:62
+#: templates/public/schermo_sala.html:63
 msgid "non ancora cominciata"
 msgstr ""
 
-#: templates/public/schermo_sala.html:72
+#: templates/public/schermo_sala.html:73
 msgid "La gara non è ancora cominciata"
 msgstr ""
 
-#: templates/public/schermo_sala.html:74
+#: templates/public/schermo_sala.html:75
 msgid ""
 "Appena il direttore avvia il primo turno, qui compaiono i tavoli con le "
 "partite."
 msgstr ""
 
-#: templates/public/schermo_sala.html:109
+#: templates/public/schermo_sala.html:110
 msgid "chi vince"
 msgstr ""
 
-#: templates/public/schermo_sala.html:109
+#: templates/public/schermo_sala.html:110
 msgid "chi perde"
 msgstr ""
 
-#: templates/public/schermo_sala.html:136
+#: templates/public/schermo_sala.html:137
 msgid "Alla distanza"
 msgstr ""
 
-#: templates/public/schermo_sala.html:154
+#: templates/public/schermo_sala.html:155
 msgid "Prossima partita"
 msgstr ""
 
-#: templates/public/schermo_sala.html:156
+#: templates/public/schermo_sala.html:157
 msgid "in attesa di un tavolo libero"
 msgstr ""
 
-#: templates/public/schermo_sala.html:158
+#: templates/public/schermo_sala.html:159
 msgid "nessuna partita in attesa"
 msgstr ""
 
-#: templates/public/schermo_sala.html:174
+#: templates/public/schermo_sala.html:175
 msgid "il turno che si gioca e quello dopo"
 msgstr ""
 
-#: templates/public/schermo_sala.html:205
+#: templates/public/schermo_sala.html:206
 msgid "Il tabellone compare dopo il sorteggio."
 msgstr ""
 
-#: templates/public/schermo_sala.html:236
-#: templates/public/schermo_sala.html:258
+#: templates/public/schermo_sala.html:259
+#: templates/public/schermo_sala.html:283
 #, python-format
 msgid "Classifica dopo il turno %(n)s"
 msgstr ""
 
-#: templates/public/schermo_sala.html:237
 #: templates/public/schermo_sala.html:260
+#: templates/public/schermo_sala.html:285
 msgid "Vinti · persi"
 msgstr ""
 
-#: templates/public/schermo_sala.html:237
 #: templates/public/schermo_sala.html:260
+#: templates/public/schermo_sala.html:285
 msgid "Punti · diff"
 msgstr ""
 
-#: templates/public/schermo_sala.html:237
 #: templates/public/schermo_sala.html:260
+#: templates/public/schermo_sala.html:285
 msgid "Vinte · diff"
 msgstr ""
 
-#: templates/public/schermo_sala.html:275
+#: templates/public/schermo_sala.html:300
 msgid "La classifica compare alla fine del primo turno."
 msgstr ""
 
-#: templates/public/schermo_sala.html:285
+#: templates/public/schermo_sala.html:310
 msgid "partite già concluse"
 msgstr ""
 

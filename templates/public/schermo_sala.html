@@ -25,6 +25,7 @@
 
 {% block content %}
 {% import "components/_tabellone_macros.html" as tb with context %}
+{% import "components/_taglio.html" as taglio with context %}
 {% set _fase = schermo.fase.value %}
 {% set _tab = schermo.tabellone %}
 {% set _formato = (vetrina.righe | selectattr('icona', 'equalto', 'fa-trophy') | first) %}
@@ -174,7 +175,7 @@
         <span class="c7-sechead__note">{{ _('il turno che si gioca e quello dopo') }}</span>
       </div>
       {% if _tab and _tab.lavagne %}
-      <div class="c7-sala-tab{% if _tab.righe > 8 %} c7-sala-tab--fitto{% endif %}">
+      <div class="c7-sala-tab{% if _tab.righe > 8 %} c7-sala-tab--fitto{% endif %}{% if schermo.gironi %} c7-sala-tab--con-gironi{% endif %}">
         {% for lavagna in _tab.lavagne %}
         <section class="c7-card c7-sala-tab__card">
           {% if lavagna.girone is not none %}<div class="c7-kicker c7-sala-tab__girone">{{ _('Girone %(num)s', num=lavagna.girone + 1) }}</div>
@@ -204,6 +205,28 @@
       <section class="c7-card c7-sala__avviso c7-sala__avviso--piccolo">
         <p class="c7-sala__avviso-testo">{{ _('Il tabellone compare dopo il sorteggio.') }}</p>
       </section>
+      {% endif %}
+      {% if schermo.gironi %}
+      {# Il tabellone dopo i gironi (ADR-081): sotto, da dove viene ognuno. #}
+      <div class="c7-sechead">
+        <h3>{{ _('Classifiche dei gironi') }}</h3>
+        <span class="c7-sechead__note">{{ _('finali') }}</span>
+      </div>
+      {% for g in schermo.gironi %}
+      <div class="c7-kicker c7-sala__girone">{{ _('Girone %(nome)s', nome=g.nome) }}</div>
+      <div class="c7-rows c7-sala__classifica" data-girone="{{ g.nome }}">
+        {% for r in g.righe %}
+        {{ taglio.riga_del_taglio(r) }}
+        <div class="c7-rows__row c7-sala__riga">
+          <span class="c7-pos c7-pos--lg{% if r.posizione <= 3 %} c7-pos--{{ r.posizione }}{% endif %}">{{ r.posizione }}</span>
+          <span class="c7-sala__riga-nome">{{ r.nome }}</span>
+          {{ taglio.segno(r) }}
+          <span class="c7-num c7-sala__riga-val">{{ r.valore }}</span>
+          <span class="c7-num c7-sala__riga-sec">{{ r.secondo }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
       {% endif %}
 
       {% elif schermo.bande %}
@@ -240,9 +263,11 @@
       <div class="c7-kicker c7-sala__girone">{{ _('Girone %(nome)s', nome=g.nome) }}</div>
       <div class="c7-rows c7-sala__classifica" style="flex-grow: {{ g.righe|length }}" data-girone="{{ g.nome }}">
         {% for r in g.righe %}
+        {{ taglio.riga_del_taglio(r) }}
         <div class="c7-rows__row c7-sala__riga">
           <span class="c7-pos c7-pos--lg{% if r.posizione <= 3 %} c7-pos--{{ r.posizione }}{% endif %}">{{ r.posizione }}</span>
           <span class="c7-sala__riga-nome">{{ r.nome }}</span>
+          {{ taglio.segno(r) }}
           <span class="c7-num c7-sala__riga-val">{{ r.valore }}</span>
           <span class="c7-num c7-sala__riga-sec">{{ r.secondo }}</span>
         </div>

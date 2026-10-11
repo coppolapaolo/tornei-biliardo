@@ -557,12 +557,23 @@ def _lavagne_da_nodi(nodi: Sequence[Nodo]) -> List[Lavagna]:
 
 
 def costruisci_tabellone(
-    matches: Iterable[Any], *, strategy: str, finalina: bool = False
+    matches: Iterable[Any],
+    *,
+    strategy: str,
+    finalina: bool = False,
+    turni_prima: int = 0,
+    taglia_da_sorteggiare: Optional[int] = None,
 ) -> Optional[Tabellone]:
     """L'albero del tabellone di una gara, con i nodi futuri.
 
     None se la gara non ha ancora un tabellone (nessuna coordinata: prima del
     sorteggio, o gara antecedente alla persistenza del tabellone).
+
+    `turni_prima` sono i turni di gara giocati prima del tabellone: quelli dei
+    gironi nel tabellone dopo il girone all'italiana (ADR-081), zero altrove.
+    `taglia_da_sorteggiare` disegna un tabellone non ancora sorteggiato, coi
+    soli nomi dei turni: serve a chiamare «semifinali» il turno che sta per
+    nascere dai gironi.
     """
     doppio_ko = strategy == MatchmakingStrategy.DOUBLE_KNOCKOUT.value
     per_gruppo: Dict[Optional[int], Dict[Chiave, Any]] = {}
@@ -572,7 +583,7 @@ def costruisci_tabellone(
             continue
         chiave = (tipo, match.bracket_round or 1, match.bracket_slot)
         per_gruppo.setdefault(getattr(match, "bracket_group", None), {})[chiave] = match
-    if not per_gruppo:
+    if not per_gruppo and not taglia_da_sorteggiare:
         return None
 
     def taglia_di(reali: Dict[Chiave, Any]) -> int:
@@ -594,9 +605,12 @@ def costruisci_tabellone(
             None, s, finale, con_ripescati=False, da_sorteggiare=not finale
         )
     else:
-        reali = per_gruppo[None]
-        s = _Struttura(taglia_di(reali), doppio_ko, None, finalina and not doppio_ko, 0)
-        nodi += _costruisci_lavagna(None, s, reali, con_ripescati=doppio_ko)
+        reali = per_gruppo.get(None, {})
+        taglia = taglia_di(reali) if reali else (taglia_da_sorteggiare or 2)
+        s = _Struttura(taglia, doppio_ko, None, finalina and not doppio_ko, turni_prima)
+        nodi += _costruisci_lavagna(
+            None, s, reali, con_ripescati=doppio_ko, da_sorteggiare=not reali
+        )
 
     return Tabellone(
         lavagne=_lavagne_da_nodi(nodi),

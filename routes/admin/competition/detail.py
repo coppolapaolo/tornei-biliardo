@@ -385,7 +385,7 @@ def _vista_direttore(
 
 
 def _vista_tabellone(gara: Gara, all_matches) -> dict:
-    """Il tabellone al posto della classifica, nelle gare a eliminazione (#240).
+    """Il tabellone, nelle gare che ne hanno uno da mostrare (#240, ADR-081).
 
     Prima del sorteggio la forma che il tabellone avra' con gli iscritti di
     adesso; dopo, l'albero intero con i nodi futuri, i nomi dei turni
@@ -393,17 +393,25 @@ def _vista_tabellone(gara: Gara, all_matches) -> dict:
     turni vicini a quello che si vede; a gara conclusa la classifica a bande
     (ADR-040). Niente di tutto questo per le gare a turni, che restano come
     sono.
+
+    Il tabellone dopo i gironi del girone all'italiana compare dal suo
+    sorteggio, accanto alle classifiche finali dei gironi; a gara conclusa
+    vale la classifica della gara, che ha in cima il tabellone. Mentre si
+    giocano i gironi serve solo il nome del turno che sta per nascere:
+    «Avvia le semifinali».
     """
+    from models.competition.tabellone_della_gara import tabellone_della_gara
     from models.competition.tabellone_view import (
         bande_finali,
         costruisci_tabellone,
         destinazioni,
         forma_tabellone,
     )
-    from models.matchmaking.configuration import BRACKET_STRATEGIES
 
+    quale = tabellone_della_gara(gara, all_matches)
     vista: dict = {
-        "is_tabellone": gara.matchmaking_strategy in BRACKET_STRATEGIES,
+        "is_tabellone": quale.da_mostrare,
+        "tabellone_della_gara": quale,
         "nomi_turni": {},
         "tabellino": [],
         "destinazioni": {},
@@ -413,10 +421,16 @@ def _vista_tabellone(gara: Gara, all_matches) -> dict:
         "righe_bande": [],
         "turni_giocati": max((m.round_number or 0 for m in all_matches), default=0),
     }
-    if not vista["is_tabellone"]:
+    if quale.nei_gironi:
+        vista["nomi_turni"] = _nomi_del_tabellone_da_sorteggiare(gara)
+        return vista
+    if not quale.da_mostrare:
         return vista
 
-    if gara.status in (GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value):
+    if quale.di_formato and gara.status in (
+        GaraStatus.SETUP.value,
+        GaraStatus.INSCRIPTION.value,
+    ):
         forma = forma_tabellone(
             gara.get_active_inscriptions_count(),
             gara.matchmaking_strategy,
@@ -437,6 +451,7 @@ def _vista_tabellone(gara: Gara, all_matches) -> dict:
         all_matches,
         strategy=gara.matchmaking_strategy,
         finalina=bool(gara.third_place_match),
+        turni_prima=quale.turni_prima,
     )
     if tabellone is None:
         return vista
@@ -451,13 +466,42 @@ def _vista_tabellone(gara: Gara, all_matches) -> dict:
     vista["destinazioni"] = destinazioni(
         tabellone, [m for m in all_matches if not MatchStatus.is_finished(m.status)]
     )
-    if gara.status == GaraStatus.COMPLETED.value:
+    if quale.di_formato and gara.status == GaraStatus.COMPLETED.value:
         from models.classification.bracket_standings import bracket_positions
 
         bande = bande_finali(bracket_positions(gara), tabellone)
         vista["bande_finali"] = bande
         vista["righe_bande"] = [riga for banda in bande for riga in banda.righe]
     return vista
+
+
+def _nomi_del_tabellone_da_sorteggiare(gara: Gara) -> dict:
+    """I nomi dei turni del tabellone dopo i gironi, prima del suo sorteggio.
+
+    Solo a gironi finiti: è allora che il direttore avvia il primo turno del
+    tabellone, e il comando dice «Avvia le semifinali». Chi passa lo dice la
+    classifica dei gironi (`fase_finale_service.semina`), la stessa che userà
+    il sorteggio: con un ritiro i qualificati possono essere meno di `K` per
+    girone, e la taglia cambia.
+    """
+    from models.competition.fase_finale_service import semina, turni_dei_gironi
+    from models.competition.tabellone_view import costruisci_tabellone
+    from models.matchmaking.fase_finale import taglia_del_tabellone
+
+    gironi = turni_dei_gironi(gara)
+    if (gara.current_round or 0) < gironi:
+        return {}
+    qualificati, _girone_di = semina(gara)
+    if len(qualificati) < 2:
+        return {}
+    albero = costruisci_tabellone(
+        [],
+        strategy=gara.matchmaking_strategy,
+        finalina=bool(gara.third_place_match),
+        turni_prima=gironi,
+        taglia_da_sorteggiare=taglia_del_tabellone(len(qualificati)),
+    )
+    return albero.nomi_turni() if albero is not None else {}
 
 
 @competition_bp.route("/<int:gara_id>")
@@ -698,12 +742,12 @@ def gara_detail(gara_id):
     # davvero un tabellone da guardare: prima del sorteggio la pagina
     # esisterebbe ma sarebbe uno stato vuoto, e una gara a tabellone
     # antecedente allo Step 2 non ha coordinate da disegnare affatto.
+    from models.competition.tabellone_della_gara import tabellone_della_gara
     from models.matchmaking.bracket_view import has_bracket_coordinates
-    from models.matchmaking.configuration import BRACKET_STRATEGIES
 
-    has_bracket_view = gara.matchmaking_strategy in BRACKET_STRATEGIES and (
-        has_bracket_coordinates(all_matches or [])
-    )
+    has_bracket_view = tabellone_della_gara(
+        gara, all_matches or []
+    ).da_mostrare and has_bracket_coordinates(all_matches or [])
 
     # Squadre (US-2/3/8/9) e categorie (ADR-049): per chi dirige stanno nel
     # contesto della direzione; chi guarda vede solo l'elenco attivo.

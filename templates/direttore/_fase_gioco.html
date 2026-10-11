@@ -16,6 +16,11 @@
 {# Gare a tabellone (issue #240): i turni hanno un nome, il turno dopo e' gia'
    fissato dall'albero, e al posto della classifica c'e' il tabellone. #}
 {% set _tabellone = is_tabellone is defined and is_tabellone %}
+{# Il tabellone dopo i gironi del girone all'italiana (ADR-081): `_nei_gironi`
+   mentre si giocano i gironi, `_dopo_i_gironi` dal sorteggio del tabellone. #}
+{% set _quale = tabellone_della_gara if tabellone_della_gara is defined else none %}
+{% set _nei_gironi = _quale is not none and _quale.nei_gironi %}
+{% set _dopo_i_gironi = _tabellone and _quale is not none and _quale.dopo_i_gironi %}
 {% import "components/_tabellone_macros.html" as t with context %}
 {# Gli esercizi fra i turni: fra un turno e l'altro quelli da registrare
    stanno sopra le partite, mentre si gioca sotto (`_esercizi_turni.html`). #}
@@ -102,7 +107,7 @@
    fra i turni: il comando si annuncia lo stesso, spento, con cosa manca. #}
 <section class="c7-card c7-card--accent c7-fascia">
   <div class="c7-fascia__testo">
-    {% set _nomi_prossimo = nomi_turni.get(comando.turno, []) if _tabellone else [] %}
+    {% set _nomi_prossimo = nomi_turni.get(comando.turno, []) if (_tabellone or _nei_gironi) else [] %}
     {% set _nomi_chiuso = nomi_turni.get(gara.current_round, []) if _tabellone else [] %}
     <div class="c7-kicker">{% if _nomi_chiuso %}{{ t.nome_turno(_nomi_chiuso) }} · {% endif %}{{ _('Turno %(n)s di %(tot)s · concluso', n=gara.current_round, tot=gara.rounds_count) }}</div>
     {% if comando.bloccato %}
@@ -114,14 +119,16 @@
     {% else %}
     <h3 class="c7-fascia__titolo">{% if _nomi_prossimo %}{{ t.turno_pronto(_nomi_prossimo, comando.turno) }}{% else %}{{ _('Puoi avviare il turno %(n)s', n=comando.turno) }}{% endif %}</h3>
     <div class="c7-fascia__corpo">
-      {% if _nomi_prossimo|length == 1 and _nomi_prossimo[0].chiave == 'bella' %}
+      {% if _nei_gironi and _nomi_prossimo %}
+      {{ ngettext('I gironi sono finiti. All’avvio si sorteggia il tabellone fra il primo di ogni girone.', 'I gironi sono finiti. All’avvio si sorteggia il tabellone fra i primi %(num)d di ogni girone.', gara.effective_qualifiers_per_group) }}
+      {% elif _nomi_prossimo|length == 1 and _nomi_prossimo[0].chiave == 'bella' %}
       {{ _('La finale l’ha vinta chi arrivava dai ripescati. Nel doppio KO si esce alla seconda sconfitta, quindi i due si rigiocano la partita da pari.') }}
       {% elif _tabellone %}
       {{ _('Tutte le partite del turno sono chiuse.') }} {{ _('Gli incroci sono già fissati dal tabellone.') }}
       {% else %}
       {{ _('Tutte le partite del turno sono chiuse.') }}
       {% endif %}
-      {% if _tabellone %}
+      {% if _tabellone or (_nei_gironi and _nomi_prossimo) %}
       {% elif gara.creates_all_rounds_at_startup() %}{{ _('Gli abbinamenti del turno %(n)s sono già fissati dal sorteggio iniziale.', n=comando.turno) }}
       {% else %}{{ _('Gli abbinamenti del turno %(n)s si calcolano all’avvio, sulla classifica di adesso.', n=comando.turno) }}{% endif %}
     </div>
@@ -252,10 +259,15 @@
 
     {# La classifica dopo l'ultimo turno chiuso, con la freccia di tendenza
        (canvas 3.5–3.6): una forma sola, telefono e desktop. #}
+    {# Nel tabellone dopo i gironi (ADR-081) sotto il tabellone restano le
+       classifiche dei gironi da cui viene: i numeri sono quelli dei gironi. #}
     {% if _tabellone and tabellino %}
     {% include "direttore/_tabellino.html" %}
-    {% elif has_scores %}
-    {% with classification=current_round_classification, round_number=latest_round_with_classification %}
+    {% endif %}
+    {% if has_scores and (not (_tabellone and tabellino) or _dopo_i_gironi) %}
+    {% with classification=current_round_classification, round_number=latest_round_with_classification,
+            titolo_classifica=(_('Classifiche dei gironi') if _dopo_i_gironi else none),
+            nota_testa=(_('finali') if _dopo_i_gironi else none) %}
     <div data-help="gara-classifica">
       {% include "direttore/_classifica.html" %}
     </div>

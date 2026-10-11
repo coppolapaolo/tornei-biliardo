@@ -5,6 +5,7 @@
    posizione nel girone sotto il nome. Col girone unico non cambia niente. #}
 
 {% if classification %}
+{% import "components/_taglio.html" as taglio with context %}
 {# B14: respect gara.classification_system. RACK → only racks; else → wins + racks. #}
 {% set classification_sys = (gara.classification_system or 'WINS')|upper %}
 {% set is_rack_only = classification_sys == 'RACK' %}
@@ -19,9 +20,10 @@
     <div class="c7-card" style="padding: 6px 0;">
       {% for v in g.righe %}
       {% set entry = v.riga %}
+      {{ taglio.riga_del_taglio(v) }}
       <div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px; {% if not loop.last %}border-bottom: 1px solid var(--c7-line-soft);{% endif %}">
         <span class="c7-num" style="width: 26px; text-align: center; color: {% if v.posizione <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ v.posizione }}</span>
-        <strong style="flex: 1; min-width: 0;">{{ entry.user.username }}</strong>
+        <span style="flex: 1; min-width: 0;"><strong>{{ entry.user.username }}</strong>{{ taglio.sotto(v) }}</span>
         {% if is_points %}
         <span class="c7-num" title="{{ _('Punti') }}">{{ entry.points or 0 }}</span>
         {% elif not is_rack_only %}

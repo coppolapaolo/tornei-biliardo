@@ -175,6 +175,19 @@ blocks:
       - "Final standings: first those who played the bracket, in the order they left it, then the others in the order of the groups."
       - "In a championship the final phase is proposed by a championship **with placements**; one that adds up wins, racks or points does not have it."
 
+  - type: text
+    text: >-
+      **What you see during the competition.** While the groups are played
+      there are the group standings. Once the groups are over, next to each
+      name you see **to the bracket** or **out**, with a dashed line between
+      who goes through and who doesn't: if two players are tied at the cut
+      and only one goes through, the round tiebreakers decide, with the draw
+      at the end, and the line shows it. The director's command becomes
+      **Start the semi-finals**. From then on the competition page, the
+      **Bracket** page and the venue screen show the bracket, with the group
+      standings below it; when the competition is over, the final standings
+      of the evening remain.
+
   - type: heading
     id: eliminazione
     title: "Knockout"

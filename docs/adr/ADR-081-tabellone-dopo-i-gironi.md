@@ -137,9 +137,9 @@ girone, e la gara partita con un girone solo finisce col girone.
 - La domanda «in quale fase è questo turno?» richiede le taglie dei gironi: si
   paga una query in più dove serve (generazione, classifiche, limite di
   tempo), solo nelle gare col tabellone finale.
-- Le viste del tabellone sono ancora legate alle strategie a tabellone
-  (`BRACKET_STRATEGIES`): mostrarle anche qui è il lavoro della PR delle
-  pagine, che segue quella dei moduli.
+- Le viste del tabellone erano legate alle strategie a tabellone
+  (`BRACKET_STRATEGIES`): dal 2026-10-12 passano da una domanda sola, vedi
+  «Pagine».
 
 ### Rischi
 
@@ -183,6 +183,28 @@ girone, e la gara partita con un girone solo finisce col girone.
 - **Foglio di avvio**: ogni voce conta anche i turni del tabellone; «Girone
   unico» dice che il tabellone non si gioca.
 - **Frase**: `descrivi_fase_finale`, in coda a quella dei gironi.
+
+## Pagine (2026-10-12)
+
+- **Una domanda sola** per le viste: `models/competition/tabellone_della_gara.py`
+  (`tabellone_della_gara(gara, partite)`: di formato o dopo i gironi, fase
+  `GIRONI`/`TABELLONE`, turni prima del tabellone; `albero_della_gara`).
+  Pura, dalle partite: i nodi sono le partite con `bracket_type` e senza
+  `bracket_group`. La usano la pagina del direttore, la pagina pubblica, la
+  pagina del tabellone e lo schermo in sala al posto di
+  `matchmaking_strategy in BRACKET_STRATEGIES`; i controlli strutturali (moduli,
+  regole del formato, campi bloccati) restano sulla strategia.
+  `costruisci_tabellone` riceve `turni_prima`, e `taglia_da_sorteggiare` per
+  nominare il turno che sta per nascere («Avvia le semifinali»).
+- **Durante i gironi** le classifiche per girone; **dal sorteggio** il
+  tabellone (compatto per il direttore, pagina propria, schermo in sala) con
+  sotto le classifiche dei gironi; **a gara conclusa** la classifica della
+  gara. Col girone unico non compare niente.
+- **Il taglio** (decisione dell'utente del 2026-10-11): nelle classifiche per
+  girone, quando si sa chi passa (`fase_finale_service.chi_va_al_tabellone`:
+  a gironi finiti la `semina`, dal sorteggio i nodi), «al tabellone» e «fuori»
+  con la riga del taglio (`gironi_in_pagina.segna_il_taglio`). Due «2º pari
+  merito» possono stare uno sopra e uno sotto: decide la catena di turno.
 
 ## Riferimenti
 

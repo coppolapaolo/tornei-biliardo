@@ -11,6 +11,7 @@
 {# Gironi multipli (ADR-076): mentre si gioca una tabella per girone, a gara
    finita la classifica della gara con la colonna «Girone». #}
 {% set _gironi = gironi_in_pagina(gara, classification) %}
+{% import "components/_taglio.html" as taglio with context %}
 {% set _con_girone = classification and not _gironi and girone_della_riga(classification[0]) %}
 <section class="c7-stack">
     <h3 style="margin: 0;">
@@ -36,9 +37,9 @@
             <tbody>
                 {% for v in g.righe %}
                 {% set player_class = v.riga %}
-                <tr>
+                <tr{% if v.primo_fuori %} class="c7-taglio-tr"{% endif %}>
                     <td><span class="c7-num" style="{% if v.posizione <= 3 %}color: var(--c7-accent);{% else %}color: var(--c7-ink-faint);{% endif %}">{{ v.posizione }}</span></td>
-                    <td><strong>{{ player_class.user.username }}</strong></td>
+                    <td><strong>{{ player_class.user.username }}</strong> {{ taglio.segno(v) }}</td>
                     {% if is_points %}
                     <td><span class="c7-num">{{ player_class.points or 0 }}</span></td>
                     {% elif not is_rack_only %}

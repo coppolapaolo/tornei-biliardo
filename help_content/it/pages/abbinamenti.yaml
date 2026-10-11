@@ -173,6 +173,18 @@ blocks:
       - "La classifica finale: prima chi ha giocato il tabellone, nell'ordine in cui ne è uscito, poi gli altri nell'ordine dei gironi."
       - "In un campionato la fase finale la propone il campionato **a piazzamenti**; chi somma vittorie, triangoli o punti non ce l'ha."
 
+  - type: text
+    text: >-
+      **Cosa si vede durante la gara.** Mentre si giocano i gironi ci sono le
+      classifiche per girone. Finiti i gironi, accanto a ogni nome compare
+      **al tabellone** o **fuori**, con una riga tratteggiata fra chi passa e
+      chi no: se due giocatori sono pari al taglio e ne passa uno solo, lo
+      decidono i criteri dei pari merito di turno, col sorteggio in fondo, e
+      la riga lo mostra. Il comando del direttore diventa **Avvia le
+      semifinali**. Da lì la pagina della gara, la pagina **Tabellone** e lo
+      schermo in sala mostrano il tabellone, con sotto le classifiche dei
+      gironi; a gara conclusa resta la classifica finale della serata.
+
   - type: heading
     id: eliminazione
     title: "Eliminazione diretta"

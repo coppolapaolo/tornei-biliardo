@@ -668,7 +668,8 @@ def schermo_sala(token):
     )
     from models.competition.showcase_view import costruisci_vetrina, descrizione_social
     from models.match.models import Match
-    from models.matchmaking.configuration import BRACKET_STRATEGIES
+    from models.competition.fase_finale_service import chi_va_al_tabellone
+    from models.competition.tabellone_della_gara import tabellone_della_gara
     from models.status_enum import GaraStatus
 
     gara = resolve_public_identifier(token)
@@ -681,8 +682,10 @@ def schermo_sala(token):
         .all()
     )
     posizioni = None
+    # Le bande vengono dal tabellone di formato; quello dopo i gironi ha la
+    # sua classifica finale, che mette in cima il tabellone (ADR-081).
     if (
-        gara.matchmaking_strategy in BRACKET_STRATEGIES
+        tabellone_della_gara(gara, partite).di_formato
         and gara.status == GaraStatus.COMPLETED.value
     ):
         posizioni = bracket_positions(gara)
@@ -694,6 +697,7 @@ def schermo_sala(token):
         gara.get_available_tables(),
         vetrina.iscritti,
         posizioni=posizioni,
+        al_tabellone=chi_va_al_tabellone(gara, partite),
     )
     return render_template(
         "public/schermo_sala.html",

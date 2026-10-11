@@ -1,0 +1,25 @@
+{# templates/components/_taglio.html — Design System 7c
+
+   Il taglio del tabellone dopo i gironi (ADR-081), nelle classifiche per
+   girone: accanto a chi passa «al tabellone», accanto agli altri «fuori», e
+   fra i due la riga del taglio. Chi passa lo decide la catena di turno
+   all'ultimo turno dei gironi, che finisce col sorteggio: due «2º» a pari
+   merito possono stare uno sopra e uno sotto. Le righe vengono da
+   `gironi_in_pagina.segna_il_taglio` (`taglio`, `primo_fuori`); finché non
+   si sa chi passa (`taglio` None) non compare niente. Classi in fondo a
+   theme-7c.css. #}
+
+{% macro riga_del_taglio(v) -%}
+{% if v.primo_fuori %}<div class="c7-taglio" role="separator"><span class="c7-taglio__testo">{{ _('sopra il taglio: al tabellone') }}</span></div>{% endif %}
+{%- endmacro %}
+
+{# Sotto il nome, dove la riga è stretta (telefono, colonna del direttore). #}
+{% macro sotto(v) -%}
+{% if v.taglio %}<span class="c7-taglio__sotto c7-taglio__sotto--dentro" data-taglio="dentro">{{ _('al tabellone') }}</span>
+{%- elif v.taglio is sameas false %}<span class="c7-taglio__sotto" data-taglio="fuori">{{ _('fuori') }}</span>{% endif %}
+{%- endmacro %}
+
+{% macro segno(v) -%}
+{% if v.taglio %}<span class="c7-state c7-state--ok c7-taglio__segno" data-taglio="dentro">{{ _('al tabellone') }}</span>
+{%- elif v.taglio is sameas false %}<span class="c7-state c7-state--muted c7-taglio__segno" data-taglio="fuori">{{ _('fuori') }}</span>{% endif %}
+{%- endmacro %}

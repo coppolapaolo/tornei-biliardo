@@ -186,6 +186,43 @@ def semina(gara: Any) -> Tuple[List[int], Dict[int, int]]:
     return seme, {pid: posti[pid][0] for pid in seme}
 
 
+def chi_va_al_tabellone(
+    gara: Any, partite: Optional[Sequence[Any]] = None
+) -> Optional[FrozenSet[int]]:
+    """Chi gioca il tabellone dopo i gironi, o None se non si sa ancora.
+
+    Dal sorteggio lo dicono i nodi del tabellone; prima, a gironi finiti, la
+    stessa classifica che userà il sorteggio (`semina`). Mentre si giocano i
+    gironi, col girone unico o senza fase finale: None.
+    """
+    from models.competition.tabellone_della_gara import tabellone_della_gara
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+
+    if not getattr(gara, "id", None):
+        return None
+    if partite is None:
+        partite = Match.query.filter_by(gara_id=gara.id).all()
+    quale = tabellone_della_gara(gara, partite)
+    if not quale.dopo_i_gironi:
+        return None
+    if quale.da_mostrare:
+        return frozenset(
+            pid
+            for m in partite
+            if m.bracket_type and m.bracket_group is None
+            for pid in (m.player1_id, m.player2_id)
+            if pid
+        )
+    g = turni_dei_gironi(gara)
+    dei_gironi = [m for m in partite if (m.round_number or 0) <= g]
+    if (gara.current_round or 0) < g or any(
+        not MatchStatus.is_finished(m.status) for m in dei_gironi
+    ):
+        return None
+    return frozenset(semina(gara)[0])
+
+
 def bande(gara: Any, fino_al_turno: int) -> Tuple[List[List[int]], FrozenSet[int]]:
     """Le bande del tabellone finale, e chi resta terzo a pari merito.
 
@@ -263,6 +300,7 @@ def classifica_finale(
 
 __all__ = [
     "bande",
+    "chi_va_al_tabellone",
     "classifica_finale",
     "e_della_fase_finale",
     "ha_tabellone_finale",

@@ -20,7 +20,7 @@
    rispetto alla posizione nel girone al turno prima (`gironi_in_pagina`). A
    gara finita la classifica della gara, con accanto a ogni nome girone e
    posizione nel girone. Col girone unico non cambia niente. #}
-{% macro _riga(riga, posizione, mov, oltre, medaglie, girone) %}
+{% macro _riga(riga, posizione, mov, oltre, medaglie, girone, sotto=none) %}
     <div class="c7-rows__row c7-classifica__riga{% if oltre %} c7-classifica__riga--oltre{% endif %}" data-oltre="{{ '1' if oltre else '0' }}"{% if oltre %} hidden{% endif %}>
       {% if medaglie %}
       <span class="c7-pos c7-pos--lg c7-classifica__medaglia{% if posizione <= 3 %} c7-pos--{{ posizione }}{% endif %}">{{ posizione }}</span>
@@ -34,7 +34,7 @@
         {% else %}<span class="c7-classifica__trend-eq" aria-hidden="true"></span>{% endif %}
       </span>
       <span class="c7-avatar c7-avatar--sm">{{ riga.user.username[:2]|upper }}</span>
-      <span class="c7-classifica__gioc c7-rows__title">{{ riga.user.username }}</span>
+      <span class="c7-classifica__gioc c7-rows__title">{{ riga.user.username }}{% if sotto %}{{ sotto }}{% endif %}</span>
       {# A gara finita, da dove viene ognuno: «1º girone A» (ADR-076). #}
       {% if girone %}
       <span class="c7-state c7-classifica__pill c7-classifica__girone-pill" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)sº girone %(nome)s', pos=girone[1], nome=girone[0]) }}</span>
@@ -61,6 +61,7 @@
       {% endif %}
 {% endmacro %}
 {% if classification %}
+{% import "components/_taglio.html" as taglio with context %}
 {% set _rack = classification[0].is_rack_ranking %}
 {% set _posizione = classification[0].is_position_ranking %}
 {% set _punti = classification[0].is_points_ranking %}
@@ -101,8 +102,9 @@
     <div class="c7-rows">
       {{ _testa }}
       {% for v in g.righe %}
+      {{ taglio.riga_del_taglio(v) }}
       {% call _riga(v.riga, v.posizione, (v.precedente - v.posizione) if v.precedente else none,
-                    loop.index > _prime, false, none) %}{{ _colonne(v.riga, _rack, _punti, _ssr, _pari) }}{% endcall %}
+                    loop.index > _prime, false, none, taglio.sotto(v)) %}{{ _colonne(v.riga, _rack, _punti, _ssr, _pari) }}{% endcall %}
       {% endfor %}
     </div>
   </div>
@@ -131,7 +133,11 @@
     {% elif _punti %}{{ _('Ordinata per punti: %(punti)s. A pari punti decidono i criteri dei pari merito. La X a tavolino vale una vittoria.', punti=descrivi_punti(punti_della_gara(gara))) }}
     {% elif _girone %}{{ _('Ordinata per vittorie, poi differenza triangoli. Il riposo non vale niente: né vittorie né triangoli.') }}
     {% else %}{{ _('Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una vittoria e zero differenza.') }}{% endif %}
-    {% if _gironi %}{{ _('Ogni girone ha la sua classifica: a gara finita vengono prima i primi di ogni girone, poi i secondi, confrontati per partita giocata.') }}
+    {# Col tabellone dopo i gironi il podio lo decide il tabellone (ADR-081). #}
+    {% set _col_tabellone = gara.ha_tabellone_finale %}
+    {% if _gironi and _col_tabellone %}{{ ngettext('Ogni girone ha la sua classifica: il primo di ogni girone va al tabellone, che decide il podio.', 'Ogni girone ha la sua classifica: i primi %(num)d di ogni girone vanno al tabellone, che decide il podio.', gara.effective_qualifiers_per_group) }}
+    {% elif _gironi %}{{ _('Ogni girone ha la sua classifica: a gara finita vengono prima i primi di ogni girone, poi i secondi, confrontati per partita giocata.') }}
+    {% elif girone_della_riga(classification[0]) and _col_tabellone %}{{ _('In cima chi ha giocato il tabellone, nell’ordine in cui ne è uscito; poi gli altri, prima i primi di ogni girone e poi i secondi. Accanto al nome, la posizione nel girone.') }}
     {% elif girone_della_riga(classification[0]) %}{{ _('Prima i primi di ogni girone, poi i secondi, e così via, confrontati per partita giocata; accanto al nome, la posizione nel girone.') }}{% endif %}
     {% if medaglie is defined and medaglie and round_number and round_number > 1 %}{{ _('La freccia confronta con la classifica dopo il turno %(n)s.', n=round_number - 1) }}
     {% else %}{{ _('La freccia confronta con il turno prima.') }}{% endif %}
