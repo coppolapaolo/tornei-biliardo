@@ -78,6 +78,7 @@ ETICHETTE: Dict[str, object] = {
     "planned_gare_count": _l("Gare previste"),
     "challenge_mode": _l("Modalità esercizi"),
     "default_classification_system": _l("Sistema di classifica"),
+    "default_gara_classification_system": _l("Classifica di ogni gara, proposta"),
     "default_venue_id": _l("Sala proposta"),
     "default_entry_fee": _l("Quota proposta"),
     "default_rounds_count": _l("Turni proposti"),
@@ -108,6 +109,7 @@ ETICHETTE: Dict[str, object] = {
 #: I valori del campionato si leggono come il campo della gara che propongono.
 _COME_CAMPO_DELLA_GARA = {
     "default_classification_system": "classification_system",
+    "default_gara_classification_system": "classification_system",
     "default_entry_fee": "entry_fee",
     "default_odd_policy": "odd_number_policy",
     "default_anti_rematch": "anti_rematch_enabled",

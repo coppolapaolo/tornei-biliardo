@@ -7,6 +7,9 @@
  *
  * - Il blocco segue il menu della strategia (`data-strategia-da`), quando la
  *   strategia si sceglie nella stessa pagina.
+ * - Nel modulo del campionato segue anche il menu del sistema
+ *   (`data-piazzamenti-da`): solo un campionato a piazzamenti propone i
+ *   gironi, chi somma i totali resta a girone unico (ADR-080).
  * - Composizione e compagni compaiono solo con un tetto di almeno 2 gironi.
  * - Le voci di un menu che cambiano nome col girone (`data-label-girone`, per
  *   esempio «Escludi» nella gestione dei ritiri) seguono la stessa strategia:
@@ -28,11 +31,15 @@
     var strategia = blocco.dataset.strategiaDa
       ? document.querySelector(blocco.dataset.strategiaDa)
       : null;
+    var sistema = blocco.dataset.piazzamentiDa
+      ? document.querySelector(blocco.dataset.piazzamentiDa)
+      : null;
 
     function sync() {
       var visibile = strategia
         ? strategia.value === blocco.dataset.girone
         : !blocco.hidden;
+      if (sistema && sistema.value !== 'POSITION') { visibile = false; }
       blocco.hidden = !visibile;
       if (tetto) { tetto.disabled = !visibile; }
       if (sePiu) {
@@ -56,6 +63,7 @@
     );
 
     if (strategia) { strategia.addEventListener('change', sync); }
+    if (sistema) { sistema.addEventListener('change', sync); }
     if (tetto) { tetto.addEventListener('change', sync); }
     sync();
   }

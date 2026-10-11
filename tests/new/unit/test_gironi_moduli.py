@@ -119,6 +119,9 @@ class TestProposta:
         camp = Campionato(
             name=f"Lunedì al 74 {uuid.uuid4().hex[:6]}",
             campionato_type="round_robin",
+            # I gironi li propone solo un campionato a piazzamenti: chi somma
+            # i totali resta a girone unico (ADR-080).
+            default_classification_system="POSITION",
             is_active=True,
             default_max_groups=2,
             default_group_seeding="elo",

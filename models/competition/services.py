@@ -207,6 +207,7 @@ class GaraService:
                     setattr(gara, key, value)
 
         GaraService._dispari_ammessi_dalla_strategia(gara)
+        GaraService._verifica_gironi_ammessi(gara)
 
         # Valida la configurazione matchmaking
         errors = gara.validate_strategy_configuration()
@@ -465,6 +466,8 @@ class GaraService:
             )
 
         GaraService._dispari_ammessi_dalla_strategia(gara)
+        if "max_groups" in kwargs or "matchmaking_strategy" in kwargs:
+            GaraService._verifica_gironi_ammessi(gara)
 
         # Valida la configurazione classificazione dopo le modifiche
         from models.competition.validators import validate_gara
@@ -578,6 +581,43 @@ class GaraService:
         if formula != gara.odd_number_policy:
             gara.odd_number_policy = formula
             gara.x_challenge_id = None
+
+    @staticmethod
+    def _verifica_gironi_ammessi(gara: Gara) -> None:
+        """In un campionato che somma i totali la gara resta a girone unico.
+
+        SPECIFICHE.md, nota del 2026-10-11 (ADR-080): chi capita nel girone
+        più numeroso gioca una partita in più, e sommarne i totali con quelli
+        degli altri non è sensato. I gironi restano liberi nelle gare singole
+        e nei campionati a piazzamenti. Il garante è il servizio: il modulo
+        non mostra il campo, ma una gara nasce anche da altre strade.
+        """
+        from flask_babel import gettext as _
+
+        from models.campionato.models import Campionato
+        from models.campionato.piazzamenti import somma_i_totali
+        from models.matchmaking.configuration import MatchmakingStrategy
+        from models.matchmaking.gironi import tetto_di_gironi
+
+        if not gara.campionato_id or tetto_di_gironi(gara.max_groups) <= 1:
+            return
+        if gara.matchmaking_strategy != MatchmakingStrategy.ROUND_ROBIN.value:
+            return
+        campionato = db.session.get(Campionato, gara.campionato_id)
+        if not somma_i_totali(campionato):
+            return
+        # La finale dei playoff che decide da sola la classifica (peso zero)
+        # non somma niente: di lei conta solo l'ordine d'arrivo.
+        if gara.playoff_config is not None and gara.classification_weight == 0:
+            return
+        raise ValueError(
+            _(
+                "In un campionato che somma vittorie, triangoli o punti le gare "
+                "restano a girone unico: chi capita nel girone più numeroso "
+                "giocherebbe una partita in più. I gironi si usano nelle gare "
+                "singole e nei campionati a piazzamenti."
+            )
+        )
 
     @staticmethod
     def _copia_dal_campionato(campionato_id: int, kwargs: Dict[str, Any]) -> None:

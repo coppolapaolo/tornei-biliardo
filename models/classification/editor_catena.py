@@ -149,7 +149,9 @@ def editor_della_gara(
             else catene.catena_di_gara(gara)
         )
     elif campionato is not None:
-        sistema = sistema or getattr(campionato, "default_classification_system", None)
+        from models.campionato.piazzamenti import sistema_delle_gare
+
+        sistema = sistema or sistema_delle_gare(campionato)
         catena = catene.catena_proposta(campionato, liv)
     else:
         catena = None
@@ -165,10 +167,15 @@ def editor_del_campionato(
     liv = Livello(livello)
     if campionato is None:
         return config_editor(livello, None, sistema)
-    sistema = sistema or getattr(campionato, "default_classification_system", None)
     if liv is Livello.CAMPIONATO:
+        sistema = sistema or getattr(campionato, "default_classification_system", None)
         catena = catene.catena_generale(campionato, _sistema(sistema))
     else:
+        # Le catene proposte alle gare seguono il sistema delle gare: in un
+        # campionato a piazzamenti quello delle serate (ADR-080).
+        from models.campionato.piazzamenti import sistema_delle_gare
+
+        sistema = sistema or sistema_delle_gare(campionato)
         catena = catene.catena_proposta(campionato, liv)
     return config_editor(livello, catena, sistema)
 

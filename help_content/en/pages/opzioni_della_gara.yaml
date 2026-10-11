@@ -123,7 +123,8 @@ blocks:
           present, with at least 3 players per group. With more than one
           group **Group composition** (draw, by ELO, by category) and teammate
           separation appear too. In championships the value is proposed by
-          the championship. See [Round robin in several
+          the championship, and only exists in placement championships: one
+          that adds up wins, racks or points stays single-group. See [Round robin in several
           groups](/aiuto/approfondimenti/abbinamenti#gironi).
         hint: gara.gironi
       - name: "Minimum entrants"

@@ -113,6 +113,7 @@ blocks:
       - "Sizes differ by at most one; the extra player goes to the first groups."
       - "Groups are fixed at the start and **never change**, not even when someone withdraws. Cancelling the start recomposes them."
       - "The competition has as many rounds as the largest group; a group that has finished stops."
+      - "In a championship, groups exist only if it uses **placements**: if the championship adds up wins, racks or points, competitions stay single-group, because a larger group plays one more match."
 
   - type: options
     items:

@@ -210,7 +210,9 @@ blocks:
       You can switch from "Play-offs only" to "Championship + play-off event"
       only if the final uses the same standings system as the championship:
       otherwise different things would be added up, and the app refuses the
-      change. The weight can always be changed.
+      change. In a placement championship there is no such limit: the final
+      counts by its place, like any other competition. The weight can always
+      be changed.
 
   - type: note
     tone: info

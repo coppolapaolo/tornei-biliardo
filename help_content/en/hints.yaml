@@ -158,7 +158,7 @@ hints:
   section: handicap
 - id: gara.gironi
   label: Groups
-  short: 'Round robin only: «up to N» splits the players into groups played in parallel. How many, you choose at the start, with at least 3 players per group.'
+  short: 'Round robin only, and in a championship only with placements: «up to N» splits players into parallel groups. How many, you choose at the start, at least 3 per group.'
   anchor: gara-gironi
   screens:
   - admin.competition.create_gara_standalone

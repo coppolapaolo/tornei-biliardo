@@ -44,14 +44,19 @@ blocks:
           How many you expect. It is an indicative target, not a constraint:
           you can add or remove them.
       - name: "Standings system"
-        values: "Wins · Racks · Points · Position"
+        values: "Wins · Racks · Points · Placements"
         text: >-
-          How the standings are ordered. **Wins** is the normal choice: it
-          counts matches won, and rack difference when level. With **Points**
-          every result is worth the points you choose in the next step
-          (usually 3 for a win, 1 for a draw, 0 for a loss). The four modes
-          are explained in [How standings are worked
-          out](/aiuto/approfondimenti/classifiche).
+          How competitions enter the overall standings. With **Wins**,
+          **Racks** and **Points** each competition's numbers are added up:
+          **Wins** is the normal choice (matches won, and rack difference when
+          level); with **Points** every result is worth the points you choose
+          in the next step (usually 3, 1 and 0). With **Placements** each
+          competition gives points for the **place** in its standings, and
+          competitions can have different formats: an evening with groups, an
+          Amalfi one, a bracket. In that case **Standings of each event** also
+          appears: how each evening is ranked (usually by wins), proposed to
+          every competition. The modes are explained in [How standings are
+          worked out](/aiuto/approfondimenti/classifiche).
         hint: campionato.classifica
       - name: "Pairing strategy"
         values: "Amalfi · Random · Round robin · Knockout · Double elimination"
@@ -80,9 +85,13 @@ blocks:
     tone: warning
     title: "The standings system applies to the whole championship"
     text: >-
-      Every competition in a championship uses the **same** standings system,
-      and so does the play-off final when its score is added to the season's:
-      you cannot add apples to pears. Choose carefully
+      If the championship adds up wins, racks or points, every competition
+      uses the **same** standings system, and so does the play-off final when
+      its score is added to the season's: you cannot add apples to pears. For
+      the same reason competitions stay **single-group**: a larger group plays
+      one more match. If you want groups, or different formats from one
+      competition to the next, choose **Placements**: there only each
+      competition's place counts. Choose carefully
       now. You can change it until a competition has started, even if it
       already has registered players, and then the change applies to every
       competition and stays in each one's history. After the first start it
@@ -117,8 +126,8 @@ blocks:
       Choosing knockout or double elimination in step 1 means step 2 does not
       ask for number of rounds, handling of odd numbers or avoid rematches: on
       bracket competitions those settings have no effect, so there would be no
-      point inheriting them. What appears instead is the position points table,
-      below.
+      point inheriting them. A bracket championship always uses placements,
+      so the position points table appears, below.
 
   - type: heading
     id: apertura
@@ -154,12 +163,15 @@ blocks:
 
   - type: heading
     id: punti_posizione
-    title: "Position points (bracket championships only)"
+    title: "Position points (placement championships)"
 
   - type: text
     text: >-
-      In bracket competitions the standings go by position, and each placing is
-      worth a number of championship points. How many is up to you.
+      In a placement championship each place in a competition's final
+      standings is worth a number of championship points, whatever the
+      competition's format. How many is up to you. Anyone who misses a
+      competition gets zero; tied players get the points of the place they
+      share; a place beyond the last one in the table is worth zero.
 
   - type: text
     text: >-
@@ -221,7 +233,7 @@ blocks:
       results: wins and rack difference if the system is «Wins», total racks if
       it is «Racks», the competitions' points — multiplied by their weight —
       if it is «Points», position points — the ones in the table above — if it is
-      «Position». Anyone who misses a competition is not excluded: they simply
+      «Placements». Anyone who misses a competition is not excluded: they simply
       gain nothing on that occasion.
 
   - type: text
@@ -231,7 +243,9 @@ blocks:
       chains proposed to the competitions. The starting one is rack
       difference, then the sum of the SSR tiebreakers, then the position after
       the previous competition, then the draw: it never leaves ties, because
-      playoff invitations start from there. Changing it once the championship
+      playoff invitations start from there. With placements there is no
+      chain: on equal points the summed wins and rack difference count, and
+      players still level share the place. Changing it once the championship
       has started recalculates the standings, and a line above them says so.
 
   - type: faq
@@ -247,4 +261,6 @@ blocks:
       - q: "Can I change the position points once the championship has started?"
         a: "Yes, from the championship settings. The overall standings are recalculated with the new values, so competitions already finished change score: a line above the standings says so, with who made the correction and why. If the play-off invitations have already been sent and the correction changes who is within the places, the app suggests how to update them."
       - q: "I cannot see the position points table."
-        a: "It only appears on knockout or double elimination championships. With Amalfi, random or round robin the standings do not go by position and those points serve no purpose."
+        a: "It only appears on placement championships: choose «Placements» as the standings system in step 1 (knockout and double elimination championships always are). If the championship adds up wins, racks or points, those points serve no purpose."
+      - q: "Can a championship have an evening with groups and an Amalfi one?"
+        a: "Yes, if it uses placements. Each competition starts with the format the championship proposes, and from the competition's edit page you can change its format and evening standings until it starts."

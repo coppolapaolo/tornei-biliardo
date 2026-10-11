@@ -351,11 +351,39 @@ L'handicap si applica a livello di **match** e modifica il conteggio dei rack.
 
 ## 7. Campionato
 
+### 7.0 Sommando i totali o a piazzamenti (dal 2026-10-11, ADR-080)
+
+Un campionato sceglie **come le gare entrano** nella classifica generale:
+
+- **sommando i totali** (`default_classification_system` = WINS, RACK o
+  POINTS): si sommano vittorie, rack o punti delle classifiche finali. Le gare
+  hanno tutte il sistema del campionato e restano a **girone unico**
+  (`GaraService._verifica_gironi_ammessi`,
+  `TournamentService._verifica_gironi_del_campionato`): fra gironi di taglia
+  diversa chi sta nel girone più numeroso gioca una partita in più;
+- **a piazzamenti** (`default_classification_system` = POSITION, o un tipo di
+  campionato a tabellone): ogni gara dà i punti del **posto** nella sua
+  classifica finale (`GaraClassification.position`), con la tabella della
+  sezione 7.5, pesati. Le gare hanno **qualunque formato** — Amalfi, casuale,
+  girone all'italiana a uno o più gironi, tabellone — e il loro sistema serve
+  solo a ordinare la serata: lo propone il campionato
+  (`default_gara_classification_system`, NULL = WINS) e la gara lo può
+  cambiare; il tabellone resta POSITION. Chi non gioca prende zero; i pari
+  merito di una gara prendono i punti del posto condiviso; oltre la tabella si
+  prende zero.
+
+Le regole di lettura stanno in `models/campionato/piazzamenti.py`
+(`e_a_piazzamenti`, `sistema_delle_gare`, `sistema_per_la_gara`). Presidi:
+`tests/new/unit/test_campionato_a_piazzamenti.py`,
+`test_specifiche_conformita.py::TestIlCampionatoAPiazzamenti`.
+
 ### 7.1 Vincolo di omogeneità
 
-**Tutte le gare di un campionato devono usare lo stesso sistema di classifica.**
+**Nei campionati che sommano i totali tutte le gare devono usare lo stesso
+sistema di classifica** (fino al 2026-10-11 valeva per ogni campionato).
 
-Non è permesso mescolare gare RACK con gare WINS nello stesso campionato.
+Non è permesso mescolare gare RACK con gare WINS nello stesso campionato che
+somma i totali. A piazzamenti sì: della gara si prende solo il posto.
 
 - **La gara di playoff dipende dalla modalità della classifica finale**
   (ADR-053). Se il suo punteggio **si somma** (`campionato_plus_playoff`) ha il
@@ -366,7 +394,9 @@ Non è permesso mescolare gare RACK con gare WINS nello stesso campionato.
   sistema può essere diverso e il tabellone è ammesso (POSITION). Il passaggio a
   `campionato_plus_playoff` è rifiutato se la finale esistente ha un altro
   sistema o la strategia è a tabellone; salvare il peso senza cambiare modalità
-  non è mai bloccato. Fino al 2026-09-14 la finale nasceva sempre WINS.
+  non è mai bloccato. Fino al 2026-09-14 la finale nasceva sempre WINS. In un
+  campionato a piazzamenti la finale si somma col suo posto, qualunque formato
+  abbia.
 - **Il sistema si cambia solo prima delle iscrizioni**: se una gara (non
   eliminata né annullata) ha lasciato la preparazione o ha già degli iscritti,
   `TournamentService.update_campionato` rifiuta il cambio. Altrimenti il
@@ -384,7 +414,7 @@ La classifica del campionato **aggrega sommando** le classifiche delle singole g
 | **RACK** | Σ rack totali vinti |
 | **WINS** | Σ vittorie, Σ diff rack |
 | **POINTS** | Σ punti (pesati) |
-| **POSITION** | Σ punti posizione |
+| **POSITION** | Σ punti del posto in ogni gara (pesati), poi Σ vittorie e Σ diff rack; i pari condividono il posto |
 
 ### 7.3 Partecipazione parziale
 
@@ -399,7 +429,8 @@ La classifica del campionato **aggrega sommando** le classifiche delle singole g
 
 ### 7.5 Punti posizione (solo POSITION)
 
-Per campionati con gare a eliminazione:
+Per i campionati a piazzamenti, con gare di qualunque formato (dal 2026-10-11;
+prima solo con gare a eliminazione):
 - I punti per posizione sono **configurabili a livello campionato**.
 - **Esempio configurazione**:
   ```
@@ -462,8 +493,8 @@ Per gare standalone:
   partite giocate (il riposo non è una partita, il tavolino sì). Fra gironi
   diversi lo scontro diretto non decide. Calcolo puro in
   `models/classification/gironi.py`, lettura dei numeri in
-  `gironi_della_gara.py`. Nel campionato contano i totali della classifica
-  finale della gara, come sempre (sezione 7.2).
+  `gironi_della_gara.py`. I gironi esistono nelle gare singole e nei
+  campionati a piazzamenti, dove la gara entra col suo posto (sezione 7.0).
 
 #### Eliminazione
 - Bracket a eliminazione diretta.

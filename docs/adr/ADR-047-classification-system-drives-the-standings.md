@@ -206,3 +206,11 @@ I sistemi sono quattro: si aggiunge `POINTS`, la classifica a punti
 proposti dal campionato). Vale la regola di questo ADR: chi mostra o somma
 una classifica guarda il sistema, e a punti la colonna che conta sono i
 punti. Il dettaglio sta nell'ADR-078, «Emendamento: la classifica a punti».
+
+## Emendamento (2026-10-11, ADR-080)
+
+«Tutte le gare di un campionato hanno lo stesso sistema» vale ora solo per i
+campionati che **sommano i totali** (WINS, RACK, POINTS). Un campionato a
+piazzamenti (POSITION) ammette gare di ogni formato, ognuna col sistema della
+sua serata, perché della gara prende solo il posto. Il sistema delle gare si
+chiede a `models/campionato/piazzamenti.sistema_delle_gare`.

@@ -112,6 +112,7 @@ blocks:
       - "Le taglie differiscono al più di uno: il giocatore in più va ai primi gironi."
       - "I gironi si fissano all'avvio e **non cambiano più**, nemmeno con un ritiro. Annullando l'avvio si ricompongono."
       - "I turni della gara sono quelli del girone più numeroso: un girone che ha finito si ferma."
+      - "In un campionato i gironi ci sono solo se è **a piazzamenti**: se il campionato somma vittorie, triangoli o punti le gare restano a girone unico, perché in un girone più numeroso si gioca una partita in più."
 
   - type: options
     items:

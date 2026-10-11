@@ -55,7 +55,11 @@
 
     <div class="mb-3" data-bracket-hide>
       <label for="classification_system" class="form-label">{{ _('Sistema di classifica') }}</label>
-      {% if gara.campionato_id %}
+      {# In un campionato a piazzamenti la gara sceglie come ordinare la
+         serata: nel campionato entra il posto (ADR-080). Sommando i totali il
+         sistema è quello del campionato. #}
+      {% set sistema_libero = not gara.campionato_id or (campionato_a_piazzamenti(gara.campionato) and not gara.is_playoff) %}
+      {% if not sistema_libero %}
         {% set campionato_default = gara.campionato.default_classification_system or 'WINS' %}
         {% set gara_system = gara.classification_system or 'WINS' %}
         {# La finale dei playoff ha il suo sistema, scelto nella configurazione:
@@ -93,7 +97,7 @@
     {# I punti della classifica a punti (ADR-078): sulla gara singola seguono
        il selettore, dentro un campionato si vedono se il campionato è a punti. #}
     <div data-bracket-hide>
-    {% if gara.campionato_id %}
+    {% if not sistema_libero %}
       {% with punti_valori=punti_della_gara(gara), punti_visibile=(gara.classification_system == 'POINTS') %}
       {% include "components/_campo_punti.html" %}
       {% endwith %}
@@ -154,11 +158,20 @@
     {# I gironi del girone all'italiana (ADR-076): si mostrano col girone.
        Dentro un campionato la strategia la decide il campionato. #}
     {% if gara.campionato_id and not gara.is_playoff %}
-      {% set _gironi_qui = gara.campionato.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value %}
-      {% with gironi_visibile=_gironi_qui, gironi_tetto=gara.max_groups, gironi_composizione=gara.group_seeding,
+      {% if campionato_a_piazzamenti(gara.campionato) %}
+      {# A piazzamenti la gara sceglie il formato: i gironi seguono il menu
+         della strategia, come nella gara singola (ADR-080). #}
+      {% with gironi_strategia_da='#matchmaking_strategy', gironi_tetto=gara.max_groups, gironi_composizione=gara.group_seeding,
               gironi_compagni=true, gironi_compagni_valore=gara.separate_teammates %}
       {% include "components/_campo_gironi.html" %}
       {% endwith %}
+      {% else %}
+      {# Sommando i totali la gara resta a girone unico (ADR-080): il blocco
+         non compare. #}
+      {% with gironi_visibile=false, gironi_tetto=1, gironi_composizione=gara.group_seeding %}
+      {% include "components/_campo_gironi.html" %}
+      {% endwith %}
+      {% endif %}
     {% else %}
       {% with gironi_strategia_da='#matchmaking_strategy', gironi_tetto=gara.max_groups, gironi_composizione=gara.group_seeding,
               gironi_compagni=true, gironi_compagni_valore=gara.separate_teammates %}

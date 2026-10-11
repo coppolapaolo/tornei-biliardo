@@ -106,6 +106,22 @@ blocks:
       tutti quinti. Non è un pari merito da sciogliere, è quello che dice il
       percorso.
 
+  - type: heading
+    id: piazzamenti
+    title: "Il campionato a piazzamenti"
+
+  - type: text
+    text: >-
+      Un campionato può sommare i numeri delle gare (vittorie, triangoli o
+      punti) oppure essere **a piazzamenti**: ogni gara dà a ognuno i punti
+      del posto che ha preso nella sua classifica finale, con la tabella dei
+      punti per posizione del campionato (di norma 25, 18, 15, 12, poi 8 dal
+      5° all'8° e 4 dal 9° al 16°). Così le gare possono avere formati
+      diversi — una serata a gironi, una Amalfi, un tabellone — e la taglia di
+      un girone non conta. Chi non gioca una gara prende zero; chi finisce a
+      pari merito prende i punti del posto condiviso. I campionati a tabellone
+      sono sempre a piazzamenti.
+
   - type: text
     text: >-
       In un campionato ogni posizione vale un certo numero di punti, che si
@@ -219,7 +235,7 @@ blocks:
       - q: "La classifica non si è aggiornata dopo la mia partita."
         a: "Si ricalcola quando tutte le partite del turno sono concluse."
       - q: "Come si somma la classifica del campionato?"
-        a: "Sommando: vittorie e differenza triangoli con «Vittorie», triangoli totali con «Triangoli», punti-posizione con «Posizione». Se una gara ha un peso, il suo punteggio viene prima moltiplicato per quel numero."
+        a: "Sommando: vittorie e differenza triangoli con «Vittorie», triangoli totali con «Triangoli», punti del posto in ogni gara con «Piazzamenti». Se una gara ha un peso, il suo punteggio viene prima moltiplicato per quel numero."
       - q: "Nel campionato due giocatori hanno gli stessi numeri: chi sta davanti?"
         a: "Chi stava davanti dopo la gara precedente. Se erano pari anche lì, decide il sorteggio: è fisso, quindi la classifica non cambia a ogni lettura, e non dipende da chi si è iscritto prima."
       - q: "Durante la gara, a pari vittorie e pari differenza, chi sta davanti?"

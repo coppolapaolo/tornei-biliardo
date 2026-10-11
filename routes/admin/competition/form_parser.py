@@ -27,6 +27,7 @@ from models.matchmaking.configuration import (
     resolve_classification_system,
 )
 from models.match.break_rules import BreakRule, StartRule
+from models.campionato.piazzamenti import e_a_piazzamenti, sistema_per_la_gara
 
 # Ri-esportato: `BRACKET_STRATEGIES` vive nel dominio
 # (`models/matchmaking/configuration.py`) perché la domanda "questa gara ha un
@@ -220,9 +221,20 @@ class GaraFormParser:
 
         # ── Strategy ─────────────────────────────────────────────
         finale = self.gara if getattr(self.gara, "is_playoff", False) else None
+        # Un campionato a piazzamenti ammette serate di ogni formato (ADR-080):
+        # strategia e sistema li sceglie la gara, partendo dalla proposta del
+        # campionato. Uno che somma i totali li impone, perché le gare devono
+        # contare la stessa cosa.
+        a_piazzamenti = camp is not None and e_a_piazzamenti(camp) and not finale
         if camp:
             data["matchmaking_strategy"] = (
-                finale.matchmaking_strategy if finale else camp.campionato_type
+                finale.matchmaking_strategy
+                if finale
+                else (
+                    request.form.get("matchmaking_strategy") or camp.campionato_type
+                    if a_piazzamenti
+                    else camp.campionato_type
+                )
             )
             default_anti = (
                 camp.default_anti_rematch
@@ -242,10 +254,14 @@ class GaraFormParser:
                 "first_round_policy", "random"
             )
             data["classification_system"] = (
-                finale.classification_system
+                (finale.classification_system or "WINS")
                 if finale
-                else camp.default_classification_system
-            ) or "WINS"
+                else sistema_per_la_gara(
+                    camp,
+                    data["matchmaking_strategy"],
+                    request.form.get("classification_system"),
+                )
+            )
         else:
             data["matchmaking_strategy"] = request.form.get(
                 "matchmaking_strategy", "amalfi"

@@ -3093,3 +3093,157 @@ class TestLaClassificaAPunti:
             for terna in ((1, 1, 1), (1, 2, 0), (100, 0, 0), (3, 1, -1)):
                 with pytest.raises(ValueError):
                     valida_punti(*terna)
+
+
+@pytest.mark.unit
+class TestIlCampionatoAPiazzamenti:
+    """`SPECIFICHE.md` righe 379-386 («Classifica», «Come una gara entra nel
+    campionato») e riga 116 («Gironi multipli»), 2026-10-11, ADR-080."""
+
+    def test_la_tabella_di_norma_e_oltre_si_prende_zero(self):
+        """> con la tabella dei punti per posizione del campionato (di norma
+        > 25, 18, 15, 12, poi 8 dal 5° all'8° e 4 dal 9° al 16°) […] Un posto
+        > oltre l'ultimo della tabella vale **zero**."""
+        from models.classification.position_points import points_for_position
+
+        assert [points_for_position(p) for p in (1, 2, 3, 4, 5, 8, 9, 16, 17)] == [
+            25,
+            18,
+            15,
+            12,
+            8,
+            8,
+            4,
+            4,
+            0,
+        ]
+        assert points_for_position(3, {1: 10, 2: 6}) == 0
+
+    def test_a_piazzamenti_ogni_formato_e_il_tabellone_resta_tale(self):
+        """> Le gare possono avere **formati diversi** […] Il sistema della gara
+        > […] lo **propone il campionato** (vittorie, rack o punti; di norma
+        > vittorie) e la gara lo può cambiare; sul tabellone è il piazzamento.
+        > […] Un campionato che propone il tabellone è sempre a piazzamenti."""
+        from models.campionato.piazzamenti import (
+            e_a_piazzamenti,
+            sistema_per_la_gara,
+            strategie_per_sistema,
+        )
+        from models.matchmaking.configuration import MatchmakingStrategy
+
+        class _C:
+            campionato_type = "amalfi"
+            default_classification_system = "POSITION"
+            default_gara_classification_system = None
+
+        assert set(strategie_per_sistema()["POSITION"]) == {
+            s.value for s in MatchmakingStrategy
+        }
+        assert sistema_per_la_gara(_C(), "amalfi") == "WINS"
+        assert sistema_per_la_gara(_C(), "round_robin", "POINTS") == "POINTS"
+        assert sistema_per_la_gara(_C(), "double_knockout", "RACK") == "POSITION"
+        _C.default_classification_system = "WINS"
+        _C.campionato_type = "direct_elimination"
+        assert e_a_piazzamenti(_C())
+
+    def test_sommando_i_totali_stesso_sistema_e_girone_unico(self, db_session):
+        """> **sommando i totali** […] Le gare usano tutte il sistema del
+        > campionato e restano a **girone unico** […] una gara con più gironi
+        > viene rifiutata."""
+        from datetime import timedelta
+
+        from models.campionato.piazzamenti import sistema_per_la_gara
+        from models.competition.services import GaraService
+
+        campionato = _campionato(db_session, "RACK")
+        campionato.campionato_type = "round_robin"
+        db_session.commit()
+        assert sistema_per_la_gara(campionato, "amalfi", "POINTS") == "RACK"
+        with pytest.raises(ValueError, match="girone unico"):
+            GaraService.create_gara(
+                campionato_id=campionato.id,
+                number=1,
+                name="Serata",
+                date=date.today() + timedelta(days=7),
+                discipline=Discipline.EIGHT_BALL.value,
+                distance=3,
+                matchmaking_strategy="round_robin",
+                classification_system="RACK",
+                odd_number_policy="bye",
+                rounds_count=3,
+                max_groups=2,
+            )
+
+    def test_chi_non_gioca_prende_zero_e_i_pari_condividono_i_punti(self, db_session):
+        """> Chi non gioca una gara prende **zero** punti da quella gara. Chi è a
+        > **pari merito** […] prende i punti del posto che condivide: due
+        > secondi prendono entrambi i punti del 2°."""
+        from models.campionato.tournament_service import TournamentService
+        from models.classification.gara_classification import (
+            RoundClassificationService,
+        )
+        from models.classification.models import GaraClassification
+
+        campionato = _campionato(db_session, "POSITION")
+        a, b, c, d = (_utente(db_session) for _ in range(4))
+        gare = []
+        for numero, giocatori in ((1, (a, b, c)), (2, (a, d))):
+            gara = _gara_del_campionato(
+                db_session,
+                campionato,
+                numero=numero,
+                stato=GaraStatus.COMPLETED.value,
+            )
+            gara.classification_system = "WINS"
+            gara.current_round = 1
+            db_session.add(
+                Match(
+                    gara_id=gara.id,
+                    round_number=1,
+                    player1_id=giocatori[0].id,
+                    player2_id=giocatori[1].id,
+                    player1_score=5,
+                    player2_score=3,
+                    status=MatchStatus.CLOSED_UNILATERALLY.value,
+                    winner_id=giocatori[0].id,
+                )
+            )
+            if len(giocatori) == 3:
+                db_session.add(
+                    Match(
+                        gara_id=gara.id,
+                        round_number=1,
+                        player1_id=giocatori[2].id,
+                        player2_id=None,
+                        player1_score=0,
+                        player2_score=0,
+                        status=MatchStatus.CLOSED_UNILATERALLY.value,
+                        winner_id=giocatori[2].id,
+                    )
+                )
+            db_session.flush()
+            RoundClassificationService.calculate_and_save_round_classification(
+                gara.id, 1
+            )
+            gare.append(gara)
+        # Gara 1: A primo, B e C secondi a pari merito; gara 2: A, D.
+        for gara, posti in (
+            (gare[0], ((a, 1), (b, 2), (c, 2))),
+            (gare[1], ((a, 1), (d, 2))),
+        ):
+            for giocatore, posto in posti:
+                riga = GaraClassification.query.filter_by(
+                    gara_id=gara.id, user_id=giocatore.id
+                ).first() or GaraClassification(gara_id=gara.id, user_id=giocatore.id)
+                riga.position = posto
+                db_session.add(riga)
+        db_session.flush()
+        punti = {
+            dati["user_id"]: dati["total_points"]
+            for _, dati in TournamentService().calculate_general_classification(
+                campionato.id
+            )
+        }
+        assert punti[a.id] == 50
+        assert punti[b.id] == punti[c.id] == 18  # assenti alla gara 2: zero
+        assert punti[d.id] == 18

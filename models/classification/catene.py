@@ -67,10 +67,14 @@ COLONNA_PROPOSTA = {
 
 
 def _sistema_del_campionato(campionato: Any) -> ClassificationSystem:
-    sistema = ClassificationSystem.resolve(
-        getattr(campionato, "default_classification_system", None)
-    )
-    return sistema if ordina_con_la_catena(sistema) else ClassificationSystem.WINS
+    """Il sistema con cui si ordinano le gare del campionato.
+
+    In un campionato a piazzamenti è quello delle serate, che il campionato
+    propone (ADR-080); altrimenti il suo.
+    """
+    from models.campionato.piazzamenti import sistema_delle_gare
+
+    return ClassificationSystem.resolve(sistema_delle_gare(campionato))
 
 
 def catena_proposta(campionato: Any, livello: Livello) -> Catena:

@@ -43,8 +43,20 @@
         <option value="WINS" selected>{{ _("Vittorie — partite vinte, poi differenza triangoli") }}</option>
         <option value="RACK">{{ _("Triangoli totali — ogni triangolo conta") }}</option>
         <option value="POINTS">{{ _("Punti — vittoria, pareggio e sconfitta") }}</option>
-        <option value="POSITION">{{ _("Posizione nel tabellone — quanto avanti si arriva") }}</option>
+        <option value="POSITION">{{ _("Piazzamenti — punti per il posto in ogni gara") }}</option>
       </select>
+      {# A piazzamenti ogni gara ha la sua classifica, con un formato qualunque:
+         nel campionato entra il posto (ADR-080). Il sistema della serata lo
+         propone il campionato, e la gara lo può cambiare. #}
+      <div class="mt-3" id="sistema-serate" hidden>
+        <label for="default_gara_classification_system" class="form-label" data-help="campionato-classifica">{{ _("Classifica di ogni gara") }}</label>
+        <select class="form-select" id="default_gara_classification_system" name="default_gara_classification_system" disabled>
+          <option value="WINS" selected>{{ _("Vittorie — partite vinte, poi differenza triangoli") }}</option>
+          <option value="RACK">{{ _("Triangoli totali — ogni triangolo conta") }}</option>
+          <option value="POINTS">{{ _("Punti — vittoria, pareggio e sconfitta") }}</option>
+        </select>
+        <div class="form-text">{{ _("Ordina la serata. Nelle gare a tabellone conta il turno in cui si esce.") }}</div>
+      </div>
       <div class="mt-3">
         <div id="class-description-WINS" class="c7-flash c7-flash--info">
           <span class="c7-flash__ico"><i class="fas fa-trophy"></i></span>
@@ -60,7 +72,7 @@
         </div>
         <div id="class-description-POSITION" class="c7-flash c7-flash--info d-none">
           <span class="c7-flash__ico"><i class="fas fa-sitemap"></i></span>
-          <div class="c7-flash__body"><div class="c7-flash__text">{{ _("Punti per quanto si arriva avanti nel tabellone. Solo eliminazione diretta o doppio KO.") }}</div></div>
+          <div class="c7-flash__body"><div class="c7-flash__text">{{ _("Ogni gara dà punti per il posto in classifica, con la tabella che scegli al passo successivo. Le gare possono avere formati diversi — Amalfi, casuale, girone all'italiana anche a più gironi, tabellone — e chi non gioca una gara prende zero.") }}</div></div>
         </div>
       </div>
     </div>
@@ -85,6 +97,13 @@
           <div class="c7-flash__body">
             <div class="c7-flash__title">Random</div>
             <div class="c7-flash__text">{{ _("Abbinamenti casuali con anti-rematch.") }}</div>
+          </div>
+        </div>
+        <div id="type-description-round_robin" class="c7-flash c7-flash--info d-none">
+          <span class="c7-flash__ico"><i class="fas fa-table-cells"></i></span>
+          <div class="c7-flash__body">
+            <div class="c7-flash__title">{{ _("Girone all'italiana") }}</div>
+            <div class="c7-flash__text">{{ _("Ognuno incontra tutti gli altri. A più gironi solo se il campionato è a piazzamenti: sommando vittorie, triangoli o punti, in un girone più numeroso si giocherebbe una partita in più.") }}</div>
           </div>
         </div>
         <div id="type-description-direct_elimination" class="c7-flash c7-flash--info d-none">
@@ -204,10 +223,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const playoffAcademyCard = playoffAcademyCheckbox.closest('.c7-card');
 
     // Matrice di compatibilità: derivata dal backend (unica fonte di verità)
-    const validMatchmaking = {{ classification_compatibility|tojson }};
+    const validMatchmaking = {{ strategie_per_sistema()|tojson }};
+    const sistemaSerate = document.getElementById('sistema-serate');
+    const sistemaSerateSelect = document.getElementById('default_gara_classification_system');
 
     function updateClassificationDescription() {
         showDescription('class-description-', classificationSelect.value);
+        const aPiazzamenti = classificationSelect.value === 'POSITION';
+        sistemaSerate.hidden = !aPiazzamenti;
+        sistemaSerateSelect.disabled = !aPiazzamenti;
     }
 
     function updateMatchmakingOptions() {
