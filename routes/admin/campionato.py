@@ -19,7 +19,7 @@ from flask import (
 )
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
-from flask_babel import _, lazy_gettext as _l, ngettext
+from flask_babel import _, ngettext
 
 from models import (
     db,
@@ -27,6 +27,7 @@ from models import (
 )
 from models.location.models import BilliardHall
 from models.matchmaking.configuration import (
+    ETICHETTE_STRATEGIA,
     MatchmakingStrategy,
     OddNumberPolicy,
     get_available_strategies,
@@ -53,17 +54,14 @@ campionato_bp = Blueprint("campionato", __name__)
 # Session key for wizard data
 WIZARD_SESSION_KEY = "campionato_wizard_data"
 
-# Formati selezionabili per un campionato. Elenco unico: prima era ripetuto in
-# tre punti (wizard, salvataggio, modifica) e i tre erano liberi di divergere.
-# L'ordine è quello mostrato all'utente.
+# Formati selezionabili per un campionato: valore e nome tradotto, nell'ordine
+# dei menu. Vengono da `ETICHETTE_STRATEGIA`, la stessa fonte dei menu della
+# gara: prima l'elenco era scritto qui, e chiamava «Random» il formato che il
+# resto dell'interfaccia chiama «Casuale». Il girone all'italiana è a girone
+# unico se il campionato somma i totali, anche a più gironi se è a
+# piazzamenti (ADR-080).
 CAMPIONATO_TYPES = [
-    (MatchmakingStrategy.AMALFI.value, _l("Amalfi")),
-    (MatchmakingStrategy.RANDOM.value, _l("Random")),
-    # Il girone all'italiana: a girone unico se il campionato somma i totali,
-    # anche a più gironi se è a piazzamenti (ADR-080).
-    (MatchmakingStrategy.ROUND_ROBIN.value, _l("Girone all'italiana")),
-    (MatchmakingStrategy.DIRECT_ELIMINATION.value, _l("Eliminazione diretta")),
-    (MatchmakingStrategy.DOUBLE_KNOCKOUT.value, _l("Doppio KO")),
+    (strategia.value, nome) for strategia, nome in ETICHETTE_STRATEGIA.items()
 ]
 CAMPIONATO_TYPE_VALUES = {value for value, _label in CAMPIONATO_TYPES}
 

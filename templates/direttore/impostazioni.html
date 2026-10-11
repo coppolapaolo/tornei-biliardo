@@ -72,7 +72,7 @@
               _('%(n)s turni · %(disc)s · %(dist)s', n=gara.rounds_count, disc=gara.formato_breve[0], dist=gara.formato_breve[1]),
               tone='locked') }}
     {{ d.riga('fa-diagram-project', _('Accoppiamento'),
-              gara.matchmaking_strategy.replace('_', ' ')|title ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled else ''),
+              gara.matchmaking_strategy|nome_formula ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled else ''),
               tone='locked') }}
     {% set _gironi = frase_gironi(gara) %}
     {% if _gironi %}

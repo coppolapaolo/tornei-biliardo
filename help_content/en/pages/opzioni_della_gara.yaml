@@ -87,7 +87,7 @@ blocks:
   - type: options
     items:
       - name: "Pairing algorithm"
-        values: "Amalfi (recommended) · Random · Round robin · Knockout · Double elimination"
+        values: "Amalfi (recommended) · Random · Round-robin · Single elimination · Double knockout"
         text: >-
           How pairs are formed each round. **Amalfi** is designed for club
           competitions over rounds: everyone plays every round and pairings

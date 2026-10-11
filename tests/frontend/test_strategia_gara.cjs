@@ -19,7 +19,7 @@ const VINCOLI = {
   round_robin: { constraints: { first_round_policies: ["random"], odd_policies: ["bye"], anti_rematch: false, anti_rematch_required: false } },
 };
 
-function pagina(strategia, sistema) {
+function pagina(strategia, sistema, attributoSezione) {
   const html = `<!doctype html><body><form>
     <select id="create_matchmaking_strategy" data-strategia-gara data-prefisso="create_"
             data-vincoli='${JSON.stringify(VINCOLI)}' data-girone="round_robin">
@@ -37,7 +37,7 @@ function pagina(strategia, sistema) {
       <option value="bye_with_challenge">X con prova</option>
       <option value="trio">trio</option>
     </select>
-    <div id="create_anti_rematch_section" data-nascondi-se-imposto>
+    <div id="create_anti_rematch_section" ${attributoSezione || "data-nascondi-se-imposto"}>
       <input type="checkbox" id="create_anti_rematch_enabled" name="anti_rematch_enabled">
     </div>
   </form></body>`;
@@ -110,6 +110,19 @@ check("il cambio dei dispari emette change", () => {
   p.$("create_odd_number_policy").addEventListener("change", (e) => { visto = e.target.value; });
   p.scegli("create_matchmaking_strategy", "round_robin");
   assert.strictEqual(visto, "bye");
+});
+
+check("creazione della gara singola: la casella si nasconde solo dove non esiste", () => {
+  // Amalfi la impone ma resta visibile, accesa; nel girone sparisce.
+  const p = pagina("amalfi", "WINS", "data-nascondi-se-spento");
+  assert.strictEqual(p.$("create_anti_rematch_section").hidden, false);
+  assert.strictEqual(p.$("create_anti_rematch_enabled").checked, true);
+  p.scegli("create_matchmaking_strategy", "round_robin");
+  assert.strictEqual(p.$("create_anti_rematch_section").hidden, true);
+  assert.strictEqual(p.$("create_anti_rematch_enabled").disabled, true);
+  p.scegli("create_matchmaking_strategy", "random");
+  assert.strictEqual(p.$("create_anti_rematch_section").hidden, false);
+  assert.strictEqual(p.$("create_anti_rematch_enabled").disabled, false);
 });
 
 console.log(`${controlli} controlli superati`);

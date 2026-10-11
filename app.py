@@ -667,6 +667,10 @@ def create_app(config_name=None, *, da_script: bool = False):
     app.jinja_env.filters["trio_config_for_distance"] = trio_config_for_distance
     app.jinja_env.filters["etichetta_dispari"] = etichetta_dispari
     app.jinja_env.filters["etichetta_ritiro"] = etichetta_ritiro
+    # Il nome tradotto di un formato di gara, dalla stessa fonte dei menu.
+    from models.matchmaking.configuration import etichetta_strategia
+
+    app.jinja_env.filters["nome_formula"] = etichetta_strategia
     # Le voci dei menu «giocatori dispari»: stessi nomi del filtro qui sopra.
     app.jinja_env.globals["opzioni_dispari"] = opzioni_dispari
     # La formula che una gara di quella strategia tiene davvero: col girone la

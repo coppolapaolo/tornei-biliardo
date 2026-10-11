@@ -20,12 +20,13 @@ from models import (
     Match,
 )
 from models.status_enum import (
+    Discipline,
     GaraStatus,
     MatchStatus,
 )
 from models.competition.services import GaraService
 from models.competition.round_service import RoundService
-from models.matchmaking.configuration import MatchmakingStrategy
+from models.matchmaking.configuration import MatchmakingStrategy, etichetta_strategia
 from models.matchmaking.strategies.amalfi import AmalfiStrategy
 from models.classification.models import RoundClassification
 from models.classification.services import RoundClassificationService
@@ -37,6 +38,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 from . import competition_bp  # noqa: E402  (deferred import to avoid circular)
+
+
+def _nome_disciplina(valore) -> str:
+    """Il nome tradotto di una disciplina; un valore ignoto resta com'è."""
+    disciplina = Discipline.normalize(valore)
+    return disciplina.display_name if disciplina else (valore or "")
 
 
 @competition_bp.route("/<int:gara_id>/start_first_round", methods=["POST"])
@@ -808,27 +815,36 @@ def start_round_generic(gara_id, round_number):
         # Refresh gara to get updated strategy name
         db.session.refresh(gara)
 
-        # Messaggio di successo
-        strategy_name = gara.matchmaking_strategy.replace("_", " ").title()
-        message = f"Turno {round_number} avviato con strategia {strategy_name}!"
-        details = [f"Partite totali: {total}"]
+        # Messaggio di successo, nella lingua di chi ha avviato il turno: il
+        # nome della formula e della disciplina dalle loro fonti tradotte.
+        message = _(
+            "Turno %(n)s avviato con la formula %(formula)s!",
+            n=round_number,
+            formula=etichetta_strategia(gara.matchmaking_strategy),
+        )
+        details = [_("Partite totali: %(n)s", n=total)]
 
         # Aggiungi info sulla disciplina se diversa da quella di default
         if discipline_override:
-            discipline_display = discipline_override.replace("_", " ").title()
-            details.append(f"Disciplina: {discipline_display}")
+            details.append(
+                _("Disciplina: %(d)s", d=_nome_disciplina(discipline_override))
+            )
         else:
-            default_discipline = gara.discipline.replace("_", " ").title()
-            details.append(f"Disciplina: {default_discipline} (Default)")
+            details.append(
+                _(
+                    "Disciplina: %(d)s (quella della gara)",
+                    d=_nome_disciplina(gara.discipline),
+                )
+            )
 
         if n_normal:
-            details.append(f"Partite normali: {n_normal}")
+            details.append(_("Partite normali: %(n)s", n=n_normal))
         if n_bye:
-            details.append(f"Partite vs X: {n_bye}")
+            details.append(_("Partite contro la X: %(n)s", n=n_bye))
         if n_trio:
-            details.append(f"Trii: {n_trio}")
+            details.append(_("Partite a tre: %(n)s", n=n_trio))
         if tables_assigned:
-            details.append(f"Tavoli assegnati: {tables_assigned}")
+            details.append(_("Tavoli assegnati: %(n)s", n=tables_assigned))
 
         return jsonify(
             {

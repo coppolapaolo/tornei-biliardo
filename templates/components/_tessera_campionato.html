@@ -33,7 +33,7 @@
     <div class="flex-fill">
       <div class="c7-tessera__title">{{ card.name }}</div>
       <div class="c7-tessera__meta">
-        {{ campionato.campionato_type }}
+        {{ campionato.campionato_type|nome_formula }}
         <span class="c7-sep">·</span>
         {{ campionato.conteggio_gare.gare_testo }}
         {% if card.is_concluso %}

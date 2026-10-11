@@ -8,8 +8,12 @@
  * (`StrategyConfiguration.validate`, `odd_policy_for_strategy`).
  *
  * Fino al 2026-10-11 la regola stava in un `<script>` inline della modifica
- * della gara; ora serve anche il modale «Nuova gara» del campionato a
- * piazzamenti, che sceglie il formato della serata (ADR-080).
+ * della gara, e in una seconda copia nella creazione della gara singola; ora
+ * la usano tutte e tre le pagine: modifica, creazione della gara singola e
+ * modale «Nuova gara» del campionato a piazzamenti, che sceglie il formato
+ * della serata (ADR-080). La copia della gara singola non filtrava i dispari
+ * per sistema di classifica: coi triangoli totali offriva la X a tavolino
+ * semplice, che il server rifiuta (`validators._validate_rack_system`).
  *
  * Aggancio nel template, sul <select> della strategia:
  *
@@ -17,6 +21,10 @@
  *     data-vincoli='{{ available_strategies|tojson }}'
  *     data-girone="round_robin"
  *     data-prefisso="create_"            (facoltativo: prefisso degli id)
+ *
+ * Sulla sezione dell'anti-reincontro, facoltativi: `data-nascondi-se-imposto`
+ * la nasconde quando non e' una scelta (Amalfi la impone, il girone non la
+ * usa), `data-nascondi-se-spento` solo quando non esiste (il girone).
  *
  * Gli altri campi si trovano per id col prefisso: `first_round_policy`,
  * `odd_number_policy`, `anti_rematch_enabled`, `anti_rematch_section`,
@@ -118,6 +126,12 @@
        * `bracket_options.js`, e un nodo ha un padrone per meccanismo. */
       if (sezioneAnti && sezioneAnti.hasAttribute('data-nascondi-se-imposto')) {
         sezioneAnti.hidden = c.anti_rematch === false || !!c.anti_rematch_required;
+      }
+      /* La creazione della gara singola la nasconde solo dove l'anti-reincontro
+       * non esiste (il girone): con Amalfi la mostra accesa, come ha sempre
+       * fatto. */
+      if (sezioneAnti && sezioneAnti.hasAttribute('data-nascondi-se-spento')) {
+        sezioneAnti.hidden = c.anti_rematch === false;
       }
     }
 
