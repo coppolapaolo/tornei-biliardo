@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.67.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.67.0...v1.67.1) (2026-10-11)
+
+
+### Correzioni
+
+* i nomi dei formati da una fonte sola, tradotti, e la gara singola su strategia_gara.js ([#651](https://github.com/coppolapaolo/tornei-biliardo/issues/651)) ([59ba947](https://github.com/coppolapaolo/tornei-biliardo/commit/59ba947eab9bac8c566680ebf6779dbd6452fa2a))
+
 ## [1.67.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.66.0...v1.67.0) (2026-10-11)
 
 
