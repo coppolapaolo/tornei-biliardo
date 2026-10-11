@@ -33,12 +33,15 @@ separazione di chi viene dallo stesso girone (ADR-039).
    `Gara.qualifiers_per_group` (`K`, di norma 2), la finalina riusa
    `Gara.third_place_match`. Si leggono da `effective_final_phase_mode`,
    `ha_tabellone_finale`, `effective_qualifiers_per_group`; solo il girone
-   all'italiana ha una fase finale. Nei campionati che sommano i totali la
+   all'italiana ha una fase finale, e il tabellone solo se la gara può avere
+   **più gironi** (`max_groups` ≥ 2). Nei campionati che sommano i totali la
    fase finale è rifiutata, come i gironi (ADR-080); con «esattamente N» la
    gara col tabellone è rifiutata, come ogni tabellone.
 2. **I turni si fissano all'avvio**: quelli dei gironi più quelli del
    tabellone (`GironiService.fissa_all_avvio`), che verifica anche che `K` non
-   superi il girone più piccolo e che i qualificati siano almeno due.
+   superi il girone più piccolo. Se la gara parte con **un girone solo** il
+   tabellone non si gioca (`fase_finale_service.si_gioca_il_tabellone`): la
+   gara finisce col girone, con la sua classifica e il suo spareggio.
 3. **La generazione sta nella strategia del girone all'italiana**: oltre
    l'ultimo turno dei gironi (`fase_finale_service.turni_dei_gironi`, calcolato
    dalle taglie dei gironi) il primo turno **sorteggia** il tabellone, i
@@ -53,9 +56,11 @@ separazione di chi viene dallo stesso girone (ADR-039).
    alle prime teste di serie. La separazione è quella della formula FISBB
    (`_assign_slots(groups_of=…)`): il girone di provenienza, o le squadre se la
    gara le separa.
-5. **Il taglio**: la classifica del girone con la catena di gara senza lo
-   spareggio SSR, poi il sorteggio della gara (`ordine_dei_gironi(completa=
-   True)`). Chi si è ritirato non va al tabellone: passa il successivo.
+5. **Il taglio è una classifica di turno**: chi passa, e con che testa di
+   serie, lo dice la catena di turno della gara all'ultimo turno dei gironi
+   (`ordine_dei_gironi(per_il_taglio=True)`), che finisce sempre col
+   sorteggio; niente spareggio SSR. Chi si è ritirato non va al tabellone:
+   passa il successivo.
 6. **La classifica finale si compone** (`classification/fase_finale.py`,
    puro): le bande del tabellone (`elimination_bands` sulle sole partite della
    fase finale), con i semifinalisti terzi a pari merito senza finalina, e chi
@@ -103,8 +108,20 @@ gara si ferma in attesa dello spareggio, come a fine gara.
 
 - **Pro**: lo spareggio è già nella catena di molte gare.
 - **Contro**: lo stato `awaiting_ssr` porta alla chiusura della gara, non a un
-  turno successivo: servirebbe una macchina a stati nuova. Scelta provvisoria
-  il sorteggio, da confermare con il committente.
+  turno successivo: servirebbe una macchina a stati nuova. Il committente ha
+  deciso che il taglio è una classifica di turno.
+
+### Alternativa 4: catena di gara senza SSR, poi sorteggio
+
+**Descrizione**: la prima versione della PR. Respinta dal committente il
+2026-10-11: il taglio decide chi gioca il turno dopo, come una classifica di
+turno, e ha la sua catena configurata dal direttore.
+
+### Alternativa 5: tabellone anche col girone unico
+
+**Descrizione**: primi 4 di un girone solo in semifinale (1º–4º, 2º–3º).
+Respinta dal committente il 2026-10-11: il tabellone è fra i primi di **ogni**
+girone, e la gara partita con un girone solo finisce col girone.
 
 ## Conseguenze
 
@@ -125,9 +142,10 @@ gara si ferma in attesa dello spareggio, come a fine gara.
 
 ### Rischi
 
-- Le due scelte provvisorie (sorteggio al taglio, tabellone anche col girone
-  unico) aspettano la conferma del committente: sono una funzione ciascuna
-  (`ordine_dei_gironi`, `verifica_qualificati`).
+- Una gara col tabellone che parte con un girone solo si comporta come un
+  girone all'italiana normale: il foglio di avvio deve dirlo al direttore
+  quando sceglie un girone (`Anteprima.girone_unico_senza_tabellone`, usato
+  dalla PR dei moduli).
 
 ## Note Implementative
 

@@ -261,19 +261,70 @@ class TestTabellone:
         assert righe[ordine[0].id].group_position == 1
 
 
-class TestGironeUnico:
-    def test_i_primi_quattro_in_semifinale(self, db_session):
-        gara, p = _gara(5, max_groups=1, k=4)
+class TestSoloConPiuGironi:
+    def test_col_girone_unico_il_tabellone_e_rifiutato(self, db_session):
+        with pytest.raises(ValueError):
+            _gara(6, max_groups=1)
+
+    def test_partita_con_un_girone_la_gara_finisce_col_girone(self, db_session):
+        """Fino a 2 gironi, ma 5 iscritti in un girone solo: niente tabellone."""
+        gara, p = _gara(5)
         elo = {u.id: u.elo_rating for u in p}
         gara = _gioca_tutto(gara, _vince_il_piu_forte(elo), groups_count=1)
-        assert gara.rounds_count == 5 + 2
-        semifinali = Match.query.filter_by(gara_id=gara.id, round_number=6).all()
-        ordine = [u.id for u in sorted(p, key=lambda u: -u.elo_rating)]
-        coppie = {frozenset((m.player1_id, m.player2_id)) for m in semifinali}
-        assert coppie == {
-            frozenset((ordine[0], ordine[3])),
-            frozenset((ordine[1], ordine[2])),
+        assert gara.rounds_count == 5
+        assert not Match.query.filter(
+            Match.gara_id == gara.id, Match.bracket_type.isnot(None)
+        ).count()
+        StateService.complete(gara)
+        db.session.commit()
+        pos = _posizioni(gara)
+        ordine = sorted(p, key=lambda u: -u.elo_rating)
+        assert [pos[u.id] for u in ordine] == [1, 2, 3, 4, 5]
+
+
+class TestTaglio:
+    def test_i_pari_al_taglio_li_decide_la_catena_di_turno(self, db_session):
+        """Tre pari al 2º posto del girone A, per vittorie e differenza: la
+        catena di gara li lascerebbe pari, quella di turno no — passa chi è
+        2º nella classifica dell'ultimo turno dei gironi."""
+        gara, p = _gara(8)
+        elo = {u.id: u.elo_rating for u in p}
+        # Girone A per ELO: p0, p3, p4, p7. p0 batte tutti; fra gli altri tre
+        # un giro: p3 batte p4, p4 batte p7, p7 batte p3.
+        giro = {(p[3].id, p[4].id), (p[4].id, p[7].id), (p[7].id, p[3].id)}
+
+        def chi_vince(m: Match) -> int:
+            a, b = m.player1_id, m.player2_id
+            if (a, b) in giro:
+                return a
+            if (b, a) in giro:
+                return b
+            return max((a, b), key=lambda x: elo[x])
+
+        RoundService.start_first_round(gara.id, groups_count=2)
+        for r in range(1, 4):
+            if r > 1:
+                RoundService.start_next_round(gara.id, r)
+            _gioca(gara.id, r, chi_vince)
+        righe = {
+            rc.user_id: rc
+            for rc in RoundClassification.query.filter_by(
+                gara_id=gara.id, round_number=3
+            ).all()
         }
+        pari = [p[3].id, p[4].id, p[7].id]
+        assert (
+            len({(righe[i].matches_won, righe[i].rack_difference) for i in pari}) == 1
+        )
+        secondo_a = next(i for i in pari if righe[i].group_position == 2)
+        RoundService.start_next_round(gara.id, 4)
+        in_semifinale = {
+            pid
+            for m in Match.query.filter_by(gara_id=gara.id, round_number=4).all()
+            for pid in (m.player1_id, m.player2_id)
+        }
+        assert secondo_a in in_semifinale
+        assert not (set(pari) - {secondo_a}) & in_semifinale
 
 
 class TestLimiteDiTempo:

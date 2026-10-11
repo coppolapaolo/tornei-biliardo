@@ -16,10 +16,10 @@ Nessun metodo scrive: si chiamano dentro la generazione dei turni e dentro i
 calcoli di classifica, che hanno già la loro transazione.
 
 **Pari merito al taglio.** Chi passa fra il `K`-esimo e il `K+1`-esimo di un
-girone lo decide la catena della classifica di gara (ADR-078), senza lo
-spareggio SSR — che si gioca a gara finita e qui la gara non è finita — e,
-se la catena lascia ancora dei pari, il sorteggio della gara. Lo stesso
-ordine decide chi è migliore fra i primi dei gironi, cioè chi prende i bye.
+girone si decide come in una classifica di turno: con la catena di turno
+della gara (ADR-078), che finisce sempre col sorteggio; niente spareggio SSR
+a metà gara (decisione dell'utente, 2026-10-11). Lo stesso ordine decide chi
+è migliore fra i primi dei gironi, cioè chi prende i bye.
 """
 
 from __future__ import annotations
@@ -37,8 +37,23 @@ from models.matchmaking.gironi import turni_del_girone
 
 
 def ha_tabellone_finale(gara: Any) -> bool:
-    """La gara ha il tabellone dopo i gironi? Solo un ``True`` vero conta."""
+    """La gara prevede il tabellone dopo i gironi? Solo un ``True`` vero conta."""
     return getattr(gara, "ha_tabellone_finale", False) is True
+
+
+def si_gioca_il_tabellone(gara: Any) -> bool:
+    """Il tabellone dopo i gironi si gioca davvero: previsto, e con più gironi.
+
+    Se la gara parte con un girone solo, perché gli iscritti erano pochi, il
+    tabellone non si gioca: la gara finisce col girone, e la classifica del
+    girone è quella finale. Prima dell'avvio i gironi non ci sono ancora, e la
+    risposta è no.
+    """
+    if not ha_tabellone_finale(gara) or not getattr(gara, "id", None):
+        return False
+    from models.competition.gironi_service import GironiService
+
+    return bool(GironiService.girone_dei_giocatori(gara))
 
 
 def turni_dei_gironi(gara: Any) -> int:
@@ -63,7 +78,7 @@ def turni_dei_gironi(gara: Any) -> int:
 
 def e_della_fase_finale(gara: Any, round_number: Optional[int]) -> bool:
     """Questo turno è del tabellone finale?"""
-    if not ha_tabellone_finale(gara) or round_number is None:
+    if round_number is None or not si_gioca_il_tabellone(gara):
         return False
     return round_number > turni_dei_gironi(gara)
 
@@ -115,66 +130,51 @@ def _concorrenti(gara: Any, fino_al_turno: int) -> List[Any]:
 
 
 def ordine_dei_gironi(
-    gara: Any, *, completa: bool
+    gara: Any, *, per_il_taglio: bool
 ) -> Tuple[List[Tuple[int, List[int]]], Dict[int, Tuple[int, int]]]:
-    """La classifica a gironi alla fine dei gironi, con la catena di gara.
+    """La classifica a gironi alla fine dei gironi.
 
     Returns:
         Le fasce ``(posizione, giocatori)`` della gara, e per ognuno
-        ``(girone, posizione nel girone)``; nel girone unico il girone è 0 e
-        la posizione nel girone è quella della gara.
+        ``(girone, posizione nel girone)``.
 
-    Con ``completa`` la catena finisce col sorteggio, e nessuno resta pari:
-    serve a chi deve **scegliere** (chi passa, chi prende il bye).
+    Con ``per_il_taglio`` — chi passa al tabellone, e con che testa di serie —
+    è una **classifica di turno**, fatta con la catena di turno della gara
+    all'ultimo turno dei gironi (di norma principale → differenza → posizione
+    al turno precedente → sorteggio, ADR-078): l'ordine è sempre completo, e
+    lo spareggio SSR non c'è (decisione dell'utente, 2026-10-11). Senza, è la
+    classifica di gara, con la catena di gara senza lo SSR, e chi resta pari
+    condivide la posizione: serve a ordinare la classifica finale.
     """
-    from models.classification.catene import (
-        catena_di_gara,
-        scontri_delle_gare,
-        sistema_della_gara,
-        usa_scontri,
-    )
+    from models.classification.catene import catena_di_gara, catena_di_turno
     from models.classification.gironi_della_gara import classifica_a_gironi
-    from models.classification.ordinamento import (
-        Criterio,
-        Voce,
-        criterio_principale,
-        ordina,
-        prima_dello_ssr,
-    )
+    from models.classification.ordinamento import prima_dello_ssr
     from models.competition.gironi_service import GironiService
 
     g = turni_dei_gironi(gara)
-    catena = tuple(prima_dello_ssr(catena_di_gara(gara)))
-    if completa and not any(v.criterio is Criterio.SORTEGGIO for v in catena):
-        catena = catena + (Voce(Criterio.SORTEGGIO),)
-    concorrenti = _concorrenti(gara, g)
-    girone = GironiService.girone_dei_giocatori(gara)
-    if girone:
-        esito = classifica_a_gironi(
-            gara, concorrenti, girone, catena, g, completa=completa
-        )
-        fasce = [(f.posizione, [c.player_id for c in f.giocatori]) for f in esito.fasce]
-        return fasce, {
-            pid: (esito.girone[pid], esito.posizione_nel_girone[pid])
-            for pid in esito.girone
-        }
-    scontri = scontri_delle_gare([gara.id], g) if usa_scontri(catena) else ()
-    fasce = [
-        (f.posizione, [c.player_id for c in f.giocatori])
-        for f in ordina(
-            concorrenti,
-            criterio_principale(sistema_della_gara(gara)),
-            catena,
-            scontri=scontri,
-            completa=completa,
-        )
-    ]
-    return fasce, {pid: (0, pos) for pos, ids in fasce for pid in ids}
+    catena = (
+        tuple(catena_di_turno(gara, g))
+        if per_il_taglio
+        else tuple(prima_dello_ssr(catena_di_gara(gara)))
+    )
+    esito = classifica_a_gironi(
+        gara,
+        _concorrenti(gara, g),
+        GironiService.girone_dei_giocatori(gara),
+        catena,
+        g,
+        completa=per_il_taglio,
+    )
+    fasce = [(f.posizione, [c.player_id for c in f.giocatori]) for f in esito.fasce]
+    return fasce, {
+        pid: (esito.girone[pid], esito.posizione_nel_girone[pid])
+        for pid in esito.girone
+    }
 
 
 def semina(gara: Any) -> Tuple[List[int], Dict[int, int]]:
     """I qualificati in ordine di testa di serie, e il girone di ognuno."""
-    fasce, posti = ordine_dei_gironi(gara, completa=True)
+    fasce, posti = ordine_dei_gironi(gara, per_il_taglio=True)
     ordine_della_gara = [pid for _pos, ids in fasce for pid in ids]
     per_girone: Dict[int, List[int]] = {}
     for pid in sorted(posti, key=lambda p: posti[p][1]):
@@ -266,6 +266,7 @@ __all__ = [
     "classifica_finale",
     "e_della_fase_finale",
     "ha_tabellone_finale",
+    "si_gioca_il_tabellone",
     "motivo_tabellone_impossibile",
     "ordine_dei_gironi",
     "semina",

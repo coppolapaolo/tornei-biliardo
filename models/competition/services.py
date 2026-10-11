@@ -495,6 +495,7 @@ class GaraService:
             GaraService._verifica_gironi_ammessi(gara)
         if {
             "final_phase_mode",
+            "max_groups",
             "matchmaking_strategy",
             "is_race_to",
             "is_multi_set",
@@ -656,6 +657,8 @@ class GaraService:
     def _verifica_fase_finale(gara: Gara) -> None:
         """Il tabellone dopo i gironi: dove si può, e con quale distanza.
 
+        * Solo con più gironi: il tabellone è fra i primi di ogni girone, e
+          una gara a girone unico non ce l'ha (decisione del 2026-10-11).
         * Nel tabellone non esiste il pareggio (SPECIFICHE.md, «Limite di
           tempo»), quindi le partite si giocano **al N**, come in ogni
           tabellone (`validators._validate_position_system`): con
@@ -671,6 +674,15 @@ class GaraService:
 
         if not gara.ha_tabellone_finale:
             return
+        # Solo con più gironi (decisione dell'utente, 2026-10-11): il tabellone
+        # è fra i primi di **ogni** girone.
+        if gara.effective_max_groups <= 1:
+            raise ValueError(
+                _(
+                    "Il tabellone dopo i gironi si gioca solo con più gironi: "
+                    "scegli «Gironi: fino a 2» o più, oppure nessuna fase finale."
+                )
+            )
         if not gara.is_race_to or (
             gara.is_multi_set and not getattr(gara, "is_race_to_sets", True)
         ):

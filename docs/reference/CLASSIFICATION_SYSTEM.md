@@ -509,8 +509,10 @@ Per gare standalone:
   l'ultimo turno dei gironi; la finalina è `third_place_match`. Teste di serie
   per colonne (prima i primi, poi i secondi; dentro la colonna l'ordine della
   classifica a gironi), bye ai migliori, chi viene dallo stesso girone tenuto
-  lontano (1ºA–2ºB, 1ºB–2ºA). Al taglio decide la catena di gara senza lo
-  spareggio SSR, poi il sorteggio. Le partite del tabellone si giocano «al N».
+  lontano (1ºA–2ºB, 1ºB–2ºA). Al taglio decide la catena di turno, come in
+  una classifica di turno; niente SSR. Le partite del tabellone si giocano «al
+  N». Solo con più gironi: partita con un girone solo, la gara finisce col
+  girone.
 
   Classifica finale (`models/classification/fase_finale.py`): prima il
   tabellone — 1° e 2° dalla finale, 3° e 4° dalla finalina, senza finalina due

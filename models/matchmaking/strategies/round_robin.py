@@ -91,9 +91,12 @@ class RoundRobinStrategy(BaseStrategy):
         self, gara: object, round_number: int
     ) -> List[Pairing]:
         """Generate pairings for a specific round using Round Robin algorithm."""
-        if getattr(gara, "ha_tabellone_finale", False) is True:
-            from models.competition.fase_finale_service import turni_dei_gironi
+        from models.competition.fase_finale_service import (
+            si_gioca_il_tabellone,
+            turni_dei_gironi,
+        )
 
+        if si_gioca_il_tabellone(gara):
             fine_dei_gironi = turni_dei_gironi(gara)
             if round_number > fine_dei_gironi:
                 return self._tabellone_finale(gara, round_number, fine_dei_gironi)
@@ -279,9 +282,12 @@ class RoundRobinStrategy(BaseStrategy):
         """Il turno esiste se almeno un girone lo gioca, o se è del tabellone."""
         if not super().has_round(gara, round_number):
             return False
-        if getattr(gara, "ha_tabellone_finale", False) is True:
-            from models.competition.fase_finale_service import turni_dei_gironi
+        from models.competition.fase_finale_service import (
+            si_gioca_il_tabellone,
+            turni_dei_gironi,
+        )
 
+        if si_gioca_il_tabellone(gara):
             if round_number > turni_dei_gironi(gara):
                 return True
         gironi = self._gironi(gara)

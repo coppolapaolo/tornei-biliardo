@@ -3402,7 +3402,6 @@ class TestLaFaseFinaleDopoIGironi:
 
         assert verifica_qualificati([4, 3], 4) == "girone"
         assert verifica_qualificati([4, 3], 3) is None
-        assert verifica_qualificati([6], 1) == "pochi"
         assert qualificati_dei_gironi({0: [1, 2, 3]}, 2, {1, 3}) == {0: [1, 3]}
 
     def test_taglia_e_turni(self):
@@ -3480,8 +3479,37 @@ class TestLaFaseFinaleDopoIGironi:
         gara = _gara(db_session)
         gara.matchmaking_strategy = "round_robin"
         gara.final_phase_mode = "tabellone"
+        gara.max_groups = 2
         gara.is_race_to = False
         with pytest.raises(ValueError):
             GaraService._verifica_fase_finale(gara)
         gara.is_race_to = True
         GaraService._verifica_fase_finale(gara)
+
+    def test_solo_con_piu_gironi(self, db_session):
+        """> Il **tabellone** esiste solo nelle gare che possono avere **più
+        > gironi** […] con il girone unico non si sceglie."""
+        from models.competition.services import GaraService
+
+        gara = _gara(db_session)
+        gara.matchmaking_strategy = "round_robin"
+        gara.final_phase_mode = "tabellone"
+        gara.is_race_to = True
+        gara.max_groups = 1
+        with pytest.raises(ValueError):
+            GaraService._verifica_fase_finale(gara)
+        gara.max_groups = 2
+        GaraService._verifica_fase_finale(gara)
+
+    def test_il_taglio_e_una_classifica_di_turno(self):
+        """> chi passa fra il `K`-esimo e il `K+1`-esimo di un girone si decide
+        > **come in una classifica di turno**: con la **catena di turno** […]
+        > Niente spareggio SSR a metà gara."""
+        import inspect
+
+        from models.competition import fase_finale_service
+
+        sorgente = inspect.getsource(fase_finale_service.semina)
+        assert "per_il_taglio=True" in sorgente
+        sorgente = inspect.getsource(fase_finale_service.ordine_dei_gironi)
+        assert "catena_di_turno(gara, g)" in sorgente

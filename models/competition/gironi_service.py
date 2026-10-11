@@ -69,8 +69,17 @@ class Anteprima:
         """Il tetto della gara è più alto di quanti gironi ci stanno."""
         return self.massimo < self.tetto
 
-    #: quanti passano al tabellone finale da ogni girone; 0 = nessun tabellone
+    #: quanti passano al tabellone finale da ogni girone; 0 = nessun tabellone.
+    #: Con un girone solo il tabellone non si gioca (`girone_unico_senza_tabellone`).
     qualificati_per_girone: int = 0
+
+    @property
+    def girone_unico_senza_tabellone(self) -> bool:
+        """La gara prevede il tabellone, che con un girone solo non si gioca.
+
+        Il foglio di avvio lo dice quando il direttore sceglie un girone.
+        """
+        return self.qualificati_per_girone > 0
 
     @property
     def turni(self) -> Dict[int, int]:
@@ -82,9 +91,9 @@ class Anteprima:
         turni = {}
         for g, taglie in self.taglie.items():
             turni[g] = turni_dei_gironi(taglie)
-            q = self.qualificati_per_girone * g
-            if q >= 2:
-                turni[g] += turni_del_tabellone(q)
+            # Il tabellone si gioca solo con più gironi.
+            if self.qualificati_per_girone and g >= 2:
+                turni[g] += turni_del_tabellone(self.qualificati_per_girone * g)
         return turni
 
 
@@ -231,11 +240,12 @@ class GironiService:
             raise ValidationError(_("Il numero di gironi non è valido."))
 
         if numero <= 1:
-            GironiService._verifica_tabellone(gara, [n])
+            # Col girone solo il tabellone non si gioca, anche se la gara lo
+            # prevede: la gara finisce col girone, e la sua classifica è
+            # quella finale (SPECIFICHE.md, «Fase finale dopo i gironi»).
             for iscrizione in iscrizioni:
                 iscrizione.group_index = None
             gara.rounds_count = max(turni_del_girone(n), 1)
-            gara.rounds_count += GironiService._turni_del_tabellone(gara, 1)
             return [[i.user_id for i in iscrizioni]]
 
         composti = componi_gironi(
@@ -281,12 +291,7 @@ class GironiService:
                 )
             )
         if motivo is not None:
-            raise ValidationError(
-                _(
-                    "Con un girone solo e un qualificato non c'è un tabellone "
-                    "da giocare: fanne passare almeno due."
-                )
-            )
+            raise ValidationError(_("Il numero di qualificati non è valido."))
 
     @staticmethod
     def _iscritti(gara: Gara, iscrizioni: Sequence[Inscription]) -> List[Iscritto]:

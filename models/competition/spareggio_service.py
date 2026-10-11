@@ -70,7 +70,9 @@ class SpareggioService:
         # semifinalisti senza finalina sono terzi a pari merito (UC6): come
         # nel sistema POSITION, lo spareggio inventerebbe una gerarchia che
         # il tabellone non ha prodotto (ADR-040).
-        if getattr(gara, "ha_tabellone_finale", False) is True:
+        from models.competition.fase_finale_service import si_gioca_il_tabellone
+
+        if si_gioca_il_tabellone(gara):
             return False
         return ssr_della_catena(catena_di_gara(gara)) is not None
 
@@ -314,7 +316,7 @@ class SpareggioService:
         from models.competition.gironi_service import GironiService
 
         fasce_dei_gironi, posti = fase_finale_service.ordine_dei_gironi(
-            gara, completa=False
+            gara, per_il_taglio=False
         )
         per_id = {rc.user_id: rc for rc in righe}
         fasce = [
