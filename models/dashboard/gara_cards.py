@@ -38,6 +38,7 @@ from models.classification.models import GaraClassification, RoundClassification
 from models.matchmaking.gironi import nome_del_girone
 from models.dashboard.comandi import ComandoVM, comando_per
 from models.competition.models import Gara, Inscription, WaitlistReason
+from models.competition.tabellone_della_gara import nomi_delle_partite
 from models.match.models import Match as TournamentMatch
 from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
 
@@ -224,6 +225,11 @@ class GaraCardVM:
     #: Su una gara conclusa che hai giocato: dove sei arrivato. La riempie
     #: `enrich_with_piazzamento`.
     piazzamento: Optional["PiazzamentoVM"] = None
+    #: Nel tabellone, il nome della tua partita («Semifinale», «Finale»): un
+    #: `NomeRound` simbolico, le parole le mette la tessera. None nei turni
+    #: dei gironi e nelle gare a turni, dove resta «Turno N». La riempie
+    #: `enrich_with_progress`.
+    nome_partita: Optional[Any] = None
 
     #: Negli elenchi può stare anche una `PlayoffCardVM` (il playoff prima del
     #: primo turno): il template le distingue da qui.
@@ -536,6 +542,15 @@ def enrich_with_progress(cards: Iterable[GaraCardVM], user_id: Optional[int]) ->
         db.session.query(Gara).options(selectinload(Gara.matches)).filter(
             Gara.id.in_(da_caricare)
         ).all()
+
+    # Il nome della propria partita nel tabellone (decisione dell'utente del
+    # 2026-10-12): «La tua partita · Semifinale» invece di «Turno 4». Dalle
+    # partite già caricate qui sopra, senza query in più: lo stesso nome delle
+    # caselle dello schermo in sala (`nomi_delle_partite`).
+    for c in cards:
+        mia = c.prossima_partita
+        if mia is not None and mia.bracket_type and c.gara.id is not None:
+            c.nome_partita = nomi_delle_partite(c.gara, c.gara.matches).get(mia.id)
 
     in_corso = [
         c

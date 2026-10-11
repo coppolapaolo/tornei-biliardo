@@ -185,6 +185,38 @@ def leggi_la_fase_finale(form: Any, prefisso: str, tetto: Any) -> Dict[str, Any]
             form.get(f"{prefisso}final_phase_time_limit"),
             form.get(f"{prefisso}final_phase_time_limit_minutes"),
         )
+    data.update(leggi_le_regole_della_finale(form, prefisso))
+    return data
+
+
+def leggi_le_regole_della_finale(form: Any, prefisso: str = "") -> Dict[str, Any]:
+    """Distanza della fase finale, limite e distanza della sola finale.
+
+    Le regole del tabellone dopo i gironi che si scrivono **per fase**, non
+    per turno (ADR-081, emendamento del 2026-10-12). Lo stesso per la gara,
+    la pagina della gara avviata e il campionato (``prefisso='default_'``).
+    Assenti dal modulo, non si toccano.
+    """
+    from models.matchmaking.fase_finale import distanza_dal_modulo, limite_dal_modulo
+
+    data: Dict[str, Any] = {}
+    if f"{prefisso}final_phase_distance_mode" in form:
+        data[f"{prefisso}final_phase_distance"] = distanza_dal_modulo(
+            form.get(f"{prefisso}final_phase_distance_mode"),
+            form.get(f"{prefisso}final_phase_distance"),
+        )
+    if f"{prefisso}final_time_limit" in form:
+        data[f"{prefisso}final_time_limit_minutes"] = limite_dal_modulo(
+            form.get(f"{prefisso}final_time_limit"),
+            form.get(f"{prefisso}final_time_limit_minutes"),
+            finale=True,
+        )
+    if f"{prefisso}final_distance_mode" in form:
+        data[f"{prefisso}final_distance"] = distanza_dal_modulo(
+            form.get(f"{prefisso}final_distance_mode"),
+            form.get(f"{prefisso}final_distance"),
+            finale=True,
+        )
     return data
 
 
@@ -463,6 +495,9 @@ class GaraFormParser:
         "final_phase_mode",
         "qualifiers_per_group",
         "final_phase_time_limit_minutes",
+        "final_phase_distance",
+        "final_time_limit_minutes",
+        "final_distance",
         "weight",
         "x_challenge_id",
         "catena_turno",
@@ -571,6 +606,13 @@ class GaraFormParser:
                 form.get("final_phase_time_limit"),
                 form.get("final_phase_time_limit_minutes"),
             )
+        data.update(
+            {
+                campo: valore
+                for campo, valore in leggi_le_regole_della_finale(form).items()
+                if campo in ammessi
+            }
+        )
         if "withdraw_policy" in ammessi and "withdraw_policy" in form:
             data["withdraw_policy"] = GaraFormParser._parse_withdraw_policy()
         if "odd_number_policy" in ammessi and form.get("odd_number_policy"):

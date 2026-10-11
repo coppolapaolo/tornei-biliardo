@@ -157,10 +157,22 @@ blocks:
       Con più gironi la gara può finire con un **tabellone**: nel modulo,
       sotto i gironi, scegli **Fase finale → Tabellone**, quanti passano da
       ogni girone (**Qualificati per girone**, di norma 2), se giocare la
-      **finale per il 3°/4° posto** e il **limite di tempo della fase
-      finale**: come i gironi, senza limite o un limite diverso. Con due
-      gironi e due qualificati si giocano le semifinali 1ºA–2ºB e 1ºB–2ºA,
-      poi la finale.
+      **finale per il 3°/4° posto**, il **limite di tempo della fase
+      finale** (come i gironi, senza limite o un limite diverso) e la
+      **distanza della fase finale** (come i gironi, o un'altra: «al 4»). Con
+      due gironi e due qualificati si giocano le semifinali 1ºA–2ºB e
+      1ºB–2ºA, poi la finale.
+
+  - type: text
+    text: >-
+      **La finale** può avere regole sue, nello stesso blocco: **limite di
+      tempo della finale** (come la fase finale, senza limite o un limite
+      diverso) e **distanza della finale** (come la fase finale, o un'altra).
+      Per esempio «finale senza limite» o «finale al 7». Valgono solo per la
+      partita del 1° posto: la finalina gioca come il resto del tabellone. Si
+      scelgono qui, prima dell'avvio, perché il numero di turno della finale
+      si sa solo quando scegli quanti gironi fare. Un singolo turno si può
+      ancora cambiare dalla configurazione dei turni, e quella scelta vince.
 
   - type: list
     title: "Le regole"

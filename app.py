@@ -697,12 +697,16 @@ def create_app(config_name=None, *, da_script: bool = False):
     # di tempo di ogni turno, con la sua precedenza.
     from models.match.tempo import limite_del_turno
     from models.matchmaking.fase_finale import (
+        DISTANZA_MASSIMA,
         MASSIMO_QUALIFICATI_PER_GIRONE,
+        DistanzaDellaFase,
         FaseFinale,
         LimiteDellaFaseFinale,
     )
 
     app.jinja_env.globals["FaseFinale"] = FaseFinale
+    app.jinja_env.globals["DistanzaDellaFase"] = DistanzaDellaFase
+    app.jinja_env.globals["distanza_massima_fase"] = DISTANZA_MASSIMA
     app.jinja_env.globals["LimiteDellaFaseFinale"] = LimiteDellaFaseFinale
     app.jinja_env.globals["massimo_qualificati_per_girone"] = (
         MASSIMO_QUALIFICATI_PER_GIRONE

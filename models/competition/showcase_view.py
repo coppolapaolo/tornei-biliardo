@@ -271,13 +271,38 @@ def _formati_dei_turni(gara: Gara) -> List[tuple]:
     dalla gara. Un override su un turno oltre `rounds_count` non conta — quel
     turno non si giocherà. Senza `rounds_count` resta il formato della gara:
     non si sa quanti turni descrivere.
+
+    Nei turni del tabellone dopo i gironi il ripiego è la distanza della fase
+    finale (`fase_finale_service.distanza_della_fase`, ADR-081): quei turni si
+    conoscono dall'avvio. La distanza della sola finale non è di un turno —
+    la finalina gioca accanto con quella della fase — e la dice la frase dei
+    gironi.
     """
+    from models.competition.fase_finale_service import (
+        distanza_della_fase,
+        ha_tabellone_finale,
+    )
     from models.competition.round_configuration import RoundConfiguration
 
     gara_irts = bool(getattr(gara, "is_race_to_sets", True))
+    con_tabellone = ha_tabellone_finale(gara)
 
-    def della_gara():
-        return _formato_della_gara(gara)
+    def distanza(turno: int) -> int:
+        return distanza_della_fase(gara, turno) if con_tabellone else gara.distance
+
+    def della_gara(turno: int = 1):
+        if distanza(turno) == gara.distance:
+            return _formato_della_gara(gara)
+        return (
+            _nome_disciplina(gara.discipline),
+            _regola_di_gioco(
+                distance=distanza(turno),
+                is_race_to=gara.is_race_to,
+                is_multi_set=gara.is_multi_set,
+                match_distance=gara.match_distance,
+                is_race_to_sets=gara_irts,
+            ),
+        )
 
     if not gara.rounds_count:
         return [della_gara()]
@@ -289,13 +314,13 @@ def _formati_dei_turni(gara: Gara) -> List[tuple]:
     for turno in range(1, gara.rounds_count + 1):
         rc = override.get(turno)
         if rc is None:
-            formati.append(della_gara())
+            formati.append(della_gara(turno))
             continue
         formati.append(
             (
                 _nome_disciplina(rc.get_effective_discipline(gara.discipline)),
                 _regola_di_gioco(
-                    distance=rc.get_effective_distance(gara.distance),
+                    distance=rc.get_effective_distance(distanza(turno)),
                     is_race_to=rc.get_effective_is_race_to(gara.is_race_to),
                     is_multi_set=rc.get_effective_is_multi_set(gara.is_multi_set),
                     match_distance=rc.get_effective_match_distance(gara.match_distance),

@@ -206,6 +206,52 @@ girone, e la gara partita con un girone solo finisce col girone.
   con la riga del taglio (`gironi_in_pagina.segna_il_taglio`). Due «2º pari
   merito» possono stare uno sopra e uno sotto: decide la catena di turno.
 
+## Emendamento del 2026-10-12: le regole del tabellone, per fase
+
+**Decisione dell'utente**: le regole dei turni del tabellone dopo i gironi si
+impostano **per fase, nel modulo, prima dell'avvio** — non turno per turno,
+perché prima dell'avvio non si sa quale numero di turno sarà la finale
+(dipende da quanti gironi sceglie il direttore nel foglio di avvio).
+
+- **Colonne** (migration `20261012_regole_della_finale`):
+  `Gara.final_phase_distance` (NULL come i gironi, N «al N»),
+  `Gara.final_time_limit_minutes` (NULL come la fase finale, 0 senza limite,
+  N minuti), `Gara.final_distance` (NULL come la fase finale, N «al N»); le
+  stesse col prefisso `default_` sul campionato, proposte a piazzamenti
+  (`CAMPI_PROPOSTI`, `_copia_dal_campionato`). Lette da
+  `effective_final_phase_distance`, `effective_final_distance`,
+  `effective_final_time_limit_minutes`. Sono **regole** (`REGOLE`): a gara
+  avviata si cambiano e valgono per le partite che nasceranno.
+- **Precedenza**: override del turno → finale → fase finale → gara. La
+  distanza in `round_creation.resolve_round_overrides` (il ripiego del turno
+  è `fase_finale_service.distanza_della_fase`; `round_final_distance` solo se
+  l'override del turno non dice la distanza), il limite in
+  `tempo.limite_del_turno(finale=…)`. La distanza effettiva passa sempre da
+  `match.distance_config` (ADR-027), e tutto si fissa sulla partita quando
+  nasce (ADR-075).
+- **Quale partita è la finale** lo sa chi vede tutti i nodi del turno:
+  `fase_finale.la_finale_del_turno` (l'unico nodo dei vincenti, anche al primo
+  turno con due qualificati), chiamata da `create_matches_from_pairings`, che
+  scrive la distanza della finale e il segno transitorio `Match.nasce_finale`
+  da cui `fissa_regole` ricava il limite. **La finalina segue la fase
+  finale**, anche se gioca nello stesso turno.
+- **Interfaccia**: nel blocco della fase finale (`_campo_gironi.html`),
+  dopo il limite, «Distanza della fase finale»
+  (`_campo_distanza_fase_finale.html`) e il riquadro «La finale» con limite e
+  distanza; gli stessi campi nella pagina della gara avviata. Parser unico:
+  `form_parser.leggi_le_regole_della_finale`. Frase:
+  `descrivi_fase_finale(..., distanza=, minuti_finale=, distanza_finale=)`.
+- **Tabellone puro** (eliminazione diretta, doppio KO): non esiste un modo
+  per fase di dare regole diverse alla finale; c'è l'override per turno
+  (ADR-027), che lì funziona perché i turni sono noti dal sorteggio. Non è
+  stato esteso.
+- **Tessera in dashboard**: durante il tabellone dice il **nome del turno**
+  («La tua partita · Semifinale», «· Finale», «· Finalina», «· Quarti»), nel
+  tabellone dopo i gironi e nei tabelloni puri; nei gironi resta «Turno N».
+  Una fonte sola: `tabellone_della_gara.nomi_delle_partite` (`nome_del_nodo`
+  sull'albero), la stessa delle caselle dello schermo in sala; le parole al
+  singolare le dà la macro `nome_partita` di `_tabellone_macros.html`.
+
 ## Riferimenti
 
 - SPECIFICHE.md: «Turno» → «Fase finale dopo i gironi»; «Limite di tempo»;

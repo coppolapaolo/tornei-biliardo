@@ -296,6 +296,17 @@ class Gara(SoftDeleteMixin, db.Model):
     # `time_limit_minutes`: NULL = come i gironi, 0 = senza limite, N = N
     # minuti. Si fissa sulla partita quando nasce (ADR-075, ADR-077).
     final_phase_time_limit_minutes = db.Column(db.Integer, nullable=True)
+    # Le altre regole del tabellone dopo i gironi, scritte **per fase** e non
+    # per turno: prima dell'avvio non si sa quale numero di turno sarà la
+    # finale (decisione dell'utente del 2026-10-12). Si fissano sulla partita
+    # quando nasce (ADR-075); precedenza in `fase_finale_service`.
+    # La distanza del tabellone: NULL = come i gironi, N = «al N».
+    final_phase_distance = db.Column(db.Integer, nullable=True)
+    # Il limite di tempo della sola finale: NULL = come la fase finale, 0 =
+    # senza limite, N minuti. La finalina segue la fase finale.
+    final_time_limit_minutes = db.Column(db.Integer, nullable=True)
+    # La distanza della sola finale: NULL = come la fase finale, N = «al N».
+    final_distance = db.Column(db.Integer, nullable=True)
 
     # Le catene degli spareggi (ADR-078): come si ordinano i pari merito nella
     # classifica di turno e in quella di gara. Una lista JSON di voci
@@ -585,6 +596,30 @@ class Gara(SoftDeleteMixin, db.Model):
         valore = self.final_phase_time_limit_minutes
         if valore is None:
             return self.effective_time_limit_minutes
+        return valore if valore > 0 else None
+
+    @property
+    def effective_final_phase_distance(self) -> int:
+        """La distanza delle partite del tabellone dopo i gironi.
+
+        NULL vuol dire «come i gironi», cioè la distanza della gara.
+        """
+        return self.final_phase_distance or self.distance
+
+    @property
+    def effective_final_distance(self) -> int:
+        """La distanza della sola finale: NULL vuol dire «come la fase finale»."""
+        return self.final_distance or self.effective_final_phase_distance
+
+    @property
+    def effective_final_time_limit_minutes(self) -> Optional[int]:
+        """I minuti della sola finale, o None senza limite.
+
+        NULL vuol dire «come la fase finale»; zero «senza limite» per scelta.
+        """
+        valore = self.final_time_limit_minutes
+        if valore is None:
+            return self.effective_final_phase_time_limit_minutes
         return valore if valore > 0 else None
 
     @property

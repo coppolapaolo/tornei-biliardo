@@ -44,6 +44,10 @@ CAMPI_PROPOSTI: Dict[str, str] = {
     "default_qualifiers_per_group": "qualifiers_per_group",
     "default_third_place_match": "third_place_match",
     "default_final_phase_time_limit_minutes": "final_phase_time_limit_minutes",
+    # Le regole del tabellone per fase (emendamento del 2026-10-12).
+    "default_final_phase_distance": "final_phase_distance",
+    "default_final_time_limit_minutes": "final_time_limit_minutes",
+    "default_final_distance": "final_distance",
     # Il sistema delle serate di un campionato a piazzamenti (ADR-080).
     "default_gara_classification_system": "classification_system",
 }
@@ -55,6 +59,9 @@ _FASE_FINALE = frozenset(
         "qualifiers_per_group",
         "third_place_match",
         "final_phase_time_limit_minutes",
+        "final_phase_distance",
+        "final_time_limit_minutes",
+        "final_distance",
     }
 )
 
@@ -179,7 +186,12 @@ def _valore_da_scrivere(campo_gara: str, grezzo: Any) -> Dict[str, Any]:
         return {campo_gara: int(grezzo)}
     if campo_gara == "third_place_match":
         return {campo_gara: str(grezzo).lower() in ("true", "1")}
-    if campo_gara == "final_phase_time_limit_minutes":
+    if campo_gara in (
+        "final_phase_time_limit_minutes",
+        "final_phase_distance",
+        "final_time_limit_minutes",
+        "final_distance",
+    ):
         # Tre stati: vuoto «come i gironi», 0 «senza limite», N minuti.
         return {campo_gara: int(grezzo) if grezzo not in (None, "") else None}
     if campo_gara == "time_limit_minutes":

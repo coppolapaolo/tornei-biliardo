@@ -47,10 +47,10 @@ from models.competition.tabellone_view import (
     Posto,
     Tabellone,
     bande_finali,
-    nome_del_nodo,
 )
 from models.competition.tabellone_della_gara import (
     albero_della_gara,
+    nomi_dei_nodi,
     tabellone_della_gara,
 )
 from models.classification.gironi_in_pagina import (
@@ -661,13 +661,8 @@ def schermo_sala(
     bande: List[Banda] = []
 
     if fase == FaseSchermo.TABELLONE:
-        rounds: Dict[int, NomeRound] = {}
+        rounds: Dict[int, NomeRound] = nomi_dei_nodi(albero)
         if albero is not None:
-            rounds = {
-                n.match.id: nome_del_nodo(albero, n)
-                for n in albero.nodi
-                if n.match is not None
-            }
             tabellone = turno_del_tabellone(albero, turno)
         caselle = _tavoli(partite, turno, tavoli, rounds)
     elif fase in (FaseSchermo.GIOCO, FaseSchermo.SPAREGGIO):

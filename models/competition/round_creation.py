@@ -12,6 +12,7 @@ from flask_babel import gettext as _
 
 from models.base import db, transactional
 from models.match.distance import Distance
+from models.matchmaking.fase_finale import la_finale_del_turno
 from models.status_enum import GaraStatus
 from .models import Gara
 
@@ -23,21 +24,45 @@ def resolve_round_overrides(gara: Gara, round_number: int) -> dict:
     dict pronto per essere espanso negli kwarg di create_matches_from_pairings.
     Centralizza la logica per evitare duplicazione tra round_creation e
     round_service (entrambi creano match e devono propagare le stesse regole).
+
+    Nei turni del tabellone dopo i gironi (ADR-081, emendamento del
+    2026-10-12) la distanza senza override è quella della **fase finale**, e
+    la sola finale può averne una sua (`round_final_distance`, None se non
+    cambia o se l'override del turno dice già la distanza): la precedenza è
+    override del turno → finale → fase finale → gara. Quale partita è la
+    finale lo sa solo chi vede tutti i nodi del turno
+    (`create_matches_from_pairings`).
     """
+    from models.competition import fase_finale_service
     from models.competition.round_configuration import RoundConfiguration
 
     round_config = RoundConfiguration.get_for_gara_round(gara.id, round_number)
+    fase_finale = fase_finale_service.ha_tabellone_finale(
+        gara
+    ) and fase_finale_service.e_della_fase_finale(gara, round_number)
+    distanza = fase_finale_service.distanza_della_fase(gara, round_number)
+    distanza_finale = (
+        fase_finale_service.distanza_della_finale(gara)
+        if fase_finale and (round_config is None or round_config.distance is None)
+        else None
+    )
+    della_fase = {
+        "round_is_final_phase": fase_finale,
+        "round_final_distance": distanza_finale,
+    }
     if not round_config:
         return {
-            "round_distance": gara.distance,
+            "round_distance": distanza,
             "round_discipline": None,
             "round_is_race_to": gara.is_race_to,
             "round_is_multi_set": gara.is_multi_set,
             "round_match_distance": gara.match_distance,
             "round_is_race_to_sets": getattr(gara, "is_race_to_sets", True),
+            **della_fase,
         }
     return {
-        "round_distance": round_config.get_effective_distance(gara.distance),
+        **della_fase,
+        "round_distance": round_config.get_effective_distance(distanza),
         "round_discipline": round_config.discipline,
         "round_is_race_to": round_config.get_effective_is_race_to(gara.is_race_to),
         "round_is_multi_set": round_config.get_effective_is_multi_set(
@@ -63,6 +88,8 @@ def create_matches_from_pairings(
     round_is_multi_set: Optional[bool] = None,
     round_match_distance: Optional[int] = None,
     round_is_race_to_sets: Optional[bool] = None,
+    round_is_final_phase: bool = False,
+    round_final_distance: Optional[int] = None,
 ) -> None:
     """Create Match (and TrioMatch) objects from strategy pairings.
 
@@ -70,6 +97,13 @@ def create_matches_from_pairings(
     (is_race_to, is_multi_set, match_distance multi-set, is_race_to_sets) a
     ogni Match creato. I parametri round_* nullable=None mantengono il default
     della gara, NON solo per back-compat ma per esprimere "nessun override".
+
+    Nei turni del tabellone dopo i gironi (``round_is_final_phase``) la
+    partita della **finale** — l'unico nodo dei vincenti del turno,
+    `fase_finale.la_finale_del_turno` — nasce con le regole della sola finale:
+    la sua distanza (``round_final_distance``, se diversa) e il segno
+    `Match.nasce_finale`, da cui `fissa_regole` ricava il limite di tempo
+    della finale. La finalina, nello stesso turno, segue la fase finale.
     """
     from models.match.models import Match, TrioMatch
     from models.match.state_service import MatchStateService
@@ -91,6 +125,7 @@ def create_matches_from_pairings(
         )
     else:
         match_distance_field = round_distance
+    sets_field = match_distance_field
 
     # is_race_to / is_race_to_sets sono nullable su Match: NULL = eredita gara.
     # Memorizziamo l'override esplicito solo se differisce dalla gara, per
@@ -125,13 +160,29 @@ def create_matches_from_pairings(
     # sbagliato in multi-set, dove `player*_score` conta i **set**. In una
     # gara «al 3 set da 4 rack» un tavolino segnava 4-0 set invece di 3-0 —
     # un punteggio che in quella gara nessuno può ottenere giocando.
-    winning_score = Distance(
-        racks=round_distance,
-        is_race_to_racks=is_race_to,
-        is_multi_set=is_multi_set,
-        sets=match_distance_field if is_multi_set else 1,
-        is_race_to_sets=is_race_to_sets,
-    ).walkover_score()
+    def _tavolino(racks: int) -> int:
+        return Distance(
+            racks=racks,
+            is_race_to_racks=is_race_to,
+            is_multi_set=is_multi_set,
+            sets=sets_field if is_multi_set else 1,
+            is_race_to_sets=is_race_to_sets,
+        ).walkover_score()
+
+    winning_score = _tavolino(round_distance)
+
+    # La finale del tabellone dopo i gironi: le sue regole (ADR-081,
+    # emendamento del 2026-10-12). Solo la distanza in triangoli cambia; nelle
+    # partite a set sono i triangoli di ogni set, come `round_distance`.
+    finale = la_finale_del_turno(pairings) if round_is_final_phase else None
+    kwargs_finale = dict(common_kwargs)
+    tavolino_finale = winning_score
+    if finale is not None and round_final_distance:
+        if is_multi_set:
+            kwargs_finale["set_distance"] = round_final_distance
+        else:
+            kwargs_finale["match_distance"] = round_final_distance
+        tavolino_finale = _tavolino(round_final_distance)
 
     # I trio non giocano a set: qui sotto nascono con `is_multi_set=False` e
     # `match_distance=round_distance`, quindi il loro tavolino si conta in
@@ -157,6 +208,9 @@ def create_matches_from_pairings(
     bye_score = 0
 
     for pairing in pairings:
+        e_finale = finale is not None and pairing is finale
+        kwargs_partita = kwargs_finale if e_finale else common_kwargs
+        tavolino = tavolino_finale if e_finale else winning_score
         # Le coordinate variano per pairing, quindi non possono stare in
         # common_kwargs. getattr con default perché diversi test passano
         # pairing duck-typed che non hanno questi attributi.
@@ -173,7 +227,7 @@ def create_matches_from_pairings(
             # La X delle altre strategie resta una vittoria.
             riposo = bool(getattr(pairing, "riposo", False))
             match = Match(
-                **common_kwargs,
+                **kwargs_partita,
                 **bracket_kwargs,
                 player1_id=pairing.players[0],
                 player2_id=None,
@@ -182,6 +236,7 @@ def create_matches_from_pairings(
                 winner_id=None if riposo else pairing.players[0],
                 status="pending",
             )
+            match.nasce_finale = e_finale
             db.session.add(match)
             db.session.flush()
             MatchStateService.to_completed(match.id)
@@ -197,19 +252,19 @@ def create_matches_from_pairings(
             if player1_forfeit or player2_forfeit:
                 if player1_forfeit and player2_forfeit:
                     winner_id = pairing.players[0]
-                    player1_score = winning_score
+                    player1_score = tavolino
                     player2_score = 0
                 elif player1_forfeit:
                     winner_id = pairing.players[1]
                     player1_score = 0
-                    player2_score = winning_score
+                    player2_score = tavolino
                 else:
                     winner_id = pairing.players[0]
-                    player1_score = winning_score
+                    player1_score = tavolino
                     player2_score = 0
 
                 match = Match(
-                    **common_kwargs,
+                    **kwargs_partita,
                     **bracket_kwargs,
                     player1_id=pairing.players[0],
                     player2_id=pairing.players[1],
@@ -219,6 +274,7 @@ def create_matches_from_pairings(
                     winner_id=winner_id,
                     status="pending",
                 )
+                match.nasce_finale = e_finale
                 db.session.add(match)
                 db.session.flush()
                 # La partita nasce già decisa e non passa mai da PLAYING:
@@ -232,12 +288,13 @@ def create_matches_from_pairings(
                 MatchStateService.to_completed(match.id, closed_by_director=True)
             else:
                 match = Match(
-                    **common_kwargs,
+                    **kwargs_partita,
                     **bracket_kwargs,
                     player1_id=pairing.players[0],
                     player2_id=pairing.players[1],
                     is_bye=False,
                 )
+                match.nasce_finale = e_finale
                 db.session.add(match)
         elif len(pairing.players) == 3:
             p0, p1, p2 = pairing.players

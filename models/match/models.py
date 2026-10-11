@@ -84,6 +84,12 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     # is_race_to / is_race_to_sets nullable: NULL = eredita da gara.
     # Use distance_config property for the unified abstraction.
     match_distance = db.Column(db.Integer, default=1)
+    # Non è una colonna: lo scrive chi crea le partite di un turno del
+    # tabellone dopo i gironi sulla partita della finale
+    # (`round_creation.create_matches_from_pairings`), e lo legge solo
+    # `fissa_regole` al primo flush per darle il limite di tempo della finale.
+    # Dopo, la regola è scritta sulla partita e il segno non serve più.
+    nasce_finale = False
     is_multi_set = db.Column(db.Boolean, default=False)
     is_race_to = db.Column(db.Boolean, nullable=True)  # NULL = eredita da gara
     is_race_to_sets = db.Column(db.Boolean, nullable=True)  # NULL = eredita da gara

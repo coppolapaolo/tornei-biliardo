@@ -368,3 +368,197 @@ class TestLimiteDiTempo:
         finale = Match.query.filter_by(gara_id=gara.id, round_number=5).all()
         assert {m.time_limit_minutes for m in semifinali} == {45}
         assert {m.time_limit_minutes for m in finale} == {None}
+
+
+class TestRegoleDellaFinale:
+    """Distanza della fase finale, limite e distanza della sola finale.
+
+    Si impostano **per fase** nel modulo, prima dell'avvio: prima non si sa
+    quale numero di turno sarà la finale (decisione dell'utente del
+    2026-10-12). Precedenza: override del turno → finale → fase finale →
+    gara. La finalina segue la fase finale.
+    """
+
+    def _fino_alla_finale(self, gara: Gara, players: List[User], gironi: int = 2):
+        elo = {u.id: u.elo_rating for u in players}
+        RoundService.start_first_round(gara.id, groups_count=gironi)
+        gara = db.session.get(Gara, gara.id)
+        ultimo = gara.rounds_count
+        for r in range(1, ultimo):
+            if r > 1:
+                RoundService.start_next_round(gara.id, r)
+            _gioca(gara.id, r, _vince_il_piu_forte(elo))
+        RoundService.start_next_round(gara.id, ultimo)
+        return db.session.get(Gara, gara.id), ultimo
+
+    def test_finale_al_7_senza_limite_e_finalina_come_la_fase(self, db_session):
+        gara, p = _gara(
+            8,
+            time_limit_minutes=30,
+            final_phase_time_limit_minutes=45,
+            final_phase_distance=4,
+            final_time_limit_minutes=0,
+            final_distance=7,
+        )
+        gara, ultimo = self._fino_alla_finale(gara, p)
+        assert ultimo == 5
+        gironi = Match.query.filter(
+            Match.gara_id == gara.id, Match.round_number <= 3, Match.is_bye.is_(False)
+        ).all()
+        semifinali = Match.query.filter_by(gara_id=gara.id, round_number=4).all()
+        finale = Match.query.filter_by(
+            gara_id=gara.id, round_number=5, bracket_type=BRACKET_WINNERS
+        ).one()
+        finalina = Match.query.filter_by(
+            gara_id=gara.id, round_number=5, bracket_type=BRACKET_THIRD_PLACE
+        ).one()
+        assert {(m.effective_distance, m.time_limit_minutes) for m in gironi} == {
+            (3, 30)
+        }
+        assert {(m.effective_distance, m.time_limit_minutes) for m in semifinali} == {
+            (4, 45)
+        }
+        assert (finale.effective_distance, finale.time_limit_minutes) == (7, None)
+        assert finale.distance_config.get_winning_racks() == 7
+        assert (finalina.effective_distance, finalina.time_limit_minutes) == (4, 45)
+
+    def test_senza_regole_proprie_tutto_come_i_gironi(self, db_session):
+        gara, p = _gara(8, time_limit_minutes=30)
+        gara, _ultimo = self._fino_alla_finale(gara, p)
+        assert {
+            (m.effective_distance, m.time_limit_minutes)
+            for m in Match.query.filter(
+                Match.gara_id == gara.id, Match.is_bye.is_(False)
+            ).all()
+        } == {(3, 30)}
+
+    def test_la_finale_eredita_dalla_fase_finale(self, db_session):
+        gara, p = _gara(
+            8,
+            time_limit_minutes=30,
+            final_phase_time_limit_minutes=45,
+            final_phase_distance=4,
+        )
+        gara, _ultimo = self._fino_alla_finale(gara, p)
+        finale = Match.query.filter_by(
+            gara_id=gara.id, round_number=5, bracket_type=BRACKET_WINNERS
+        ).one()
+        assert (finale.effective_distance, finale.time_limit_minutes) == (4, 45)
+
+    def test_l_override_del_turno_vince_sulla_finale(self, db_session):
+        from models.competition.round_configuration import RoundConfiguration
+
+        gara, p = _gara(
+            8, time_limit_minutes=30, final_distance=7, final_time_limit_minutes=0
+        )
+        elo = {u.id: u.elo_rating for u in p}
+        RoundService.start_first_round(gara.id, groups_count=2)
+        RoundConfiguration.create_or_update(
+            gara.id, 5, distance=6, time_limit_minutes=20
+        )
+        db.session.commit()
+        for r in range(1, 5):
+            if r > 1:
+                RoundService.start_next_round(gara.id, r)
+            _gioca(gara.id, r, _vince_il_piu_forte(elo))
+        RoundService.start_next_round(gara.id, 5)
+        assert {
+            (m.effective_distance, m.time_limit_minutes)
+            for m in Match.query.filter_by(gara_id=gara.id, round_number=5).all()
+        } == {(6, 20)}
+
+    def test_con_due_qualificati_si_gioca_subito_la_finale(self, db_session):
+        gara, p = _gara(
+            6,
+            k=1,
+            finalina=False,
+            final_phase_distance=4,
+            final_distance=7,
+        )
+        gara, ultimo = self._fino_alla_finale(gara, p)
+        finale = Match.query.filter_by(gara_id=gara.id, round_number=ultimo).all()
+        assert len(finale) == 1
+        assert finale[0].effective_distance == 7
+
+    def test_precedenza_sulla_gara(self, db_session):
+        gara, _ = _gara(8, time_limit_minutes=30)
+        assert gara.effective_final_phase_distance == 3
+        assert gara.effective_final_distance == 3
+        assert gara.effective_final_time_limit_minutes == 30
+        gara.final_phase_distance = 4
+        gara.final_phase_time_limit_minutes = 45
+        assert gara.effective_final_distance == 4
+        assert gara.effective_final_time_limit_minutes == 45
+        gara.final_distance = 7
+        gara.final_time_limit_minutes = 0
+        assert gara.effective_final_distance == 7
+        assert gara.effective_final_time_limit_minutes is None
+        gara.final_time_limit_minutes = 60
+        assert gara.effective_final_time_limit_minutes == 60
+
+
+class TestNomeDellaPartita:
+    """La tessera in dashboard dice il nome del turno del tabellone.
+
+    «La tua partita · Semifinale» invece di «Turno 4» (decisione dell'utente
+    del 2026-10-12), nel tabellone dopo i gironi e nei tabelloni puri. Nei
+    gironi resta «Turno N»: nessun nome.
+    """
+
+    def test_dopo_i_gironi(self, db_session):
+        from models.competition.tabellone_della_gara import nomi_delle_partite
+
+        gara, p = _gara(8)
+        elo = {u.id: u.elo_rating for u in p}
+        RoundService.start_first_round(gara.id, groups_count=2)
+        gara = db.session.get(Gara, gara.id)
+        nomi = nomi_delle_partite(gara, gara.matches)
+        assert nomi == {}
+        for r in range(1, 4):
+            if r > 1:
+                RoundService.start_next_round(gara.id, r)
+            _gioca(gara.id, r, _vince_il_piu_forte(elo))
+        RoundService.start_next_round(gara.id, 4)
+        gara = db.session.get(Gara, gara.id)
+        nomi = nomi_delle_partite(gara, gara.matches)
+        semifinali = [m for m in gara.matches if m.round_number == 4]
+        assert {nomi[m.id].chiave for m in semifinali} == {"semifinali"}
+        assert not any(m.id in nomi for m in gara.matches if m.round_number <= 3)
+        _gioca(gara.id, 4, _vince_il_piu_forte(elo))
+        RoundService.start_next_round(gara.id, 5)
+        gara = db.session.get(Gara, gara.id)
+        nomi = nomi_delle_partite(gara, gara.matches)
+        per_tipo = {
+            m.bracket_type: nomi[m.id].chiave
+            for m in gara.matches
+            if m.round_number == 5
+        }
+        assert per_tipo == {BRACKET_WINNERS: "finale", BRACKET_THIRD_PLACE: "finalina"}
+
+    def test_eliminazione_diretta(self, db_session):
+        from models.competition.tabellone_della_gara import nomi_delle_partite
+
+        gara, _p = _gara(
+            8,
+            matchmaking_strategy="direct_elimination",
+            max_groups=1,
+            final_phase_mode="nessuna",
+            third_place_match=False,
+        )
+        RoundService.start_first_round(gara.id)
+        gara = db.session.get(Gara, gara.id)
+        nomi = nomi_delle_partite(gara, gara.matches)
+        assert {n.chiave for n in nomi.values()} == {"quarti"}
+
+    def test_la_tessera_lo_dice(self, app):
+        from models.competition.tabellone_view import NomeRound
+
+        modulo = app.jinja_env.get_template(
+            "components/_tabellone_macros.html"
+        ).make_module({})
+        with app.test_request_context():
+            assert str(modulo.nome_partita(NomeRound("semifinali"), 4)) == "Semifinale"
+            assert str(modulo.nome_partita(NomeRound("finale"), 5)) == "Finale"
+            assert str(modulo.nome_partita(NomeRound("finalina"), 5)) == "Finalina"
+            assert str(modulo.nome_partita(NomeRound("quarti"), 1)) == "Quarti"
+            assert str(modulo.nome_partita(NomeRound("gironi", 2), 2)) == "Turno 2"

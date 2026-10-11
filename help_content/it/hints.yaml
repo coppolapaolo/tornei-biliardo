@@ -211,6 +211,22 @@ hints:
     page: abbinamenti
     section: fase_finale
 
+  - id: gara.distanza_fase_finale
+    label: "Distanza della fase finale"
+    short: "Come i gironi, o un'altra distanza per le partite del tabellone, finalina compresa. Si gioca sempre a chi arriva prima."
+    anchor: gara-distanza-fase-finale
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato, admin.competition.gara_detail]
+    page: abbinamenti
+    section: fase_finale
+
+  - id: gara.regole_finale
+    label: "La finale"
+    short: "Limite di tempo e distanza della sola finale: per esempio «senza limite» o «al 7». La finalina gioca come il resto del tabellone."
+    anchor: gara-regole-finale
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato, admin.competition.gara_detail]
+    page: abbinamenti
+    section: fase_finale
+
   - id: gara.gironi_avvio
     label: "Quanti gironi?"
     short: "All'avvio scegli quanti gironi fare, sugli iscritti presenti. Ogni voce mostra taglie e turni, tabellone compreso; con un girone solo il tabellone non si gioca."

@@ -66,12 +66,18 @@ ETICHETTE: Dict[str, object] = {
     "final_phase_mode": _l("Fase finale"),
     "qualifiers_per_group": _l("Qualificati per girone"),
     "final_phase_time_limit_minutes": _l("Limite di tempo della fase finale"),
+    "final_phase_distance": _l("Distanza della fase finale"),
+    "final_time_limit_minutes": _l("Limite di tempo della finale"),
+    "final_distance": _l("Distanza della finale"),
     "default_final_phase_mode": _l("Fase finale proposta"),
     "default_qualifiers_per_group": _l("Qualificati per girone, proposti"),
     "default_third_place_match": _l("Finalina proposta"),
     "default_final_phase_time_limit_minutes": _l(
         "Limite di tempo della fase finale, proposto"
     ),
+    "default_final_phase_distance": _l("Distanza della fase finale, proposta"),
+    "default_final_time_limit_minutes": _l("Limite di tempo della finale, proposto"),
+    "default_final_distance": _l("Distanza della finale, proposta"),
     "weight": _l("Peso nel campionato"),
     "x_challenge_id": _l("Esercizio al posto della X"),
     # Le catene degli spareggi (ADR-078).
@@ -137,6 +143,9 @@ _COME_CAMPO_DELLA_GARA = {
     "default_qualifiers_per_group": "qualifiers_per_group",
     "default_third_place_match": "third_place_match",
     "default_final_phase_time_limit_minutes": "final_phase_time_limit_minutes",
+    "default_final_phase_distance": "final_phase_distance",
+    "default_final_time_limit_minutes": "final_time_limit_minutes",
+    "default_final_distance": "final_distance",
     "campionato_type": "matchmaking_strategy",
     "strategy_type": "matchmaking_strategy",
 }
@@ -227,6 +236,20 @@ def valore(campo: str, grezzo: str | None) -> str:
         if grezzo is None or grezzo == "":
             return _("come i gironi")
         campo = "time_limit_minutes"
+    if campo == "final_time_limit_minutes":
+        # Tre stati: vuoto vuol dire «come la fase finale».
+        if grezzo is None or grezzo == "":
+            return _("come la fase finale")
+        campo = "time_limit_minutes"
+    if campo in ("final_phase_distance", "final_distance"):
+        # Vuoto: come i gironi, o come la fase finale.
+        if grezzo is None or grezzo == "":
+            return (
+                _("come i gironi")
+                if campo == "final_phase_distance"
+                else _("come la fase finale")
+            )
+        return _("al %(n)s", n=grezzo)
     if grezzo is None or grezzo == "":
         if campo in (
             "start_rule",

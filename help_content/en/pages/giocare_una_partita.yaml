@@ -20,11 +20,13 @@ blocks:
   - type: text
     text: >-
       When the round starts, your match appears on your home **inside the card
-      of its competition** — under **«Your competitions»**, with the round, the
-      opponent and the table — and the **Play your match** button takes you to
-      the scoreboard. You find it again on the competition page, where the
-      button is called **Enter the result**. You also get a notification. Tap
-      it and you are in.
+      of its competition** — under **«Your competitions»**, in the **Your
+      match** box, with the round, the opponent and the table. In a bracket the
+      round number is replaced by its name: **Quarter-finals**, **Semi-final**,
+      **Final**, **3rd/4th place match**. Tap the box and you are at the
+      scoreboard. You find it again on the competition page, where the button
+      is called **Enter the result**. You also get a notification. Tap it and
+      you are in.
 
   - type: note
     tone: info

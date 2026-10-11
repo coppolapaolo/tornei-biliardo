@@ -381,7 +381,9 @@
                                 gironi_compagni=true,
                                 fase_modo=campionato.default_final_phase_mode, fase_k=campionato.default_qualifiers_per_group,
                                 fase_finalina=campionato.default_third_place_match,
-                                fase_tempo=campionato.default_final_phase_time_limit_minutes %}
+                                fase_tempo=campionato.default_final_phase_time_limit_minutes,
+                                fase_distanza=campionato.default_final_phase_distance, fase_finale_tempo=campionato.default_final_time_limit_minutes,
+                                fase_finale_distanza=campionato.default_final_distance %}
                         {% include "components/_campo_gironi.html" %}
                         {% endwith %}
                         {% with bracket_id='create_' %}

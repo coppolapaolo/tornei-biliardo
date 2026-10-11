@@ -342,6 +342,9 @@ CAMPI_DEL_CAMPIONATO: Tuple[str, ...] = (
     "default_qualifiers_per_group",
     "default_third_place_match",
     "default_final_phase_time_limit_minutes",
+    "default_final_phase_distance",
+    "default_final_time_limit_minutes",
+    "default_final_distance",
     "default_catena_turno",
     "default_catena_gara",
     "catena_generale",
@@ -388,7 +391,14 @@ _FASE_FINALE_PROPOSTA: Tuple[str, ...] = (
     "default_qualifiers_per_group",
     "default_third_place_match",
     "default_final_phase_time_limit_minutes",
+    "default_final_phase_distance",
+    "default_final_time_limit_minutes",
+    "default_final_distance",
 )
+
+#: I campi della fase finale proposta in cui vuoto vuol dire «come prima» (i
+#: gironi, o la fase finale): si dicono anche vuoti.
+_VUOTO_SI_DICE = frozenset(_FASE_FINALE_PROPOSTA[3:])
 
 
 def _impostazioni(
@@ -428,7 +438,7 @@ def _impostazioni(
                 is not FaseFinale.TABELLONE
             ):
                 continue
-        if campo == "default_final_phase_time_limit_minutes" and valore == "":
+        if campo in _VUOTO_SI_DICE and valore == "":
             # «Come i gironi» si dice: vuoto non è un valore mancante.
             risultato.append(Impostazione(campo, valore, ultima.get(campo)))
             continue

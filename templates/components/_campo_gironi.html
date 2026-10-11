@@ -32,7 +32,10 @@
      gironi (ADR-081) — nessuna o tabellone, qualificati per girone, finalina
      e limite di tempo della fase finale (None come i gironi, 0 senza limite,
      N minuti). Il blocco sta dentro «più gironi»: col girone unico la gara
-     non ha tabellone. «Finali per piazzamento» non si offre ancora. #}
+     non ha tabellone. «Finali per piazzamento» non si offre ancora.
+   - fase_distanza, fase_finale_tempo, fase_finale_distanza: la distanza della
+     fase finale (None come i gironi) e le regole della sola finale (None come
+     la fase finale), emendamento del 2026-10-12. #}
 {% set _pre = gironi_prefisso|default('') %}
 {% set _id = gironi_id|default('') %}
 {% set _tetto = (gironi_tetto|default(1)) or 1 %}
@@ -139,6 +142,23 @@
         {% with tempo_prefisso=_pre, tempo_id=_id, tempo_valore=_tempo, tempo_spento=(_spento or not _fase_tab) %}
         {% include "components/_campo_limite_fase_finale.html" %}
         {% endwith %}
+        {% with distanza_prefisso=_pre, distanza_id=_id, distanza_valore=fase_distanza|default(none), distanza_spento=(_spento or not _fase_tab) %}
+        {% include "components/_campo_distanza_fase_finale.html" %}
+        {% endwith %}
+
+        {# Le regole della sola finale (emendamento del 2026-10-12): per fase e
+           non per turno, perché prima dell'avvio non si sa quale numero di
+           turno sarà la finale. #}
+        <div class="mt-4" data-fase-la-finale>
+          <div class="form-label mb-0" data-help="gara-regole-finale">{{ _('La finale') }}</div>
+          <div class="c7-choice__desc">{{ _('Solo la partita per il 1° posto: la finalina gioca come il resto del tabellone.') }}</div>
+          {% with tempo_prefisso=_pre, tempo_id=_id, tempo_valore=fase_finale_tempo|default(none), tempo_spento=(_spento or not _fase_tab), tempo_finale=true %}
+          {% include "components/_campo_limite_fase_finale.html" %}
+          {% endwith %}
+          {% with distanza_prefisso=_pre, distanza_id=_id, distanza_valore=fase_finale_distanza|default(none), distanza_spento=(_spento or not _fase_tab), distanza_finale=true %}
+          {% include "components/_campo_distanza_fase_finale.html" %}
+          {% endwith %}
+        </div>
 
         <div class="c7-nota mt-3">{{ _('Nel tabellone si gioca a chi arriva prima: qualcuno deve passare il turno, e il pareggio non esiste. Per questo la gara non si gioca a «esattamente N» triangoli.') }}</div>
       </div>

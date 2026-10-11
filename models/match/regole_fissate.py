@@ -115,7 +115,12 @@ def fissa_regole(session: Session, match: Any) -> None:
         # nate prima dell'ADR-077.
         from models.match.tempo import limite_del_turno
 
-        match.time_limit_minutes = limite_del_turno(gara, match.round_number)
+        # La finale del tabellone dopo i gironi ha le sue regole: la riconosce
+        # chi crea le partite del turno, che vede tutti i nodi insieme
+        # (`round_creation.create_matches_from_pairings`).
+        match.time_limit_minutes = limite_del_turno(
+            gara, match.round_number, finale=bool(match.nasce_finale)
+        )
     if match.is_bye and match.x_with_challenge is None:
         match.x_with_challenge = (
             gara.odd_number_policy == OddNumberPolicy.BYE_WITH_CHALLENGE.value

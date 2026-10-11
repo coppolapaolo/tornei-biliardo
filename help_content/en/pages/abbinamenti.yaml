@@ -159,10 +159,23 @@ blocks:
       With more than one group the competition can end with a **bracket**:
       in the form, below the groups, choose **Final phase → Bracket**, how
       many go through from each group (**Qualifiers per group**, normally 2),
-      whether to play the **3rd/4th place final**, and the **time limit of
-      the final phase**: same as the groups, no limit or a different limit.
-      With two groups and two qualifiers the semi-finals are 1stA–2ndB and
-      1stB–2ndA, then the final.
+      whether to play the **3rd/4th place final**, the **time limit of the
+      final phase** (same as the groups, no limit or a different limit) and
+      the **distance of the final phase** (same as the groups, or another
+      one: «race to 4»). With two groups and two qualifiers the semi-finals
+      are 1stA–2ndB and 1stB–2ndA, then the final.
+
+  - type: text
+    text: >-
+      **The final** can have its own rules, in the same block: **time limit
+      of the final** (same as the final phase, no limit or a different limit)
+      and **distance of the final** (same as the final phase, or another
+      one). For example «final with no limit» or «final race to 7». They only
+      apply to the 1st place match: the 3rd place final plays like the rest
+      of the bracket. You choose them here, before the start, because the
+      round number of the final is only known when you choose how many
+      groups to make. A single round can still be changed from the rounds
+      setup, and that choice wins.
 
   - type: list
     title: "The rules"
