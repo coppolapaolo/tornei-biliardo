@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.72.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.71.0...v1.72.0) (2026-10-11)
+
+
+### Funzioni nuove
+
+* finali per piazzamento dopo i gironi, dominio, turno e classifica ([#671](https://github.com/coppolapaolo/tornei-biliardo/issues/671)) ([96d4577](https://github.com/coppolapaolo/tornei-biliardo/commit/96d457756f2bfc95f4c879f5bb9509e5d6bd1077))
+
 ## [1.71.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.70.1...v1.71.0) (2026-10-11)
 
 
