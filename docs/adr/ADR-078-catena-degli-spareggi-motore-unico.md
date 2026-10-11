@@ -303,8 +303,9 @@ gruppo (1, 1, 3).
 - **Mostrata ovunque**: classifiche di turno e di gara (anche per girone),
   schermo in sala, tessere (`dove_sei`: «Sei 1° pari merito su 4»), podi,
   classifica generale, vetrine, storico e profilo.
-- **Fuori**: le bande del tabellone (ADR-040) hanno già posizioni condivise
-  e la loro etichetta a intervallo («5°–8°»).
+- **Fuori**: le bande del tabellone (ADR-040) hanno già posizioni condivise.
+  Avevano anche la loro etichetta a intervallo («5°–8°»), tolta lo stesso
+  giorno con l'emendamento all'ADR-040: oggi dicono «5° pari merito».
 
 ## Riferimenti
 

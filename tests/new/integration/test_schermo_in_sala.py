@@ -310,7 +310,9 @@ class TestGaraATabellone:
         html = client.get(f"/g/{gara.public_token}/sala").get_data(as_text=True)
 
         assert "c7-podio-finale" in html
-        assert html.count("5°–8°") == 4
+        # «5° pari merito», non più «5°–8°» (ADR-040, emendamento 2026-10-11).
+        assert "°–" not in html
+        assert html.count("5° pari merito") == 4
         assert html.count("esce ai quarti") == 4
         assert "c7-sala-tab" not in html
         # Conclusa: niente poll.

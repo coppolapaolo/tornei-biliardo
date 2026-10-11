@@ -515,7 +515,13 @@ def test_a_gara_conclusa_podio_e_bande_dalle_posizioni():
     assert podio[:2] == [[campione.username], [secondo.username]]
     # Senza finalina i due semifinalisti sconfitti stanno sullo stesso gradino.
     assert sorted(podio[2]) == sorted(u.username for u in terzi)
-    assert [(b.posizione, b.ultima) for b in s.bande] == [(1, 1), (2, 2), (3, 4)]
+    # La banda dei terzi parte dal 3° e si mostra «3° pari merito» (ADR-040,
+    # emendamento del 2026-10-11): non porta più l'ultima posizione.
+    assert [(b.posizione, b.condivisa) for b in s.bande] == [
+        (1, False),
+        (2, False),
+        (3, True),
+    ]
 
 
 def test_a_gara_conclusa_senza_posizioni_resta_la_classifica():

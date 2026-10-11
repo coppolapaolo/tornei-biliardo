@@ -3976,7 +3976,11 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
   border-radius: 10px; background: var(--c7-bg);
   display: inline-grid; place-items: center; flex-shrink: 0;
   font-size: 13px; font-weight: 800; color: var(--c7-ink-muted);
+  white-space: nowrap; /* «5° pari merito» resta su una riga */
 }
+/* Con almeno una banda a pari merito tutte le pastiglie hanno la larghezza di
+   «15° pari merito» (font monospazio): avatar e nomi restano in colonna. */
+.c7-bande--pari .c7-banda__pos { min-width: calc(15ch + 16px); }
 .c7-banda__pos--1 { background: var(--c7-oro); color: var(--c7-oro-ink); }
 .c7-banda__pos--2 { background: var(--c7-argento); color: var(--c7-argento-ink); }
 .c7-banda__pos--3 { background: var(--c7-bronzo); color: var(--c7-bronzo-ink); }
@@ -4059,6 +4063,7 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-sala__podio .c7-podio-finale__posto--oro .c7-podio-finale__nome { font-size: clamp(21px, 1.9vw, 28px); }
 .c7-sala__podio .c7-podio-finale__pos { font-size: 15px; }
 .c7-sala__bande .c7-banda__pos { min-width: 64px; height: 34px; font-size: 15px; }
+.c7-sala__bande.c7-bande--pari .c7-banda__pos { min-width: calc(15ch + 16px); }
 .c7-sala__riga-uscita { flex-shrink: 0; max-width: 45%; font-size: 14px; font-weight: 700; color: var(--c7-ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 @media (min-width: 992px) {

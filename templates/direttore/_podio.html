@@ -13,6 +13,7 @@
    due invece di sceglierne uno. Sta dentro una card accento. Non e'
    `.c7-podio`: quello e' il podio compatto della tessera in dashboard, con le
    sue caselle. #}
+{% import "components/_tabellone_macros.html" as tb_podio with context %}
 {% if bande_podio is defined and bande_podio %}
   {% set _gradini = bande_podio[:3] %}
 {% else %}
@@ -32,9 +33,11 @@
       {% for r in gradino %}<span class="c7-podio-finale__nomi">{{ r.user.username }}</span>{% endfor %}
     </div>
     <div class="c7-podio-finale__pos c7-num">
-      {# Le bande del tabellone dicono il loro intervallo; fuori dal tabellone
-         la posizione mostrata: i pari merito sulla più alta (2026-10-11). #}
-      {% if gradino|length > 1 %}{{ riga.position }}°–{{ riga.position + gradino|length - 1 }}°
+      {# Sempre la posizione più alta, e il pari merito si dice: «3° pari
+         merito» sui due terzi del tabellone senza finalina (ADR-040,
+         emendamento del 2026-10-11); fuori dal tabellone la posizione
+         mostrata (SPECIFICHE.md, «Come si mostra il pari merito»). #}
+      {% if gradino|length > 1 %}{{ tb_podio.posto_della_banda(riga.position, true) }}
       {% else %}{{ posizione_mostrata(riga) }}°{% endif %}
       {%- if ssr_scores_map is defined and ssr_scores_map and ssr_scores_map.get(riga.user_id) is not none %} · SSR {{ ssr_scores_map.get(riga.user_id) }}{% endif %}
     </div>

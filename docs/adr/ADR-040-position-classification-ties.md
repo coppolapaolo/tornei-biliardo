@@ -6,6 +6,20 @@
 
 > **Aggiornamento 2026-09-24 (ADR-073).** Delle tre tabelle punti citate qui ne resta una, quella di `position_points.py`: pagina e righe della classifica generale la usano entrambe, e i pari merito condividono la posizione anche nella classifica generale.
 
+> **Emendamento 2026-10-11 (presentazione delle bande).** Fino a questa data
+> la banda si mostrava come intervallo: «5°–8°» sui quattro quartifinalisti,
+> «3°–4°» sui due terzi senza finalina, con «pari merito» sotto (scelta della
+> issue #240). L'utente ha deciso che la regola generale del pari merito —
+> sulla posizione più alta, e lo si dice (SPECIFICHE.md, «Come si mostra il
+> pari merito», PR #661) — vale anche qui: la banda si mostra **«5° pari
+> merito»**, «3° pari merito». Cambia solo la presentazione: la posizione
+> della banda era già la più alta, e i punti per piazzamento restano quelli
+> del posto condiviso. Una sola definizione dell'etichetta, la macro
+> `posto_della_banda` in `templates/components/_tabellone_macros.html`, usata
+> da classifica finale, schermo in sala e podio; `Banda` non porta più
+> l'ultima posizione dell'intervallo. Presidio:
+> `tests/new/unit/test_bande_pari_merito.py`.
+
 ## Contesto
 
 Il sistema di classifica `POSITION` esisteva come valore ammesso ma era un

@@ -487,8 +487,8 @@ blocks:
   - type: text
     text: >-
       Nelle gare a tabellone la classifica finale è **per bande** — 1°, 2°,
-      3°–4°, 5°–8° — con dove ciascuno è uscito: chi esce allo stesso turno
-      condivide il posto e i punti, senza spareggi.
+      3° pari merito, 5° pari merito — con dove ciascuno è uscito: chi esce
+      allo stesso turno condivide il posto più alto e i punti, senza spareggi.
 
   - type: faq
     items:

@@ -3624,3 +3624,20 @@ class TestComeSiMostraIlPariMerito:
         posizioni = [(f.posizione, f.posizione_mostrata) for f in fasce]
         assert posizioni == [(1, 1), (2, 2), (4, 4)]
         assert [len(f.giocatori) for f in fasce] == [1, 2, 1]
+
+    def test_le_bande_del_tabellone_al_posto_piu_alto_con_gli_stessi_punti(self):
+        """> Lo stesso per le **bande del tabellone** […]: i quattro
+        > quartifinalisti si mostrano «5° pari merito» e i due semifinalisti
+        > sconfitti senza finalina «3° pari merito», con gli stessi punti del
+        > posto condiviso."""
+        from models.classification.bracket_standings import positions_from_bands
+        from models.classification.position_points import points_for_position
+
+        posizioni = positions_from_bands([[1], [2], [3, 4], [5, 6, 7, 8]])
+        assert [posizioni[p] for p in range(1, 9)] == [1, 2, 3, 3, 5, 5, 5, 5]
+        assert {points_for_position(posizioni[p]) for p in (5, 6, 7, 8)} == {
+            points_for_position(5)
+        }
+        assert {points_for_position(posizioni[p]) for p in (3, 4)} == {
+            points_for_position(3)
+        }
