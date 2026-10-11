@@ -23,6 +23,7 @@ from models.matchmaking.configuration import (
     FirstRoundPolicy,
     OddNumberPolicy,
     bracket_derived_fields,
+    anti_rematch_for_strategy,
     odd_policy_for_strategy,
     resolve_classification_system,
 )
@@ -242,10 +243,15 @@ class GaraFormParser:
                 else True
             )
             default_odd = camp.default_odd_policy or "bye"
+            # Senza la casella vale la proposta del campionato, ma Amalfi
+            # l'anti-reincontro lo impone: un campionato girone non lo
+            # propone (lì non serve), e la sua serata Amalfi non nasceva.
             data["anti_rematch_enabled"] = (
                 request.form.get("anti_rematch_enabled") == "on"
                 if "anti_rematch_enabled" in request.form
-                else default_anti
+                else anti_rematch_for_strategy(
+                    data["matchmaking_strategy"], default_anti
+                )
             )
             data["odd_number_policy"] = request.form.get(
                 "odd_number_policy", default_odd

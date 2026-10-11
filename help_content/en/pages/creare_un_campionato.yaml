@@ -269,4 +269,4 @@ blocks:
       - q: "I cannot see the position points table."
         a: "It only appears on placement championships: choose «Placements» as the standings system in step 1 (knockout and double elimination championships always are). If the championship adds up wins, racks or points, those points serve no purpose."
       - q: "Can a championship have an evening with groups and an Amalfi one?"
-        a: "Yes, if it uses placements. Each competition starts with the format the championship proposes, and from the competition's edit page you can change its format and evening standings until it starts."
+        a: "Yes, if it uses placements. In «New Competition», at the first step, choose the **evening format** (Amalfi, Random, round robin, knockout, double elimination) and the **evening standings**: they start set to what the championship proposes. The options that follow adapt to the format — groups with round robin, bracket options with a bracket. From the competition's edit page you can still change them until it starts. If the championship adds up wins, racks or points, the championship decides format and standings."

@@ -270,4 +270,4 @@ blocks:
       - q: "Non vedo la tabella dei punti per posizione."
         a: "Compare solo sui campionati a piazzamenti: scegli «Piazzamenti» come sistema di classifica al passo 1 (i campionati a eliminazione diretta o doppio KO lo sono sempre). Se il campionato somma vittorie, triangoli o punti, quei punti non servono."
       - q: "Posso mettere in un campionato una serata a gironi e una Amalfi?"
-        a: "Sì, se il campionato è a piazzamenti. Ogni gara nasce col formato proposto dal campionato, e dalla modifica della gara puoi cambiarle formato e classifica della serata finché non è avviata."
+        a: "Sì, se il campionato è a piazzamenti. In «Nuova gara», al primo passo, scegli il **formato della serata** (Amalfi, Random, girone all'italiana, eliminazione diretta, doppio KO) e la **classifica della serata**: partono già impostati con le proposte del campionato. Le opzioni che seguono si adattano al formato — i gironi col girone, le opzioni del tabellone col tabellone. Dalla modifica della gara puoi cambiarli ancora finché non è avviata. Se il campionato somma vittorie, triangoli o punti, formato e classifica li decide il campionato."

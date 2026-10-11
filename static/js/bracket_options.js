@@ -5,7 +5,9 @@
  * sola, quindi vive qui invece che copiata in due `<script>` inline.
  *
  * Il file agisce solo se trova gli id che si aspetta: nelle pagine che non
- * includono `_bracket_options.html` esce subito.
+ * includono `_bracket_options.html` esce subito. Serve anche il modale
+ * «Nuova gara» del campionato a piazzamenti, dove gli id hanno il prefisso
+ * `create_` (ADR-080).
  *
  * NOTA sulle responsabilita': qui si decide solo cosa **mostrare**. I valori
  * derivati (forfait, giocatori dispari, spareggio, turni, minimo iscritti) li
@@ -17,17 +19,26 @@
 
   var BRACKET_STRATEGIES = ['direct_elimination', 'double_knockout'];
 
-  document.addEventListener('DOMContentLoaded', function () {
-    var strategy = document.getElementById('matchmaking_strategy');
-    var section = document.getElementById('bracket_options_section');
-    if (!strategy || !section) { return; }
+  var SUFFISSO = 'bracket_options_section';
 
-    var thirdPlaceRow = document.getElementById('third_place_row');
-    var doubleKoRow = document.getElementById('double_ko_rounds_row');
-    var doubleKoRounds = document.getElementById('double_ko_rounds');
-    var maxParticipants = document.getElementById('max_participants');
-    var minParticipants = document.getElementById('min_participants');
-    var roundsNote = document.getElementById('bracket_rounds_note');
+  /* Una sezione per modulo. Gli id del modulo possono avere un prefisso —
+   * `create_` nel modale «Nuova gara» del campionato, che vive nella stessa
+   * pagina di altri moduli — e lo si legge dall'id della sezione:
+   * `create_bracket_options_section` vuol dire `create_matchmaking_strategy`,
+   * `create_max_participants` e cosi' via. */
+  function prepara(section) {
+    var prefisso = section.id.slice(0, section.id.length - SUFFISSO.length);
+    function perId(id) { return document.getElementById(prefisso + id); }
+
+    var strategy = perId('matchmaking_strategy');
+    if (!strategy) { return; }
+
+    var thirdPlaceRow = perId('third_place_row');
+    var doubleKoRow = perId('double_ko_rounds_row');
+    var doubleKoRounds = perId('double_ko_rounds');
+    var maxParticipants = perId('max_participants');
+    var minParticipants = perId('min_participants');
+    var roundsNote = perId('bracket_rounds_note');
 
     /* I minimi di formato arrivano dal server (`minimum_players_for`): sono
      * gli stessi che il sorteggio usa come pavimento del tabellone, e
@@ -44,7 +55,7 @@
      * sistema di classifica (e' POSITION e basta), spareggio SSR (le
      * strategie POSITION dichiarano `requires_tiebreaker=False`) e numero di
      * turni (lo riscrive il sorteggio sugli iscritti effettivi). */
-    var hideable = document.querySelectorAll('[data-bracket-hide]');
+    var hideable = (section.closest('form') || document).querySelectorAll('[data-bracket-hide]');
 
     function setHidden(node, hidden) {
       node.style.display = hidden ? 'none' : '';
@@ -89,7 +100,7 @@
       /* La separazione dei compagni c'e' anche nel blocco dei gironi
        * (`_campo_gironi.html`), con lo stesso nome: quella del tabellone,
        * nascosta, non deve arrivare al server insieme all'altra. */
-      var compagni = document.getElementById('separate_teammates');
+      var compagni = perId('separate_teammates');
       if (compagni) { compagni.disabled = !isBracket; }
       Array.prototype.forEach.call(hideable, function (node) {
         setHidden(node, isBracket);
@@ -147,5 +158,12 @@
     if (doubleKoRounds) { doubleKoRounds.addEventListener('change', sync); }
     if (maxParticipants) { maxParticipants.addEventListener('input', sync); }
     sync();
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    Array.prototype.forEach.call(
+      document.querySelectorAll('[id$="' + SUFFISSO + '"]'),
+      prepara
+    );
   });
 })();
