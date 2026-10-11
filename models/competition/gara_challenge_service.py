@@ -81,7 +81,7 @@ class GaraChallengeService:
         # Verify challenge exists
         challenge = db.session.get(Challenge, challenge_id)
         if not challenge:
-            raise NotFoundError("Challenge non trovata")
+            raise NotFoundError(_("Esercizio non trovato"))
 
         # Create the gara challenge link
         gara_challenge = GaraChallenge(
@@ -209,14 +209,14 @@ class GaraChallengeService:
         """
         gara_challenge = db.session.get(GaraChallenge, gara_challenge_id)
         if not gara_challenge:
-            raise ValueError("Gara challenge non trovata")
+            raise ValueError(_("Esercizio della gara non trovato"))
 
         # Check if user can make another attempt
         if not gara_challenge.can_user_attempt(user_id):
             raise ValueError(
-                (
-                    f"Utente ha già raggiunto il massimo numero di tentativi "
-                    f"({gara_challenge.max_attempts})"
+                _(
+                    "Raggiunto il numero massimo di tentativi (%(max)s)",
+                    max=gara_challenge.max_attempts,
                 )
             )
 
@@ -227,14 +227,14 @@ class GaraChallengeService:
         challenge = gara_challenge.challenge
         if challenge.pass_fail_only:
             if passed is None:
-                raise ValidationError("Specificare se l'esercizio è riuscito")
+                raise ValidationError(_("Specificare se l'esercizio è riuscito"))
         elif score is None:
-            raise ValidationError("Specificare il punteggio")
+            raise ValidationError(_("Specificare il punteggio"))
         else:
             from ..challenge.services import ChallengeService
 
             if challenge.max_score is None and score < 0:
-                raise ValidationError("Il punteggio non può essere negativo")
+                raise ValidationError(_("Il punteggio non può essere negativo"))
             ChallengeService._validate_score_against_max(challenge, score)
 
         # Get next attempt number for this user

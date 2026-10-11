@@ -18,6 +18,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
+from flask_babel import gettext as _
 from sqlalchemy import delete, or_, select
 
 from models.base import db, utc_now
@@ -101,8 +102,11 @@ class ProvaService:
         """Solleva `ConflictError` se il direttore è già al limite."""
         if not ProvaService.puo_crearne_ancora(user_id):
             raise ConflictError(
-                f"Hai già {LIMITE_PROVE_ATTIVE} prove aperte: eliminane una "
-                "per crearne un'altra."
+                _(
+                    "Hai già %(num)s prove aperte: eliminane una per crearne "
+                    "un'altra.",
+                    num=LIMITE_PROVE_ATTIVE,
+                )
             )
 
     # ------------------------------------------------------------- fittizi
@@ -146,7 +150,7 @@ class ProvaService:
         from models.user.role_enum import UserRole
 
         if not gara.is_prova:
-            raise ValidationError("I giocatori fittizi esistono solo in una prova")
+            raise ValidationError(_("I giocatori fittizi esistono solo in una prova"))
 
         gara_id, campionato_id = ProvaService._radice(gara)
         radice = f"g{gara_id}" if gara_id else f"c{campionato_id}"
@@ -217,7 +221,9 @@ class ProvaService:
             return max(0, massimo - attivi) if massimo else 0
         if modalita == "uno":
             return 0 if massimo and attivi >= massimo else 1
-        raise ValidationError(f"Modalità di iscrizione sconosciuta: {modalita}")
+        raise ValidationError(
+            _("Modalità di iscrizione sconosciuta: %(modalita)s", modalita=modalita)
+        )
 
     @staticmethod
     def iscrivi_fittizi(gara_id: int, modalita: str) -> int:
@@ -240,10 +246,10 @@ class ProvaService:
         with prova_visibili():
             gara = db.session.get(Gara, gara_id)
             if gara is None or not gara.is_prova:
-                raise NotFoundError("Prova non trovata")
+                raise NotFoundError(_("Prova non trovata"))
             if gara.status != GaraStatus.INSCRIPTION.value:
                 raise ConflictError(
-                    "I giocatori fittizi si iscrivono a iscrizioni aperte"
+                    _("I giocatori fittizi si iscrivono a iscrizioni aperte")
                 )
             quanti = ProvaService.quanti_da_iscrivere(gara, modalita)
             if quanti == 0:
@@ -466,16 +472,16 @@ class ProvaService:
         from models.user.models import DirectorAssignment, User
 
         if bool(gara_id) == bool(campionato_id):
-            raise ValidationError("Indica la gara oppure il campionato, uno dei due")
+            raise ValidationError(_("Indica la gara oppure il campionato, uno dei due"))
 
         with prova_visibili():
             if gara_id:
                 radice = db.session.get(Gara, gara_id)
                 if radice is None or not radice.is_prova:
-                    raise NotFoundError("Prova non trovata")
+                    raise NotFoundError(_("Prova non trovata"))
                 if radice.campionato_id:
                     raise ValidationError(
-                        "La gara sta in un campionato di prova: elimina quello"
+                        _("La gara sta in un campionato di prova: elimina quello")
                     )
                 gare_ids = {radice.id}
                 tabella = Gara.__table__
@@ -483,7 +489,7 @@ class ProvaService:
             else:
                 radice = db.session.get(Campionato, campionato_id)
                 if radice is None or not radice.is_prova:
-                    raise NotFoundError("Prova non trovata")
+                    raise NotFoundError(_("Prova non trovata"))
                 gare_ids = {
                     gid
                     for (gid,) in db.session.execute(

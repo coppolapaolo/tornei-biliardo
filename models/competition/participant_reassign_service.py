@@ -64,6 +64,7 @@ import json
 import logging
 from typing import Any, Callable, Dict, List, Optional, Sequence, Set
 
+from flask_babel import gettext as _
 from sqlalchemy import Table, and_, delete, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.schema import UniqueConstraint
@@ -362,32 +363,38 @@ class GaraParticipantReassignService:
 
         gara = db.session.get(Gara, gara_id)
         if gara is None:
-            raise NotFoundError(f"Gara {gara_id} non trovata")
+            raise NotFoundError(_("Gara %(id)s non trovata", id=gara_id))
 
         # get by PK scavalca il filtro soft-delete: serve anche su un account
         # disattivato.
         source = db.session.get(User, source_id)
         target = db.session.get(User, target_id)
         if source is None:
-            raise NotFoundError(f"Utente sorgente {source_id} non trovato")
+            raise NotFoundError(_("Utente sorgente %(id)s non trovato", id=source_id))
         if target is None:
-            raise NotFoundError(f"Utente destinazione {target_id} non trovato")
+            raise NotFoundError(
+                _("Utente destinazione %(id)s non trovato", id=target_id)
+            )
         if source_id == target_id:
-            raise ValidationError("Sorgente e destinazione coincidono")
+            raise ValidationError(_("Sorgente e destinazione coincidono"))
         if UserRole.ADMIN.value in (source.role, target.role):
             raise ValidationError(
-                "Impossibile spostare la partecipazione di un amministratore"
+                _("Impossibile spostare la partecipazione di un amministratore")
             )
 
         performer = db.session.get(User, performed_by_id)
         if performer is None or performer.role != UserRole.ADMIN.value:
             raise ValidationError(
-                "Solo un amministratore può spostare una partecipazione"
+                _("Solo un amministratore può spostare una partecipazione")
             )
 
         if not Inscription.query.filter_by(gara_id=gara_id, user_id=source_id).first():
             raise ValidationError(
-                f"L'utente {source_id} non risulta iscritto alla gara {gara_id}"
+                _(
+                    "L'utente %(utente)s non risulta iscritto alla gara %(gara)s",
+                    utente=source_id,
+                    gara=gara_id,
+                )
             )
 
         # Il destinatario non deve comparire da nessuna parte nella gara: se ha
@@ -395,12 +402,12 @@ class GaraParticipantReassignService:
         # e ELO e classifica ne uscirebbero corrotti.
         conflicts: List[str] = []
         if Inscription.query.filter_by(gara_id=gara_id, user_id=target_id).first():
-            conflicts.append("iscrizione")
+            conflicts.append(_("iscrizione"))
         if Match.query.filter(
             Match.gara_id == gara_id,
             db.or_(Match.player1_id == target_id, Match.player2_id == target_id),
         ).first():
-            conflicts.append("partita")
+            conflicts.append(_("partita"))
         if Tiebreaker.query.filter(
             Tiebreaker.gara_id == gara_id,
             db.or_(
@@ -408,12 +415,17 @@ class GaraParticipantReassignService:
                 Tiebreaker.player2_id == target_id,
             ),
         ).first():
-            conflicts.append("spareggio")
+            conflicts.append(_("spareggio"))
         if conflicts:
             raise ConflictError(
-                f"L'utente {target_id} compare già nella gara {gara_id} "
-                f"({', '.join(conflicts)}): spostamento annullato. Vanno unite "
-                "le due partecipazioni a mano."
+                _(
+                    "L'utente %(utente)s compare già nella gara %(gara)s "
+                    "(%(dove)s): spostamento annullato. Vanno unite le due "
+                    "partecipazioni a mano.",
+                    utente=target_id,
+                    gara=gara_id,
+                    dove=", ".join(conflicts),
+                )
             )
 
         return gara, source, target
@@ -513,8 +525,12 @@ class GaraParticipantReassignService:
                     )
             except IntegrityError as exc:
                 raise ConflictError(
-                    f"Conflitto su {table.name}.{col.name}: il destinatario ha "
-                    f"già una riga equivalente. Spostamento annullato ({exc})."
+                    _(
+                        "Conflitto su %(colonna)s: il destinatario ha già una "
+                        "riga equivalente. Spostamento annullato (%(errore)s).",
+                        colonna=f"{table.name}.{col.name}",
+                        errore=exc,
+                    )
                 ) from exc
 
     @staticmethod

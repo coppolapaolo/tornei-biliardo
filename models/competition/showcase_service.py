@@ -19,6 +19,8 @@ import unicodedata
 from typing import Optional
 from urllib.parse import urlsplit
 
+from flask_babel import gettext as _
+
 from models.base import db
 from models.exceptions import ConflictError, NotFoundError, ValidationError
 from models.transaction.manager import transactional
@@ -66,7 +68,10 @@ def normalize_slug(raw: Optional[str]) -> Optional[str]:
 
     if len(ridotto) < SLUG_MIN_LEN:
         raise ValidationError(
-            f"L'indirizzo personalizzato deve avere almeno {SLUG_MIN_LEN} caratteri."
+            _(
+                "L'indirizzo personalizzato deve avere almeno %(num)s caratteri.",
+                num=SLUG_MIN_LEN,
+            )
         )
     return ridotto[:SLUG_MAX_LEN]
 
@@ -90,11 +95,14 @@ def normalize_external_url(raw: Optional[str]) -> Optional[str]:
 
     if parti.scheme not in SCHEMI_AMMESSI:
         raise ValidationError(
-            "Il link deve cominciare per http:// o https://: "
-            f"«{parti.scheme}:» non è un indirizzo web."
+            _(
+                "Il link deve cominciare per http:// o https://: "
+                "«%(schema)s:» non è un indirizzo web.",
+                schema=parti.scheme,
+            )
         )
     if not parti.netloc:
-        raise ValidationError("Il link non sembra un indirizzo valido.")
+        raise ValidationError(_("Il link non sembra un indirizzo valido."))
 
     return candidato[:500]
 
@@ -177,13 +185,16 @@ def update_gara_showcase(
     """
     gara = db.session.get(Gara, gara_id)
     if gara is None:
-        raise NotFoundError(f"Gara {gara_id} non trovata")
+        raise NotFoundError(_("Gara %(id)s non trovata", id=gara_id))
 
     nuovo_slug = normalize_slug(slug)
     if nuovo_slug and slug_is_taken(nuovo_slug, gara_id=gara_id):
         raise ConflictError(
-            f"L'indirizzo «{nuovo_slug}» è già usato da un'altra gara. "
-            "Scegline un altro."
+            _(
+                "L'indirizzo «%(slug)s» è già usato da un'altra gara. "
+                "Scegline un altro.",
+                slug=nuovo_slug,
+            )
         )
 
     gara.slug = nuovo_slug
@@ -207,7 +218,7 @@ def set_gara_banner(gara_id: int, banner_path: Optional[str]) -> Gara:
     """
     gara = db.session.get(Gara, gara_id)
     if gara is None:
-        raise NotFoundError(f"Gara {gara_id} non trovata")
+        raise NotFoundError(_("Gara %(id)s non trovata", id=gara_id))
     gara.banner_path = banner_path
     return gara
 
@@ -272,13 +283,16 @@ def update_campionato_showcase(
 
     campionato = db.session.get(Campionato, campionato_id)
     if campionato is None:
-        raise NotFoundError(f"Campionato {campionato_id} non trovato")
+        raise NotFoundError(_("Campionato %(id)s non trovato", id=campionato_id))
 
     nuovo_slug = normalize_slug(slug)
     if nuovo_slug and slug_campionato_is_taken(nuovo_slug, campionato_id=campionato_id):
         raise ConflictError(
-            f"L'indirizzo «{nuovo_slug}» è già usato da un altro campionato. "
-            "Scegline un altro."
+            _(
+                "L'indirizzo «%(slug)s» è già usato da un altro campionato. "
+                "Scegline un altro.",
+                slug=nuovo_slug,
+            )
         )
 
     campionato.slug = nuovo_slug
@@ -299,7 +313,7 @@ def set_campionato_banner(campionato_id: int, banner_path: Optional[str]):
 
     campionato = db.session.get(Campionato, campionato_id)
     if campionato is None:
-        raise NotFoundError(f"Campionato {campionato_id} non trovato")
+        raise NotFoundError(_("Campionato %(id)s non trovato", id=campionato_id))
     campionato.banner_path = banner_path
     return campionato
 

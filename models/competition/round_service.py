@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import logging
 
+from flask_babel import gettext as _
+
 from models.base import db, transactional
 from models.matchmaking.configuration import MatchmakingStrategy
 from .models import Gara
@@ -65,10 +67,10 @@ class RoundService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
 
         if gara.current_round != 0:
-            raise ValueError("La gara è già iniziata!")
+            raise ValueError(_("La gara è già iniziata!"))
 
         if bye_to_last_inscribed is not None:
             gara.bye_to_last_inscribed = bool(bye_to_last_inscribed)
@@ -84,7 +86,10 @@ class RoundService:
         )
         if len(inscriptions) < gara.min_participants:
             raise ValueError(
-                f"Servono almeno {gara.min_participants} iscritti per avviare la gara!"
+                _(
+                    "Servono almeno %(num)s iscritti per avviare la gara!",
+                    num=gara.min_participants,
+                )
             )
 
         # Seme del sorteggio: generato una volta sola e persistito, così il
@@ -137,12 +142,20 @@ class RoundService:
             registry_name = strategy_mapping.get(gara.matchmaking_strategy)
             if not registry_name:
                 raise ValueError(
-                    f"Mapping per strategia {gara.matchmaking_strategy} non trovato"
+                    _(
+                        "Strategia di abbinamento «%(nome)s» non trovata",
+                        nome=gara.matchmaking_strategy,
+                    )
                 )
 
             strategy = registry.get(registry_name)
             if not strategy:
-                raise ValueError(f"Strategia {registry_name} non trovata nel registry")
+                raise ValueError(
+                    _(
+                        "Strategia di abbinamento «%(nome)s» non trovata",
+                        nome=registry_name,
+                    )
+                )
 
             # Crea tutti i turni contemporaneamente (per random)
             from models.competition.round_creation import (
@@ -202,7 +215,12 @@ class RoundService:
             registry_name = strategy_mapping.get(strategy_name, strategy_name)
             strategy = registry.get(registry_name)
             if not strategy:
-                raise ValueError(f"Strategia {registry_name} non trovata nel registry")
+                raise ValueError(
+                    _(
+                        "Strategia di abbinamento «%(nome)s» non trovata",
+                        nome=registry_name,
+                    )
+                )
 
             pairings = strategy.create_round(gara, 1)
 

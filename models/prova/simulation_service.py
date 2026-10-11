@@ -40,6 +40,8 @@ import random
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Protocol
 
+from flask_babel import gettext
+
 from models.base import db
 from models.exceptions import ConflictError
 
@@ -309,14 +311,16 @@ class SimulationService:
         with prova_visibili():
             invito = db.session.get(PlayoffQualification, qualification_id)
             if invito is None:
-                raise NotFoundError("Invito non trovato")
+                raise NotFoundError(gettext("Invito non trovato"))
             if invito.user is None or not invito.user.is_fittizio:
                 raise ValidationError(
-                    "Qui si risponde solo per i giocatori fittizi: gli altri "
-                    "rispondono da soli"
+                    gettext(
+                        "Qui si risponde solo per i giocatori fittizi: gli altri "
+                        "rispondono da soli"
+                    )
                 )
             if invito.status != QualificationStatus.PENDING:
-                raise ConflictError("Questo invito ha già una risposta")
+                raise ConflictError(gettext("Questo invito ha già una risposta"))
             if accetta:
                 PlayoffService.confirm_qualification(invito.id, invito.user_id)
                 return None
@@ -367,9 +371,9 @@ class SimulationService:
         if gara is None:
             from models.exceptions import NotFoundError
 
-            raise NotFoundError("Gara non trovata")
+            raise NotFoundError(gettext("Gara non trovata"))
         if not gara.current_round:
-            raise ConflictError("La gara non è ancora iniziata")
+            raise ConflictError(gettext("La gara non è ancora iniziata"))
         return gara
 
     @staticmethod

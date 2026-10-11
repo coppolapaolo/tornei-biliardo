@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, TypedDict
+from flask_babel import gettext as _
 from sqlalchemy import func
 from models.base import db
 from models.classification.bracket_standings import bracket_positions
@@ -530,12 +531,12 @@ class SpareggioService:
             Tuple of (is_valid, error_message)
         """
         if not scores:
-            return False, "Nessun punteggio fornito"
+            return False, _("Nessun punteggio fornito")
 
         # Check all scores are non-negative integers
         for score in scores.values():
             if not isinstance(score, int) or score < 0:
-                return False, "I punteggi devono essere numeri interi non negativi"
+                return False, _("I punteggi devono essere numeri interi non negativi")
 
         score_values: List[Optional[int]] = list(scores.values())
         needed = (
@@ -548,13 +549,18 @@ class SpareggioService:
                 # l'altro a seconda di dove scatta la validazione.
                 return (
                     False,
-                    "Serve un vincitore netto: il punteggio più alto del "
-                    "gruppo non può essere condiviso",
+                    _(
+                        "Serve un vincitore netto: il punteggio più alto del "
+                        "gruppo non può essere condiviso"
+                    ),
                 )
             return (
                 False,
-                f"I primi {needed} punteggi devono essere diversi fra loro "
-                f"e più alti degli altri",
+                _(
+                    "I primi %(num)s punteggi devono essere diversi fra loro "
+                    "e più alti degli altri",
+                    num=needed,
+                ),
             )
 
         return True, ""
@@ -571,14 +577,14 @@ class SpareggioService:
             Tuple of (is_valid, error_message)
         """
         if not scores:
-            return False, "Nessun punteggio inserito"
+            return False, _("Nessun punteggio inserito")
 
         # Check all scores are non-negative integers
         for score in scores.values():
             if not isinstance(score, int) or score < 0:
                 return (
                     False,
-                    "Tutti i punteggi devono essere numeri interi non negativi",
+                    _("Tutti i punteggi devono essere numeri interi non negativi"),
                 )
 
         # Check all scores are different
@@ -586,7 +592,7 @@ class SpareggioService:
         if len(score_values) != len(set(score_values)):
             return (
                 False,
-                "I punteggi devono essere tutti diversi per risolvere il parimerito",
+                _("I punteggi devono essere tutti diversi per risolvere il parimerito"),
             )
 
         return True, ""
@@ -613,7 +619,7 @@ class SpareggioService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            return False, "Gara non trovata"
+            return False, _("Gara non trovata")
 
         # Get or create GaraClassification entries for all players
         # First, ensure all players in the tiebreaker have GaraClassification entries
@@ -656,7 +662,7 @@ class SpareggioService:
             gara_class.spot_shot_wins = ssr_score
             gara_class.tiebreaker_resolved = True
 
-        return True, "Punteggi spareggio salvati con successo"
+        return True, _("Punteggi spareggio salvati")
 
     @staticmethod
     @transactional(domain="competition")
@@ -681,7 +687,7 @@ class SpareggioService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            return False, "Gara non trovata"
+            return False, _("Gara non trovata")
 
         # Verify the group exists and contains the specified user_ids
         all_groups = SpareggioService.get_all_ssr_groups(gara_id)
@@ -694,7 +700,10 @@ class SpareggioService:
         if not target_group:
             return (
                 False,
-                f"Gruppo di parimerito alla posizione {group_position} non trovato",
+                _(
+                    "Gruppo di parimerito alla posizione %(posizione)s non trovato",
+                    posizione=group_position,
+                ),
             )
 
         # Validazione dopo la risoluzione del gruppo: quanti punteggi devono
@@ -710,7 +719,9 @@ class SpareggioService:
         group_user_ids = {p["user_id"] for p in target_group["players"]}
         for user_id in scores.keys():
             if user_id not in group_user_ids:
-                return False, f"Giocatore {user_id} non appartiene a questo gruppo"
+                return False, _(
+                    "Il giocatore %(id)s non appartiene a questo gruppo", id=user_id
+                )
 
         # Get final round for stats lookup
         final_round = SpareggioService._get_effective_final_round(gara)
@@ -753,7 +764,10 @@ class SpareggioService:
             gara_class.spot_shot_wins = ssr_score
             gara_class.tiebreaker_resolved = True
 
-        return True, f"Punteggi SSR per posizione {group_position} salvati"
+        return True, _(
+            "Punteggi SSR per posizione %(posizione)s salvati",
+            posizione=group_position,
+        )
 
     @staticmethod
     def clear_ssr_scores(gara_id: int) -> int:
@@ -877,7 +891,7 @@ class SpareggioService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            return False, "Gara non trovata"
+            return False, _("Gara non trovata")
 
         final_round = SpareggioService._get_effective_final_round(gara)
 
@@ -940,7 +954,7 @@ class SpareggioService:
                     gara_class.group_index = round_class.group_index = gruppo
                     gara_class.group_position = round_class.group_position = nel_girone
 
-        return True, "Classifica finale aggiornata"
+        return True, _("Classifica finale aggiornata")
 
     @staticmethod
     def _fasce_del_tabellone(

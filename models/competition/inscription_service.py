@@ -20,6 +20,8 @@ import logging
 from typing import Any, Optional
 from datetime import datetime
 
+from flask_babel import gettext as _
+
 from models.base import db, utc_now
 from models.status_enum import GaraStatus
 from models.exceptions import (
@@ -99,7 +101,7 @@ class InscriptionService:
         # Playoff gare: inscription reserved to qualified players only
         if gara.is_playoff and not _bypass_playoff_check:
             raise PermissionDeniedError(
-                "Gara playoff — iscrizione riservata ai qualificati"
+                _("Gara playoff: iscrizione riservata ai qualificati")
             )
 
         user = db.session.get(User, user_id)
@@ -108,18 +110,18 @@ class InscriptionService:
 
         # Validazione: Admin non può partecipare ai tornei
         if user.role == UserRole.ADMIN.value:
-            raise PermissionDeniedError("Admin non può partecipare ai tornei")
+            raise PermissionDeniedError(_("Admin non può partecipare ai tornei"))
 
         # Competizione di prova (ADR-058): solo fittizi, e i fittizi solo lì.
         # Il filtro di visibilità già nasconde la prova ai giocatori veri;
         # questo è il punto unico che lo garantisce anche a chi la vede.
         if gara.is_prova and not user.is_fittizio:
             raise PermissionDeniedError(
-                "In una competizione di prova si iscrivono solo i giocatori fittizi"
+                _("In una competizione di prova si iscrivono solo i giocatori fittizi")
             )
         if user.is_fittizio and not gara.is_prova:
             raise PermissionDeniedError(
-                "Un giocatore fittizio gioca solo nella sua prova"
+                _("Un giocatore fittizio gioca solo nella sua prova")
             )
 
         # Validazione: Verifica periodo di iscrizione
@@ -138,9 +140,9 @@ class InscriptionService:
             and inscribed_by_id is None
         ):
             if now < gara.inscription_start:
-                raise ConflictError("Iscrizioni non ancora aperte")
+                raise ConflictError(_("Iscrizioni non ancora aperte"))
             if now > gara.inscription_end:
-                raise ConflictError("Iscrizioni chiuse")
+                raise ConflictError(_("Iscrizioni chiuse"))
 
         # Conta iscrizioni attive (non in waitlist)
         active_count = (
@@ -924,23 +926,23 @@ class InscriptionService:
 
         if inscription_start > inscription_end:
             raise ValidationError(
-                "La data di inizio deve essere precedente alla data di fine!"
+                _("La data di inizio deve essere precedente alla data di fine!")
             )
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise NotFoundError(f"Gara {gara_id} non trovata")
+            raise NotFoundError(_("Gara %(id)s non trovata", id=gara_id))
 
         if min_participants is not None:
             if min_participants < 2:
-                raise ValidationError("Servono almeno 2 iscritti per giocare")
+                raise ValidationError(_("Servono almeno 2 iscritti per giocare"))
             gara.min_participants = min_participants
         if max_participants is not None:
             if max_participants <= 0:
                 gara.max_participants = None
             elif max_participants < (gara.min_participants or 0):
                 raise ValidationError(
-                    "Il massimo degli iscritti non puo' essere sotto il minimo"
+                    _("Il massimo degli iscritti non può essere sotto il minimo")
                 )
             else:
                 gara.max_participants = max_participants
@@ -973,22 +975,25 @@ class InscriptionService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise NotFoundError(f"Gara {gara_id} non trovata")
+            raise NotFoundError(_("Gara %(id)s non trovata", id=gara_id))
 
         if not gara.can_modify_inscription_dates():
             raise ConflictError(
-                "Impossibile modificare le date: il primo turno è già stato avviato!"
+                _(
+                    "Impossibile modificare le date: il primo turno è già stato "
+                    "avviato!"
+                )
             )
 
         if inscription_start > inscription_end:
             raise ValidationError(
-                "La data di inizio deve essere precedente alla data di fine!"
+                _("La data di inizio deve essere precedente alla data di fine!")
             )
 
         # Verifica che la fine iscrizioni non sia dopo la data della gara
         if gara.date and inscription_end.date() > gara.date:
             raise ValidationError(
-                "Le iscrizioni non possono terminare dopo la data della gara!"
+                _("Le iscrizioni non possono terminare dopo la data della gara!")
             )
 
         current_status = gara.status or GaraStatus.SETUP.value

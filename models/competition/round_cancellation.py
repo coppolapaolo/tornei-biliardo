@@ -6,6 +6,8 @@ Purpose: Round cancellation logic (cancel_first_round_startup,
 
 from __future__ import annotations
 
+from flask_babel import gettext as _
+
 from models.base import db, transactional
 from models.status_enum import GaraStatus
 from .models import Gara
@@ -28,12 +30,12 @@ class RoundCancellationService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
 
         # Per strategie che creano tutti i round all'avvio (es. Random),
         # permettiamo l'annullamento indipendentemente da current_round
         if not gara.creates_all_rounds_at_startup() and gara.current_round != 1:
-            raise ValueError("Questa operazione è valida solo per il primo turno")
+            raise ValueError(_("Questa operazione è valida solo per il primo turno"))
 
         # Verifica che non ci siano risultati inseriti in NESSUN round
         # (esclusi i bye che sono auto-completati)
@@ -47,7 +49,7 @@ class RoundCancellationService:
 
         if matches_with_results > 0:
             raise ValueError(
-                "Impossibile cancellare l'avvio: ci sono già dei risultati inseriti"
+                _("Impossibile cancellare l'avvio: ci sono già dei risultati inseriti")
             )
 
         # Cancella le classifiche della gara
@@ -149,15 +151,15 @@ class RoundCancellationService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
 
         # Verifica che siamo in stato playing
         if gara.status != GaraStatus.PLAYING.value:
-            raise ValueError("La gara deve essere in stato playing")
+            raise ValueError(_("La gara deve essere in corso"))
 
         current_round = gara.current_round
         if current_round <= 0:
-            raise ValueError("Non c'è un turno corrente da cancellare")
+            raise ValueError(_("Non c'è un turno corrente da cancellare"))
 
         # Verifica che non ci siano risultati inseriti (neanche parziali)
         current_round_matches = Match.query.filter_by(
@@ -165,7 +167,7 @@ class RoundCancellationService:
         ).all()
 
         if not current_round_matches:
-            raise ValueError("Non ci sono partite del turno corrente da cancellare")
+            raise ValueError(_("Non ci sono partite del turno corrente da cancellare"))
 
         # Controlla che non ci siano risultati inseriti (neanche parziali)
         # Note: match.status == PLAYING just means a table was assigned,
@@ -177,8 +179,10 @@ class RoundCancellationService:
                 or match.winner_id is not None
             ):
                 raise ValueError(
-                    "Impossibile cancellare l'avvio: sono già stati inseriti "
-                    "risultati (anche parziali)"
+                    _(
+                        "Impossibile cancellare l'avvio: sono già stati inseriti "
+                        "risultati (anche parziali)"
+                    )
                 )
 
         # Rimuovi tutte le partite del turno corrente e dati correlati

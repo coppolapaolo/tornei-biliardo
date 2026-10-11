@@ -214,7 +214,7 @@ class TrioScoringService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if trio is None:
-            raise ValueError(f"TrioMatch {trio_id} non trovato")
+            raise ValueError(_("Partita a tre %(id)s non trovata", id=trio_id))
 
         config = trio.trio_config
 
@@ -240,9 +240,13 @@ class TrioScoringService:
         ]:
             if racks > max_per_player:
                 raise ValueError(
-                    f"{label} non può vincere più di {max_per_player} rack "
-                    f"(partecipa a {max_per_player} matchup su "
-                    f"{config.total_played_racks})"
+                    _(
+                        "%(giocatore)s non può vincere più di %(massimo)s "
+                        "triangoli (ne gioca %(massimo)s su %(totale)s)",
+                        giocatore=label,
+                        massimo=max_per_player,
+                        totale=config.total_played_racks,
+                    )
                 )
 
         # Delete any existing racks

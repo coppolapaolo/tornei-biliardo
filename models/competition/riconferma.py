@@ -23,6 +23,8 @@ import json
 from datetime import datetime, time, timedelta
 from typing import Any, Dict, List, Optional
 
+from flask_babel import gettext as _
+
 from ..base import db
 from ..transaction.manager import transactional
 
@@ -158,9 +160,9 @@ def riconferma(inscription_id: int, autore: Any = None) -> Any:
 
     inscription = db.session.get(Inscription, inscription_id)
     if inscription is None:
-        raise NotFoundError("Iscrizione non trovata")
+        raise NotFoundError(_("Iscrizione non trovata"))
     if not _gara_in_attesa(inscription.gara):
-        raise ConflictError("La gara è già avviata: decide il direttore.")
+        raise ConflictError(_("La gara è già avviata: decide il direttore."))
     campi = da_riconfermare(inscription)
     prima = valori_accettati(inscription)
     inscription.accepted_terms = scrivi(termini_della_gara(inscription.gara))
@@ -194,7 +196,7 @@ def riconferma_invito(qualification_id: int, autore: Any = None) -> Any:
 
     qualification = db.session.get(PlayoffQualification, qualification_id)
     if qualification is None:
-        raise NotFoundError("Invito non trovato")
+        raise NotFoundError(_("Invito non trovato"))
     campi = invito_da_riconfermare(qualification)
     prima = leggi(qualification.accepted_terms) or {}
     attuali = termini_della_config(qualification.configuration)

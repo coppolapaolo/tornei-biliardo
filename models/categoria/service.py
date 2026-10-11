@@ -27,6 +27,8 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, Tuple
 
+from flask_babel import gettext as _, ngettext
+
 from models.base import db
 from models.exceptions import (
     ConflictError,
@@ -120,17 +122,19 @@ class CategoriaService:
             return
         if not CategoriaService.is_editable(gara):
             raise ConflictError(
-                "Le categorie non si cambiano più: la gara è chiusa, o con la "
-                "strategia casuale tutte le partite esistono già dall'avvio."
+                _(
+                    "Le categorie non si cambiano più: la gara è chiusa, o con la "
+                    "strategia casuale tutte le partite esistono già dall'avvio."
+                )
             )
 
     @staticmethod
     def _assert_can_manage(gara, actor) -> None:
         """Le categorie le governa chi dirige quella competizione."""
         if actor is None or not getattr(actor, "is_authenticated", False):
-            raise PermissionDeniedError("Accesso richiesto")
+            raise PermissionDeniedError(_("Accesso richiesto"))
         if not actor.can_manage_competition(gara.id):
-            raise PermissionDeniedError("Non gestisci questa competizione")
+            raise PermissionDeniedError(_("Non gestisci questa competizione"))
 
     @staticmethod
     def can_edit_inscription(gara, actor) -> bool:
@@ -151,10 +155,13 @@ class CategoriaService:
     def _clean_name(name: str) -> str:
         cleaned = clean_display_name(name)
         if not cleaned:
-            raise ValidationError("Il nome della categoria non può essere vuoto")
+            raise ValidationError(_("Il nome della categoria non può essere vuoto"))
         if len(cleaned) > MAX_NAME_LENGTH:
             raise ValidationError(
-                f"Il nome della categoria supera i {MAX_NAME_LENGTH} caratteri"
+                _(
+                    "Il nome della categoria supera i %(num)s caratteri",
+                    num=MAX_NAME_LENGTH,
+                )
             )
         return cleaned
 
@@ -162,7 +169,7 @@ class CategoriaService:
     def get_or_404(categoria_id: int) -> Categoria:
         categoria = db.session.get(Categoria, categoria_id)
         if not categoria:
-            raise NotFoundError("Categoria non trovata")
+            raise NotFoundError(_("Categoria non trovata"))
         return categoria
 
     @staticmethod
@@ -180,7 +187,7 @@ class CategoriaService:
             else categoria.gara_id == owner_id
         )
         if not appartiene:
-            raise NotFoundError("Categoria non trovata in questa competizione")
+            raise NotFoundError(_("Categoria non trovata in questa competizione"))
         return categoria
 
     @staticmethod
@@ -206,7 +213,9 @@ class CategoriaService:
         cleaned = CategoriaService._clean_name(name)
         existing = CategoriaService.find_by_name(gara, cleaned)
         if existing:
-            raise ConflictError(f"La categoria «{existing.name}» è già in elenco")
+            raise ConflictError(
+                _("La categoria «%(nome)s» è già in elenco", nome=existing.name)
+            )
         return CategoriaService._build(gara, cleaned)
 
     @staticmethod
@@ -219,7 +228,9 @@ class CategoriaService:
         cleaned = CategoriaService._clean_name(new_name)
         clash = CategoriaService.find_by_name(gara, cleaned)
         if clash and clash.id != categoria.id:
-            raise ConflictError(f"La categoria «{clash.name}» è già in elenco")
+            raise ConflictError(
+                _("La categoria «%(nome)s» è già in elenco", nome=clash.name)
+            )
 
         categoria.rename(cleaned)
         return categoria
@@ -260,8 +271,14 @@ class CategoriaService:
         in_uso = CategoriaService.usage_count(categoria.id)
         if in_uso:
             raise ConflictError(
-                f"«{categoria.name}» è assegnata a {in_uso} iscritti: "
-                "disattivala invece di eliminarla."
+                ngettext(
+                    "«%(nome)s» è assegnata a %(num)d iscritto: disattivala "
+                    "invece di eliminarla.",
+                    "«%(nome)s» è assegnata a %(num)d iscritti: disattivala "
+                    "invece di eliminarla.",
+                    in_uso,
+                    nome=categoria.name,
+                )
             )
         db.session.delete(categoria)
 
@@ -288,7 +305,7 @@ class CategoriaService:
         CategoriaService.assert_editable(gara, force=force)
 
         if inscription.gara_id != gara.id:
-            raise NotFoundError("Iscrizione non trovata in questa gara")
+            raise NotFoundError(_("Iscrizione non trovata in questa gara"))
 
         cleaned = clean_display_name(name or "")
         if not cleaned:
