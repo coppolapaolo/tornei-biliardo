@@ -140,6 +140,13 @@ blocks:
       giocata** — vittorie, triangoli e punti divisi per le partite giocate —
       perché in un girone da 6 si gioca una partita in più che in uno da 5.
 
+      Mentre si gioca, la pagina della gara e lo schermo in sala mostrano
+      **una classifica per girone** («Girone A», «Girone B»), ognuna con il
+      sistema e i criteri dei pari merito della gara; ogni partita dice il
+      suo girone, e la tessera della gara ti dice dove sei nel tuo («Sei 2°
+      su 6 nel girone B»). A gara conclusa compare la classifica della gara,
+      con accanto a ogni nome la posizione nel girone («1º girone A»).
+
   - type: heading
     id: eliminazione
     title: "Eliminazione diretta"

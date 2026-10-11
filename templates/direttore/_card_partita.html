@@ -219,6 +219,8 @@
       <span class="c7-partita__forma">{{ _('Set %(num)s', num=_set.numero) if _set.in_corso else _('A set') }}</span>
       {% endif %}
       {% if finita and match.closed_on_time %}<span class="c7-partita__forma">{{ _('a tempo') }}</span>{% endif %}
+      {# Gironi multipli (ADR-076): di che girone è la partita. #}
+      {% if match.bracket_group is not none and gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value %}<span class="c7-partita__forma">{{ _('Girone %(nome)s', nome=nome_del_girone(match.bracket_group)) }}</span>{% endif %}
       {% if _timer %}
       {% import "components/_conto_alla_rovescia.html" as cr %}
       {{ cr.timer(match) }}

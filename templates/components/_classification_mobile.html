@@ -1,11 +1,40 @@
 {# templates/components/_classification_mobile.html — 7c #}
-{# Classifica compatta/completa. Expects: classification, round_number. Optional: ssr_scores_map #}
+{# Classifica compatta/completa. Expects: classification, round_number. Optional: ssr_scores_map
+   Gironi multipli (ADR-076): mentre si gioca una card per girone, ciascuna
+   nell'ordine del girone; a gara finita la classifica della gara con la
+   posizione nel girone sotto il nome. Col girone unico non cambia niente. #}
 
 {% if classification %}
 {# B14: respect gara.classification_system. RACK → only racks; else → wins + racks. #}
 {% set classification_sys = (gara.classification_system or 'WINS')|upper %}
 {% set is_rack_only = classification_sys == 'RACK' %}
 {% set is_points = classification_sys == 'POINTS' %}
+{% set _gironi = gironi_in_pagina(gara, classification) %}
+{% if _gironi %}
+<section class="c7-stack" style="margin-top: 16px;">
+  <h3 style="margin: 0;">{{ _('Classifica') }}</h3>
+  {% for g in _gironi %}
+  <div class="c7-stack" style="gap: 8px;" data-girone="{{ g.nome }}">
+    <div class="c7-kicker">{{ _('Girone %(nome)s', nome=g.nome) }}</div>
+    <div class="c7-card" style="padding: 6px 0;">
+      {% for v in g.righe %}
+      {% set entry = v.riga %}
+      <div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px; {% if not loop.last %}border-bottom: 1px solid var(--c7-line-soft);{% endif %}">
+        <span class="c7-num" style="width: 26px; text-align: center; color: {% if v.posizione <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ v.posizione }}</span>
+        <strong style="flex: 1; min-width: 0;">{{ entry.user.username }}</strong>
+        {% if is_points %}
+        <span class="c7-num" title="{{ _('Punti') }}">{{ entry.points or 0 }}</span>
+        {% elif not is_rack_only %}
+        <span class="c7-num" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
+        {% endif %}
+        <span class="c7-num" style="color: var(--c7-ink-muted); min-width: 34px; text-align: right;" title="{% if is_rack_only %}{{ _('Triangoli totali') }}{% else %}{{ _('Differenza triangoli') }}{% endif %}">{{ entry.ranking_rack_value }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</section>
+{% else %}
 <section class="c7-stack" style="margin-top: 16px;">
   <div class="d-flex align-items-center justify-content-between" style="gap: 12px;">
     <h3 style="margin: 0;">{{ _('Classifica') }}</h3>
@@ -19,8 +48,9 @@
   <div id="classificationCompact" class="c7-card" style="padding: 6px 0;">
     {% for entry in classification[:6] %}
     <div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px; {% if not loop.last %}border-bottom: 1px solid var(--c7-line-soft);{% endif %}">
-      <span class="c7-num" style="width: 26px; text-align: center; color: {% if loop.index <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ loop.index }}</span>
-      <strong style="flex: 1; min-width: 0;">{{ entry.user.username }}</strong>
+      <span class="c7-num" style="width: 26px; text-align: center; color: {% if entry.position <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ entry.position }}</span>
+      {% set _gr = girone_della_riga(entry) %}
+      <span style="flex: 1; min-width: 0;"><strong>{{ entry.user.username }}</strong>{% if _gr %}<span class="d-block" style="font-size: 12px; color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)sº girone %(nome)s', pos=_gr[1], nome=_gr[0]) }}</span>{% endif %}</span>
       {% if ssr_scores_map is defined and ssr_scores_map %}
         {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
         {% if ssr_score is not none %}
@@ -47,8 +77,9 @@
     {% for entry in classification %}
     <div style="padding: 12px 16px; {% if not loop.last %}border-bottom: 1px solid var(--c7-line-soft);{% endif %}">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <span class="c7-num" style="width: 26px; text-align: center; color: {% if loop.index <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ loop.index }}</span>
-        <strong style="flex: 1; min-width: 0;">{{ entry.user.username }}</strong>
+        <span class="c7-num" style="width: 26px; text-align: center; color: {% if entry.position <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ entry.position }}</span>
+        {% set _gr = girone_della_riga(entry) %}
+        <span style="flex: 1; min-width: 0;"><strong>{{ entry.user.username }}</strong>{% if _gr %}<span class="d-block" style="font-size: 12px; color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)sº girone %(nome)s', pos=_gr[1], nome=_gr[0]) }}</span>{% endif %}</span>
         {% if ssr_scores_map is defined and ssr_scores_map %}
           {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
           {% if ssr_score is not none %}
@@ -91,4 +122,5 @@ function toggleClassificationView(view) {
   document.getElementById('classPillFull').classList.toggle('is-active', !compact);
 }
 </script>
+{% endif %}
 {% endif %}

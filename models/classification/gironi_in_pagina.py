@@ -1,0 +1,154 @@
+"""Le classifiche di una gara a più gironi, come le mostrano le pagine (ADR-076).
+
+Le righe di classifica di una gara a gironi sono nell'ordine **della gara**:
+prima i primi di ogni girone, poi i secondi (`classification/gironi.py`). Ogni
+riga porta però anche il suo girone (`group_index`) e la posizione dentro il
+girone (`group_position`). Da lì le pagine ricavano due viste:
+
+* **mentre si gioca**, una classifica per girone: «Girone A», «Girone B»,
+  ciascuna nell'ordine del girone — il sistema e la catena della gara, già
+  applicati da chi ha scritto le righe;
+* **a gara finita**, la classifica della gara così com'è, con accanto a ogni
+  nome girone e posizione nel girone («1º girone A»).
+
+Con il girone unico le righe non hanno girone, e qui non succede niente: la
+pagina resta quella di sempre.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+
+from models.matchmaking.gironi import nome_del_girone
+from models.status_enum import GaraStatus
+
+
+@dataclass(frozen=True)
+class RigaDelGirone:
+    """Una riga di classifica vista dentro il suo girone."""
+
+    riga: Any
+    #: La posizione nel girone (pari merito condivisi: 1, 2, 2, 4).
+    posizione: int
+    #: La posizione nel girone dopo il turno prima, se c'era.
+    precedente: Optional[int] = None
+
+
+@dataclass(frozen=True)
+class GironeInPagina:
+    """Un girone con le sue righe, in ordine di girone."""
+
+    indice: int
+    nome: str
+    righe: Tuple[RigaDelGirone, ...]
+
+
+def dividi_per_girone(
+    righe: Iterable[Any],
+    precedenti: Optional[Mapping[int, int]] = None,
+) -> List[GironeInPagina]:
+    """Le righe divise per girone, o una lista vuota se i gironi non ci sono.
+
+    Vuota anche quando una riga non ha girone (un dato storico, una gara a
+    girone unico) o quando i gironi distinti sono meno di due: allora la
+    classifica si mostra intera, e nessuno sparisce dalla pagina.
+
+    Args:
+        righe: righe di classifica con ``group_index``, ``group_position``,
+            ``position`` e ``user_id``.
+        precedenti: giocatore → posizione nel girone dopo il turno prima.
+    """
+    tutte = list(righe)
+    if not tutte or any(getattr(r, "group_index", None) is None for r in tutte):
+        return []
+    per_girone: Dict[int, List[Any]] = {}
+    for r in tutte:
+        per_girone.setdefault(int(r.group_index), []).append(r)
+    if len(per_girone) < 2:
+        return []
+    precedenti = precedenti or {}
+    gironi = []
+    for indice in sorted(per_girone):
+        ordinate = sorted(
+            per_girone[indice],
+            key=lambda r: (r.group_position or r.position, r.position),
+        )
+        gironi.append(
+            GironeInPagina(
+                indice=indice,
+                nome=nome_del_girone(indice),
+                righe=tuple(
+                    RigaDelGirone(
+                        riga=r,
+                        posizione=r.group_position or pos,
+                        precedente=precedenti.get(r.user_id),
+                    )
+                    for pos, r in enumerate(ordinate, start=1)
+                ),
+            )
+        )
+    return gironi
+
+
+def _gara_in_gioco(gara: Any) -> bool:
+    """Si gioca ancora? Allora si guardano i gironi, non la gara intera."""
+    return getattr(gara, "status", None) == GaraStatus.PLAYING.value
+
+
+def _posizioni_nel_girone_prima(righe: Sequence[Any]) -> Dict[int, int]:
+    """La posizione nel girone di ognuno dopo il turno prima di queste righe."""
+    turno = getattr(righe[0], "round_number", None) if righe else None
+    gara_id = getattr(righe[0], "gara_id", None) if righe else None
+    if not turno or turno <= 1 or gara_id is None:
+        return {}
+    from models.base import db
+
+    from .models import RoundClassification
+
+    return {
+        user_id: posizione
+        for user_id, posizione in db.session.query(
+            RoundClassification.user_id, RoundClassification.group_position
+        )
+        .filter(
+            RoundClassification.gara_id == gara_id,
+            RoundClassification.round_number == turno - 1,
+            RoundClassification.group_position.isnot(None),
+        )
+        .all()
+    }
+
+
+def gironi_in_pagina(gara: Any, righe: Optional[Iterable[Any]]) -> List[GironeInPagina]:
+    """Le classifiche per girone da mostrare, o vuota se va mostrata la gara.
+
+    Mentre la gara si gioca, una classifica per girone; a gara finita (o in
+    attesa dello spareggio, che guarda la posizione nella gara) la classifica
+    della gara intera, che chi la mostra correda con `girone_della_riga`.
+    """
+    if righe is None or not _gara_in_gioco(gara):
+        return []
+    tutte = list(righe)
+    gironi = dividi_per_girone(tutte)
+    if not gironi:
+        return []
+    return dividi_per_girone(tutte, _posizioni_nel_girone_prima(tutte))
+
+
+def girone_della_riga(riga: Any) -> Optional[Tuple[str, int]]:
+    """(nome del girone, posizione nel girone) di una riga, o None col girone unico."""
+    indice = getattr(riga, "group_index", None)
+    posizione = getattr(riga, "group_position", None)
+    if indice is None or not posizione:
+        return None
+    return nome_del_girone(int(indice)), int(posizione)
+
+
+__all__ = [
+    "GironeInPagina",
+    "RigaDelGirone",
+    "dividi_per_girone",
+    "girone_della_riga",
+    "gironi_in_pagina",
+]

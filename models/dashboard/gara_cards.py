@@ -35,6 +35,7 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from models.base import db
 from models.classification.models import GaraClassification, RoundClassification
+from models.matchmaking.gironi import nome_del_girone
 from models.dashboard.comandi import ComandoVM, comando_per
 from models.competition.models import Gara, Inscription, WaitlistReason
 from models.match.models import Match as TournamentMatch
@@ -118,6 +119,9 @@ class PosizioneVM:
     posizione: int
     su: int
     turno: int
+    #: Nelle gare a più gironi posizione e «su quanti» sono **nel girone**,
+    #: che qui si nomina: «A», «B» (ADR-076). None col girone unico.
+    girone: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -534,6 +538,8 @@ def enrich_with_progress(cards: Iterable[GaraCardVM], user_id: Optional[int]) ->
                 RoundClassification.gara_id,
                 RoundClassification.user_id,
                 RoundClassification.position,
+                RoundClassification.group_index,
+                RoundClassification.group_position,
             )
             .filter(
                 or_(
@@ -548,21 +554,27 @@ def enrich_with_progress(cards: Iterable[GaraCardVM], user_id: Optional[int]) ->
             )
             .all()
         )
-        quanti: Dict[int, int] = {}
-        mia_posizione: Dict[int, int] = {}
-        for gid, uid, posizione in righe:
-            quanti[gid] = quanti.get(gid, 0) + 1
+        # Nelle gare a più gironi si conta dentro il girone di chi guarda:
+        # mentre si gioca, la posizione che conta è quella nel girone.
+        quanti: Dict[Tuple[int, Optional[int]], int] = {}
+        mia: Dict[int, Tuple[int, Optional[int], Optional[int]]] = {}
+        for gid, uid, posizione, gruppo, nel_gruppo in righe:
+            chiave = (gid, gruppo if nel_gruppo else None)
+            quanti[chiave] = quanti.get(chiave, 0) + 1
             if uid == user_id:
-                mia_posizione[gid] = posizione
+                mia[gid] = (posizione, gruppo, nel_gruppo)
 
         for card in in_corso:
-            posizione = mia_posizione.get(card.gara.id)
-            if posizione is not None:
-                card.classifica = PosizioneVM(
-                    posizione=posizione,
-                    su=quanti[card.gara.id],
-                    turno=ultimi[card.gara.id],
-                )
+            if card.gara.id not in mia:
+                continue
+            posizione, gruppo, nel_gruppo = mia[card.gara.id]
+            a_gironi = gruppo is not None and bool(nel_gruppo)
+            card.classifica = PosizioneVM(
+                posizione=nel_gruppo if a_gironi else posizione,
+                su=quanti[(card.gara.id, gruppo if a_gironi else None)],
+                turno=ultimi[card.gara.id],
+                girone=nome_del_girone(gruppo) if a_gironi else None,
+            )
 
     # 3. Le partite degli altri nel turno in corso. `current_round` cambia da
     #    gara a gara, quindi il filtro è una coppia per gara.

@@ -3754,6 +3754,11 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-sala__riga-nome { flex: 1; min-width: 0; font-size: 17px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .c7-sala__riga-val { font-size: 18px; font-weight: 800; }
 .c7-sala__riga-sec { width: 44px; text-align: right; font-size: 14px; font-weight: 700; color: var(--c7-ink-muted); }
+/* Gironi multipli (ADR-076): il nome del girone sopra la sua classifica, e
+   a gara finita da dove viene ognuno. */
+.c7-sala__girone { margin: 4px 0 -4px; }
+.c7-sala__riga-girone { flex-shrink: 0; }
+.c7-classifica__girone + .c7-classifica__girone { margin-top: 6px; }
 .c7-sala__turno-prima { display: flex; flex-direction: column; gap: 6px; padding: 12px 18px; }
 .c7-sala__partita-chiusa { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 700; }
 .c7-sala__partita-chiusa > span:first-child,

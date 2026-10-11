@@ -230,6 +230,26 @@
         {% endfor %}
       </div>
 
+      {% elif schermo.gironi %}
+      {# Gara a più gironi in gioco: una classifica per girone (ADR-076). #}
+      <div class="c7-sechead">
+        <h3>{% if not schermo.turno_classifica %}{{ _('Classifica complessiva') }}{% else %}{{ _('Classifica dopo il turno %(n)s', n=schermo.turno_classifica) }}{% endif %}</h3>
+        <span class="c7-sechead__note">{{ _('Vinti · persi') if schermo.rack else (_('Punti · diff') if schermo.punti else _('Vinte · diff')) }}</span>
+      </div>
+      {% for g in schermo.gironi %}
+      <div class="c7-kicker c7-sala__girone">{{ _('Girone %(nome)s', nome=g.nome) }}</div>
+      <div class="c7-rows c7-sala__classifica" style="flex-grow: {{ g.righe|length }}" data-girone="{{ g.nome }}">
+        {% for r in g.righe %}
+        <div class="c7-rows__row c7-sala__riga">
+          <span class="c7-pos c7-pos--lg{% if r.posizione <= 3 %} c7-pos--{{ r.posizione }}{% endif %}">{{ r.posizione }}</span>
+          <span class="c7-sala__riga-nome">{{ r.nome }}</span>
+          <span class="c7-num c7-sala__riga-val">{{ r.valore }}</span>
+          <span class="c7-num c7-sala__riga-sec">{{ r.secondo }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+
       {% elif schermo.classifica %}
       <div class="c7-sechead">
         <h3>
@@ -244,6 +264,7 @@
         <div class="c7-rows__row c7-sala__riga">
           <span class="c7-pos c7-pos--lg{% if r.posizione <= 3 %} c7-pos--{{ r.posizione }}{% endif %}">{{ r.posizione }}</span>
           <span class="c7-sala__riga-nome">{{ r.nome }}</span>
+          {% if r.girone %}<span class="c7-state c7-sala__riga-girone">{{ _('%(pos)sº girone %(nome)s', pos=r.girone[1], nome=r.girone[0]) }}</span>{% endif %}
           <span class="c7-num c7-sala__riga-val">{{ r.valore }}</span>
           <span class="c7-num c7-sala__riga-sec">{{ r.secondo }}</span>
         </div>

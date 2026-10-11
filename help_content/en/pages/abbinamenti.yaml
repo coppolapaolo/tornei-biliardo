@@ -141,6 +141,14 @@ blocks:
       match played** — wins, racks and points divided by the matches played —
       because a group of 6 plays one match more than a group of 5.
 
+      While the competition is being played, its page and the venue screen
+      show **one standings table per group** («Group A», «Group B»), each with
+      the competition's system and tiebreak criteria; every match says its
+      group, and the competition card tells you where you are in yours
+      («You are 2 of 6 in group B»). Once the competition is completed the
+      overall standings appear, with each player's place in their group next
+      to the name («#1 in group A»).
+
   - type: heading
     id: eliminazione
     title: "Knockout"
