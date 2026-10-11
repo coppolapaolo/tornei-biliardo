@@ -3563,3 +3563,64 @@ class TestLaFaseFinaleDopoIGironi:
         assert "per_il_taglio=True" in sorgente
         sorgente = inspect.getsource(fase_finale_service.ordine_dei_gironi)
         assert "catena_di_turno(gara, g)" in sorgente
+
+
+class TestComeSiMostraIlPariMerito:
+    """`SPECIFICHE.md` riga 366 («Classifica», «Come si mostra il pari
+    merito»), nota del 2026-10-11."""
+
+    def test_separati_solo_dal_sorteggio_sono_mostrati_al_posto_piu_alto(self):
+        """> Due giocatori con 2 vittorie e +6 che il sorteggio ha messo 1° e
+        > 2° sono mostrati entrambi al 1° posto, e il terzo al 3° (1, 1, 3)
+        > […] L'ordine delle righe resta quello della catena, e dove la
+        > posizione decide qualcosa decide quella col sorteggio."""
+        from models.classification.ordinamento import (
+            Concorrente,
+            Criterio,
+            Livello,
+            catena_di_default,
+            normalizza_catena,
+            ordina,
+        )
+        from models.status_enum import ClassificationSystem
+
+        wins, turno = ClassificationSystem.WINS, Livello.TURNO
+        catena = normalizza_catena(
+            [
+                v
+                for v in catena_di_default(turno, wins)
+                if v.criterio is not Criterio.POSIZIONE_PRECEDENTE
+            ],
+            turno,
+            wins,
+        )
+        fasce = ordina(
+            [
+                Concorrente(1, vittorie=2, differenza_rack=6, sorteggio=5),
+                Concorrente(2, vittorie=2, differenza_rack=6, sorteggio=1),
+                Concorrente(3, vittorie=1, differenza_rack=0, sorteggio=3),
+            ],
+            Criterio.VITTORIE,
+            catena,
+        )
+        assert [f.posizione for f in fasce] == [1, 2, 3]
+        assert [f.posizione_mostrata for f in fasce] == [1, 1, 3]
+
+    def test_chi_la_catena_lascia_pari_condivide_gia_la_posizione(self):
+        """> Chi la catena lascia pari senza sorteggio condivide già la
+        > posizione che decide (1, 2, 2, 4), e lì niente cambia."""
+        from models.classification.ordinamento import Concorrente, Criterio, ordina
+
+        fasce = ordina(
+            [
+                Concorrente(1, vittorie=3),
+                Concorrente(2, vittorie=2),
+                Concorrente(3, vittorie=2),
+                Concorrente(4, vittorie=0),
+            ],
+            Criterio.VITTORIE,
+            (),
+        )
+        posizioni = [(f.posizione, f.posizione_mostrata) for f in fasce]
+        assert posizioni == [(1, 1), (2, 2), (4, 4)]
+        assert [len(f.giocatori) for f in fasce] == [1, 2, 1]

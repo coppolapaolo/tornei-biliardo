@@ -51,6 +51,7 @@ from models.competition.tabellone_view import (
     nome_del_nodo,
 )
 from models.classification.gironi_in_pagina import dividi_per_girone, girone_della_riga
+from models.classification.models import posizione_mostrata
 from models.matchmaking.configuration import BRACKET_STRATEGIES, MatchmakingStrategy
 from models.status_enum import GaraStatus, MatchStatus
 
@@ -374,7 +375,8 @@ def _riga_sala(r: Any, rack: bool, posizione: int, con_girone: bool) -> RigaSala
 def _righe(rows: List) -> Tuple[List[RigaSala], bool]:
     """Le righe di classifica nelle colonne del sistema (ADR-047)."""
     rack = bool(rows) and bool(getattr(rows[0], "is_rack_ranking", False))
-    return [_riga_sala(r, rack, r.position, True) for r in rows], rack
+    # La posizione mostrata: pari merito sulla più alta (nota del 2026-10-11).
+    return [_riga_sala(r, rack, posizione_mostrata(r), True) for r in rows], rack
 
 
 def _gironi_sala(gara: Any, rows: List, rack: bool) -> Tuple[GironeSala, ...]:

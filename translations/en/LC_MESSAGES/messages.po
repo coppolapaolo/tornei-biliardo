@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-11 21:57+0200\n"
+"POT-Creation-Date: 2026-10-11 22:13+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -22,23 +22,23 @@ msgstr ""
 msgid "Accedi per vedere questa pagina."
 msgstr "Log in to see this page."
 
-#: app.py:1003 templates/errors/403.html:3
+#: app.py:1012 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
 
-#: app.py:1021
+#: app.py:1030
 msgid "Non è il tuo turno"
 msgstr "Not your turn yet"
 
-#: app.py:1022
+#: app.py:1031
 msgid "Colpo irregolare"
 msgstr "Illegal shot"
 
-#: app.py:1041
+#: app.py:1050
 msgid "Operazione non consentita"
 msgstr "That shot isn't allowed."
 
-#: app.py:1055
+#: app.py:1064
 msgid "Tiro non valido"
 msgstr "Foul shot"
 
@@ -226,45 +226,45 @@ msgid "Classifica a vittorie"
 msgstr "Standings by wins"
 
 #: models/campionato/showcase_view.py:226
-#: models/competition/showcase_view.py:452
+#: models/competition/showcase_view.py:453
 msgid "T"
 msgstr "R"
 
 #: models/campionato/showcase_view.py:228
-#: models/competition/showcase_view.py:454
+#: models/competition/showcase_view.py:455
 #: templates/individual_match/statistics.html:204
 #: templates/individual_match/statistics.html:212
 msgid "P"
 msgstr "L"
 
 #: models/campionato/showcase_view.py:230
-#: models/competition/showcase_view.py:455
+#: models/competition/showcase_view.py:456
 #: templates/individual_match/availability.html:17
 #: templates/individual_match/statistics.html:203
 #: templates/individual_match/statistics.html:212
 msgid "V"
 msgstr "W"
 
-#: models/campionato/showcase_view.py:258
-#: models/campionato/showcase_view.py:263
+#: models/campionato/showcase_view.py:259
+#: models/campionato/showcase_view.py:264
 #, python-format
 msgid "%(a)s – %(b)s"
 msgstr "%(a)s – %(b)s"
 
-#: models/campionato/showcase_view.py:272
+#: models/campionato/showcase_view.py:273
 #: templates/components/_campionato_fascia.html:51
 #: templates/public/vetrina_campionato.html:92
 msgid "Campionato concluso"
 msgstr "Championship finished"
 
-#: models/campionato/showcase_view.py:277
+#: models/campionato/showcase_view.py:278
 #, python-format
 msgid "Iscrizioni aperte · gara %(n)s"
 msgstr "Registration open · competition %(n)s"
 
-#: models/campionato/showcase_view.py:279
-#: models/competition/showcase_view.py:423
-#: models/competition/showcase_view.py:629
+#: models/campionato/showcase_view.py:280
+#: models/competition/showcase_view.py:424
+#: models/competition/showcase_view.py:631
 #: templates/components/_nearby_gare.html:40
 #: templates/components/_separated_dashboard_content.html:90
 #: templates/components/_tessera_gara.html:45
@@ -273,30 +273,30 @@ msgstr "Registration open · competition %(n)s"
 msgid "Iscrizioni aperte"
 msgstr "Open registrations"
 
-#: models/campionato/showcase_view.py:284
-#: models/competition/showcase_view.py:421
+#: models/campionato/showcase_view.py:285
+#: models/competition/showcase_view.py:422
 msgid "Gara in corso"
 msgstr "Competition in progress"
 
-#: models/campionato/showcase_view.py:288
+#: models/campionato/showcase_view.py:289
 msgid "Tutte le gare giocate"
 msgstr "All competitions played"
 
-#: models/campionato/showcase_view.py:290
+#: models/campionato/showcase_view.py:291
 #, python-format
 msgid "In corso · %(n)s gare giocate"
 msgstr "In progress · %(n)s competitions played"
 
-#: models/campionato/showcase_view.py:291
+#: models/campionato/showcase_view.py:292
 msgid "Non ancora iniziato"
 msgstr "Not started yet"
 
-#: models/campionato/showcase_view.py:362
-#: models/competition/showcase_view.py:590
+#: models/campionato/showcase_view.py:363
+#: models/competition/showcase_view.py:592
 msgid "Regolamento e informazioni"
 msgstr "Rules and information"
 
-#: models/campionato/tournament_service.py:391
+#: models/campionato/tournament_service.py:393
 msgid ""
 "Un campionato che somma vittorie, triangoli o punti propone gare a girone"
 " unico: chi capita nel girone più numeroso giocherebbe una partita in "
@@ -306,7 +306,7 @@ msgstr ""
 "events: whoever lands in the larger group would play one more match. For "
 "groups, choose placement standings."
 
-#: models/campionato/tournament_service.py:477
+#: models/campionato/tournament_service.py:479
 #, python-format
 msgid ""
 "Il sistema di classifica non si può più cambiare: la gara «%(gara)s» è "
@@ -315,7 +315,7 @@ msgstr ""
 "The standings system can no longer be changed: the competition «%(gara)s»"
 " has already started."
 
-#: models/campionato/tournament_service.py:535
+#: models/campionato/tournament_service.py:537
 #, python-format
 msgid ""
 "La gara «%(gara)s» è a tabellone: in un campionato che somma vittorie, "
@@ -326,7 +326,7 @@ msgstr ""
 "racks or points it would have no totals to add. Change its format, or "
 "keep placement standings."
 
-#: models/campionato/tournament_service.py:585
+#: models/campionato/tournament_service.py:587
 #, python-format
 msgid ""
 "Con il nuovo sistema di classifica la gara «%(gara)s» non sarebbe valida:"
@@ -1011,19 +1011,19 @@ msgid "chi era davanti al turno precedente"
 msgstr "who was ahead in the previous round"
 
 #: models/classification/editor_catena.py:130
-#: models/classification/ordinamento.py:709
+#: models/classification/ordinamento.py:780
 #, python-format
 msgid "%(a_pari)s conta %(elenco)s."
 msgstr "%(a_pari)s, the order is set by %(elenco)s."
 
 #: models/classification/editor_catena.py:132
-#: models/classification/ordinamento.py:708
+#: models/classification/ordinamento.py:779
 #, python-format
 msgid ", poi %(x)s"
 msgstr ", then %(x)s"
 
 #: models/classification/editor_catena.py:134
-#: models/classification/ordinamento.py:705
+#: models/classification/ordinamento.py:776
 #, python-format
 msgid "%(a_pari)s i giocatori restano a pari merito."
 msgstr "%(a_pari)s, players stay tied."
@@ -1074,12 +1074,12 @@ msgstr "always last: it settles the order"
 msgid "Non restano criteri da aggiungere."
 msgstr "No criteria left to add."
 
-#: models/classification/ordinamento.py:645 models/storia/etichette.py:170
+#: models/classification/ordinamento.py:716 models/storia/etichette.py:170
 #: templates/admin/campionato_wizard_step2.html:30
 #: templates/admin/users_list.html:152 templates/admin/users_list.html:248
 #: templates/components/_classification_mobile.html:28
-#: templates/components/_classification_mobile.html:63
-#: templates/components/_classification_mobile.html:92
+#: templates/components/_classification_mobile.html:65
+#: templates/components/_classification_mobile.html:96
 #: templates/components/_detailed_classification.html:31
 #: templates/components/_detailed_classification.html:84
 #: templates/components/_gara_edit_form.html:71
@@ -1091,18 +1091,18 @@ msgstr "No criteria left to add."
 msgid "Vittorie"
 msgstr "Wins"
 
-#: models/classification/ordinamento.py:646
+#: models/classification/ordinamento.py:717
 #: templates/components/_history_matches_tab.html:35
 #: templates/individual_match/statistics.html:155
 msgid "Triangoli vinti"
 msgstr "Racks won"
 
-#: models/classification/ordinamento.py:647 models/storia/etichette.py:174
+#: models/classification/ordinamento.py:718 models/storia/etichette.py:174
 #: templates/admin/campionato_wizard_step2.html:32
 #: templates/components/_campionato_general_classification.html:78
 #: templates/components/_classification_mobile.html:26
-#: templates/components/_classification_mobile.html:61
-#: templates/components/_classification_mobile.html:90
+#: templates/components/_classification_mobile.html:63
+#: templates/components/_classification_mobile.html:94
 #: templates/components/_detailed_classification.html:30
 #: templates/components/_detailed_classification.html:83
 #: templates/components/_gara_edit_form.html:73
@@ -1112,96 +1112,96 @@ msgstr "Racks won"
 msgid "Punti"
 msgstr "Points"
 
-#: models/classification/ordinamento.py:648
+#: models/classification/ordinamento.py:719
 #: templates/components/_classification_mobile.html:30
-#: templates/components/_classification_mobile.html:65
+#: templates/components/_classification_mobile.html:67
 msgid "Differenza triangoli"
 msgstr "Rack difference"
 
-#: models/classification/ordinamento.py:649
+#: models/classification/ordinamento.py:720
 msgid "Scontri diretti"
 msgstr "Head-to-head"
 
-#: models/classification/ordinamento.py:650
+#: models/classification/ordinamento.py:721
 msgid "Migliori piazzamenti"
 msgstr "Best placements"
 
-#: models/classification/ordinamento.py:651
+#: models/classification/ordinamento.py:722
 msgid "Spareggio SSR"
 msgstr "SSR tiebreaker"
 
-#: models/classification/ordinamento.py:652
+#: models/classification/ordinamento.py:723
 msgid "Posizione precedente"
 msgstr "Previous position"
 
-#: models/classification/ordinamento.py:653
+#: models/classification/ordinamento.py:724
 #: models/competition/gironi_service.py:109
 msgid "Sorteggio"
 msgstr "Draw"
 
-#: models/classification/ordinamento.py:660
+#: models/classification/ordinamento.py:731
 msgid "lo scontro diretto"
 msgstr "the head-to-head result"
 
-#: models/classification/ordinamento.py:662
+#: models/classification/ordinamento.py:733
 msgid "chi ha più primi posti, poi più secondi e così via"
 msgstr "whoever has more first places, then more second places and so on"
 
-#: models/classification/ordinamento.py:664
+#: models/classification/ordinamento.py:735
 msgid "la differenza triangoli"
 msgstr "the rack difference"
 
-#: models/classification/ordinamento.py:666
+#: models/classification/ordinamento.py:737
 msgid "i triangoli vinti"
 msgstr "the racks won"
 
-#: models/classification/ordinamento.py:668
+#: models/classification/ordinamento.py:739
 msgid "le vittorie"
 msgstr "the wins"
 
-#: models/classification/ordinamento.py:671
+#: models/classification/ordinamento.py:742
 msgid "lo spareggio SSR"
 msgstr "the SSR tiebreaker"
 
-#: models/classification/ordinamento.py:672
+#: models/classification/ordinamento.py:743
 #, python-format
 msgid "lo spareggio SSR fino al %(n)s° posto"
 msgstr "the SSR tiebreaker up to place %(n)s"
 
-#: models/classification/ordinamento.py:675
+#: models/classification/ordinamento.py:746
 msgid "la posizione dopo la gara precedente"
 msgstr "the position after the previous event"
 
-#: models/classification/ordinamento.py:677
+#: models/classification/ordinamento.py:748
 msgid "la posizione al turno precedente"
 msgstr "the position in the previous round"
 
-#: models/classification/ordinamento.py:678
+#: models/classification/ordinamento.py:749
 msgid "la posizione precedente"
 msgstr "the previous position"
 
-#: models/classification/ordinamento.py:679
+#: models/classification/ordinamento.py:750
 msgid "il sorteggio"
 msgstr "the draw"
 
-#: models/classification/ordinamento.py:684
+#: models/classification/ordinamento.py:755
 msgid "A pari triangoli vinti"
 msgstr "Level on racks won"
 
-#: models/classification/ordinamento.py:687
+#: models/classification/ordinamento.py:758
 msgid "A pari punti"
 msgstr "Level on points"
 
-#: models/classification/ordinamento.py:688
+#: models/classification/ordinamento.py:759
 msgid "A pari vittorie"
 msgstr "Level on wins"
 
-#: models/classification/ordinamento.py:715
+#: models/classification/ordinamento.py:786
 #, python-format
 msgid "Spareggio SSR fino al %(n)s°"
 msgstr "SSR tiebreaker up to place %(n)s"
 
-#: models/classification/ordinamento.py:727
+#: models/classification/ordinamento.py:798
 msgid "nessun criterio: i pari merito restano tali"
 msgstr "no criteria: ties stay tied"
 
@@ -1450,14 +1450,14 @@ msgid "Un giocatore fittizio gioca solo nella sua prova"
 msgstr "A dummy player only plays in their own trial"
 
 #: models/competition/inscription_service.py:143
-#: models/competition/showcase_view.py:428 routes/main.py:536
+#: models/competition/showcase_view.py:429 routes/main.py:536
 #: templates/components/_unified_cards.html:81
 #: templates/direttore/_fase_iscrizioni.html:27
 msgid "Iscrizioni non ancora aperte"
 msgstr "Registrations not yet open"
 
 #: models/competition/inscription_service.py:145
-#: models/competition/showcase_view.py:429 routes/main.py:547
+#: models/competition/showcase_view.py:430 routes/main.py:547
 #: templates/components/_tessera_gara.html:43
 #: templates/components/_tessera_playoff.html:54
 msgid "Iscrizioni chiuse"
@@ -1726,9 +1726,9 @@ msgstr "Match not found"
 #: models/competition/round_manager.py:138
 #: models/competition/round_manager.py:298
 #: models/competition/round_manager.py:429
-#: models/competition/spareggio_service.py:659
-#: models/competition/spareggio_service.py:727
-#: models/competition/spareggio_service.py:931
+#: models/competition/spareggio_service.py:691
+#: models/competition/spareggio_service.py:759
+#: models/competition/spareggio_service.py:963
 #: models/competition/withdraw_policy_service.py:95
 #: models/prova/simulation_service.py:374
 msgid "Gara non trovata"
@@ -1991,65 +1991,65 @@ msgstr ""
 "The address “%(slug)s” is already used by another championship. Choose a "
 "different one."
 
-#: models/competition/showcase_view.py:200
-#: models/competition/showcase_view.py:206
+#: models/competition/showcase_view.py:201
+#: models/competition/showcase_view.py:207
 #: templates/direttore/_card_partita.html:297
 #: templates/public/regolamento_gara.html:20
 #, python-format
 msgid "al %(n)s"
 msgstr "race to %(n)s"
 
-#: models/competition/showcase_view.py:202
+#: models/competition/showcase_view.py:203
 #, python-format
 msgid "%(n)s set"
 msgstr "exactly %(n)s sets"
 
-#: models/competition/showcase_view.py:204
+#: models/competition/showcase_view.py:205
 #, python-format
 msgid "%(set)s, ogni set al %(rack)s"
 msgstr "%(set)s, each set to %(rack)s"
 
-#: models/competition/showcase_view.py:207
+#: models/competition/showcase_view.py:208
 #: templates/direttore/preparazione/_turni.html:205
 #, python-format
 msgid "%(n)s triangoli esatti"
 msgstr "exactly %(n)s racks"
 
-#: models/competition/showcase_view.py:254
+#: models/competition/showcase_view.py:255
 msgid "distanze diverse per turno"
 msgstr "a different race each round"
 
-#: models/competition/showcase_view.py:323
+#: models/competition/showcase_view.py:324
 #: templates/direttore/preparazione/_turni.html:24
 #, python-format
 msgid "%(n)s turni"
 msgstr "%(n)s rounds"
 
-#: models/competition/showcase_view.py:332
+#: models/competition/showcase_view.py:333
 #, python-format
 msgid "%(disciplina)s — distanze diverse per turno"
 msgstr "%(disciplina)s — a different race each round"
 
-#: models/competition/showcase_view.py:335
-#: models/competition/showcase_view.py:343
+#: models/competition/showcase_view.py:336
+#: models/competition/showcase_view.py:344
 #, python-format
 msgid "Turno %(n)s: %(formato)s"
 msgstr "Round %(n)s: %(formato)s"
 
-#: models/competition/showcase_view.py:408
+#: models/competition/showcase_view.py:409
 #, python-format
 msgid "%(campionato)s · gara %(n)s"
 msgstr "%(campionato)s · competition %(n)s"
 
-#: models/competition/showcase_view.py:419
-#: models/competition/showcase_view.py:623 routes/main.py:566
+#: models/competition/showcase_view.py:420
+#: models/competition/showcase_view.py:625 routes/main.py:566
 #: templates/direttore/_fase_conclusa.html:26
 #: templates/direttore/_fase_conclusa.html:74
 msgid "Gara conclusa"
 msgstr "Competition finished"
 
-#: models/competition/showcase_view.py:499
-#: models/competition/showcase_view.py:619
+#: models/competition/showcase_view.py:501
+#: models/competition/showcase_view.py:621
 #: templates/individual_match/create_proposal.html:86
 #: templates/player/playoff_invitation.html:27
 #: templates/public/campionato_detail.html:83
@@ -2057,8 +2057,8 @@ msgstr "Competition finished"
 msgid "Dove"
 msgstr "Where"
 
-#: models/competition/showcase_view.py:509
-#: models/competition/showcase_view.py:619
+#: models/competition/showcase_view.py:511
+#: models/competition/showcase_view.py:621
 #: templates/individual_match/create_proposal.html:119
 #: templates/individual_match/edit_match.html:71
 #: templates/individual_match/match_detail.html:199
@@ -2066,56 +2066,56 @@ msgstr "Where"
 msgid "Formato"
 msgstr "Format"
 
-#: models/competition/showcase_view.py:528
+#: models/competition/showcase_view.py:530
 #: templates/components/_campionato_details_info.html:105
-#: templates/components/_tessera_gara.html:266
+#: templates/components/_tessera_gara.html:275
 msgid "Quote"
 msgstr "Fees"
 
-#: models/competition/showcase_view.py:531
+#: models/competition/showcase_view.py:533
 #, python-format
 msgid "%(categorie)s %(fee)s €"
 msgstr "%(categorie)s €%(fee)s"
 
-#: models/competition/showcase_view.py:543
+#: models/competition/showcase_view.py:545
 #: templates/admin/gara_create_standalone.html:480
 #: templates/components/_campionato_details_info.html:110
 #: templates/components/_gara_info.html:55
 #: templates/components/_player_dashboard_content.html:43
-#: templates/components/_tessera_gara.html:268
+#: templates/components/_tessera_gara.html:277
 #: templates/components/_tessera_playoff.html:71
 msgid "Quota"
 msgstr "Fee"
 
-#: models/competition/showcase_view.py:545
+#: models/competition/showcase_view.py:547
 msgid "Gratuito"
 msgstr "Free"
 
-#: models/competition/showcase_view.py:547
+#: models/competition/showcase_view.py:549
 #, python-format
 msgid "%(fee)s €"
 msgstr "€%(fee)s"
 
-#: models/competition/showcase_view.py:558
+#: models/competition/showcase_view.py:560
 #: templates/direttore/_fase_iscrizioni.html:136
 msgid "Chiusura iscrizioni"
 msgstr "Registration closes"
 
-#: models/competition/showcase_view.py:627
+#: models/competition/showcase_view.py:629
 #, python-format
 msgid "Iscrizioni aperte — %(n)s posti liberi"
 msgstr "Registration open — %(n)s seats left"
 
-#: models/competition/spareggio_service.py:571
+#: models/competition/spareggio_service.py:603
 msgid "Nessun punteggio fornito"
 msgstr "No score provided"
 
-#: models/competition/spareggio_service.py:576
+#: models/competition/spareggio_service.py:608
 #: templates/direttore/_scripts.html:73
 msgid "I punteggi devono essere numeri interi non negativi"
 msgstr "Scores must be non-negative integers"
 
-#: models/competition/spareggio_service.py:590
+#: models/competition/spareggio_service.py:622
 #: templates/direttore/_scripts.html:74
 msgid ""
 "Serve un vincitore netto: il punteggio più alto del gruppo non può essere"
@@ -2124,7 +2124,7 @@ msgstr ""
 "A clear winner is required: the highest score in the group cannot be "
 "shared"
 
-#: models/competition/spareggio_service.py:597
+#: models/competition/spareggio_service.py:629
 #, python-format
 msgid ""
 "I primi %(num)s punteggi devono essere diversi fra loro e più alti degli "
@@ -2133,39 +2133,39 @@ msgstr ""
 "The top %(num)s scores must differ from each other and be higher than the"
 " rest"
 
-#: models/competition/spareggio_service.py:617
+#: models/competition/spareggio_service.py:649
 msgid "Nessun punteggio inserito"
 msgstr "No score entered"
 
-#: models/competition/spareggio_service.py:624
+#: models/competition/spareggio_service.py:656
 msgid "Tutti i punteggi devono essere numeri interi non negativi"
 msgstr "All scores must be non-negative integers"
 
-#: models/competition/spareggio_service.py:632
+#: models/competition/spareggio_service.py:664
 msgid "I punteggi devono essere tutti diversi per risolvere il parimerito"
 msgstr "Scores must all be different to break the tie"
 
-#: models/competition/spareggio_service.py:702
+#: models/competition/spareggio_service.py:734
 msgid "Punteggi spareggio salvati"
 msgstr "Tiebreaker scores saved"
 
-#: models/competition/spareggio_service.py:741
+#: models/competition/spareggio_service.py:773
 #, python-format
 msgid "Gruppo di parimerito alla posizione %(posizione)s non trovato"
 msgstr "Tied group at position %(posizione)s not found"
 
-#: models/competition/spareggio_service.py:760
+#: models/competition/spareggio_service.py:792
 #, python-format
 msgid "Il giocatore %(id)s non appartiene a questo gruppo"
 msgstr "Player %(id)s does not belong to this group"
 
-#: models/competition/spareggio_service.py:805
+#: models/competition/spareggio_service.py:837
 #: routes/admin/competition/rounds.py:481
 #, python-format
 msgid "Punteggi SSR per posizione %(posizione)s salvati"
 msgstr "SSR scores for position %(posizione)s saved"
 
-#: models/competition/spareggio_service.py:994
+#: models/competition/spareggio_service.py:1035
 msgid "Classifica finale aggiornata"
 msgstr "Final standings updated"
 
@@ -2338,12 +2338,12 @@ msgstr "drawn"
 msgid "Partita %(score)s, %(outcome)s"
 msgstr "Match %(score)s, %(outcome)s"
 
-#: models/dashboard/activity_feedback.py:204
+#: models/dashboard/activity_feedback.py:206
 #, python-format
 msgid "%(pos)s°"
 msgstr "#%(pos)s"
 
-#: models/dashboard/activity_feedback.py:205
+#: models/dashboard/activity_feedback.py:207
 #: templates/components/_history_filters.html:67
 #: templates/components/_history_matches_tab.html:70
 #: templates/components/_match_info.html:16
@@ -2355,466 +2355,466 @@ msgstr "#%(pos)s"
 msgid "Gara"
 msgstr "Competition"
 
-#: models/dashboard/activity_feedback.py:214
+#: models/dashboard/activity_feedback.py:216
 #, python-format
 msgid "%(gara)s, %(pos)s° su %(total)s"
 msgstr "%(gara)s, place %(pos)s of %(total)s"
 
-#: models/dashboard/activity_feedback.py:220
+#: models/dashboard/activity_feedback.py:222
 #, python-format
 msgid "%(gara)s, %(pos)s°"
 msgstr "%(gara)s, place %(pos)s"
 
-#: models/dashboard/activity_feedback.py:261 models/obiettivo/progress.py:198
+#: models/dashboard/activity_feedback.py:263 models/obiettivo/progress.py:198
 #: templates/direttore/preparazione/_esercizi.html:73
 #: templates/sheet/proposta.html:100
 msgid "Esercizio"
 msgstr "Drill"
 
-#: models/dashboard/activity_feedback.py:275
+#: models/dashboard/activity_feedback.py:277
 #, python-format
 msgid "%(name)s, punteggio %(score)s"
 msgstr "%(name)s, score %(score)s"
 
-#: models/dashboard/activity_feedback.py:278
+#: models/dashboard/activity_feedback.py:280
 #, python-format
 msgid "%(name)s, superato"
 msgstr "%(name)s, passed"
 
-#: models/dashboard/activity_feedback.py:280
+#: models/dashboard/activity_feedback.py:282
 #, python-format
 msgid "%(name)s, non superato"
 msgstr "%(name)s, not passed"
 
-#: models/dashboard/activity_feedback.py:602
+#: models/dashboard/activity_feedback.py:604
 #, python-format
 msgid "invariato %(suffix)s"
 msgstr "unchanged %(suffix)s"
 
-#: models/dashboard/activity_feedback.py:616
-#: templates/components/_campionato_general_classification.html:108
+#: models/dashboard/activity_feedback.py:618
+#: templates/components/_campionato_general_classification.html:113
 #: templates/direttore/_classifica.html:30
 msgid "stabile"
 msgstr "steady"
 
-#: models/dashboard/activity_feedback.py:666
-#: models/dashboard/activity_feedback.py:1127
+#: models/dashboard/activity_feedback.py:668
+#: models/dashboard/activity_feedback.py:1129
 #, python-format
 msgid "%(num)s vinta"
 msgid_plural "%(num)s vinte"
 msgstr[0] "%(num)s won"
 msgstr[1] "%(num)s won"
 
-#: models/dashboard/activity_feedback.py:667
-#: models/dashboard/activity_feedback.py:1132
+#: models/dashboard/activity_feedback.py:669
+#: models/dashboard/activity_feedback.py:1134
 #, python-format
 msgid "%(num)s pari"
 msgid_plural "%(num)s pari"
 msgstr[0] "%(num)s drawn"
 msgstr[1] "%(num)s drawn"
 
-#: models/dashboard/activity_feedback.py:668
-#: models/dashboard/activity_feedback.py:1137
+#: models/dashboard/activity_feedback.py:670
+#: models/dashboard/activity_feedback.py:1139
 #, python-format
 msgid "%(num)s persa"
 msgid_plural "%(num)s perse"
 msgstr[0] "%(num)s lost"
 msgstr[1] "%(num)s lost"
 
-#: models/dashboard/activity_feedback.py:717
+#: models/dashboard/activity_feedback.py:719
 #, python-format
 msgid "Il tuo record è %(n)s settimane"
 msgstr "Your record is %(n)s weeks"
 
-#: models/dashboard/activity_feedback.py:719
+#: models/dashboard/activity_feedback.py:721
 msgid "È la tua serie più lunga finora"
 msgstr "This is your longest run so far"
 
-#: models/dashboard/activity_feedback.py:726
+#: models/dashboard/activity_feedback.py:728
 #, python-format
 msgid "%(num)s settimana di streak"
 msgid_plural "%(num)s settimane di streak"
 msgstr[0] "%(num)s week streak"
 msgstr[1] "%(num)s week streak"
 
-#: models/dashboard/activity_feedback.py:764
+#: models/dashboard/activity_feedback.py:766
 #, python-format
 msgid "%(pos)s° in %(campionato)s"
 msgstr "Place %(pos)s in %(campionato)s"
 
-#: models/dashboard/activity_feedback.py:769
+#: models/dashboard/activity_feedback.py:771
 #, python-format
 msgid "Su %(num)s giocatore in classifica"
 msgid_plural "Su %(num)s giocatori in classifica"
 msgstr[0] "Out of %(num)s ranked player"
 msgstr[1] "Out of %(num)s ranked players"
 
-#: models/dashboard/activity_feedback.py:796
+#: models/dashboard/activity_feedback.py:798
 #, python-format
 msgid "Punteggio medio %(avg)s"
 msgstr "Average score %(avg)s"
 
-#: models/dashboard/activity_feedback.py:798
+#: models/dashboard/activity_feedback.py:800
 msgid "Nessun punteggio registrato"
 msgstr "No score recorded"
 
-#: models/dashboard/activity_feedback.py:805
+#: models/dashboard/activity_feedback.py:807
 #, python-format
 msgid "%(num)s esercizio completato"
 msgid_plural "%(num)s esercizi completati"
 msgstr[0] "%(num)s drill completed"
 msgstr[1] "%(num)s drills completed"
 
-#: models/dashboard/activity_feedback.py:828
+#: models/dashboard/activity_feedback.py:830
 msgid "Continua a giocare per salire di livello"
 msgstr "Keep playing to level up"
 
-#: models/dashboard/activity_feedback.py:834
+#: models/dashboard/activity_feedback.py:836
 #, python-format
 msgid "Livello %(level)s al %(pct)s%%"
 msgstr "Level %(level)s at %(pct)s%%"
 
-#: models/dashboard/activity_feedback.py:845
+#: models/dashboard/activity_feedback.py:847
 msgid "Cosa sta funzionando"
 msgstr "What is working"
 
-#: models/dashboard/activity_feedback.py:848
+#: models/dashboard/activity_feedback.py:850
 msgid "Streak e classifica"
 msgstr "Streak and ranking"
 
-#: models/dashboard/activity_feedback.py:849
+#: models/dashboard/activity_feedback.py:851
 msgid "Tutti i tuoi numeri"
 msgstr "All your numbers"
 
-#: models/dashboard/activity_feedback.py:1254
+#: models/dashboard/activity_feedback.py:1256
 msgid "Account creato"
 msgstr "Account created"
 
-#: models/dashboard/activity_feedback.py:1256
+#: models/dashboard/activity_feedback.py:1258
 #, python-format
 msgid "La tua città: %(city)s"
 msgstr "Your city: %(city)s"
 
-#: models/dashboard/activity_feedback.py:1258
+#: models/dashboard/activity_feedback.py:1260
 msgid "Il tuo profilo è attivo"
 msgstr "Your profile is active"
 
-#: models/dashboard/activity_feedback.py:1263
+#: models/dashboard/activity_feedback.py:1265
 msgid "Gioca la prima partita"
 msgstr "Play your first match"
 
-#: models/dashboard/activity_feedback.py:1264
+#: models/dashboard/activity_feedback.py:1266
 msgid "Da qui parte il tuo Elo"
 msgstr "This is where your Elo starts"
 
-#: models/dashboard/activity_feedback.py:1268
+#: models/dashboard/activity_feedback.py:1270
 msgid "Prova un esercizio"
 msgstr "Try a drill"
 
-#: models/dashboard/activity_feedback.py:1269
+#: models/dashboard/activity_feedback.py:1271
 msgid "Sblocca il punteggio di precisione"
 msgstr "Unlock your accuracy score"
 
-#: models/dashboard/activity_feedback.py:1274
+#: models/dashboard/activity_feedback.py:1276
 msgid "Il tuo profilo è pronto"
 msgstr "Your profile is ready"
 
-#: models/dashboard/activity_feedback.py:1275
+#: models/dashboard/activity_feedback.py:1277
 msgid "Fai la prima attività e qui comparirà il tuo andamento."
 msgstr "Do your first activity and your progress will show up here."
 
-#: models/dashboard/activity_feedback.py:1277
+#: models/dashboard/activity_feedback.py:1279
 msgid "Il tuo Elo parte da 1200: si muove alla prima partita registrata."
 msgstr "Your Elo starts at 1200: it moves with your first recorded match."
 
-#: models/dashboard/activity_feedback.py:1311
+#: models/dashboard/activity_feedback.py:1313
 msgid "Come stai andando"
 msgstr "How you are doing"
 
-#: models/dashboard/activity_feedback.py:1324
+#: models/dashboard/activity_feedback.py:1326
 msgid "Elo gara"
 msgstr "Competition Elo"
 
-#: models/dashboard/activity_feedback.py:1324
-#: models/dashboard/activity_feedback.py:1413
+#: models/dashboard/activity_feedback.py:1326
+#: models/dashboard/activity_feedback.py:1415
 #: templates/player/privacy_settings.html:74
 msgid "Elo"
 msgstr "Elo"
 
-#: models/dashboard/activity_feedback.py:1334
+#: models/dashboard/activity_feedback.py:1336
 msgid "Elo, invariato"
 msgstr "Elo, unchanged"
 
-#: models/dashboard/activity_feedback.py:1334
+#: models/dashboard/activity_feedback.py:1336
 msgid "ti aspetta lì"
 msgstr "waiting for you there"
 
-#: models/dashboard/activity_feedback.py:1350
+#: models/dashboard/activity_feedback.py:1352
 #, python-format
 msgid "in %(num)s"
 msgstr "in %(num)s"
 
-#: models/dashboard/activity_feedback.py:1353
+#: models/dashboard/activity_feedback.py:1355
 #, python-format
 msgid "in %(num)s partita"
 msgid_plural "in %(num)s partite"
 msgstr[0] "in %(num)s match"
 msgstr[1] "in %(num)s matches"
 
-#: models/dashboard/activity_feedback.py:1355
-#: models/dashboard/activity_feedback.py:1392
-#: models/dashboard/activity_feedback.py:1482
+#: models/dashboard/activity_feedback.py:1357
+#: models/dashboard/activity_feedback.py:1394
+#: models/dashboard/activity_feedback.py:1484
 #, python-format
 msgid "in %(num)s gara"
 msgid_plural "in %(num)s gare"
 msgstr[0] "in %(num)s competition"
 msgstr[1] "in %(num)s competitions"
 
-#: models/dashboard/activity_feedback.py:1365
+#: models/dashboard/activity_feedback.py:1367
 msgid "massimo"
 msgstr "all-time high"
 
-#: models/dashboard/activity_feedback.py:1381
+#: models/dashboard/activity_feedback.py:1383
 #: templates/individual_match/statistics.html:53
 msgid "TPA di carriera"
 msgstr "Career TPA"
 
-#: models/dashboard/activity_feedback.py:1390
-#: models/dashboard/activity_feedback.py:1480
+#: models/dashboard/activity_feedback.py:1392
+#: models/dashboard/activity_feedback.py:1482
 msgid "Miglior piazzamento"
 msgstr "Best placing"
 
-#: models/dashboard/activity_feedback.py:1396 templates/admin/kpi.html:194
+#: models/dashboard/activity_feedback.py:1398 templates/admin/kpi.html:194
 #: templates/admin/kpi.html:254 templates/admin/kpi.html:859
 #: templates/gamification/admin/quest_form.html:55
 msgid "Partite giocate"
 msgstr "Matches Played"
 
-#: models/dashboard/activity_feedback.py:1399
+#: models/dashboard/activity_feedback.py:1401
 #, python-format
 msgid "%(won)s vinte"
 msgstr "%(won)s won"
 
-#: models/dashboard/activity_feedback.py:1414
+#: models/dashboard/activity_feedback.py:1416
 #: templates/individual_match/statistics.html:32
 #: templates/individual_match/tpa_referto.html:102
 msgid "TPA"
 msgstr "TPA"
 
-#: models/dashboard/activity_feedback.py:1430
-#: models/dashboard/activity_feedback.py:1773
+#: models/dashboard/activity_feedback.py:1432
+#: models/dashboard/activity_feedback.py:1775
 msgid "dalla più vecchia"
 msgstr "oldest first"
 
-#: models/dashboard/activity_feedback.py:1436
+#: models/dashboard/activity_feedback.py:1438
 msgid "Dove eri rimasto"
 msgstr "Where you left off"
 
-#: models/dashboard/activity_feedback.py:1438
+#: models/dashboard/activity_feedback.py:1440
 #, python-format
 msgid "%(num)s settimana fa"
 msgid_plural "%(num)s settimane fa"
 msgstr[0] "%(num)s week ago"
 msgstr[1] "%(num)s weeks ago"
 
-#: models/dashboard/activity_feedback.py:1446
+#: models/dashboard/activity_feedback.py:1448
 #, python-format
 msgid "%(num)s attività nel mese"
 msgid_plural "%(num)s attività nel mese"
 msgstr[0] "%(num)s activities this month"
 msgstr[1] "%(num)s activities this month"
 
-#: models/dashboard/activity_feedback.py:1454
+#: models/dashboard/activity_feedback.py:1456
 msgid "L'Elo è scivolato, ma la tua precisione al tavolo continua a crescere."
 msgstr "Your Elo slipped, but your accuracy at the table keeps improving."
 
-#: models/dashboard/activity_feedback.py:1473
+#: models/dashboard/activity_feedback.py:1475
 #: templates/gamification/admin/quest_form.html:56
 msgid "Partite vinte"
 msgstr "Matches won"
 
-#: models/dashboard/activity_feedback.py:1475
+#: models/dashboard/activity_feedback.py:1477
 #, python-format
 msgid "su %(num)s giocata"
 msgid_plural "su %(num)s giocate"
 msgstr[0] "of %(num)s played"
 msgstr[1] "of %(num)s played"
 
-#: models/dashboard/activity_feedback.py:1484
+#: models/dashboard/activity_feedback.py:1486
 msgid "Attività recenti"
 msgstr "Recent activity"
 
-#: models/dashboard/activity_feedback.py:1489
-#: models/dashboard/activity_feedback.py:1494
+#: models/dashboard/activity_feedback.py:1491
+#: models/dashboard/activity_feedback.py:1496
 msgid "Le tue ultime attività"
 msgstr "Your latest activities"
 
-#: models/dashboard/activity_feedback.py:1491
+#: models/dashboard/activity_feedback.py:1493
 msgid "Le tue ultime partite"
 msgstr "Your latest matches"
 
-#: models/dashboard/activity_feedback.py:1492
-#: models/dashboard/activity_feedback.py:1772
+#: models/dashboard/activity_feedback.py:1494
+#: models/dashboard/activity_feedback.py:1774
 msgid "Le tue ultime gare"
 msgstr "Your latest competitions"
 
-#: models/dashboard/activity_feedback.py:1493
+#: models/dashboard/activity_feedback.py:1495
 msgid "I tuoi ultimi esercizi"
 msgstr "Your latest drills"
 
-#: models/dashboard/activity_feedback.py:1503
+#: models/dashboard/activity_feedback.py:1505
 #, python-format
 msgid "ultima partita %(date)s"
 msgstr "last match %(date)s"
 
-#: models/dashboard/activity_feedback.py:1504
+#: models/dashboard/activity_feedback.py:1506
 #: models/istruttore/allievi_view.py:381
 msgid "oggi"
 msgstr "today"
 
-#: models/dashboard/activity_feedback.py:1507
+#: models/dashboard/activity_feedback.py:1509
 #, python-format
 msgid "%(value)s all'inizio"
 msgstr "%(value)s at the start"
 
-#: models/dashboard/activity_feedback.py:1508
+#: models/dashboard/activity_feedback.py:1510
 #, python-format
 msgid "oggi %(value)s"
 msgstr "today %(value)s"
 
-#: models/dashboard/activity_feedback.py:1526
-#: models/dashboard/activity_feedback.py:1572 routes/gamification/admin.py:343
+#: models/dashboard/activity_feedback.py:1528
+#: models/dashboard/activity_feedback.py:1574 routes/gamification/admin.py:343
 #: routes/gamification/features.py:50
 msgid "Esercizi completati"
 msgstr "Drills completed"
 
-#: models/dashboard/activity_feedback.py:1528
+#: models/dashboard/activity_feedback.py:1530
 msgid "nella tua finestra recente"
 msgstr "in your recent window"
 
-#: models/dashboard/activity_feedback.py:1533
+#: models/dashboard/activity_feedback.py:1535
 #, python-format
 msgid "in %(num)s sessione"
 msgid_plural "in %(num)s sessioni"
 msgstr[0] "in %(num)s session"
 msgstr[1] "in %(num)s sessions"
 
-#: models/dashboard/activity_feedback.py:1536
+#: models/dashboard/activity_feedback.py:1538
 msgid "Punteggio esercizi"
 msgstr "Drill score"
 
-#: models/dashboard/activity_feedback.py:1575
+#: models/dashboard/activity_feedback.py:1577
 #, python-format
 msgid "%(num)s superato"
 msgid_plural "%(num)s superati"
 msgstr[0] "%(num)s passed"
 msgstr[1] "%(num)s passed"
 
-#: models/dashboard/activity_feedback.py:1580
+#: models/dashboard/activity_feedback.py:1582
 #, python-format
 msgid "%(num)s fallito"
 msgid_plural "%(num)s falliti"
 msgstr[0] "%(num)s failed"
 msgstr[1] "%(num)s failed"
 
-#: models/dashboard/activity_feedback.py:1597
+#: models/dashboard/activity_feedback.py:1599
 #, python-format
 msgid "%(value)s alla prima"
 msgstr "%(value)s on the first"
 
-#: models/dashboard/activity_feedback.py:1598
+#: models/dashboard/activity_feedback.py:1600
 #, python-format
 msgid "%(value)s oggi"
 msgstr "%(value)s today"
 
-#: models/dashboard/activity_feedback.py:1613
-#: models/dashboard/activity_feedback.py:1658
+#: models/dashboard/activity_feedback.py:1615
+#: models/dashboard/activity_feedback.py:1660
 #, python-format
 msgid "%(num)s da chiudere"
 msgid_plural "%(num)s da chiudere"
 msgstr[0] "%(num)s to close"
 msgstr[1] "%(num)s to close"
 
-#: models/dashboard/activity_feedback.py:1642
+#: models/dashboard/activity_feedback.py:1644
 msgid "Come vanno le tue gare"
 msgstr "How your competitions are going"
 
-#: models/dashboard/activity_feedback.py:1646
+#: models/dashboard/activity_feedback.py:1648
 #: routes/gamification/features.py:47
 msgid "Gare organizzate"
 msgstr "Competitions organized"
 
-#: models/dashboard/activity_feedback.py:1648
+#: models/dashboard/activity_feedback.py:1650
 msgid "da quando sei direttore"
 msgstr "since you became a director"
 
-#: models/dashboard/activity_feedback.py:1669
+#: models/dashboard/activity_feedback.py:1671
 #, python-format
 msgid "%(taken)s posti occupati"
 msgstr "%(taken)s seats taken"
 
-#: models/dashboard/activity_feedback.py:1674
+#: models/dashboard/activity_feedback.py:1676
 #, python-format
 msgid "%(free)s liberi"
 msgstr "%(free)s free"
 
-#: models/dashboard/activity_feedback.py:1684
+#: models/dashboard/activity_feedback.py:1686
 msgid "Iscrizioni gestite"
 msgstr "Registrations managed"
 
-#: models/dashboard/activity_feedback.py:1686
+#: models/dashboard/activity_feedback.py:1688
 msgid "in tutte le tue gare"
 msgstr "across all your competitions"
 
-#: models/dashboard/activity_feedback.py:1694
+#: models/dashboard/activity_feedback.py:1696
 #, python-format
 msgid "%(n)s iscritti a %(gara)s"
 msgstr "%(n)s registered for %(gara)s"
 
-#: models/dashboard/activity_feedback.py:1696
+#: models/dashboard/activity_feedback.py:1698
 #, python-format
 msgid "%(n)s a %(gara)s"
 msgstr "%(n)s at %(gara)s"
 
-#: models/dashboard/activity_feedback.py:1760
+#: models/dashboard/activity_feedback.py:1762
 #, python-format
 msgid "%(gara)s, %(n)s iscritti, iscrizioni aperte"
 msgstr "%(gara)s, %(n)s registered, entries open"
 
-#: models/dashboard/activity_feedback.py:1765
+#: models/dashboard/activity_feedback.py:1767
 #, python-format
 msgid "%(gara)s, %(n)s iscritti"
 msgstr "%(gara)s, %(n)s registered"
 
-#: models/dashboard/activity_feedback.py:1783
+#: models/dashboard/activity_feedback.py:1785
 #, python-format
 msgid "%(num)s aperta"
 msgid_plural "%(num)s aperte"
 msgstr[0] "%(num)s open"
 msgstr[1] "%(num)s open"
 
-#: models/dashboard/activity_feedback.py:1784
+#: models/dashboard/activity_feedback.py:1786
 #, python-format
 msgid "%(num)s al completo"
 msgid_plural "%(num)s al completo"
 msgstr[0] "%(num)s full"
 msgstr[1] "%(num)s full"
 
-#: models/dashboard/activity_feedback.py:1788
+#: models/dashboard/activity_feedback.py:1790
 #, python-format
 msgid "%(num)s quasi piena"
 msgid_plural "%(num)s quasi piene"
 msgstr[0] "%(num)s nearly full"
 msgstr[1] "%(num)s nearly full"
 
-#: models/dashboard/activity_feedback.py:1793
+#: models/dashboard/activity_feedback.py:1795
 #, python-format
 msgid "%(num)s senza limite"
 msgid_plural "%(num)s senza limite"
 msgstr[0] "%(num)s with no cap"
 msgstr[1] "%(num)s with no cap"
 
-#: models/dashboard/activity_feedback.py:1798
+#: models/dashboard/activity_feedback.py:1800
 #, python-format
 msgid "%(num)s da riempire"
 msgid_plural "%(num)s da riempire"
@@ -6938,7 +6938,7 @@ msgid "Locandina rimossa."
 msgstr "Poster removed."
 
 #: routes/admin/campionato_form_parser.py:106
-#: routes/admin/competition/form_parser.py:701
+#: routes/admin/competition/form_parser.py:703
 #, python-format
 msgid ""
 "Il limite di tempo si scrive in minuti, da 1 a %(max)s; lascia vuoto per "
@@ -7245,16 +7245,16 @@ msgstr "Groups go from 1 (single group) to %(max)s."
 msgid "Composizione dei gironi sconosciuta: %(v)s"
 msgstr "Unknown group composition: %(v)s"
 
-#: routes/admin/competition/form_parser.py:126
+#: routes/admin/competition/form_parser.py:127
 msgid "Le finali per piazzamento non si possono ancora scegliere."
 msgstr "Placement finals cannot be chosen yet."
 
-#: routes/admin/competition/form_parser.py:128
+#: routes/admin/competition/form_parser.py:130
 #, python-format
 msgid "Fase finale sconosciuta: %(v)s"
 msgstr "Unknown final phase: %(v)s"
 
-#: routes/admin/competition/form_parser.py:143
+#: routes/admin/competition/form_parser.py:145
 #, python-format
 msgid "Al tabellone passano da 1 a %(max)s giocatori per girone."
 msgstr "From 1 to %(max)s players per group go to the bracket."
@@ -9128,7 +9128,7 @@ msgstr "Back to the tournament"
 #: templates/components/_history_matches_tab.html:19
 #: templates/components/_history_matches_tab.html:57
 #: templates/components/_match_cards_mobile.html:8
-#: templates/components/_tessera_gara.html:168
+#: templates/components/_tessera_gara.html:172
 #: templates/direttore/_fase_conclusa.html:108 templates/gara_bracket.html:21
 #: templates/individual_match/admin_overview.html:20
 #: templates/player/history.html:22
@@ -9139,8 +9139,8 @@ msgstr "Matches"
 #: templates/components/_history_campionati_tab.html:104
 #: templates/components/_history_gare_tab.html:116
 #: templates/components/_playoff_invitations.html:58
-#: templates/components/_tessera_gara.html:371
-#: templates/components/_tessera_gara.html:376
+#: templates/components/_tessera_gara.html:380
+#: templates/components/_tessera_gara.html:385
 #: templates/components/_tessera_playoff.html:115
 #: templates/components/_tessera_playoff.html:117
 #: templates/components/_unified_cards.html:110
@@ -11146,7 +11146,7 @@ msgstr "Step 2 of 2"
 
 #: templates/admin/campionato_wizard_step2.html:31
 #: templates/components/_classification_mobile.html:30
-#: templates/components/_classification_mobile.html:65
+#: templates/components/_classification_mobile.html:67
 #: templates/components/_detailed_classification.html:32
 #: templates/components/_detailed_classification.html:85
 #: templates/components/_gara_edit_form.html:72
@@ -11560,7 +11560,7 @@ msgstr[0] "%(n)s attempt"
 msgstr[1] "%(n)s attempts"
 
 #: templates/admin/gara_challenge_classification.html:136
-#: templates/components/_tessera_gara.html:176
+#: templates/components/_tessera_gara.html:180
 msgid "giocatori"
 msgstr "players"
 
@@ -13175,7 +13175,7 @@ msgid "Dati incompleti"
 msgstr "Incomplete details"
 
 #: templates/admin/venues_list.html:111
-#: templates/components/_tessera_gara.html:344
+#: templates/components/_tessera_gara.html:353
 #: templates/player/venue_detail.html:17 templates/player/venues.html:42
 msgid "Gestisci"
 msgstr "Manage"
@@ -14158,7 +14158,7 @@ msgstr "Remove the stretch"
 #: templates/components/_match_header.html:80
 #: templates/components/_match_result_row.html:128
 #: templates/components/_match_result_row.html:153
-#: templates/components/_tessera_gara.html:188
+#: templates/components/_tessera_gara.html:192
 #: templates/direttore/_card_partita.html:207
 #: templates/direttore/_card_partita.html:232
 #: templates/direttore/_card_partita.html:239
@@ -15515,8 +15515,8 @@ msgstr "You have a drill to play"
 #: templates/components/_match_scoreboard.html:240
 #: templates/components/_round_navigation.html:22
 #: templates/components/_round_navigation.html:34
-#: templates/components/_tessera_gara.html:172
-#: templates/components/_tessera_gara.html:186
+#: templates/components/_tessera_gara.html:176
+#: templates/components/_tessera_gara.html:190
 #: templates/components/_user_recent_matches_table.html:15
 #: templates/public/garas_list.html:14 templates/public/garas_list.html:38
 #: templates/public/schermo_sala.html:48
@@ -16011,34 +16011,34 @@ msgstr "invitations sent"
 msgid "Fuori dai playoff"
 msgstr "Out of the playoffs"
 
-#: templates/components/_campionato_general_classification.html:108
+#: templates/components/_campionato_general_classification.html:113
 #: templates/direttore/_classifica.html:30
 msgid "primo turno"
 msgstr "first round"
 
-#: templates/components/_campionato_general_classification.html:108
+#: templates/components/_campionato_general_classification.html:113
 #: templates/direttore/_classifica.html:30
 #, python-format
 msgid "sale di %(n)s"
 msgstr "up by %(n)s"
 
-#: templates/components/_campionato_general_classification.html:108
+#: templates/components/_campionato_general_classification.html:113
 #: templates/direttore/_classifica.html:30
 #, python-format
 msgid "scende di %(n)s"
 msgstr "down by %(n)s"
 
-#: templates/components/_campionato_general_classification.html:133
+#: templates/components/_campionato_general_classification.html:138
 msgid ""
 "Classifica generale: ordinata per triangoli totali, poi per punti "
 "spareggio (SSR)."
 msgstr "General standings: sorted by total racks, then by tiebreaker points (SSR)."
 
-#: templates/components/_campionato_general_classification.html:135
+#: templates/components/_campionato_general_classification.html:140
 msgid "Classifica generale basata sui punti ottenuti in tutte le gare completate."
 msgstr "General standings based on points earned in all completed competitions."
 
-#: templates/components/_campionato_general_classification.html:137
+#: templates/components/_campionato_general_classification.html:142
 #, python-format
 msgid ""
 "Classifica generale: somma dei punti delle gare (%(punti)s), moltiplicati"
@@ -16047,13 +16047,13 @@ msgstr ""
 "Overall standings: sum of the competitions' points (%(punti)s), each "
 "multiplied by the competition's weight."
 
-#: templates/components/_campionato_general_classification.html:139
+#: templates/components/_campionato_general_classification.html:144
 msgid ""
 "Classifica generale: ordinata per partite vinte, poi per differenza "
 "triangoli totale."
 msgstr "General standings: sorted by matches won, then by total rack difference."
 
-#: templates/components/_campionato_general_classification.html:141
+#: templates/components/_campionato_general_classification.html:146
 msgid ""
 "La barra segna chi va ai playoff: prima degli inviti chi verrebbe "
 "invitato adesso, dopo chi ha un invito valido."
@@ -16253,34 +16253,34 @@ msgstr "Group %(nome)s"
 msgid "Prime 6"
 msgstr "Top 6"
 
-#: templates/components/_classification_mobile.html:53
-#: templates/components/_classification_mobile.html:82
-#: templates/components/_detailed_classification.html:112
+#: templates/components/_classification_mobile.html:55
+#: templates/components/_classification_mobile.html:86
+#: templates/components/_detailed_classification.html:116
 #: templates/direttore/_classifica.html:40
 msgid "Posizione nel girone"
 msgstr "Place in the group"
 
-#: templates/components/_classification_mobile.html:53
-#: templates/components/_classification_mobile.html:82
-#: templates/components/_detailed_classification.html:112
+#: templates/components/_classification_mobile.html:55
+#: templates/components/_classification_mobile.html:86
+#: templates/components/_detailed_classification.html:116
 #: templates/direttore/_classifica.html:40
 #: templates/public/schermo_sala.html:267
 #, python-format
 msgid "%(pos)sº girone %(nome)s"
 msgstr "#%(pos)s in group %(nome)s"
 
-#: templates/components/_classification_mobile.html:57
-#: templates/components/_classification_mobile.html:86
+#: templates/components/_classification_mobile.html:59
+#: templates/components/_classification_mobile.html:90
 msgid "Spot Shot Rally"
 msgstr "Spot Shot Rally"
 
-#: templates/components/_classification_mobile.html:70
+#: templates/components/_classification_mobile.html:72
 #, python-format
 msgid "Mostra tutti (%(count)s)"
 msgstr "Show all (%(count)s)"
 
-#: templates/components/_classification_mobile.html:98
-#: templates/components/_classification_mobile.html:108
+#: templates/components/_classification_mobile.html:102
+#: templates/components/_classification_mobile.html:112
 msgid "Turno precedente"
 msgstr "Previous round"
 
@@ -16363,7 +16363,7 @@ msgid "Turno prec."
 msgstr "Prev. round"
 
 #: templates/components/_detailed_classification.html:60
-#: templates/components/_detailed_classification.html:148
+#: templates/components/_detailed_classification.html:152
 #, python-format
 msgid "Sale di %(num)d posizione"
 msgid_plural "Sale di %(num)d posizioni"
@@ -16371,7 +16371,7 @@ msgstr[0] "Up %(num)d place"
 msgstr[1] "Up %(num)d places"
 
 #: templates/components/_detailed_classification.html:63
-#: templates/components/_detailed_classification.html:151
+#: templates/components/_detailed_classification.html:155
 #, python-format
 msgid "Scende di %(num)d posizione"
 msgid_plural "Scende di %(num)d posizioni"
@@ -16382,19 +16382,19 @@ msgstr[1] "Down %(num)d places"
 msgid "Spot Shot Rally - punteggio spareggio"
 msgstr "Spot Shot Rally - tiebreaker score"
 
-#: templates/components/_detailed_classification.html:136
+#: templates/components/_detailed_classification.html:140
 msgid "Punteggio Spot Shot Rally"
 msgstr "Spot Shot Rally Score"
 
-#: templates/components/_detailed_classification.html:165
+#: templates/components/_detailed_classification.html:169
 msgid "Classifica non ancora calcolata"
 msgstr "Standings not calculated yet"
 
-#: templates/components/_detailed_classification.html:168
+#: templates/components/_detailed_classification.html:172
 msgid "Serve che tutte le partite del turno siano concluse."
 msgstr "Every match in the round has to be finished first."
 
-#: templates/components/_detailed_classification.html:170
+#: templates/components/_detailed_classification.html:174
 msgid "Verrà calcolata quando il turno sarà giocato."
 msgstr "It will be worked out once the round has been played."
 
@@ -16966,7 +16966,7 @@ msgid "Accoppiamento"
 msgstr "Pairing"
 
 #: templates/components/_gara_info.html:46
-#: templates/components/_tessera_gara.html:276
+#: templates/components/_tessera_gara.html:285
 msgid "in lista"
 msgstr "on the list"
 
@@ -16979,7 +16979,7 @@ msgid "fino a"
 msgstr "up to"
 
 #: templates/components/_gara_info.html:61
-#: templates/components/_tessera_gara.html:270
+#: templates/components/_tessera_gara.html:279
 #: templates/components/_tessera_playoff.html:73
 #: templates/components/_unified_cards.html:59
 msgid "Gratuita"
@@ -17262,7 +17262,7 @@ msgid "Concluso"
 msgstr "Completed"
 
 #: templates/components/_gara_my_match.html:13
-#: templates/components/_tessera_gara.html:185
+#: templates/components/_tessera_gara.html:189
 #: templates/direttore/_card_partita.html:211
 msgid "La tua partita"
 msgstr "Your match"
@@ -17389,7 +17389,7 @@ msgstr "You can see results and standings, but you cannot take part."
 #: templates/components/_guest_info.html:29
 #: templates/components/_nearby_gare.html:43
 #: templates/components/_tessera_gara.html:72
-#: templates/components/_tessera_gara.html:366
+#: templates/components/_tessera_gara.html:375
 #: templates/components/_unified_cards.html:143
 #: templates/public/vetrina_gara.html:166
 msgid "Iscriviti"
@@ -18355,7 +18355,7 @@ msgid "Annullato"
 msgstr "Cancelled"
 
 #: templates/components/_modify_dates_modal.html:13
-#: templates/components/_tessera_gara.html:349
+#: templates/components/_tessera_gara.html:358
 #: templates/direttore/_fase_iscrizioni.html:72
 msgid "Estendi le iscrizioni"
 msgstr "Extend registrations"
@@ -18622,7 +18622,7 @@ msgstr ""
 
 #: templates/components/_open_inscriptions_modal.html:15
 #: templates/components/_open_inscriptions_modal.html:41
-#: templates/components/_tessera_gara.html:347
+#: templates/components/_tessera_gara.html:356
 #: templates/direttore/_fase_preparazione.html:67
 msgid "Apri le iscrizioni"
 msgstr "Open registrations"
@@ -19267,7 +19267,7 @@ msgid "Sfida a due"
 msgstr "Head-to-head match"
 
 #: templates/components/_sfide_in_corso.html:46
-#: templates/components/_tessera_gara.html:202
+#: templates/components/_tessera_gara.html:206
 msgid "vs"
 msgstr "vs"
 
@@ -19592,7 +19592,7 @@ msgstr "Losers round %(num)s ready"
 
 #: templates/components/_tabellone_macros.html:52
 #: templates/components/_tabellone_macros.html:60
-#: templates/components/_tessera_gara.html:350
+#: templates/components/_tessera_gara.html:359
 #: templates/direttore/_fase_gioco.html:132
 #, python-format
 msgid "Avvia il turno %(n)s"
@@ -19848,7 +19848,7 @@ msgid "Le iscrizioni chiudono il"
 msgstr "Registrations close on"
 
 #: templates/components/_tessera_campionato.html:105
-#: templates/components/_tessera_gara.html:289
+#: templates/components/_tessera_gara.html:298
 msgid "Le iscrizioni aprono il"
 msgstr "Registrations open on"
 
@@ -19889,61 +19889,76 @@ msgstr "Single tournament"
 msgid "Podio"
 msgstr "Podium"
 
-#: templates/components/_tessera_gara.html:152
+#: templates/components/_tessera_gara.html:154
 msgid "La classifica finale non è ancora stata pubblicata."
 msgstr "The final standings have not been published yet."
 
-#: templates/components/_tessera_gara.html:156
+#: templates/components/_tessera_gara.html:159
+#, python-format
+msgid "Sei arrivato %(pos)s° pari merito su %(tot)s"
+msgstr "You finished tied %(pos)s of %(tot)s"
+
+#: templates/components/_tessera_gara.html:160
 #, python-format
 msgid "Sei arrivato %(pos)s° su %(tot)s"
 msgstr "You finished %(pos)s of %(tot)s"
 
-#: templates/components/_tessera_gara.html:158
+#: templates/components/_tessera_gara.html:162
 #, python-format
 msgid "%(vinte)s vittorie su %(giocate)s"
 msgstr "%(vinte)s wins out of %(giocate)s"
 
-#: templates/components/_tessera_gara.html:203
+#: templates/components/_tessera_gara.html:207
 msgid "Riposi questo turno"
 msgstr "You sit out this round"
 
-#: templates/components/_tessera_gara.html:214
+#: templates/components/_tessera_gara.html:218
 msgid ""
 "Il tavolo non è ancora assegnato: lo assegna la gara appena se ne libera "
 "uno."
 msgstr "No table assigned yet: the competition assigns one as soon as it frees up."
 
-#: templates/components/_tessera_gara.html:226
+#: templates/components/_tessera_gara.html:230
 #, python-format
 msgid "Classifica provvisoria dopo il turno %(n)s"
 msgstr "Provisional standings after round %(n)s"
 
-#: templates/components/_tessera_gara.html:228
+#: templates/components/_tessera_gara.html:235
+#, python-format
+msgid "Sei %(pos)s° pari merito su %(tot)s nel girone %(nome)s"
+msgstr "You are tied %(pos)s of %(tot)s in group %(nome)s"
+
+#: templates/components/_tessera_gara.html:236
 #, python-format
 msgid "Sei %(pos)s° su %(tot)s nel girone %(nome)s"
 msgstr "You are %(pos)s of %(tot)s in group %(nome)s"
 
-#: templates/components/_tessera_gara.html:229
+#: templates/components/_tessera_gara.html:237
+#, python-format
+msgid "Sei %(pos)s° pari merito su %(tot)s"
+msgstr "You are tied %(pos)s of %(tot)s"
+
+#: templates/components/_tessera_gara.html:238
 #, python-format
 msgid "Sei %(pos)s° su %(tot)s"
 msgstr "You are %(pos)s of %(tot)s"
 
-#: templates/components/_tessera_gara.html:234
+#: templates/components/_tessera_gara.html:243
 msgid "Altre partite del turno"
 msgstr "Other matches this round"
 
-#: templates/components/_tessera_gara.html:234
+#: templates/components/_tessera_gara.html:243
 msgid "Ai tavoli adesso"
 msgstr "At the tables now"
 
-#: templates/components/_tessera_gara.html:240
+#: templates/components/_tessera_gara.html:249
 #, python-format
 msgid "e un'altra partita"
 msgid_plural "e altre %(num)s partite"
 msgstr[0] "and one more match"
 msgstr[1] "and %(num)s more matches"
 
-#: templates/components/_tessera_gara.html:278
+#: templates/components/_tessera_gara.html:287
 #: templates/components/_tessera_playoff.html:79
 #, python-format
 msgid "%(num)s libero"
@@ -19951,16 +19966,16 @@ msgid_plural "%(num)s liberi"
 msgstr[0] "%(num)s free"
 msgstr[1] "%(num)s free"
 
-#: templates/components/_tessera_gara.html:285
+#: templates/components/_tessera_gara.html:294
 #: templates/components/_unified_cards.html:76
 msgid "Chiudono il"
 msgstr "Close on"
 
-#: templates/components/_tessera_gara.html:298
+#: templates/components/_tessera_gara.html:307
 msgid "Serve un numero pari"
 msgstr "An even number is needed"
 
-#: templates/components/_tessera_gara.html:300
+#: templates/components/_tessera_gara.html:309
 msgid ""
 "Questa gara non prevede la X, quindi i giocatori devono essere in numero "
 "pari e l'ultimo iscritto aspetta. Appena si iscrive qualcun altro entri "
@@ -19969,12 +19984,12 @@ msgstr ""
 "This competition has no bye, so players must be an even number and the "
 "last entrant waits. As soon as someone else registers, you're in."
 
-#: templates/components/_tessera_gara.html:303
+#: templates/components/_tessera_gara.html:312
 #: templates/components/_tessera_playoff.html:89
 msgid "La gara è al completo"
 msgstr "The competition is full"
 
-#: templates/components/_tessera_gara.html:305
+#: templates/components/_tessera_gara.html:314
 #: templates/components/_tessera_playoff.html:91
 msgid ""
 "Se qualcuno si ritira entri tu, in ordine di posizione: succede da solo, "
@@ -19983,59 +19998,59 @@ msgstr ""
 "If someone withdraws you get in, in order of position: it happens on its "
 "own, no need to register again."
 
-#: templates/components/_tessera_gara.html:316
+#: templates/components/_tessera_gara.html:325
 msgid "Non ci sono ancora abbastanza iscritti"
 msgstr "Not enough entrants yet"
 
-#: templates/components/_tessera_gara.html:318
+#: templates/components/_tessera_gara.html:327
 #, python-format
 msgid "Ne servono almeno %(min)s, per ora sono %(now)s."
 msgstr "At least %(min)s are needed, so far there are %(now)s."
 
-#: templates/components/_tessera_gara.html:325
+#: templates/components/_tessera_gara.html:334
 #, python-format
 msgid "Il turno %(n)s aspetta"
 msgstr "Round %(n)s is waiting"
 
-#: templates/components/_tessera_gara.html:325
+#: templates/components/_tessera_gara.html:334
 msgid "La chiusura della gara aspetta"
 msgstr "Closing the competition is waiting"
 
-#: templates/components/_tessera_gara.html:327
+#: templates/components/_tessera_gara.html:336
 #, python-format
 msgid "Mancano ancora: %(cosa)s."
 msgstr "Still missing: %(cosa)s."
 
-#: templates/components/_tessera_gara.html:337
+#: templates/components/_tessera_gara.html:346
 msgid "Risultati"
 msgstr "Results"
 
-#: templates/components/_tessera_gara.html:348
+#: templates/components/_tessera_gara.html:357
 #: templates/direttore/_avvia_gara.html:37
 #: templates/direttore/_avvia_gara.html:159 templates/direttore/_macros.html:50
 msgid "Avvia la gara"
 msgstr "Start the competition"
 
-#: templates/components/_tessera_gara.html:351
+#: templates/components/_tessera_gara.html:360
 #: templates/direttore/_fase_gioco.html:59
 msgid "Avvia lo spareggio"
 msgstr "Start the tiebreaker"
 
-#: templates/components/_tessera_gara.html:352
+#: templates/components/_tessera_gara.html:361
 #: templates/direttore/_fase_gioco.html:63
 #: templates/direttore/_fase_spareggio.html:42
 msgid "Termina la gara"
 msgstr "End the competition"
 
-#: templates/components/_tessera_gara.html:358
+#: templates/components/_tessera_gara.html:367
 msgid "Segui la diretta"
 msgstr "Watch live"
 
-#: templates/components/_tessera_gara.html:366
+#: templates/components/_tessera_gara.html:375
 msgid "Mettiti in lista d'attesa"
 msgstr "Join the waitlist"
 
-#: templates/components/_tessera_gara.html:387
+#: templates/components/_tessera_gara.html:396
 msgid "Serve un account gratuito: ci vogliono trenta secondi"
 msgstr "A free account is needed: it takes thirty seconds"
 
@@ -20647,7 +20662,6 @@ msgid "a eliminazione diretta, con la finalina; con un girone solo non si gioca"
 msgstr "knockout, with the 3rd place final; with a single group it is not played"
 
 #: templates/direttore/_avvia_gara.html:71
-#, python-format
 msgid "a eliminazione diretta; con un girone solo non si gioca"
 msgstr "knockout; with a single group it is not played"
 
@@ -21005,7 +21019,7 @@ msgstr "Won"
 msgid "Persi"
 msgstr "Lost"
 
-#: templates/direttore/_classifica.html:122
+#: templates/direttore/_classifica.html:127
 msgid ""
 "Sistema a triangoli: ordinata per triangoli vinti in tutta la gara, poi "
 "punti SSR. Il riposo vale zero triangoli."
@@ -21013,7 +21027,7 @@ msgstr ""
 "Rack system: sorted by racks won across the whole competition, then SSR "
 "points. A rest is worth zero racks."
 
-#: templates/direttore/_classifica.html:123
+#: templates/direttore/_classifica.html:128
 msgid ""
 "Sistema a triangoli: ordinata per triangoli vinti in tutta la gara, poi "
 "punti SSR. La X a tavolino vale zero triangoli."
@@ -21021,11 +21035,11 @@ msgstr ""
 "Rack system: sorted by racks won across the whole competition, then SSR "
 "points. An X by walkover is worth zero racks."
 
-#: templates/direttore/_classifica.html:124
+#: templates/direttore/_classifica.html:129
 msgid "Ordinata per piazzamento nel tabellone."
 msgstr "Sorted by placement in the bracket."
 
-#: templates/direttore/_classifica.html:125
+#: templates/direttore/_classifica.html:130
 #, python-format
 msgid ""
 "Ordinata per punti: %(punti)s. A pari punti decidono i criteri dei pari "
@@ -21034,7 +21048,7 @@ msgstr ""
 "Sorted by points: %(punti)s. On equal points the tie criteria decide. A "
 "rest scores no points."
 
-#: templates/direttore/_classifica.html:126
+#: templates/direttore/_classifica.html:131
 #, python-format
 msgid ""
 "Ordinata per punti: %(punti)s. A pari punti decidono i criteri dei pari "
@@ -21043,7 +21057,7 @@ msgstr ""
 "Sorted by points: %(punti)s. On equal points the tie criteria decide. An "
 "X by walkover counts as a win."
 
-#: templates/direttore/_classifica.html:127
+#: templates/direttore/_classifica.html:132
 msgid ""
 "Ordinata per vittorie, poi differenza triangoli. Il riposo non vale "
 "niente: né vittorie né triangoli."
@@ -21051,7 +21065,7 @@ msgstr ""
 "Sorted by wins, then rack difference. A rest is worth nothing: no wins, "
 "no racks."
 
-#: templates/direttore/_classifica.html:128
+#: templates/direttore/_classifica.html:133
 msgid ""
 "Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una"
 " vittoria e zero differenza."
@@ -21059,7 +21073,7 @@ msgstr ""
 "Sorted by wins, then rack difference. An X by walkover is worth one win "
 "and zero difference."
 
-#: templates/direttore/_classifica.html:129
+#: templates/direttore/_classifica.html:134
 msgid ""
 "Ogni girone ha la sua classifica: a gara finita vengono prima i primi di "
 "ogni girone, poi i secondi, confrontati per partita giocata."
@@ -21067,7 +21081,7 @@ msgstr ""
 "Each group has its own standings: when the competition ends, all group "
 "winners come first, then the seconds, compared per match played."
 
-#: templates/direttore/_classifica.html:130
+#: templates/direttore/_classifica.html:135
 msgid ""
 "Prima i primi di ogni girone, poi i secondi, e così via, confrontati per "
 "partita giocata; accanto al nome, la posizione nel girone."
@@ -21075,16 +21089,16 @@ msgstr ""
 "First all group winners, then the seconds, and so on, compared per match "
 "played; next to the name, the place in the group."
 
-#: templates/direttore/_classifica.html:131
+#: templates/direttore/_classifica.html:136
 #, python-format
 msgid "La freccia confronta con la classifica dopo il turno %(n)s."
 msgstr "The arrow compares with the standings after round %(n)s."
 
-#: templates/direttore/_classifica.html:132
+#: templates/direttore/_classifica.html:137
 msgid "La freccia confronta con il turno prima."
 msgstr "The arrow compares with the previous round."
 
-#: templates/direttore/_classifica.html:133
+#: templates/direttore/_classifica.html:138
 msgid "SSR segna chi è stato messo in ordine dallo spareggio."
 msgstr "SSR marks the players whose order the tiebreaker decided."
 

@@ -77,6 +77,13 @@ class ClassificationEntry:
     score: PlayerScore
     tied_with: Tuple[int, ...] = ()  # Player IDs of tied players
     tiebreaker_resolved: bool = True
+    #: La posizione da mostrare: quella più alta fra chi è separato solo dal
+    #: sorteggio (`ordinamento.posizioni_mostrate`). None vale `position`.
+    shown_position: Optional[int] = None
+
+    @property
+    def posizione_mostrata(self) -> int:
+        return self.position if self.shown_position is None else self.shown_position
 
     def is_tied(self) -> bool:
         """Check if this entry is tied with other players."""
@@ -280,6 +287,7 @@ class ClassificationStrategy(ABC):
                         score=per_id[pid],
                         tied_with=() if da_solo else tuple(i for i in ids if i != pid),
                         tiebreaker_resolved=da_solo,
+                        shown_position=fascia.posizione_mostrata,
                     )
                 )
         return entries, pari

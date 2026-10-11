@@ -236,7 +236,8 @@ def _riga(
 ) -> RigaClassificaVM:
     valore = dati.get(_CHIAVE_DELLA_MISURA[misura], 0) or 0
     return RigaClassificaVM(
-        posizione=posizione,
+        # Pari merito sulla posizione più alta (nota del 2026-10-11).
+        posizione=dati.get("shown_position", posizione),
         username=str(dati.get("username", "")),
         valore=int(valore),
         is_me=user_id is not None and dati.get("user_id") == user_id,

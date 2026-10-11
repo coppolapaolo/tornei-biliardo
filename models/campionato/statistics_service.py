@@ -356,6 +356,38 @@ class TournamentStatisticsService:
         return player_totals
 
     @staticmethod
+    def _mostrate_dopo_il_playoff(
+        campionato: Campionato, dopo: List[tuple], mostrate: Dict[int, int]
+    ) -> Dict[int, int]:
+        """Le posizioni da mostrare quando il playoff ha riordinato la classifica.
+
+        Chi ha giocato il playoff è separato da ciò che è successo lì: nessun
+        pari merito. Fra gli altri, che restano nell'ordine che avevano, è a
+        pari merito chi lo era prima (`ordinamento.posizioni_mostrate`).
+        """
+        from models.classification.campionato_classification import (
+            ClassificationService,
+        )
+        from models.classification.ordinamento import posizioni_mostrate
+
+        promossi = {
+            user_id
+            for block in ClassificationService.playoff_final_blocks(campionato)
+            for user_id in block
+        }
+        merito = [
+            (
+                pos,
+                ("playoff", uid) if uid in promossi else ("merito", mostrate.get(uid)),
+            )
+            for pos, uid in dopo
+        ]
+        return {
+            uid: mostrata
+            for (_pos, uid), mostrata in zip(dopo, posizioni_mostrate(merito))
+        }
+
+    @staticmethod
     def _ordine_deciso_dal_playoff(
         campionato: Campionato, ranking: List[tuple]
     ) -> List[tuple]:
@@ -391,6 +423,7 @@ class TournamentStatisticsService:
         previous_positions: Optional[Dict[int, int]] = None,
         campionato: Optional[Campionato] = None,
         scontri: Sequence[Any] = (),
+        mostrate: Optional[Dict[int, int]] = None,
     ) -> List[tuple]:
         """Ordina i giocatori e assegna le posizioni.
 
@@ -412,6 +445,11 @@ class TournamentStatisticsService:
             previous_positions: posizione dopo la gara precedente
             campionato: il seme del sorteggio e la catena
             scontri: le partite, se la catena ha lo scontro diretto
+            mostrate: se c'è, ci si scrive la posizione da **mostrare** di
+                ognuno: chi è separato solo dal sorteggio è a pari merito e
+                prende la posizione più alta (nota del 2026-10-11 in
+                SPECIFICHE.md, «Classifica»). La posizione restituita resta
+                quella che decide gli inviti.
 
         Returns:
             Lista di tuple (posizione, user_id) ordinate
@@ -460,6 +498,15 @@ class TournamentStatisticsService:
             scontri=scontri,
             completa=True,
         )
+        if mostrate is not None:
+            mostrate.clear()
+            mostrate.update(
+                {
+                    giocatore.player_id: fascia.posizione_mostrata
+                    for fascia in fasce
+                    for giocatore in fascia.giocatori
+                }
+            )
         return [
             (fascia.posizione, giocatore.player_id)
             for fascia in fasce
@@ -558,16 +605,24 @@ class TournamentStatisticsService:
         previous_positions: Dict[int, int] = {}
         current_ranking: List[tuple] = []
         scontri: List[Any] = []
+        # Le posizioni da mostrare, dopo l'ultima gara e dopo quella prima (la
+        # freccia confronta quelle): pari merito sulla più alta (2026-10-11).
+        mostrate: Dict[int, int] = {}
+        mostrate_prima: Dict[int, int] = {}
         for indice, totali in enumerate(progressivi):
             if indice > 0:
                 previous_positions = {user_id: pos for pos, user_id in current_ranking}
+                mostrate_prima = dict(mostrate)
             scontri.extend(scontri_per_gara.get(completed_garas[indice].id, []))
             current_ranking = self._sort_and_rank_players(
-                totali, system, previous_positions, campionato, scontri
+                totali, system, previous_positions, campionato, scontri, mostrate
             )
         # Quando la classifica finale la decide il playoff, l'ordine dei
         # partecipanti lo detta la gara di playoff (ADR-053).
-        current_ranking = self._ordine_deciso_dal_playoff(campionato, current_ranking)
+        riordinata = self._ordine_deciso_dal_playoff(campionato, current_ranking)
+        if riordinata != current_ranking:
+            mostrate = self._mostrate_dopo_il_playoff(campionato, riordinata, mostrate)
+        current_ranking = riordinata
 
         # Costruisci risultato con posizione precedente
         result = []
@@ -575,6 +630,12 @@ class TournamentStatisticsService:
             data = player_totals[user_id]
             # previous_position solo se il giocatore era in classifica prima
             data["previous_position"] = previous_positions.get(user_id)
+            data["shown_position"] = mostrate.get(user_id, position)
+            data["shown_previous_position"] = (
+                mostrate_prima.get(user_id, data["previous_position"])
+                if data["previous_position"] is not None
+                else None
+            )
             result.append((position, data))
 
         return result

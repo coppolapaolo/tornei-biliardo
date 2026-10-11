@@ -13,7 +13,7 @@
                        title="{{ _('Vedi classifica completa') }}">
                         <span>{{ classification.campionato.name }}</span>
                         <span class="badge bg-primary">
-                            {{ classification.position }}°{% if classification.position == 1 %} 🥇{% elif classification.position == 2 %} 🥈{% elif classification.position == 3 %} 🥉{% endif %}
+                            {{ classification.posizione_mostrata }}°{% if classification.posizione_mostrata == 1 %} 🥇{% elif classification.posizione_mostrata == 2 %} 🥈{% elif classification.posizione_mostrata == 3 %} 🥉{% endif %}
                         </span>
                     </a>
                 {% endfor %}

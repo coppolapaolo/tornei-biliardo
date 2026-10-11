@@ -161,22 +161,16 @@ class SpareggioService:
         (1, 2, 2, 4). Prima le posizioni erano sempre progressive: due
         giocatori con gli stessi punti, che nessuno spareggio doveva
         separare, comparivano come 7° e 8° (issue #67).
+
+        È la stessa regola delle pagine (`ordinamento.posizioni_mostrate`):
+        una definizione sola di pari merito.
         """
-        result: List[Tuple[int, Dict]] = []
-        position = 1
-        index = 0
-        while index < len(ordered):
-            key = merit_key(ordered[index])
-            group = [ordered[index]]
-            probe = index + 1
-            while probe < len(ordered) and merit_key(ordered[probe]) == key:
-                group.append(ordered[probe])
-                probe += 1
-            for item in group:
-                result.append((position, item))
-            position += len(group)
-            index = probe
-        return result
+        from models.classification.ordinamento import posizioni_mostrate
+
+        posizioni = posizioni_mostrate(
+            [(indice, merit_key(item)) for indice, item in enumerate(ordered, 1)]
+        )
+        return list(zip(posizioni, ordered))
 
     @staticmethod
     def scores_resolve_group(
@@ -203,9 +197,11 @@ class SpareggioService:
         return SpareggioService._fasce_e_gironi(gara, fino_allo_ssr)[0]
 
     @staticmethod
-    def _fasce_e_gironi(
-        gara: Gara, fino_allo_ssr: bool = False
-    ) -> Tuple[List[Tuple[int, List]], Dict[int, Tuple[int, int]]]:
+    def _fasce_e_gironi(gara: Gara, fino_allo_ssr: bool = False) -> Tuple[
+        List[Tuple[int, List]],
+        Dict[int, Tuple[int, int]],
+        Dict[int, Tuple[int, Optional[int]]],
+    ]:
         """Le righe dell'ultimo turno in fasce, secondo la catena di gara.
 
         Il secondo valore, nel girone all'italiana a più gironi, dice per ogni
@@ -221,6 +217,11 @@ class SpareggioService:
         Con ``fino_allo_ssr`` la catena si ferma prima dello spareggio: sono i
         pari che lo spareggio deve sciogliere, se partono entro il suo posto.
         Il sistema POSITION non arriva mai qui (``tiebreakers_apply_to``).
+
+        Il terzo valore dice per ogni giocatore la posizione da **mostrare**,
+        nella gara e nel girone: se la catena di gara finisce col sorteggio,
+        chi è separato solo da lui è a pari merito e si mostra alla posizione
+        più alta (`ordinamento.posizioni_mostrate`, nota del 2026-10-11).
         """
         from models.classification.catene import (
             catena_di_gara,
@@ -245,7 +246,7 @@ class SpareggioService:
             .all()
         )
         if not righe:
-            return [], {}
+            return [], {}, {}
         from models.competition import fase_finale_service
 
         if fase_finale_service.e_della_fase_finale(gara, final_round):
@@ -286,31 +287,57 @@ class SpareggioService:
             esito = classifica_a_gironi(
                 gara, concorrenti, girone, catena, final_round, completa=False
             )
-            return [
-                (fascia.posizione, [per_id[c.player_id] for c in fascia.giocatori])
-                for fascia in esito.fasce
-            ], {
-                pid: (esito.girone[pid], esito.posizione_nel_girone[pid])
-                for pid in esito.girone
-            }
+            return (
+                [
+                    (fascia.posizione, [per_id[c.player_id] for c in fascia.giocatori])
+                    for fascia in esito.fasce
+                ],
+                {
+                    pid: (esito.girone[pid], esito.posizione_nel_girone[pid])
+                    for pid in esito.girone
+                },
+                {
+                    c.player_id: (
+                        fascia.posizione_mostrata,
+                        esito.mostrata_nel_girone.get(c.player_id),
+                    )
+                    for fascia in esito.fasce
+                    for c in fascia.giocatori
+                },
+            )
         scontri = (
             scontri_delle_gare([gara.id], final_round) if usa_scontri(catena) else ()
         )
-        return [
-            (fascia.posizione, [per_id[c.player_id] for c in fascia.giocatori])
-            for fascia in ordina(
-                concorrenti, criterio_principale(sistema), catena, scontri=scontri
-            )
-        ], {}
+        fasce = ordina(
+            concorrenti, criterio_principale(sistema), catena, scontri=scontri
+        )
+        return (
+            [
+                (fascia.posizione, [per_id[c.player_id] for c in fascia.giocatori])
+                for fascia in fasce
+            ],
+            {},
+            {
+                c.player_id: (fascia.posizione_mostrata, None)
+                for fascia in fasce
+                for c in fascia.giocatori
+            },
+        )
 
     @staticmethod
-    def _fasce_col_tabellone(
-        gara: Gara, righe: List, final_round: int
-    ) -> Tuple[List[Tuple[int, List]], Dict[int, Tuple[int, int]]]:
+    def _fasce_col_tabellone(gara: Gara, righe: List, final_round: int) -> Tuple[
+        List[Tuple[int, List]],
+        Dict[int, Tuple[int, int]],
+        Dict[int, Tuple[int, Optional[int]]],
+    ]:
         """Le fasce di una gara col tabellone dopo i gironi (UC6).
 
         Prima chi ha giocato il tabellone, nell'ordine in cui ne è uscito; poi
         gli altri, nella classifica a gironi fatta con la catena di gara.
+
+        Le posizioni da mostrare sono quelle delle fasce: qui i pari restano
+        pari anche nella posizione che decide (bande del tabellone, catena di
+        gara senza sorteggio), quindi le due coincidono.
         """
         from models.competition import fase_finale_service
         from models.competition.gironi_service import GironiService
@@ -326,7 +353,12 @@ class SpareggioService:
             )
         ]
         gironi = posti if GironiService.girone_dei_giocatori(gara) else {}
-        return [(p, r) for p, r in fasce if r], gironi
+        mostrate = {
+            rc.user_id: (posizione, gironi.get(rc.user_id, (None, None))[1])
+            for posizione, gruppo in fasce
+            for rc in gruppo
+        }
+        return [(p, r) for p, r in fasce if r], gironi, mostrate
 
     @staticmethod
     def _get_effective_final_round(gara: Gara) -> int:
@@ -950,10 +982,12 @@ class SpareggioService:
         classification_system = (gara.classification_system or "WINS").upper()
         fasce: Optional[List[Tuple[int, List]]] = None
         gironi: Dict[int, Tuple[int, int]] = {}
+        # La posizione da mostrare: nelle bande del tabellone è la posizione.
+        mostrate: Dict[int, Tuple[int, Optional[int]]] = {}
         if classification_system == "POSITION":
             fasce = SpareggioService._fasce_del_tabellone(gara, final_round)
         if fasce is None:
-            fasce, gironi = SpareggioService._fasce_e_gironi(gara)
+            fasce, gironi, mostrate = SpareggioService._fasce_e_gironi(gara)
 
         # A pari merito l'ordine di ELENCAZIONE è quello di estrazione, non la
         # posizione di partenza né il rowid: è l'unico criterio che il
@@ -986,10 +1020,17 @@ class SpareggioService:
                 # Anche la classifica di turno, perché è quella che la pagina
                 # mostra.
                 round_class.position = position
+                mostrata, mostrata_nel_girone = mostrate.get(
+                    round_class.user_id, (position, None)
+                )
+                gara_class.shown_position = round_class.shown_position = mostrata
                 if gironi:
                     gruppo, nel_girone = gironi.get(round_class.user_id, (None, None))
                     gara_class.group_index = round_class.group_index = gruppo
                     gara_class.group_position = round_class.group_position = nel_girone
+                    gara_class.shown_group_position = (
+                        round_class.shown_group_position
+                    ) = (mostrata_nel_girone or nel_girone)
 
         return True, _("Classifica finale aggiornata")
 

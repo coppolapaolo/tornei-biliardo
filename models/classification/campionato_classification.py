@@ -128,6 +128,7 @@ class ClassificationService:
                 )
 
             classification.position = position
+            classification.shown_position = dati.get("shown_position", position)
             classification.total_matches_won = dati["total_matches_won"]
             classification.total_racks_won = dati["total_racks_won"]
             classification.total_point_difference = dati["total_rack_difference"]

@@ -101,6 +101,36 @@ STATI_IN_ARRIVO: frozenset[str] = frozenset(
 FINESTRA_CONCLUSE = timedelta(days=30)
 
 
+#: Una riga di classifica per la tessera: utente, posizione mostrata, girone
+#: e posizione mostrata nel girone (None col girone unico).
+RigaTessera = Tuple[int, int, Optional[int], Optional[int]]
+
+
+def dove_sei(
+    righe: Iterable[RigaTessera], user_id: int
+) -> Optional[Tuple[int, int, bool, Optional[int]]]:
+    """(posizione, su quanti, pari merito, girone) di chi guarda, o None.
+
+    Le posizioni sono quelle **mostrate**: a pari merito la più alta, anche
+    quando a separare è solo il sorteggio (SPECIFICHE.md, «Classifica», nota
+    del 2026-10-11). Nelle gare a più gironi si conta dentro il girone di chi
+    guarda: mentre si gioca, la posizione che conta è quella nel girone.
+    """
+    tutte = list(righe)
+    mia = next((r for r in tutte if r[0] == user_id), None)
+    if mia is None:
+        return None
+    _uid, posizione, gruppo, nel_gruppo = mia
+    if gruppo is not None and nel_gruppo:
+        vicini = [r[3] for r in tutte if r[2] == gruppo and r[3]]
+        mostrata = nel_gruppo
+    else:
+        vicini = [r[1] for r in tutte]
+        mostrata = posizione
+        gruppo = None
+    return mostrata, len(vicini), vicini.count(mostrata) > 1, gruppo
+
+
 def is_conclusa(gara: Gara) -> bool:
     """La gara è finita: resta da leggere, non da giocare."""
     return gara.get_real_status() in STATI_CONCLUSI
@@ -116,12 +146,16 @@ class PosizioneVM:
     farebbe leggere come se tenesse conto della partita che hai in mano.
     """
 
+    #: La posizione **mostrata**: a pari merito la più alta, anche quando a
+    #: separare è solo il sorteggio (SPECIFICHE.md, nota del 2026-10-11).
     posizione: int
     su: int
     turno: int
     #: Nelle gare a più gironi posizione e «su quanti» sono **nel girone**,
     #: che qui si nomina: «A», «B» (ADR-076). None col girone unico.
     girone: Optional[str] = None
+    #: Qualcun altro occupa la stessa posizione: «Sei 1° pari merito».
+    pari_merito: bool = False
 
 
 @dataclass(frozen=True)
@@ -132,6 +166,7 @@ class PiazzamentoVM:
     su: int
     vinte: int
     giocate: int
+    pari_merito: bool = False
 
 
 @dataclass
@@ -538,8 +573,10 @@ def enrich_with_progress(cards: Iterable[GaraCardVM], user_id: Optional[int]) ->
                 RoundClassification.gara_id,
                 RoundClassification.user_id,
                 RoundClassification.position,
+                RoundClassification.shown_position,
                 RoundClassification.group_index,
                 RoundClassification.group_position,
+                RoundClassification.shown_group_position,
             )
             .filter(
                 or_(
@@ -554,26 +591,32 @@ def enrich_with_progress(cards: Iterable[GaraCardVM], user_id: Optional[int]) ->
             )
             .all()
         )
-        # Nelle gare a più gironi si conta dentro il girone di chi guarda:
-        # mentre si gioca, la posizione che conta è quella nel girone.
-        quanti: Dict[Tuple[int, Optional[int]], int] = {}
-        mia: Dict[int, Tuple[int, Optional[int], Optional[int]]] = {}
-        for gid, uid, posizione, gruppo, nel_gruppo in righe:
-            chiave = (gid, gruppo if nel_gruppo else None)
-            quanti[chiave] = quanti.get(chiave, 0) + 1
-            if uid == user_id:
-                mia[gid] = (posizione, gruppo, nel_gruppo)
+        # Le posizioni mostrate (`dove_sei`); le righe scritte prima del
+        # 2026-10-11 non le hanno, e valgono le posizioni.
+        righe_per_gara: Dict[int, List[RigaTessera]] = {}
+        for gid, uid, pos, mostrata, gruppo, nel_gruppo, mostrata_g in righe:
+            righe_per_gara.setdefault(gid, []).append(
+                (
+                    uid,
+                    mostrata if mostrata is not None else pos,
+                    gruppo,
+                    mostrata_g if mostrata_g is not None else nel_gruppo,
+                )
+            )
 
         for card in in_corso:
-            if card.gara.id not in mia:
+            if user_id is None:
                 continue
-            posizione, gruppo, nel_gruppo = mia[card.gara.id]
-            a_gironi = gruppo is not None and bool(nel_gruppo)
+            esito = dove_sei(righe_per_gara.get(card.gara.id, []), user_id)
+            if esito is None:
+                continue
+            posizione, su, pari, gruppo = esito
             card.classifica = PosizioneVM(
-                posizione=nel_gruppo if a_gironi else posizione,
-                su=quanti[(card.gara.id, gruppo if a_gironi else None)],
+                posizione=posizione,
+                su=su,
                 turno=ultimi[card.gara.id],
-                girone=nome_del_girone(gruppo) if a_gironi else None,
+                girone=nome_del_girone(gruppo) if gruppo is not None else None,
+                pari_merito=pari,
             )
 
     # 3. Le partite degli altri nel turno in corso. `current_round` cambia da
@@ -645,27 +688,34 @@ def enrich_with_piazzamento(
             GaraClassification.gara_id,
             GaraClassification.user_id,
             GaraClassification.position,
+            GaraClassification.shown_position,
             GaraClassification.matches_won,
             GaraClassification.matches_lost,
         )
         .filter(GaraClassification.gara_id.in_(gara_ids))
         .all()
     )
-    quanti: Dict[int, int] = {}
-    mie: Dict[int, Tuple[int, int, int]] = {}
-    for gid, uid, posizione, vinte, perse in righe:
-        quanti[gid] = quanti.get(gid, 0) + 1
+    # La posizione mostrata, come in classifica: a pari merito la più alta.
+    per_gara: Dict[int, List[RigaTessera]] = {}
+    mie: Dict[int, Tuple[int, int]] = {}
+    for gid, uid, posizione, mostrata, vinte, perse in righe:
+        per_gara.setdefault(gid, []).append(
+            (uid, mostrata if mostrata is not None else posizione, None, None)
+        )
         if uid == user_id:
-            mie[gid] = (posizione, vinte or 0, (vinte or 0) + (perse or 0))
+            mie[gid] = (vinte or 0, (vinte or 0) + (perse or 0))
     for card in giocate:
         dati = mie.get(card.gara.id)
-        if dati is not None:
-            posizione, vinte, giocate_n = dati
+        esito = dove_sei(per_gara.get(card.gara.id, []), user_id)
+        if dati is not None and esito is not None:
+            vinte, giocate_n = dati
+            posizione, su, pari, _gruppo = esito
             card.piazzamento = PiazzamentoVM(
                 posizione=posizione,
-                su=quanti[card.gara.id],
+                su=su,
                 vinte=vinte,
                 giocate=giocate_n,
+                pari_merito=pari,
             )
 
 
@@ -705,6 +755,8 @@ __all__ = [
     "LIVE_STATES",
     "PiazzamentoVM",
     "PosizioneVM",
+    "RigaTessera",
+    "dove_sei",
     "STATI_CONCLUSI",
     "STATI_IN_ARRIVO",
     "STATI_IN_CORSO",

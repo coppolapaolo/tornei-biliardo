@@ -68,7 +68,8 @@ blocks:
       after each round, and pairings come from it: it always ends with the
       draw, because two players cannot stay level when deciding who plays whom.
       The **final standings** chain may leave ties: players still level after
-      every criterion share the place.
+      every criterion share the place. In both, players separated **only** by
+      the draw are shown as tied, in the higher place.
 
   - type: heading
     id: come

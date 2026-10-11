@@ -716,6 +716,15 @@ def create_app(config_name=None, *, da_script: bool = False):
 
     app.jinja_env.globals["gironi_in_pagina"] = gironi_in_pagina
     app.jinja_env.globals["girone_della_riga"] = girone_della_riga
+    # La posizione da mostrare: il pari merito sta sulla più alta, anche
+    # quando a separare due giocatori è solo il sorteggio (2026-10-11).
+    from models.classification.models import (
+        posizione_mostrata,
+        posizione_mostrata_prima,
+    )
+
+    app.jinja_env.globals["posizione_mostrata"] = posizione_mostrata
+    app.jinja_env.globals["posizione_mostrata_prima"] = posizione_mostrata_prima
     # Come una gara entra nel campionato (ADR-080): a piazzamenti, o
     # sommando i totali; e il sistema che il campionato dà alle sue gare.
     from models.campionato.piazzamenti import (

@@ -141,8 +141,10 @@
       <div class="c7-podio">
         {% for pos in [0, 1, 2] %}
           {% if podio|length > pos %}
+          {# La posizione mostrata: due primi a pari merito sono «1» entrambi. #}
+          {% set _mostrata = podio[pos].posizione_mostrata %}
           <div>
-            <span class="c7-pos c7-pos--lg c7-pos--{{ pos + 1 }}">{{ pos + 1 }}</span>
+            <span class="c7-pos c7-pos--lg c7-pos--{{ _mostrata }}">{{ _mostrata }}</span>
             <div class="c7-podio__name">{{ podio[pos].username }}</div>
           </div>
           {% endif %}
@@ -153,7 +155,9 @@
       {% endif %}
       {% if card.piazzamento %}
       <div class="c7-tessera__meta mt-2">
-        {{ _('Sei arrivato %(pos)s° su %(tot)s', pos=card.piazzamento.posizione, tot=card.piazzamento.su) }}
+        {# Il pari merito si dice, sulla posizione più alta (2026-10-11). #}
+        {% if card.piazzamento.pari_merito %}{{ _('Sei arrivato %(pos)s° pari merito su %(tot)s', pos=card.piazzamento.posizione, tot=card.piazzamento.su) }}
+        {% else %}{{ _('Sei arrivato %(pos)s° su %(tot)s', pos=card.piazzamento.posizione, tot=card.piazzamento.su) }}{% endif %}
         <span class="c7-sep">·</span>
         {{ _('%(vinte)s vittorie su %(giocate)s', vinte=card.piazzamento.vinte, giocate=card.piazzamento.giocate) }}
       </div>
@@ -225,7 +229,12 @@
       {% if card.classifica %}
       <div class="c7-kicker">{{ _('Classifica provvisoria dopo il turno %(n)s', n=card.classifica.turno) }}</div>
       <div class="mt-1" style="font-size:14px;font-weight:800">
-        {% if card.classifica.girone %}{{ _('Sei %(pos)s° su %(tot)s nel girone %(nome)s', pos=card.classifica.posizione, tot=card.classifica.su, nome=card.classifica.girone) }}
+        {# Chi è pari merito lo legge: «Sei 1° pari merito», mai «Sei 2°»
+           perché il sorteggio l'ha messo sotto (SPECIFICHE.md, «Classifica»,
+           nota del 2026-10-11). #}
+        {% if card.classifica.girone and card.classifica.pari_merito %}{{ _('Sei %(pos)s° pari merito su %(tot)s nel girone %(nome)s', pos=card.classifica.posizione, tot=card.classifica.su, nome=card.classifica.girone) }}
+        {% elif card.classifica.girone %}{{ _('Sei %(pos)s° su %(tot)s nel girone %(nome)s', pos=card.classifica.posizione, tot=card.classifica.su, nome=card.classifica.girone) }}
+        {% elif card.classifica.pari_merito %}{{ _('Sei %(pos)s° pari merito su %(tot)s', pos=card.classifica.posizione, tot=card.classifica.su) }}
         {% else %}{{ _('Sei %(pos)s° su %(tot)s', pos=card.classifica.posizione, tot=card.classifica.su) }}{% endif %}
       </div>
       {% endif %}

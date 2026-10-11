@@ -21,6 +21,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 from models.matchmaking.gironi import nome_del_girone
+
+from .models import posizione_mostrata_nel_girone
 from models.status_enum import GaraStatus
 
 
@@ -29,9 +31,11 @@ class RigaDelGirone:
     """Una riga di classifica vista dentro il suo girone."""
 
     riga: Any
-    #: La posizione nel girone (pari merito condivisi: 1, 2, 2, 4).
+    #: La posizione nel girone da mostrare: i pari merito, anche quelli che
+    #: solo il sorteggio separa, stanno sulla più alta (1, 1, 3; nota del
+    #: 2026-10-11 in SPECIFICHE.md).
     posizione: int
-    #: La posizione nel girone dopo il turno prima, se c'era.
+    #: La posizione mostrata nel girone dopo il turno prima, se c'era.
     precedente: Optional[int] = None
 
 
@@ -81,7 +85,7 @@ def dividi_per_girone(
                 righe=tuple(
                     RigaDelGirone(
                         riga=r,
-                        posizione=r.group_position or pos,
+                        posizione=posizione_mostrata_nel_girone(r) or pos,
                         precedente=precedenti.get(r.user_id),
                     )
                     for pos, r in enumerate(ordinate, start=1)
@@ -97,7 +101,7 @@ def _gara_in_gioco(gara: Any) -> bool:
 
 
 def _posizioni_nel_girone_prima(righe: Sequence[Any]) -> Dict[int, int]:
-    """La posizione nel girone di ognuno dopo il turno prima di queste righe."""
+    """La posizione mostrata nel girone di ognuno dopo il turno prima."""
     turno = getattr(righe[0], "round_number", None) if righe else None
     gara_id = getattr(righe[0], "gara_id", None) if righe else None
     if not turno or turno <= 1 or gara_id is None:
@@ -107,9 +111,11 @@ def _posizioni_nel_girone_prima(righe: Sequence[Any]) -> Dict[int, int]:
     from .models import RoundClassification
 
     return {
-        user_id: posizione
-        for user_id, posizione in db.session.query(
-            RoundClassification.user_id, RoundClassification.group_position
+        user_id: mostrata if mostrata is not None else posizione
+        for user_id, posizione, mostrata in db.session.query(
+            RoundClassification.user_id,
+            RoundClassification.group_position,
+            RoundClassification.shown_group_position,
         )
         .filter(
             RoundClassification.gara_id == gara_id,
@@ -137,9 +143,12 @@ def gironi_in_pagina(gara: Any, righe: Optional[Iterable[Any]]) -> List[GironeIn
 
 
 def girone_della_riga(riga: Any) -> Optional[Tuple[str, int]]:
-    """(nome del girone, posizione nel girone) di una riga, o None col girone unico."""
+    """(nome del girone, posizione nel girone) di una riga, o None col girone unico.
+
+    La posizione è quella mostrata: due primi a pari merito sono «1º» entrambi.
+    """
     indice = getattr(riga, "group_index", None)
-    posizione = getattr(riga, "group_position", None)
+    posizione = posizione_mostrata_nel_girone(riga)
     if indice is None or not posizione:
         return None
     return nome_del_girone(int(indice)), int(posizione)

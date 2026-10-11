@@ -153,9 +153,10 @@ blocks:
       - name: "Classifica di turno"
         values: "di norma: differenza triangoli → posizione al turno precedente → sorteggio"
         text: >-
-          Serve agli abbinamenti, quindi non lascia mai pari merito: finisce
-          sempre col sorteggio. Lo spareggio SSR qui non c'è, si gioca a gara
-          finita.
+          Serve agli abbinamenti, quindi mette tutti in fila: finisce sempre
+          col sorteggio. Chi il sorteggio separa resta però a pari merito, e
+          si vede alla stessa posizione. Lo spareggio SSR qui non c'è, si
+          gioca a gara finita.
       - name: "Classifica finale della gara"
         values: "di norma: differenza triangoli → spareggio SSR fino al 3° posto"
         text: >-
@@ -164,9 +165,21 @@ blocks:
       - name: "Classifica generale del campionato"
         values: "di norma: differenza triangoli → SSR (somma) → posizione dopo la gara precedente → sorteggio"
         text: >-
-          La sceglie il campionato, e non lascia pari merito: da lì partono gli
-          inviti ai playoff. In un campionato a piazzamenti, di norma: migliori
+          La sceglie il campionato, e mette tutti in fila: da lì partono gli
+          inviti ai playoff. Chi il sorteggio separa si vede comunque a pari
+          merito. In un campionato a piazzamenti, di norma: migliori
           piazzamenti (più primi posti, poi più secondi…) → sorteggio.
+
+  - type: note
+    tone: info
+    title: "Il pari merito sta sempre sulla posizione più alta"
+    text: >-
+      Se due giocatori sono pari su tutto e li separa solo il sorteggio, sono
+      **a pari merito** e si vedono entrambi alla posizione più alta: due
+      primi sono «1» tutti e due, e il terzo è «3». La tua tessera lo dice:
+      «Sei 1° pari merito su 8». Il sorteggio serve solo dove ci vuole un
+      posto unico — chi gioca con chi, chi entra nei playoff, i punti del
+      piazzamento — e lì la riga che sta sopra passa per prima.
 
   - type: note
     tone: info
@@ -234,7 +247,7 @@ blocks:
       - q: "Ho più vittorie ma sono dietro."
         a: "Allora la gara usa il sistema «Triangoli», dove contano i triangoli totali e non le vittorie. Il sistema è indicato nella scheda della gara."
       - q: "Due giocatori hanno la stessa posizione."
-        a: "Sono a pari merito in una posizione per cui non era previsto lo spareggio. È una scelta del direttore, non un errore."
+        a: "Sono a pari merito: hanno gli stessi numeri e li separa al massimo il sorteggio, oppure sono pari in una posizione per cui non era previsto lo spareggio. Il pari merito si mostra sempre alla posizione più alta, e non è un errore."
       - q: "La classifica non si è aggiornata dopo la mia partita."
         a: "Si ricalcola quando tutte le partite del turno sono concluse."
       - q: "Come si somma la classifica del campionato?"

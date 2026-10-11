@@ -16,10 +16,57 @@ Phase 5 Refactor Notes:
 from models.base import db, TimestampMixin, utc_now
 from sqlalchemy.orm import backref
 from models.status_enum import ClassificationSystem
+from typing import Any, Optional
+
 from models.transaction.manager import transactional
 
 
-class Classification(db.Model, TimestampMixin):
+def posizione_mostrata(riga: Any) -> int:
+    """La posizione da mostrare di una riga di classifica (vedi il mixin)."""
+    shown = getattr(riga, "shown_position", None)
+    return shown if shown is not None else getattr(riga, "position")
+
+
+def posizione_mostrata_nel_girone(riga: Any) -> Optional[int]:
+    shown = getattr(riga, "shown_group_position", None)
+    return shown if shown is not None else getattr(riga, "group_position", None)
+
+
+def posizione_mostrata_prima(riga: Any) -> Optional[int]:
+    """La posizione mostrata dopo il turno prima: la freccia la confronta."""
+    prima = getattr(riga, "previous_position", None)
+    if prima is None:
+        return None
+    shown = getattr(riga, "shown_previous_position", None)
+    return shown if shown is not None else prima
+
+
+class PosizioneMostrataMixin:
+    """La posizione da mostrare, accanto a quella che decide.
+
+    `position` è l'ordine della catena **col sorteggio**: decide gli
+    abbinamenti, il taglio, gli inviti e i punti. Chi è separato dagli altri
+    **solo dal sorteggio** però è a pari merito, e si mostra alla posizione più
+    alta del gruppo (SPECIFICHE.md, «Classifica», nota del 2026-10-11): due
+    primi a pari merito sono «1°» entrambi. Le colonne `shown_*` le scrive chi
+    calcola la classifica (`ordinamento.posizioni_mostrate`); sulle righe
+    scritte prima del 2026-10-11 sono NULL, e si ripiega sulla posizione.
+    """
+
+    @property
+    def posizione_mostrata(self) -> int:
+        return posizione_mostrata(self)
+
+    @property
+    def posizione_mostrata_nel_girone(self) -> Optional[int]:
+        return posizione_mostrata_nel_girone(self)
+
+    @property
+    def posizione_mostrata_prima(self) -> Optional[int]:
+        return posizione_mostrata_prima(self)
+
+
+class Classification(db.Model, TimestampMixin, PosizioneMostrataMixin):
     """
     Campionato overall classification tracking.
 
@@ -46,6 +93,9 @@ class Classification(db.Model, TimestampMixin):
     # *perché* uno è davanti all'altro. Il nome viene da POSITION, che è nato
     # prima.
     total_position_points = db.Column(db.Integer, default=0)
+    # La posizione da mostrare: quella più alta fra chi è separato solo dal
+    # sorteggio (`PosizioneMostrataMixin`). NULL sulle righe di prima.
+    shown_position = db.Column(db.Integer, nullable=True)
 
     # Relations
     campionato = db.relationship(
@@ -62,7 +112,7 @@ class Classification(db.Model, TimestampMixin):
         return f"<Classification {self.user_id} -> {self.position}>"
 
 
-class RoundClassification(db.Model):
+class RoundClassification(db.Model, PosizioneMostrataMixin):
     """
     Dynamic classification after each round.
 
@@ -106,6 +156,11 @@ class RoundClassification(db.Model):
     # secondi, e così via. NULL nelle gare a girone unico.
     group_index = db.Column(db.Integer, nullable=True)
     group_position = db.Column(db.Integer, nullable=True)
+    # Le posizioni da mostrare (`PosizioneMostrataMixin`): nella gara, nel
+    # girone e dopo il turno prima, per la freccia. NULL sulle righe di prima.
+    shown_position = db.Column(db.Integer, nullable=True)
+    shown_group_position = db.Column(db.Integer, nullable=True)
+    shown_previous_position = db.Column(db.Integer, nullable=True)
 
     # Metadata
     created_at = db.Column(db.DateTime, default=utc_now)
@@ -320,7 +375,7 @@ class RoundClassification(db.Model):
         )
 
 
-class GaraClassification(db.Model, TimestampMixin):
+class GaraClassification(db.Model, TimestampMixin, PosizioneMostrataMixin):
     """
     Final gara classification.
 
@@ -354,6 +409,10 @@ class GaraClassification(db.Model, TimestampMixin):
     # Girone e posizione nel girone, come su `RoundClassification` (ADR-076).
     group_index = db.Column(db.Integer, nullable=True)
     group_position = db.Column(db.Integer, nullable=True)
+    # Le posizioni da mostrare (`PosizioneMostrataMixin`). NULL sulle righe
+    # scritte prima del 2026-10-11.
+    shown_position = db.Column(db.Integer, nullable=True)
+    shown_group_position = db.Column(db.Integer, nullable=True)
 
     # Tiebreaker resolution
     tied_with_player_ids = db.Column(

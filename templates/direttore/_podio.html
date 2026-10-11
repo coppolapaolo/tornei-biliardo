@@ -32,8 +32,10 @@
       {% for r in gradino %}<span class="c7-podio-finale__nomi">{{ r.user.username }}</span>{% endfor %}
     </div>
     <div class="c7-podio-finale__pos c7-num">
+      {# Le bande del tabellone dicono il loro intervallo; fuori dal tabellone
+         la posizione mostrata: i pari merito sulla più alta (2026-10-11). #}
       {% if gradino|length > 1 %}{{ riga.position }}°–{{ riga.position + gradino|length - 1 }}°
-      {% else %}{{ riga.position }}°{% endif %}
+      {% else %}{{ posizione_mostrata(riga) }}°{% endif %}
       {%- if ssr_scores_map is defined and ssr_scores_map and ssr_scores_map.get(riga.user_id) is not none %} · SSR {{ ssr_scores_map.get(riga.user_id) }}{% endif %}
     </div>
   </div>

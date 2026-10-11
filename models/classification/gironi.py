@@ -22,7 +22,7 @@ Il modulo è puro come `ordinamento.py`: chi lo chiama aggrega i numeri.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from fractions import Fraction
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence
 
@@ -47,6 +47,9 @@ class ClassificaAGironi:
     fasce: List[Fascia]
     girone: Dict[int, int]
     posizione_nel_girone: Dict[int, int]
+    #: La posizione nel girone da mostrare: chi è separato solo dal sorteggio
+    #: prende quella di chi lo precede (`ordinamento.posizioni_mostrate`).
+    mostrata_nel_girone: Dict[int, int] = field(default_factory=dict)
 
 
 def per_partita(c: Concorrente, giocate: Optional[Giocate]) -> Concorrente:
@@ -94,6 +97,7 @@ def ordina_a_gironi(
             per_girone.setdefault(girone[c.player_id], []).append(c)
 
     posizione_nel_girone: Dict[int, int] = {}
+    mostrata_nel_girone: Dict[int, int] = {}
     strati: Dict[int, List[Concorrente]] = {}
     for gruppo in sorted(per_girone):
         for fascia in ordina(
@@ -101,6 +105,7 @@ def ordina_a_gironi(
         ):
             for c in fascia.giocatori:
                 posizione_nel_girone[c.player_id] = fascia.posizione
+                mostrata_nel_girone[c.player_id] = fascia.posizione_mostrata
                 strati.setdefault(fascia.posizione, []).append(c)
 
     fasce: List[Fascia] = []
@@ -126,13 +131,18 @@ def ordina_a_gironi(
     # Le fasce portano i concorrenti normalizzati: chi legge vuole quelli veri.
     originali = {c.player_id: c for c in concorrenti_tutti}
     fasce = [
-        Fascia(f.posizione, tuple(originali[c.player_id] for c in f.giocatori))
+        Fascia(
+            f.posizione,
+            tuple(originali[c.player_id] for c in f.giocatori),
+            f.mostrata,
+        )
         for f in fasce
     ]
     return ClassificaAGironi(
         fasce=fasce,
         girone={pid: girone[pid] for pid in posizione_nel_girone},
         posizione_nel_girone=posizione_nel_girone,
+        mostrata_nel_girone=mostrata_nel_girone,
     )
 
 

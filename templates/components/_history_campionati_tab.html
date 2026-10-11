@@ -66,14 +66,14 @@
                                 {% if user_classification %}
                                 <p class="mb-0">
                                     <strong>
-                                        {% if user_classification.position == 1 %}
+                                        {% if user_classification.posizione_mostrata == 1 %}
                                             <span class="text-warning"><i class="fas fa-medal"></i> {{ _("1° Classifica Generale") }}</span>
-                                        {% elif user_classification.position == 2 %}
+                                        {% elif user_classification.posizione_mostrata == 2 %}
                                             <span class="text-secondary"><i class="fas fa-medal"></i> {{ _("2° Classifica Generale") }}</span>
-                                        {% elif user_classification.position == 3 %}
+                                        {% elif user_classification.posizione_mostrata == 3 %}
                                             <span class="text-danger"><i class="fas fa-medal"></i> {{ _("3° Classifica Generale") }}</span>
                                         {% else %}
-                                            <span class="text-muted"><i class="fas fa-hashtag"></i> {{ _("%(pos)s° Classifica Generale", pos=user_classification.position) }}</span>
+                                            <span class="text-muted"><i class="fas fa-hashtag"></i> {{ _("%(pos)s° Classifica Generale", pos=user_classification.posizione_mostrata) }}</span>
                                         {% endif %}
                                     </strong>
                                 </p>

@@ -394,6 +394,7 @@ class StrategyBasedClassificationService:
                         score=per_id[pid].score,
                         tied_with=() if da_solo else tuple(i for i in ids if i != pid),
                         tiebreaker_resolved=da_solo,
+                        shown_position=fascia.posizione_mostrata,
                     )
                 )
         return replace(
@@ -406,6 +407,9 @@ class StrategyBasedClassificationService:
                     pid: (esito.girone[pid], esito.posizione_nel_girone[pid])
                     for pid in esito.girone
                 },
+                # La posizione nel girone da mostrare (pari merito sulla più
+                # alta, nota del 2026-10-11 in SPECIFICHE.md).
+                "gironi_mostrate": dict(esito.mostrata_nel_girone),
             },
         )
 
@@ -435,7 +439,9 @@ class StrategyBasedClassificationService:
         uscito, e sotto gli altri. I numeri restano quelli dei gironi, e così
         girone e posizione nel girone.
         """
-        from models.competition.fase_finale_service import classifica_finale
+        from models.competition.fase_finale_service import bande, classifica_finale
+
+        from .ordinamento import posizioni_mostrate
 
         per_id = {e.player_id: e for e in result.entries}
         fasce_dei_gironi: List[Tuple[int, List[int]]] = []
@@ -461,6 +467,27 @@ class StrategyBasedClassificationService:
                         tiebreaker_resolved=da_solo,
                     )
                 )
+        # La posizione mostrata: le bande del tabellone condividono già la
+        # posizione; sotto, fra chi non l'ha giocato, resta il pari merito
+        # dei gironi (SPECIFICHE.md, «Classifica», nota del 2026-10-11).
+        nel_tabellone = {
+            pid for banda in bande(gara, fino_al_turno)[0] for pid in banda
+        }
+        merito = [
+            (
+                e.position,
+                (
+                    ("tabellone", e.position)
+                    if e.player_id in nel_tabellone
+                    else ("gironi", per_id[e.player_id].posizione_mostrata)
+                ),
+            )
+            for e in entries
+        ]
+        entries = [
+            replace(e, shown_position=mostrata)
+            for e, mostrata in zip(entries, posizioni_mostrate(merito))
+        ]
         return replace(result, entries=tuple(entries), has_ties=pari)
 
     @staticmethod
@@ -639,6 +666,14 @@ class StrategyBasedClassificationService:
         }
 
         gironi = result.metadata.get("gironi") or {}
+        gironi_mostrate = result.metadata.get("gironi_mostrate") or {}
+        # La freccia confronta posizioni mostrate: quella del turno prima.
+        mostrate_prima = {
+            rc.user_id: rc.posizione_mostrata
+            for rc in db.session.query(RoundClassification)
+            .filter_by(gara_id=gara_id, round_number=round_number - 1)
+            .all()
+        }
         for entry in result.entries:
             classification = existing_by_user.pop(entry.player_id, None)
 
@@ -651,6 +686,7 @@ class StrategyBasedClassificationService:
                 db.session.add(classification)
 
             classification.position = entry.position
+            classification.shown_position = entry.posizione_mostrata
             classification.matches_won = entry.score.matches_won
             classification.rack_difference = entry.score.rack_difference
             classification.racks_won = entry.score.racks_won
@@ -662,6 +698,14 @@ class StrategyBasedClassificationService:
             )
             classification.group_index, classification.group_position = gironi.get(
                 entry.player_id, (None, None)
+            )
+            classification.shown_group_position = gironi_mostrate.get(
+                entry.player_id, classification.group_position
+            )
+            classification.shown_previous_position = (
+                mostrate_prima.get(entry.player_id, entry.score.previous_position)
+                if entry.score.previous_position is not None
+                else None
             )
 
         # Righe stale: giocatori che dopo un reset non hanno più match validi
@@ -692,14 +736,19 @@ class StrategyBasedClassificationService:
 
         # Create new classifications
         gironi = result.metadata.get("gironi") or {}
+        gironi_mostrate = result.metadata.get("gironi_mostrate") or {}
         for entry in result.entries:
             group_index, group_position = gironi.get(entry.player_id, (None, None))
             classification = GaraClassification(
                 group_index=group_index,
                 group_position=group_position,
+                shown_group_position=gironi_mostrate.get(
+                    entry.player_id, group_position
+                ),
                 gara_id=gara_id,
                 user_id=entry.player_id,
                 position=entry.position,
+                shown_position=entry.posizione_mostrata,
                 matches_won=entry.score.matches_won,
                 matches_lost=entry.score.matches_lost,
                 racks_won=entry.score.racks_won,

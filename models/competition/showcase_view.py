@@ -35,6 +35,7 @@ from typing import Any, List, Optional, Tuple
 from flask_babel import format_date, gettext as _
 
 from models.base import db, utc_now
+from models.classification.models import posizione_mostrata
 from models.competition.models import Gara, Inscription
 from models.status_enum import Discipline, GaraStatus, ProvaDerivedStatus
 
@@ -462,7 +463,8 @@ def _righe_classifica(classifiche) -> List[RigaClassifica]:
         valore, unita = _valore_in_classifica(riga)
         righe.append(
             RigaClassifica(
-                posizione=riga.position,
+                # Pari merito sulla posizione più alta (nota del 2026-10-11).
+                posizione=posizione_mostrata(riga),
                 nome=_nome_giocatore(riga.user),
                 valore=valore,
                 unita=unita,
