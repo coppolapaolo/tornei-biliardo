@@ -23,6 +23,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+from flask_babel import lazy_gettext as _l
+
 
 class MatchmakingStrategy(str, Enum):
     AMALFI = "amalfi"
@@ -30,6 +32,38 @@ class MatchmakingStrategy(str, Enum):
     DIRECT_ELIMINATION = "direct_elimination"
     DOUBLE_KNOCKOUT = "double_knockout"
     RANDOM = "random"
+
+
+# Il nome mostrato di ogni formato, e l'ordine in cui i menu li elencano. E'
+# l'unica fonte: i menu della gara (`get_available_strategies`), quelli del
+# campionato (`CAMPIONATO_TYPES`) e le pagine (filtro `nome_formula`). Fino al
+# 2026-10-11 erano tre copie, e il menu della modifica della gara diceva
+# «Round Robin» e «Direct Elimination» mentre il modale «Nuova gara» diceva
+# «Girone all'italiana» e «Random» dove la guida dice «Casuale».
+# `lazy_gettext` perche' `CAMPIONATO_TYPES` si costruisce all'import, fuori da
+# una richiesta: il nome si traduce quando si legge.
+ETICHETTE_STRATEGIA = {
+    MatchmakingStrategy.AMALFI: _l("Amalfi"),
+    MatchmakingStrategy.RANDOM: _l("Casuale"),
+    MatchmakingStrategy.ROUND_ROBIN: _l("Girone all'italiana"),
+    MatchmakingStrategy.DIRECT_ELIMINATION: _l("Eliminazione diretta"),
+    MatchmakingStrategy.DOUBLE_KNOCKOUT: _l("Doppio KO"),
+}
+
+
+def etichetta_strategia(strategy: Any) -> str:
+    """Il nome, tradotto, di un formato di gara (valore in colonna o enum).
+
+    Un valore fuori vocabolario non sparisce: si mostra ripulito, come
+    facevano le pagine prima di avere un nome per ognuno.
+    """
+    valore = getattr(strategy, "value", strategy)
+    if not valore:
+        return ""
+    try:
+        return str(ETICHETTE_STRATEGIA[MatchmakingStrategy(valore)])
+    except (ValueError, KeyError):
+        return str(valore).replace("_", " ").capitalize()
 
 
 # Strategie il cui esito è un tabellone: ammettono solo il sistema POSITION,
@@ -396,7 +430,7 @@ STRATEGY_CONSTRAINTS = {
         "fixed_rounds": True,
         "anti_rematch": False,
         "anti_rematch_required": False,
-        "description": "Girone all'italiana: tutti contro tutti",
+        "description": _l("Girone all'italiana: tutti contro tutti"),
         "compatible_classification_systems": ["WINS", "RACK", "POINTS"],
     },
     MatchmakingStrategy.DIRECT_ELIMINATION: {
@@ -405,7 +439,7 @@ STRATEGY_CONSTRAINTS = {
         "fixed_rounds": True,
         "anti_rematch": False,
         "anti_rematch_required": False,
-        "description": "Eliminazione diretta: chi perde è eliminato",
+        "description": _l("Eliminazione diretta: chi perde è eliminato"),
         "compatible_classification_systems": ["POSITION"],
     },
     MatchmakingStrategy.DOUBLE_KNOCKOUT: {
@@ -414,7 +448,7 @@ STRATEGY_CONSTRAINTS = {
         "fixed_rounds": True,
         "anti_rematch": False,
         "anti_rematch_required": False,
-        "description": "Doppia eliminazione: due sconfitte per essere eliminati",
+        "description": _l("Doppia eliminazione: due sconfitte per essere eliminati"),
         "compatible_classification_systems": ["POSITION"],
     },
     MatchmakingStrategy.AMALFI: {
@@ -423,7 +457,7 @@ STRATEGY_CONSTRAINTS = {
         "fixed_rounds": False,
         "anti_rematch": True,
         "anti_rematch_required": True,
-        "description": "Sistema Amalfi: abbinamenti dinamici con anti-reincontro",
+        "description": _l("Sistema Amalfi: abbinamenti dinamici con anti-reincontro"),
         "compatible_classification_systems": ["WINS", "RACK", "POINTS"],
     },
     MatchmakingStrategy.RANDOM: {
@@ -432,7 +466,7 @@ STRATEGY_CONSTRAINTS = {
         "fixed_rounds": False,
         "anti_rematch": True,
         "anti_rematch_required": False,
-        "description": "Abbinamenti casuali con anti-reincontro",
+        "description": _l("Abbinamenti casuali con anti-reincontro"),
         "compatible_classification_systems": ["WINS", "RACK", "POINTS"],
     },
 }
@@ -441,13 +475,19 @@ STRATEGY_CONSTRAINTS = {
 def get_available_strategies() -> Dict[str, Any]:
     """Return available strategies with their configurations for UI display."""
     strategies: Dict[str, Any] = {}
-    for strategy in MatchmakingStrategy:
+    # Nell'ordine dei menu, coi nomi tradotti (`ETICHETTE_STRATEGIA`).
+    for strategy in ETICHETTE_STRATEGIA:
         constraints = STRATEGY_CONSTRAINTS.get(strategy, {})
         strategies[strategy.value] = {
             "name": strategy.value,
-            "display_name": strategy.value.replace("_", " ").title(),
-            "description": constraints.get("description", ""),
-            "constraints": constraints,
+            "display_name": etichetta_strategia(strategy),
+            # Le descrizioni sono `lazy_gettext`: qui si traducono, perche' il
+            # dizionario arriva nel `data-vincoli` attraverso `tojson`.
+            "description": str(constraints.get("description", "")),
+            "constraints": {
+                **constraints,
+                "description": str(constraints.get("description", "")),
+            },
         }
     return strategies
 

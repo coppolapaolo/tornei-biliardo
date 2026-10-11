@@ -232,8 +232,12 @@
                             <div class="mb-4">
                                 <label for="matchmaking_strategy" class="form-label" data-help="gara-strategia">{{ _("Algoritmo di Abbinamento") }} <span
                                         class="text-danger">*</span></label>
+                                {# I menu che dipendono dal formato li adatta
+                                   `strategia_gara.js`, lo stesso modulo della
+                                   modifica della gara e del modale «Nuova gara». #}
                                 <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy"
-                                    required>
+                                    required data-strategia-gara data-vincoli='{{ available_strategies|tojson }}'
+                                    data-girone="{{ MatchmakingStrategy.ROUND_ROBIN.value }}">
                                     {% for strategy_key, strategy_info in available_strategies.items() %}
                                     <option value="{{ strategy_key }}" {% if strategy_key==MatchmakingStrategy.AMALFI.value %}selected{% endif
                                         %} data-description="{{ strategy_info.description }}">
@@ -287,7 +291,7 @@
                                     <h6 class="text-uppercase small fw-bold text-muted mb-3">{{ _("Configurazioni Avanzate") }}
                                     </h6>
 
-                                    <div class="mb-3" id="anti_rematch_section" data-bracket-hide>
+                                    <div class="mb-3" id="anti_rematch_section" data-bracket-hide data-nascondi-se-spento>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="anti_rematch_enabled"
                                                 name="anti_rematch_enabled" checked>
@@ -526,6 +530,7 @@
 <script src="{{ url_for('static', filename='js/campo_gironi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/campo_punti.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/strategia_gara.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // ANTIGRAVITY FIX: Ensuring clean script scope and syntax
@@ -714,72 +719,25 @@
             }
         });
 
-        // Strategy configuration logic (copied/adapted from original)
-        const strategyDescription = document.getElementById('strategy_description');
+        // Primo abbinamento, dispari, anti-reincontro e descrizione seguono il
+        // formato scelto: li adatta `strategia_gara.js`, che quando cambia la
+        // scelta dei dispari emette `change` sul suo menu. Qui resta ciò che è
+        // solo di questa pagina: il numero di turni calcolato dal formato e
+        // l'avviso della partita a tre.
         const trioWarning = document.getElementById('trio_warning');
         const distanceInput = document.getElementById('distance');
         const oddPolicySelect = document.getElementById('odd_number_policy');
         const antiRematchCheck = document.getElementById('anti_rematch_enabled');
-        const antiRematchSection = document.getElementById('anti_rematch_section');
-        const firstRoundSelect = document.getElementById('first_round_policy');
+        const strategyConstraints = JSON.parse(strategySelect.dataset.vincoli || '{}');
 
-        // Store strategy constraints from template data
-        // Wrap in string to satisfy IDE's Javascript parser
-        const strategyConstraints = JSON.parse('{{ available_strategies | tojson | safe }}');
-
-        function updateStrategyUI() {
-            const selectedStrategy = strategySelect.value;
-            const constraints = strategyConstraints[selectedStrategy]?.constraints || {};
-
-            const selectedOption = strategySelect.options[strategySelect.selectedIndex];
-            strategyDescription.textContent = selectedOption.dataset.description || '';
-
-            const allowedFirstPolicies = constraints.first_round_policies || ['random'];
-            Array.from(firstRoundSelect.options).forEach(option => {
-                if (option.value) {
-                    option.disabled = !allowedFirstPolicies.includes(option.value);
-                    if (option.disabled && option.selected) {
-                        firstRoundSelect.value = allowedFirstPolicies[0];
-                    }
-                }
-            });
-
-            const allowedOddPolicies = constraints.odd_policies || ['bye'];
-            // Nel girone all'italiana il riposo non vale niente e ha un nome
-            // suo (SPECIFICHE.md, nota del 2026-10-11).
-            const girone = selectedStrategy === {{ MatchmakingStrategy.ROUND_ROBIN.value|tojson }};
-            Array.from(oddPolicySelect.options).forEach(option => {
-                if (option.value) {
-                    option.disabled = !allowedOddPolicies.includes(option.value);
-                    if (option.disabled && option.selected) {
-                        oddPolicySelect.value = allowedOddPolicies[0];
-                    }
-                    if (option.dataset.labelGirone) {
-                        option.textContent = girone ? option.dataset.labelGirone : option.dataset.label;
-                    }
-                }
-            });
-
-            if (constraints.anti_rematch === false) {
-                antiRematchCheck.checked = false;
-                antiRematchCheck.disabled = true;
-                antiRematchSection.style.display = 'none';
-            } else {
-                antiRematchCheck.disabled = false;
-                antiRematchSection.style.display = 'block';
-                if (constraints.anti_rematch_required) {
-                    antiRematchCheck.checked = true;
-                }
-            }
-
+        function updateRoundsInput() {
+            const constraints = strategyConstraints[strategySelect.value]?.constraints || {};
             if (constraints.fixed_rounds) {
                 roundsInput.setAttribute('disabled', 'true');
                 roundsInput.setAttribute('title', i18n.autoCalculated);
             } else {
                 roundsInput.removeAttribute('disabled');
             }
-
-            updateTrioWarning();
         }
 
         function updateTrioWarning() {
@@ -835,7 +793,7 @@
             return true;
         }
 
-        strategySelect.addEventListener('change', updateStrategyUI);
+        strategySelect.addEventListener('change', updateRoundsInput);
         oddPolicySelect.addEventListener('change', updateTrioWarning);
         distanceInput.addEventListener('input', updateTrioWarning);
 
@@ -872,7 +830,8 @@
         locationInput.addEventListener('change', prefillVenueTables);
 
         // Initial run
-        updateStrategyUI();
+        updateRoundsInput();
+        updateTrioWarning();
     });
 </script>
 {% endblock %}

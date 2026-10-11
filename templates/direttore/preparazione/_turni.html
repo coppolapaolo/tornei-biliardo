@@ -162,7 +162,7 @@
     {{ d.sezione(_('Come si gioca')) }}
     <section class="c7-card c7-comesigioca">
       <div><div class="c7-kicker">{{ _('Strategia') }}</div>
-        <div class="c7-comesigioca__valore">{{ gara.matchmaking_strategy.replace("_", " ")|title }}</div></div>
+        <div class="c7-comesigioca__valore">{{ gara.matchmaking_strategy|nome_formula }}</div></div>
       <div><div class="c7-kicker">{{ _('Turni') }}</div>
         <div class="c7-comesigioca__valore c7-num">{{ gara.rounds_count }}</div></div>
       <div><div class="c7-kicker">{{ _('Disciplina') }}</div>

@@ -88,35 +88,35 @@
         <div id="type-description-amalfi" class="c7-flash c7-flash--info">
           <span class="c7-flash__ico"><i class="fas fa-chess"></i></span>
           <div class="c7-flash__body">
-            <div class="c7-flash__title">Amalfi</div>
+            <div class="c7-flash__title">{{ MatchmakingStrategy.AMALFI.value|nome_formula }}</div>
             <div class="c7-flash__text">{{ _("Abbinamenti dalla classifica, evita i reincontri.") }}</div>
           </div>
         </div>
         <div id="type-description-random" class="c7-flash c7-flash--info d-none">
           <span class="c7-flash__ico"><i class="fas fa-shuffle"></i></span>
           <div class="c7-flash__body">
-            <div class="c7-flash__title">Random</div>
+            <div class="c7-flash__title">{{ MatchmakingStrategy.RANDOM.value|nome_formula }}</div>
             <div class="c7-flash__text">{{ _("Abbinamenti casuali con anti-rematch.") }}</div>
           </div>
         </div>
         <div id="type-description-round_robin" class="c7-flash c7-flash--info d-none">
           <span class="c7-flash__ico"><i class="fas fa-table-cells"></i></span>
           <div class="c7-flash__body">
-            <div class="c7-flash__title">{{ _("Girone all'italiana") }}</div>
+            <div class="c7-flash__title">{{ MatchmakingStrategy.ROUND_ROBIN.value|nome_formula }}</div>
             <div class="c7-flash__text">{{ _("Ognuno incontra tutti gli altri. A più gironi solo se il campionato è a piazzamenti: sommando vittorie, triangoli o punti, in un girone più numeroso si giocherebbe una partita in più.") }}</div>
           </div>
         </div>
         <div id="type-description-direct_elimination" class="c7-flash c7-flash--info d-none">
           <span class="c7-flash__ico"><i class="fas fa-sitemap"></i></span>
           <div class="c7-flash__body">
-            <div class="c7-flash__title">{{ _("Eliminazione diretta") }}</div>
+            <div class="c7-flash__title">{{ MatchmakingStrategy.DIRECT_ELIMINATION.value|nome_formula }}</div>
             <div class="c7-flash__text">{{ _("Chi perde è fuori. Il tabellone si dimensiona sugli iscritti e le teste di serie restano lontane fino in fondo.") }}</div>
           </div>
         </div>
         <div id="type-description-double_knockout" class="c7-flash c7-flash--info d-none">
           <span class="c7-flash__ico"><i class="fas fa-rotate-left"></i></span>
           <div class="c7-flash__body">
-            <div class="c7-flash__title">{{ _("Doppio KO") }}</div>
+            <div class="c7-flash__title">{{ MatchmakingStrategy.DOUBLE_KNOCKOUT.value|nome_formula }}</div>
             <div class="c7-flash__text">{{ _("Servono due sconfitte per uscire: chi perde una volta rientra dal recupero.") }}</div>
           </div>
         </div>

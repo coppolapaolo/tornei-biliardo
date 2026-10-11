@@ -12,7 +12,7 @@
 {% endblock %}
 {% block page_title %}{{ campionato.name }}{% endblock %}
 {% block page_sub %}
-{{ campionato.campionato_type }} <span class="c7-sep">·</span> {{ campionato | status_text }}
+{{ campionato.campionato_type|nome_formula }} <span class="c7-sep">·</span> {{ campionato | status_text }}
 {% endblock %}
 {% block page_actions %}
 <div class="d-none d-lg-flex align-items-center gap-2">

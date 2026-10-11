@@ -26,7 +26,7 @@
 {% endblock %}
 {% block page_title %}{{ campionato.name }}{% endblock %}
 {% block page_sub %}
-{{ campionato.campionato_type }} <span class="c7-sep">·</span> {{ campionato | status_text }}
+{{ campionato.campionato_type|nome_formula }} <span class="c7-sep">·</span> {{ campionato | status_text }}
 <span class="d-none d-lg-inline">
   {%- if sede %} <span class="c7-sep">·</span> {{ sede }}{% endif %}
   {%- if gare %} <span class="c7-sep">·</span> {{ campionato.conteggio_gare.gare_testo }}{% endif %}
@@ -78,7 +78,7 @@
     <section data-c7-tab="campionato">
       {{ d.sezione(_('Il campionato')) }}
       <div class="c7-rows" style="margin-top:10px">
-        {{ d.riga('fa-trophy', _('Formula'), (campionato.campionato_type or '')|replace('_', ' ')|capitalize ~ ' · ' ~ formula) }}
+        {{ d.riga('fa-trophy', _('Formula'), campionato.campionato_type|nome_formula ~ ' · ' ~ formula) }}
         {% if sede %}
         {{ d.riga('fa-map-marker-alt', _('Dove'), sede) }}
         {% endif %}
