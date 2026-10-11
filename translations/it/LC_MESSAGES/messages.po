@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-11 22:33+0200\n"
+"POT-Creation-Date: 2026-10-11 23:00+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -1041,9 +1041,9 @@ msgstr ""
 #: models/classification/ordinamento.py:716 models/storia/etichette.py:170
 #: templates/admin/campionato_wizard_step2.html:30
 #: templates/admin/users_list.html:152 templates/admin/users_list.html:248
-#: templates/components/_classification_mobile.html:31
-#: templates/components/_classification_mobile.html:68
-#: templates/components/_classification_mobile.html:99
+#: templates/components/_classification_mobile.html:30
+#: templates/components/_classification_mobile.html:67
+#: templates/components/_classification_mobile.html:98
 #: templates/components/_detailed_classification.html:32
 #: templates/components/_detailed_classification.html:85
 #: templates/components/_gara_edit_form.html:71
@@ -1064,9 +1064,9 @@ msgstr ""
 #: models/classification/ordinamento.py:718 models/storia/etichette.py:174
 #: templates/admin/campionato_wizard_step2.html:32
 #: templates/components/_campionato_general_classification.html:78
-#: templates/components/_classification_mobile.html:29
-#: templates/components/_classification_mobile.html:66
-#: templates/components/_classification_mobile.html:97
+#: templates/components/_classification_mobile.html:28
+#: templates/components/_classification_mobile.html:65
+#: templates/components/_classification_mobile.html:96
 #: templates/components/_detailed_classification.html:31
 #: templates/components/_detailed_classification.html:84
 #: templates/components/_gara_edit_form.html:73
@@ -1077,8 +1077,8 @@ msgid "Punti"
 msgstr ""
 
 #: models/classification/ordinamento.py:719
-#: templates/components/_classification_mobile.html:33
-#: templates/components/_classification_mobile.html:70
+#: templates/components/_classification_mobile.html:32
+#: templates/components/_classification_mobile.html:69
 msgid "Differenza triangoli"
 msgstr ""
 
@@ -5032,11 +5032,11 @@ msgstr ""
 #: templates/components/_campionato_general_classification.html:37
 #: templates/components/_gara_info.html:132
 #: templates/components/_tessera_campionato.html:69
-#: templates/direttore/_classifica_bande.html:18
+#: templates/direttore/_classifica_bande.html:19
 #: templates/direttore/_fase_conclusa.html:47
 #: templates/direttore/_fase_conclusa.html:63
 #: templates/public/schermo_sala.html:239
-#: templates/public/schermo_sala.html:281
+#: templates/public/schermo_sala.html:280
 #: templates/public/vetrina_campionato.html:54
 #: templates/public/vetrina_gara.html:103
 msgid "Classifica finale"
@@ -6240,7 +6240,7 @@ msgstr ""
 #: templates/challenge/catalog.html:58 templates/challenge/catalog.html:85
 #: templates/challenge/catalog.html:89 templates/challenge/catalog.html:93
 #: templates/challenge/today.html:125
-#: templates/components/_classification_mobile.html:46
+#: templates/components/_classification_mobile.html:45
 #: templates/components/_history_filters.html:79
 #: templates/components/_history_filters.html:93
 #: templates/components/_history_filters.html:125
@@ -8850,7 +8850,7 @@ msgstr ""
 #: templates/direttore/_classifica.html:101
 #: templates/direttore/_partite.html:52 templates/gara_bracket.html:41
 #: templates/public/schermo_sala.html:216
-#: templates/public/schermo_sala.html:263
+#: templates/public/schermo_sala.html:262
 #, python-format
 msgid "Girone %(nome)s"
 msgstr ""
@@ -8885,7 +8885,7 @@ msgstr ""
 #: templates/admin/gara_challenge_classification.html:21
 #: templates/admin/gara_create_standalone.html:337
 #: templates/components/_classification_mobile.html:16
-#: templates/components/_classification_mobile.html:43
+#: templates/components/_classification_mobile.html:42
 #: templates/components/_tessera_campionato.html:125
 #: templates/direttore/_classifica.html:77 templates/gara_detail.html:49
 #: templates/public/campionato_detail.html:51
@@ -10712,8 +10712,8 @@ msgid "Passo 2 di 2"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:31
-#: templates/components/_classification_mobile.html:33
-#: templates/components/_classification_mobile.html:70
+#: templates/components/_classification_mobile.html:32
+#: templates/components/_classification_mobile.html:69
 #: templates/components/_detailed_classification.html:33
 #: templates/components/_detailed_classification.html:86
 #: templates/components/_gara_edit_form.html:72
@@ -15595,38 +15595,38 @@ msgstr ""
 msgid "Riuscita o no"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:45
+#: templates/components/_classification_mobile.html:44
 msgid "Prime 6"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:58
-#: templates/components/_classification_mobile.html:89
+#: templates/components/_classification_mobile.html:57
+#: templates/components/_classification_mobile.html:88
 #: templates/components/_detailed_classification.html:117
 #: templates/direttore/_classifica.html:40
 msgid "Posizione nel girone"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:58
-#: templates/components/_classification_mobile.html:89
+#: templates/components/_classification_mobile.html:57
+#: templates/components/_classification_mobile.html:88
 #: templates/components/_detailed_classification.html:117
 #: templates/direttore/_classifica.html:40
-#: templates/public/schermo_sala.html:292
+#: templates/public/schermo_sala.html:291
 #, python-format
 msgid "%(pos)sº girone %(nome)s"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:62
-#: templates/components/_classification_mobile.html:93
+#: templates/components/_classification_mobile.html:61
+#: templates/components/_classification_mobile.html:92
 msgid "Spot Shot Rally"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:75
+#: templates/components/_classification_mobile.html:74
 #, python-format
 msgid "Mostra tutti (%(count)s)"
 msgstr ""
 
-#: templates/components/_classification_mobile.html:105
-#: templates/components/_classification_mobile.html:115
+#: templates/components/_classification_mobile.html:104
+#: templates/components/_classification_mobile.html:114
 msgid "Turno precedente"
 msgstr ""
 
@@ -15674,8 +15674,8 @@ msgid ""
 msgstr ""
 
 #: templates/components/_detailed_classification.html:18
-#: templates/public/schermo_sala.html:259
-#: templates/public/schermo_sala.html:282
+#: templates/public/schermo_sala.html:258
+#: templates/public/schermo_sala.html:281
 msgid "Classifica complessiva"
 msgstr ""
 
@@ -16518,8 +16518,8 @@ msgstr ""
 #: templates/direttore/_partite.html:31 templates/direttore/_partite.html:84
 #: templates/direttore/preparazione/_turni.html:46
 #: templates/direttore/preparazione/_turni.html:72
-#: templates/public/schermo_sala.html:309
-#: templates/public/schermo_sala.html:317
+#: templates/public/schermo_sala.html:308
+#: templates/public/schermo_sala.html:316
 #, python-format
 msgid "Turno %(num)s"
 msgstr ""
@@ -16552,7 +16552,7 @@ msgstr ""
 #: templates/direttore/_partite.html:89
 #: templates/individual_match/match_detail.html:229
 #: templates/individual_match/matches.html:125
-#: templates/public/schermo_sala.html:318
+#: templates/public/schermo_sala.html:317
 msgid "Concluso"
 msgstr ""
 
@@ -18993,15 +18993,20 @@ msgstr ""
 msgid "esce al turno %(num)s"
 msgstr ""
 
+#: templates/components/_tabellone_macros.html:131
+#, python-format
+msgid "%(pos)s° pari merito"
+msgstr ""
+
 #: templates/components/_taglio.html:13
 msgid "sopra il taglio: al tabellone"
 msgstr ""
 
-#: templates/components/_taglio.html:17
+#: templates/components/_taglio.html:18 templates/components/_taglio.html:23
 msgid "al tabellone"
 msgstr ""
 
-#: templates/components/_taglio.html:18
+#: templates/components/_taglio.html:19 templates/components/_taglio.html:24
 msgid "fuori"
 msgstr ""
 
@@ -20293,13 +20298,9 @@ msgstr ""
 msgid "SSR segna chi è stato messo in ordine dallo spareggio."
 msgstr ""
 
-#: templates/direttore/_classifica_bande.html:19
+#: templates/direttore/_classifica_bande.html:20
 #: templates/public/schermo_sala.html:240
 msgid "dal tabellone"
-msgstr ""
-
-#: templates/direttore/_classifica_bande.html:30
-msgid "pari merito"
 msgstr ""
 
 #: templates/direttore/_classifica_bande.html:37
@@ -27640,32 +27641,32 @@ msgstr ""
 msgid "Il tabellone compare dopo il sorteggio."
 msgstr ""
 
-#: templates/public/schermo_sala.html:259
-#: templates/public/schermo_sala.html:283
+#: templates/public/schermo_sala.html:258
+#: templates/public/schermo_sala.html:282
 #, python-format
 msgid "Classifica dopo il turno %(n)s"
 msgstr ""
 
-#: templates/public/schermo_sala.html:260
-#: templates/public/schermo_sala.html:285
+#: templates/public/schermo_sala.html:259
+#: templates/public/schermo_sala.html:284
 msgid "Vinti · persi"
 msgstr ""
 
-#: templates/public/schermo_sala.html:260
-#: templates/public/schermo_sala.html:285
+#: templates/public/schermo_sala.html:259
+#: templates/public/schermo_sala.html:284
 msgid "Punti · diff"
 msgstr ""
 
-#: templates/public/schermo_sala.html:260
-#: templates/public/schermo_sala.html:285
+#: templates/public/schermo_sala.html:259
+#: templates/public/schermo_sala.html:284
 msgid "Vinte · diff"
 msgstr ""
 
-#: templates/public/schermo_sala.html:300
+#: templates/public/schermo_sala.html:299
 msgid "La classifica compare alla fine del primo turno."
 msgstr ""
 
-#: templates/public/schermo_sala.html:310
+#: templates/public/schermo_sala.html:309
 msgid "partite già concluse"
 msgstr ""
 

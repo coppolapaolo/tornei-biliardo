@@ -241,6 +241,41 @@ class TestGaraConclusa:
 
         assert ">Vinte<" not in page
         assert len(re.findall(r'data-banda="5"', page)) == 4
-        assert page.count("5°–8°") == 4
+        # Decisione dell'utente del 2026-10-11 (ADR-040, emendamento): la banda
+        # si mostra alla posizione più alta, «5° pari merito», e non più
+        # come intervallo «5°–8°».
+        assert "°–" not in page
+        assert page.count("5° pari merito") == 4
         assert page.count("esce ai quarti") == 4
-        assert "3°–4°" in page  # senza finalina due terzi, dichiarati
+        assert "3° pari merito" in page  # senza finalina due terzi, dichiarati
+
+    def test_la_classifica_finale_salvata_e_la_tessera_dicono_quinto_pari_merito(
+        self, db_session
+    ):
+        """La sostanza non cambia con l'etichetta: i quattro quartifinalisti
+        sono 5° sulla riga salvata, mostrati 5°, con gli stessi punti, e la
+        tessera di ciascuno legge «5° pari merito su 8»."""
+        from models.classification.gara_classification import (
+            RoundClassificationService,
+        )
+        from models.classification.models import GaraClassification
+        from models.competition.state_service import StateService
+        from models.dashboard.gara_cards import dove_sei
+
+        gara = _gara_a_tabellone(db_session, 8)
+        RoundService.start_first_round(gara.id)
+        for turno in (1, 2, 3):
+            if turno > 1:
+                RoundService.start_next_round(gara.id, turno)
+            _gioca_turno(db_session, gara.id, turno)
+        RoundClassificationService.calculate_and_save_round_classification(gara.id, 3)
+        StateService.complete(db_session.get(Gara, gara.id))
+        db_session.commit()
+
+        righe = GaraClassification.query.filter_by(gara_id=gara.id).all()
+        quinti = [r for r in righe if r.position == 5]
+        assert len(quinti) == 4
+        assert {r.posizione_mostrata for r in quinti} == {5}
+        assert len({points_for_position(r.position) for r in quinti}) == 1
+        tessera = [(r.user_id, r.posizione_mostrata, None, None) for r in righe]
+        assert dove_sei(tessera, quinti[0].user_id) == (5, 8, True, None)

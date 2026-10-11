@@ -766,12 +766,18 @@ class RigaBanda:
 
 @dataclass(frozen=True)
 class Banda:
+    """Chi esce allo stesso punto del tabellone, alla posizione più alta.
+
+    Non porta l'ultima posizione dell'intervallo: dal 2026-10-11 la banda si
+    mostra «5° pari merito» e non più «5°–8°» (ADR-040, emendamento).
+    """
+
     posizione: int
-    ultima: int
     righe: Tuple[RigaBanda, ...]
 
     @property
     def condivisa(self) -> bool:
+        """Più giocatori nella banda: sono a pari merito, e lo si dice."""
         return len(self.righe) > 1
 
 
@@ -836,7 +842,7 @@ def bande_finali(
         righe = tuple(
             sorted(per_posizione[posizione], key=lambda r: r.user.username.lower())
         )
-        bande.append(Banda(posizione, posizione + len(righe) - 1, righe))
+        bande.append(Banda(posizione, righe))
     return bande
 
 

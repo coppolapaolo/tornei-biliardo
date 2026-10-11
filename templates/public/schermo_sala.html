@@ -240,12 +240,11 @@
         <span class="c7-sechead__note">{{ _('dal tabellone') }}</span>
       </div>
       {% set _righe_bande = schermo.bande|map(attribute='righe')|map('length')|sum %}
-      <div class="c7-rows c7-sala__bande{% if _righe_bande > 8 %} c7-sala__bande--due{% endif %}" style="--righe: {{ ((_righe_bande + 1) // 2) }}">
+      <div class="c7-rows c7-sala__bande{% if schermo.bande|selectattr('condivisa')|first %} c7-bande--pari{% endif %}{% if _righe_bande > 8 %} c7-sala__bande--due{% endif %}" style="--righe: {{ ((_righe_bande + 1) // 2) }}">
         {% for banda in schermo.bande %}
-        {% set _etichetta = (banda.posizione ~ '°–' ~ banda.ultima ~ '°') if banda.condivisa else (banda.posizione ~ '°') %}
         {% for riga in banda.righe %}
         <div class="c7-rows__row c7-sala__riga" data-banda="{{ banda.posizione }}">
-          <span class="c7-banda__pos c7-num{% if banda.posizione <= 3 %} c7-banda__pos--{{ banda.posizione }}{% endif %}">{{ _etichetta }}</span>
+          <span class="c7-banda__pos c7-num{% if banda.posizione <= 3 %} c7-banda__pos--{{ banda.posizione }}{% endif %}">{{ tb.posto_della_banda(banda.posizione, banda.condivisa) }}</span>
           <span class="c7-sala__riga-nome">{{ riga.user.username }}</span>
           <span class="c7-sala__riga-uscita">{{ tb.uscita(riga) }}</span>
         </div>

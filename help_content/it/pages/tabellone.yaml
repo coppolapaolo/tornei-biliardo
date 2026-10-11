@@ -193,7 +193,10 @@ blocks:
   - type: text
     text: >-
       A gara conclusa la pagina della gara mostra la classifica **per bande**:
-      1°, 2°, 3°–4°, 5°–8° e così via, con accanto a ogni nome dove è uscito
+      1°, 2°, poi «3° pari merito» sui due semifinalisti sconfitti e «5° pari
+      merito» sui quattro dei quarti, e così via. Chi sta nella stessa banda
+      prende il posto più alto, come in ogni classifica. Accanto a ogni nome
+      c'è dove è uscito
       («esce ai quarti», «perde la finale»). Chi sta nella stessa banda ha lo
       stesso posto e gli stessi punti di campionato. Sul podio, se non si è
       giocata la finalina, i terzi sono due.

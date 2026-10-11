@@ -121,6 +121,16 @@
 {%- endif -%}
 {%- endmacro %}
 
+{# La posizione di una banda della classifica finale (ADR-040, emendamento del
+   2026-10-11): la più alta, e il pari merito si dice — «5° pari merito» sui
+   quattro quartifinalisti, «3° pari merito» sui due terzi senza finalina. È la
+   regola di tutte le classifiche (SPECIFICHE.md, «Come si mostra il pari
+   merito»); fino a quella data qui si mostrava l'intervallo «5°–8°». Una sola
+   definizione per classifica finale, schermo in sala e podio. #}
+{% macro posto_della_banda(posizione, condivisa) -%}
+{%- if condivisa -%}{{ _('%(pos)s° pari merito', pos=posizione) }}{%- else -%}{{ posizione }}°{%- endif -%}
+{%- endmacro %}
+
 {# Il nome della formula di gara, al posto del valore grezzo in colonna: lo dà
    il filtro `nome_formula`, la stessa fonte dei menu (`ETICHETTE_STRATEGIA`). #}
 {% macro nome_formula(strategy) -%}

@@ -191,8 +191,10 @@ blocks:
   - type: text
     text: >-
       Once the competition is over, its page shows the standings **in bands**:
-      1st, 2nd, 3rd–4th, 5th–8th and so on, with where each player went out
-      next to the name («out in the quarter-finals», «loses the final»).
+      1st, 2nd, then «tied 3» for the two losing semi-finalists and «tied 5»
+      for the four quarter-finalists, and so on. Players in the same band take
+      the highest place, as in every standings. Next to each name is where
+      they went out («out in the quarter-finals», «loses the final»).
       Players in the same band share the place and the championship points.
       On the podium, if no third-place match was played, there are two
       thirds.

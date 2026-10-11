@@ -477,8 +477,9 @@ blocks:
   - type: text
     text: >-
       In bracket competitions the final standings are **in bands** — 1st, 2nd,
-      3rd–4th, 5th–8th — with where each player went out: whoever goes out in
-      the same round shares the place and the points, with no tie-break.
+      tied 3, tied 5 — with where each player went out: whoever goes out in
+      the same round shares the highest place and the points, with no
+      tie-break.
 
   - type: faq
     items:

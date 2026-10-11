@@ -364,11 +364,13 @@ class TestBande:
 
         bande = bande_finali(posizioni, t)
 
-        assert [(b.posizione, b.ultima) for b in bande] == [
+        # Ogni banda alla sua posizione più alta: «5° pari merito», non più
+        # «5°–8°» (ADR-040, emendamento del 2026-10-11).
+        assert [(b.posizione, len(b.righe)) for b in bande] == [
             (1, 1),
-            (2, 2),
-            (3, 4),
-            (5, 8),
+            (2, 1),
+            (3, 2),
+            (5, 4),
         ]
         quarti = bande[3]
         assert quarti.condivisa
