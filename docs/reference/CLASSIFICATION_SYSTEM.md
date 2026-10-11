@@ -445,6 +445,25 @@ Per gare standalone:
 - Numero turni = N-1 con N pari, **N con N dispari** (N = numero giocatori):
   nel dispari ognuno riposa una volta, e il riposo non vale niente.
 - Dispari: solo il riposo (vedi [sezione 3.2](#32-bye-semplice)).
+- **Gironi multipli** (dal 2026-10-11, ADR-076): la gara può dividersi in
+  gironi giocati in parallelo, «fino a N» (`Gara.max_groups`; vuoto o 1 =
+  girone unico, proposto dal campionato con `default_max_groups`). Il numero
+  esatto lo sceglie il direttore all'avvio (almeno 3 giocatori per girone,
+  proposta un girone ogni 6 iscritti per eccesso); la **composizione dei
+  gironi** (`Gara.group_seeding`: sorteggio, per ELO, per categoria) mette gli
+  iscritti in fila e li distribuisce uno per girone a turno, andata e ritorno.
+  L'appartenenza sta su `Inscription.group_index`, e le partite la ripetono in
+  `Match.bracket_group`. I turni sono quelli del girone più numeroso.
+
+  Classifiche: **dentro il girone** si ordina col sistema e la catena della
+  gara (`group_index`, `group_position` sulle righe di turno e di gara);
+  **nella gara** prima tutti i primi, poi tutti i secondi, confrontati **per
+  partita giocata** — vittorie, rack, differenza e punti divisi per le
+  partite giocate (il riposo non è una partita, il tavolino sì). Fra gironi
+  diversi lo scontro diretto non decide. Calcolo puro in
+  `models/classification/gironi.py`, lettura dei numeri in
+  `gironi_della_gara.py`. Nel campionato contano i totali della classifica
+  finale della gara, come sempre (sezione 7.2).
 
 #### Eliminazione
 - Bracket a eliminazione diretta.
@@ -646,3 +665,4 @@ Riepilogo di tutte le combinazioni valide.
 - **2025-10-XX**: Creazione documento con specifiche complete del sistema di classificazione.
 - **2026-01-24**: Verificato allineamento con codebase.
 - **2026-10-07**: Sistema POINTS (classifica a punti), ADR-078 emendamento.
+- **2026-10-11**: Gironi multipli nel girone all'italiana (ADR-076): classifica per girone, e nella gara primi poi secondi per partita giocata. Lo stesso giorno il riposo del girone ha smesso di valere una vittoria (SPECIFICHE.md, nota del 2026-10-11).

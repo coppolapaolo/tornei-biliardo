@@ -38,27 +38,24 @@ class RoundRobinStrategy(BaseStrategy):
         self.strategy_name = "round_robin"
 
     def _validate_strategy_specific(self, gara: object) -> Dict[str, List[str]]:
-        """Validate Round Robin specific requirements."""
+        """Validate Round Robin specific requirements.
+
+        I turni richiesti sono quelli del girone più numeroso: con un girone
+        solo, quelli di tutti gli iscritti (ADR-076).
+        """
         errors = []
         warnings = []
 
         try:
-            # Get active inscriptions
-            inscriptions = getattr(gara, "inscriptions", [])
-            active_inscriptions = [
-                i
-                for i in inscriptions
-                if not getattr(i, "is_withdrawn", False)
-                and not getattr(i, "is_waitlist", False)
-            ]
-            player_count = len(active_inscriptions)
+            from models.matchmaking.gironi import turni_del_girone
 
-            # Calculate required rounds
-            required_rounds = (
-                (player_count - 1 if player_count % 2 == 0 else player_count)
-                if player_count > 0
-                else 0
-            )
+            gironi = self._gironi(gara)
+            if gironi:
+                required_rounds = max(turni_del_girone(len(o)) for o in gironi.values())
+            else:
+                required_rounds = turni_del_girone(
+                    len(self._get_active_inscriptions(gara))
+                )
 
             # Check if gara has rounds_count and validate
             if hasattr(gara, "rounds_count"):
@@ -74,6 +71,13 @@ class RoundRobinStrategy(BaseStrategy):
 
         return {"errors": errors, "warnings": warnings}
 
+    def _max_players_for(self, gara: object) -> Optional[int]:
+        """Il tetto dei giocatori vale per girone, non per la gara (ADR-076)."""
+        if self.max_players is None:
+            return None
+        gironi = self._gironi(gara)
+        return self.max_players * max(len(gironi), 1)
+
     def _generate_pairings(
         self, processed_data: Dict[str, Any], round_number: int
     ) -> Sequence[Pairing]:
@@ -86,51 +90,21 @@ class RoundRobinStrategy(BaseStrategy):
     ) -> List[Pairing]:
         """Generate pairings for a specific round using Round Robin algorithm."""
         try:
+            gironi = self._gironi(gara)
+            if gironi:
+                return self._turno_dei_gironi(gara, gironi, round_number)
+
             player_ids = self._calendar_order(gara)
             if len(player_ids) < 2:
                 return []
 
-            # Chi non gioca piu' (escluso dalla regola EXCLUDE, o comunque non
-            # piu' fra gli attivi) resta al suo posto nel calendario, e il suo
-            # avversario di quel turno vince **a tavolino**, come contro chi
-            # ha dato forfait (SPECIFICHE.md, «policy per il forfait», nota
-            # del 2026-10-11): la coppia nasce intera e l'escluso viaggia in
-            # `forfeit_players`, che `create_matches_from_pairings` tratta
-            # come un forfait. Fino a quella data l'avversario «riposava con
-            # la X». Se l'escluso era chi riposava, o se sono esclusi tutti e
-            # due, quel posto non produce partite. Con FORFEIT l'iscrizione
-            # resta attiva e la strada e' la stessa, via `forfeit_user_ids`.
             active_ids = {i.user_id for i in self._get_active_inscriptions(gara)}
-
             schedule = self._generate_round_robin_schedule(player_ids)
             if round_number > len(schedule):
                 return []
-
-            pairings: List[Pairing] = []
-            for pairing in schedule[round_number - 1]:
-                attivi = tuple(p for p in pairing if p in active_ids)
-                if not attivi:
-                    continue
-                if len(pairing) == 1:
-                    # Il riposo del dispari: resta visibile, ma non vale
-                    # niente — zero vittorie, zero punti, zero triangoli.
-                    pairings.append(
-                        Pairing(
-                            players=attivi,
-                            round_number=round_number,
-                            is_bye=True,
-                            riposo=True,
-                        )
-                    )
-                    continue
-                pairings.append(
-                    Pairing(
-                        players=tuple(pairing),
-                        round_number=round_number,
-                        forfeit_players=tuple(p for p in pairing if p not in attivi),
-                    )
-                )
-            return pairings
+            return self._pairings_della_riga(
+                schedule[round_number - 1], active_ids, round_number
+            )
 
         except Exception:
             # La lista vuota non e' piu' un esito silenzioso: dal 2026-08-28
@@ -148,6 +122,139 @@ class RoundRobinStrategy(BaseStrategy):
                 exc_info=True,
             )
             return []
+
+    def _turno_dei_gironi(
+        self, gara: object, gironi: Dict[int, List[int]], round_number: int
+    ) -> List[Pairing]:
+        """Il turno r dei gironi: la riga r del calendario di ognuno (ADR-076).
+
+        I gironi si giocano in parallelo, ognuno col suo calendario, e le
+        partite portano il girone in `bracket_group`. Un girone che ha finito
+        il suo calendario non gioca più: nessuna partita, neanche un riposo.
+        """
+        active_ids = {i.user_id for i in self._get_active_inscriptions(gara)}
+        pairings: List[Pairing] = []
+        for gruppo in sorted(gironi):
+            schedule = self._generate_round_robin_schedule(gironi[gruppo])
+            if round_number > len(schedule):
+                continue
+            pairings.extend(
+                self._pairings_della_riga(
+                    schedule[round_number - 1],
+                    active_ids,
+                    round_number,
+                    bracket_group=gruppo,
+                )
+            )
+        return pairings
+
+    @staticmethod
+    def _pairings_della_riga(
+        riga: List[Tuple[int, ...]],
+        active_ids: set,
+        round_number: int,
+        bracket_group: Optional[int] = None,
+    ) -> List[Pairing]:
+        """Gli accoppiamenti di una riga del calendario, girone unico o no.
+
+        Chi non gioca piu' (escluso dalla regola EXCLUDE, o comunque non piu'
+        fra gli attivi) resta al suo posto nel calendario, e il suo avversario
+        di quel turno vince **a tavolino**, come contro chi ha dato forfait
+        (SPECIFICHE.md, «policy per il forfait», nota del 2026-10-11): la
+        coppia nasce intera e l'escluso viaggia in `forfeit_players`, che
+        `create_matches_from_pairings` tratta come un forfait. Fino a quella
+        data l'avversario «riposava con la X». Se l'escluso era chi riposava,
+        o se sono esclusi tutti e due, quel posto non produce partite. Con
+        FORFEIT l'iscrizione resta attiva e la strada e' la stessa, via
+        `forfeit_user_ids`.
+
+        Il riposo del dispari resta visibile ma non vale niente: zero
+        vittorie, zero punti, zero triangoli. Vale uguale in ogni girone.
+        """
+        pairings: List[Pairing] = []
+        for pairing in riga:
+            attivi = tuple(p for p in pairing if p in active_ids)
+            if not attivi:
+                continue
+            if len(pairing) == 1:
+                pairings.append(
+                    Pairing(
+                        players=attivi,
+                        round_number=round_number,
+                        is_bye=True,
+                        riposo=True,
+                        bracket_group=bracket_group,
+                    )
+                )
+                continue
+            pairings.append(
+                Pairing(
+                    players=tuple(pairing),
+                    round_number=round_number,
+                    forfeit_players=tuple(p for p in pairing if p not in attivi),
+                    bracket_group=bracket_group,
+                )
+            )
+        return pairings
+
+    def has_round(self, gara: object, round_number: int) -> bool:
+        """Il turno esiste se almeno un girone lo gioca."""
+        if not super().has_round(gara, round_number):
+            return False
+        gironi = self._gironi(gara)
+        if not gironi:
+            return True
+        from models.matchmaking.gironi import turni_del_girone
+
+        return any(round_number <= turni_del_girone(len(o)) for o in gironi.values())
+
+    def _gironi(self, gara: object) -> Dict[int, List[int]]:
+        """L'ordine del calendario di ogni girone, o vuoto con il girone unico.
+
+        Chi sta in quale girone lo dice `GironiService.girone_dei_giocatori`
+        (le partite del primo turno, poi le iscrizioni). L'ordine dentro il
+        girone si ricava come per il girone unico: dalla classifica di
+        partenza, che il primo turno ha scritto un girone dopo l'altro, e
+        prima dall'ordine del sorteggio. Chi si ritira resta al suo posto.
+        """
+        if getattr(gara, "id", None) is None:
+            return {}
+        from models.competition.gironi_service import GironiService
+
+        girone_di = GironiService.girone_dei_giocatori(gara)  # type: ignore[arg-type]
+        if not girone_di:
+            return {}
+        seeding = self._seeding_order(gara)
+        active = self._get_active_inscriptions(gara)
+        gironi: Dict[int, List[int]] = {}
+        for gruppo in sorted(set(girone_di.values())):
+            if seeding:
+                ordine = self.order_from_seeding(
+                    [pid for pid in seeding if girone_di.get(pid) == gruppo]
+                )
+            else:
+                ordine = [
+                    i.user_id
+                    for i in sorted(
+                        (i for i in active if girone_di.get(i.user_id) == gruppo),
+                        key=lambda i: (
+                            getattr(i, "initial_order", None) is None,
+                            getattr(i, "initial_order", None) or 0,
+                            getattr(i, "id", 0) or 0,
+                        ),
+                    )
+                ]
+            noti = set(ordine)
+            tardi = sorted(
+                (
+                    i
+                    for i in active
+                    if girone_di.get(i.user_id) == gruppo and i.user_id not in noti
+                ),
+                key=lambda i: getattr(i, "id", 0) or 0,
+            )
+            gironi[gruppo] = ordine + [i.user_id for i in tardi]
+        return gironi
 
     def _calendar_order(self, gara: object) -> List[int]:
         """L'ordine su cui si costruisce il calendario, fisso per tutta la gara.

@@ -86,6 +86,36 @@ def assign_groups(
             f"presenti avrebbe meta' tabellone vuota"
         )
 
+    return distribute_into_groups(players, groups, team_of)
+
+
+def distribute_into_groups(
+    seeded_players: Sequence[int],
+    groups: int,
+    team_of: Optional[Mapping[int, Optional[object]]] = None,
+) -> List[List[int]]:
+    """Distribuisce gli iscritti in ``groups`` gironi, a serpentina.
+
+    E' il cuore di `assign_groups` senza il vincolo dei tabelloni di taglia
+    fissa: le taglie sono quelle di `group_player_counts` (i primi `n mod g`
+    gironi hanno un giocatore in piu'), qualunque sia `n`. Lo usa anche il
+    girone all'italiana a piu' gironi (`models/matchmaking/gironi.py`).
+
+    Args:
+        seeded_players: id nell'ordine scelto (il primo per primo).
+        groups: quanti gironi, almeno 1 e non piu' dei giocatori.
+        team_of: giocatore -> squadra, come in `assign_groups`.
+
+    Returns:
+        Una lista per girone, ciascuna nell'ordine di ``seeded_players``.
+    """
+    players = list(seeded_players)
+    n = len(players)
+    if groups < 1 or groups > n:
+        raise ValueError(f"{groups} gironi per {n} giocatori")
+    if len(set(players)) != n:
+        raise ValueError("seeded_players contiene duplicati")
+
     capacity = group_player_counts(n, groups)
     teams = dict(team_of or {})
     team_sizes: Dict[object, int] = {}
@@ -225,4 +255,4 @@ def qualifier_seeding(qualified_by_group: Sequence[Sequence[int]]) -> List[int]:
     ]
 
 
-__all__ = ["assign_groups", "qualifier_seeding"]
+__all__ = ["assign_groups", "distribute_into_groups", "qualifier_seeding"]

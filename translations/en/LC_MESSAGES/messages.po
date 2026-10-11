@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-11 12:17+0200\n"
+"POT-Creation-Date: 2026-10-11 12:44+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -925,19 +925,19 @@ msgid "chi era davanti al turno precedente"
 msgstr "who was ahead in the previous round"
 
 #: models/classification/editor_catena.py:113
-#: models/classification/ordinamento.py:652
+#: models/classification/ordinamento.py:665
 #, python-format
 msgid "%(a_pari)s conta %(elenco)s."
 msgstr "%(a_pari)s, the order is set by %(elenco)s."
 
 #: models/classification/editor_catena.py:115
-#: models/classification/ordinamento.py:651
+#: models/classification/ordinamento.py:664
 #, python-format
 msgid ", poi %(x)s"
 msgstr ", then %(x)s"
 
 #: models/classification/editor_catena.py:117
-#: models/classification/ordinamento.py:648
+#: models/classification/ordinamento.py:661
 #, python-format
 msgid "%(a_pari)s i giocatori restano a pari merito."
 msgstr "%(a_pari)s, players stay tied."
@@ -988,7 +988,7 @@ msgstr "always last: it settles the order"
 msgid "Non restano criteri da aggiungere."
 msgstr "No criteria left to add."
 
-#: models/classification/ordinamento.py:592 models/storia/etichette.py:147
+#: models/classification/ordinamento.py:605 models/storia/etichette.py:147
 #: templates/admin/campionato_wizard_step2.html:30
 #: templates/admin/users_list.html:152 templates/admin/users_list.html:248
 #: templates/components/_classification_mobile.html:33
@@ -1003,13 +1003,13 @@ msgstr "No criteria left to add."
 msgid "Vittorie"
 msgstr "Wins"
 
-#: models/classification/ordinamento.py:593
+#: models/classification/ordinamento.py:606
 #: templates/components/_history_matches_tab.html:35
 #: templates/individual_match/statistics.html:155
 msgid "Triangoli vinti"
 msgstr "Racks won"
 
-#: models/classification/ordinamento.py:594 models/storia/etichette.py:151
+#: models/classification/ordinamento.py:607 models/storia/etichette.py:151
 #: templates/admin/campionato_wizard_step2.html:32
 #: templates/components/_campionato_general_classification.html:78
 #: templates/components/_classification_mobile.html:31
@@ -1022,86 +1022,86 @@ msgstr "Racks won"
 msgid "Punti"
 msgstr "Points"
 
-#: models/classification/ordinamento.py:595
+#: models/classification/ordinamento.py:608
 #: templates/components/_classification_mobile.html:35
 msgid "Differenza triangoli"
 msgstr "Rack difference"
 
-#: models/classification/ordinamento.py:596
+#: models/classification/ordinamento.py:609
 msgid "Scontri diretti"
 msgstr "Head-to-head"
 
-#: models/classification/ordinamento.py:597
+#: models/classification/ordinamento.py:610
 msgid "Spareggio SSR"
 msgstr "SSR tiebreaker"
 
-#: models/classification/ordinamento.py:598
+#: models/classification/ordinamento.py:611
 msgid "Posizione precedente"
 msgstr "Previous position"
 
-#: models/classification/ordinamento.py:599
+#: models/classification/ordinamento.py:612
 msgid "Sorteggio"
 msgstr "Draw"
 
-#: models/classification/ordinamento.py:606
+#: models/classification/ordinamento.py:619
 msgid "lo scontro diretto"
 msgstr "the head-to-head result"
 
-#: models/classification/ordinamento.py:608
+#: models/classification/ordinamento.py:621
 msgid "la differenza triangoli"
 msgstr "the rack difference"
 
-#: models/classification/ordinamento.py:610
+#: models/classification/ordinamento.py:623
 msgid "i triangoli vinti"
 msgstr "the racks won"
 
-#: models/classification/ordinamento.py:612
+#: models/classification/ordinamento.py:625
 msgid "le vittorie"
 msgstr "the wins"
 
-#: models/classification/ordinamento.py:615
+#: models/classification/ordinamento.py:628
 msgid "lo spareggio SSR"
 msgstr "the SSR tiebreaker"
 
-#: models/classification/ordinamento.py:616
+#: models/classification/ordinamento.py:629
 #, python-format
 msgid "lo spareggio SSR fino al %(n)s° posto"
 msgstr "the SSR tiebreaker up to place %(n)s"
 
-#: models/classification/ordinamento.py:619
+#: models/classification/ordinamento.py:632
 msgid "la posizione dopo la gara precedente"
 msgstr "the position after the previous event"
 
-#: models/classification/ordinamento.py:621
+#: models/classification/ordinamento.py:634
 msgid "la posizione al turno precedente"
 msgstr "the position in the previous round"
 
-#: models/classification/ordinamento.py:622
+#: models/classification/ordinamento.py:635
 msgid "la posizione precedente"
 msgstr "the previous position"
 
-#: models/classification/ordinamento.py:623
+#: models/classification/ordinamento.py:636
 msgid "il sorteggio"
 msgstr "the draw"
 
-#: models/classification/ordinamento.py:628
+#: models/classification/ordinamento.py:641
 msgid "A pari triangoli vinti"
 msgstr "Level on racks won"
 
-#: models/classification/ordinamento.py:630
+#: models/classification/ordinamento.py:643
 msgid "A pari punti"
 msgstr "Level on points"
 
-#: models/classification/ordinamento.py:631
+#: models/classification/ordinamento.py:644
 msgid "A pari vittorie"
 msgstr "Level on wins"
 
-#: models/classification/ordinamento.py:658
+#: models/classification/ordinamento.py:671
 #, python-format
 msgid "Spareggio SSR fino al %(n)s°"
 msgstr "SSR tiebreaker up to place %(n)s"
 
-#: models/classification/ordinamento.py:670
+#: models/classification/ordinamento.py:683
 msgid "nessun criterio: i pari merito restano tali"
 msgstr "no criteria: ties stay tied"
 
@@ -1199,6 +1199,24 @@ msgstr ""
 "Round %(n)s has already started: attempts at the drill after round "
 "%(prima)s can no longer be removed."
 
+#: models/competition/gironi_service.py:115
+#, python-format
+msgid "Questa gara si gioca al massimo in %(n)s gironi."
+msgstr "This event is played in at most %(n)s groups."
+
+#: models/competition/gironi_service.py:122
+#, python-format
+msgid ""
+"Con %(iscritti)s iscritti non si fanno %(gironi)s gironi: ne servono "
+"almeno %(minimo)s per girone."
+msgstr ""
+"With %(iscritti)s players you cannot make %(gironi)s groups: each group "
+"needs at least %(minimo)s."
+
+#: models/competition/gironi_service.py:130
+msgid "Il numero di gironi non è valido."
+msgstr "Invalid number of groups."
+
 #: models/competition/inscription_service.py:614
 #: models/competition/inscription_service.py:649
 #, python-format
@@ -1239,7 +1257,7 @@ msgstr "%(direttore)s cancelled your registration for the competition %(gara)s."
 msgid "Sei stato promosso dalla lista d'attesa per %(gara)s"
 msgstr "You've been moved up from the waiting list for %(gara)s"
 
-#: models/competition/models.py:631
+#: models/competition/models.py:669
 #: templates/admin/amalfi_classification.html:23
 #: templates/components/_new_gara_modal.html:69
 #, python-format
@@ -9453,14 +9471,14 @@ msgstr ""
 " be met. Terminate anyway?"
 
 #: templates/admin/campionato_detail.html:722
-#: templates/admin/gara_edit.html:182
+#: templates/admin/gara_edit.html:187
 #: templates/components/_new_gara_modal.html:668
 #, python-brace-format
 msgid "Esatto numero: {distance} triangoli totali"
 msgstr "Exact number: {distance} total racks"
 
 #: templates/admin/campionato_detail.html:723
-#: templates/admin/gara_edit.html:184
+#: templates/admin/gara_edit.html:189
 #: templates/components/_new_gara_modal.html:669
 #, python-brace-format
 msgid "Al {distance} (si vince a {distance} triangoli)"
