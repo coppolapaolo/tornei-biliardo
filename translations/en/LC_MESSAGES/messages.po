@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-11 18:10+0200\n"
+"POT-Creation-Date: 2026-10-11 21:23+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1135,7 +1135,7 @@ msgid "Posizione precedente"
 msgstr "Previous position"
 
 #: models/classification/ordinamento.py:653
-#: models/competition/gironi_service.py:86
+#: models/competition/gironi_service.py:109
 msgid "Sorteggio"
 msgstr "Draw"
 
@@ -1223,26 +1223,26 @@ msgstr "A win must be worth more than a loss, and a draw must sit between the tw
 msgid "%(v)s punti la vittoria, %(p)s il pareggio, %(s)s la sconfitta"
 msgstr "%(v)s points for a win, %(p)s for a draw, %(s)s for a loss"
 
-#: models/competition/campi_modificabili.py:160
-#: models/competition/campi_modificabili.py:219
+#: models/competition/campi_modificabili.py:167
+#: models/competition/campi_modificabili.py:226
 msgid "La gara è chiusa."
 msgstr "The competition is closed."
 
-#: models/competition/campi_modificabili.py:167
+#: models/competition/campi_modificabili.py:174
 msgid "La gara è finita: si corregge solo quanto conta."
 msgstr "The competition has finished: only how much it counts can be corrected."
 
-#: models/competition/campi_modificabili.py:179
+#: models/competition/campi_modificabili.py:186
 msgid "Sul tabellone lo decide il formato."
 msgstr "In a bracket the format decides it."
 
-#: models/competition/campi_modificabili.py:183
+#: models/competition/campi_modificabili.py:190
 msgid "La gara è avviata: la struttura si cambia annullando l'avvio."
 msgstr ""
 "The competition has started: its structure changes only by cancelling the"
 " start."
 
-#: models/competition/campi_modificabili.py:188
+#: models/competition/campi_modificabili.py:195
 msgid ""
 "Con la strategia casuale tutti i turni esistono già: le regole di gioco "
 "non si cambiano dopo l'avvio."
@@ -1250,17 +1250,17 @@ msgstr ""
 "With the random strategy every round already exists: play rules can't "
 "change after the start."
 
-#: models/competition/campi_modificabili.py:194
+#: models/competition/campi_modificabili.py:201
 msgid ""
 "Non restano turni da avviare: un cambio di regola non avrebbe partite a "
 "cui arrivare."
 msgstr "No rounds left to start: a rule change would have no matches to apply to."
 
-#: models/competition/campi_modificabili.py:199
+#: models/competition/campi_modificabili.py:206
 msgid "Lo spareggio è già cominciato."
 msgstr "The tiebreaker has already started."
 
-#: models/competition/campi_modificabili.py:224
+#: models/competition/campi_modificabili.py:231
 msgid ""
 "Con la strategia casuale tutti i turni esistono già: le regole dei turni "
 "non si cambiano dopo l'avvio."
@@ -1268,7 +1268,7 @@ msgstr ""
 "With the random strategy every round already exists: round rules can't "
 "change after the start."
 
-#: models/competition/campi_modificabili.py:229
+#: models/competition/campi_modificabili.py:236
 #, python-format
 msgid ""
 "Il turno %(n)s è già avviato: le sue partite hanno le regole con cui sono"
@@ -1321,23 +1321,23 @@ msgstr ""
 "Round %(n)s has already started: attempts at the drill after round "
 "%(prima)s can no longer be removed."
 
-#: models/competition/gironi_service.py:87
+#: models/competition/gironi_service.py:110
 msgid "La fila degli iscritti la decide il sorteggio della gara."
 msgstr "The competition draw decides the order of the line."
 
-#: models/competition/gironi_service.py:91
+#: models/competition/gironi_service.py:114
 msgid "Per ELO"
 msgstr "By ELO"
 
-#: models/competition/gironi_service.py:92
+#: models/competition/gironi_service.py:115
 msgid "Dal più alto: i più forti finiscono in gironi diversi."
 msgstr "From the highest: the strongest end up in different groups."
 
-#: models/competition/gironi_service.py:96
+#: models/competition/gironi_service.py:119
 msgid "Per categoria"
 msgstr "By category"
 
-#: models/competition/gironi_service.py:98
+#: models/competition/gironi_service.py:121
 msgid ""
 "Nell'ordine del listino, poi per ELO: le prime categorie si dividono fra "
 "i gironi."
@@ -1345,30 +1345,30 @@ msgstr ""
 "In price list order, then by ELO: the top categories are split across the"
 " groups."
 
-#: models/competition/gironi_service.py:109 models/storia/etichette.py:172
+#: models/competition/gironi_service.py:132 models/storia/etichette.py:172
 msgid "per ELO"
 msgstr "by ELO"
 
-#: models/competition/gironi_service.py:111 models/storia/etichette.py:173
+#: models/competition/gironi_service.py:134 models/storia/etichette.py:173
 msgid "per categoria"
 msgstr "by category"
 
-#: models/competition/gironi_service.py:112 models/storia/etichette.py:171
+#: models/competition/gironi_service.py:135 models/storia/etichette.py:171
 msgid "a sorteggio"
 msgstr "by draw"
 
-#: models/competition/gironi_service.py:132
+#: models/competition/gironi_service.py:155
 msgid " e "
 msgstr " and "
 
-#: models/competition/gironi_service.py:134
+#: models/competition/gironi_service.py:157
 #, python-format
 msgid "%(num)d girone all'italiana da %(taglie)s giocatori, composto %(come)s"
 msgid_plural "%(num)d gironi all'italiana da %(taglie)s giocatori, composti %(come)s"
 msgstr[0] "%(num)d round robin group of %(taglie)s players, composed %(come)s"
 msgstr[1] "%(num)d round robin groups of %(taglie)s players, composed %(come)s"
 
-#: models/competition/gironi_service.py:142
+#: models/competition/gironi_service.py:165
 #, python-format
 msgid ""
 "Fino a %(n)s gironi all'italiana, composti %(come)s: quanti, lo sceglie "
@@ -1377,16 +1377,16 @@ msgstr ""
 "Up to %(n)s round robin groups, composed %(come)s: how many is chosen by "
 "the director at the start, with at least %(minimo)s players per group"
 
-#: models/competition/gironi_service.py:150
+#: models/competition/gironi_service.py:173
 msgid "; i compagni di squadra in gironi diversi, quando si può"
 msgstr "; teammates in different groups, when possible"
 
-#: models/competition/gironi_service.py:199
+#: models/competition/gironi_service.py:225
 #, python-format
 msgid "Questa gara si gioca al massimo in %(n)s gironi."
 msgstr "This event is played in at most %(n)s groups."
 
-#: models/competition/gironi_service.py:206
+#: models/competition/gironi_service.py:232
 #, python-format
 msgid ""
 "Con %(iscritti)s iscritti non si fanno %(gironi)s gironi: ne servono "
@@ -1395,10 +1395,23 @@ msgstr ""
 "With %(iscritti)s players you cannot make %(gironi)s groups: each group "
 "needs at least %(minimo)s."
 
-#: models/competition/gironi_service.py:214
+#: models/competition/gironi_service.py:240
 #: routes/admin/competition/rounds.py:119
 msgid "Il numero di gironi non è valido."
 msgstr "Invalid number of groups."
+
+#: models/competition/gironi_service.py:286
+#, python-format
+msgid ""
+"Al tabellone passano i primi %(k)s di ogni girone, ma un girone ne ha "
+"solo %(n)s: scegli meno gironi o meno qualificati."
+msgstr ""
+"The top %(k)s of each group go to the bracket, but one group has only "
+"%(n)s players: choose fewer groups or fewer qualifiers."
+
+#: models/competition/gironi_service.py:294
+msgid "Il numero di qualificati non è valido."
+msgstr "Invalid number of qualifiers."
 
 #: models/competition/inscription_service.py:104
 msgid "Gara playoff: iscrizione riservata ai qualificati"
@@ -1472,7 +1485,7 @@ msgstr "You've been moved up from the waiting list for %(gara)s"
 
 #: models/competition/inscription_service.py:929
 #: models/competition/inscription_service.py:990
-#: models/competition/services.py:1066
+#: models/competition/services.py:1132
 msgid "La data di inizio deve essere precedente alla data di fine!"
 msgstr "The start date must be before the end date!"
 
@@ -1484,11 +1497,11 @@ msgstr "The start date must be before the end date!"
 #: models/competition/round_creation.py:372
 #: models/competition/round_creation.py:412
 #: models/competition/round_manager.py:50
-#: models/competition/round_service.py:70 models/competition/services.py:362
-#: models/competition/services.py:800 models/competition/services.py:835
-#: models/competition/services.py:851 models/competition/services.py:1061
-#: models/competition/services.py:1083 models/competition/services.py:1090
-#: models/competition/services.py:1097 models/competition/services.py:1329
+#: models/competition/round_service.py:70 models/competition/services.py:363
+#: models/competition/services.py:866 models/competition/services.py:901
+#: models/competition/services.py:917 models/competition/services.py:1127
+#: models/competition/services.py:1149 models/competition/services.py:1156
+#: models/competition/services.py:1163 models/competition/services.py:1395
 #: models/competition/showcase_service.py:188
 #: models/competition/showcase_service.py:221
 #: models/competition/withdraw_policy_service.py:262
@@ -1497,7 +1510,6 @@ msgid "Gara %(id)s non trovata"
 msgstr "Competition %(id)s not found"
 
 #: models/competition/inscription_service.py:938
-#, python-format
 msgid "Servono almeno 2 iscritti per giocare"
 msgstr "At least 2 players are needed to play"
 
@@ -1513,7 +1525,7 @@ msgstr "Dates cannot be changed: the first round has already started!"
 msgid "Le iscrizioni non possono terminare dopo la data della gara!"
 msgstr "Registration cannot close after the competition date!"
 
-#: models/competition/models.py:669
+#: models/competition/models.py:726
 #: templates/admin/amalfi_classification.html:23
 #: templates/components/_new_gara_modal.html:116
 #, python-format
@@ -1694,9 +1706,9 @@ msgstr "Match not found"
 #: models/competition/round_manager.py:138
 #: models/competition/round_manager.py:298
 #: models/competition/round_manager.py:429
-#: models/competition/spareggio_service.py:622
-#: models/competition/spareggio_service.py:690
-#: models/competition/spareggio_service.py:894
+#: models/competition/spareggio_service.py:659
+#: models/competition/spareggio_service.py:727
+#: models/competition/spareggio_service.py:931
 #: models/competition/withdraw_policy_service.py:95
 #: models/prova/simulation_service.py:374
 msgid "Gara non trovata"
@@ -1819,18 +1831,18 @@ msgstr "A competition must belong to a championship or have a director."
 msgid "Data della gara non può essere nel passato"
 msgstr "The competition date cannot be in the past"
 
-#: models/competition/services.py:230 routes/admin/competition/crud.py:96
+#: models/competition/services.py:231 routes/admin/competition/crud.py:96
 #: routes/admin/competition/crud.py:487
 #, python-format
 msgid "Configurazione non valida: %(errori)s"
 msgstr "Invalid configuration: %(errori)s"
 
-#: models/competition/services.py:241 models/competition/services.py:504
+#: models/competition/services.py:242 models/competition/services.py:514
 #, python-format
 msgid "Configurazione classificazione non valida: %(errori)s"
 msgstr "Invalid standings configuration: %(errori)s"
 
-#: models/competition/services.py:417
+#: models/competition/services.py:418
 #, python-format
 msgid ""
 "Nel frattempo qualcun altro ha modificato: %(campi)s. Ricarica la pagina "
@@ -1839,14 +1851,14 @@ msgstr ""
 "Meanwhile someone else changed: %(campi)s. Reload the page and make the "
 "change again."
 
-#: models/competition/services.py:431
+#: models/competition/services.py:432
 #, python-format
 msgid "Ci sono già %(dentro)s iscritti: la capienza non può scendere a %(nuovo)s."
 msgstr ""
 "There are already %(dentro)s players registered: capacity cannot go down "
 "to %(nuovo)s."
 
-#: models/competition/services.py:639
+#: models/competition/services.py:649
 msgid ""
 "In un campionato che somma vittorie, triangoli o punti le gare restano a "
 "girone unico: chi capita nel girone più numeroso giocherebbe una partita "
@@ -1857,15 +1869,43 @@ msgstr ""
 "group: whoever lands in the larger group would play one more match. "
 "Groups are for standalone events and placement championships."
 
-#: models/competition/services.py:839
+#: models/competition/services.py:682
+msgid ""
+"Il tabellone dopo i gironi si gioca solo con più gironi: scegli «Gironi: "
+"fino a 2» o più, oppure nessuna fase finale."
+msgstr ""
+"The bracket after the groups is only played with more than one group: "
+"choose \"Groups: up to 2\" or more, or no final phase."
+
+#: models/competition/services.py:691
+msgid ""
+"Con il tabellone dopo i gironi le partite si giocano «al N»: nel "
+"tabellone qualcuno deve passare il turno, e il pareggio non esiste."
+msgstr ""
+"With a bracket after the groups, matches are played as \"race to N\": in "
+"the bracket someone must advance, and there are no draws."
+
+#: models/competition/services.py:705
+msgid ""
+"In un campionato che somma vittorie, triangoli o punti le gare non hanno "
+"una fase finale: la classifica di una gara col tabellone viene dal "
+"tabellone, non dai totali. La fase finale si usa nelle gare singole e nei"
+" campionati a piazzamenti."
+msgstr ""
+"In a championship that adds up wins, racks or points, competitions have "
+"no final phase: the standings of a competition with a bracket come from "
+"the bracket, not from the totals. The final phase is used in standalone "
+"competitions and in placement championships."
+
+#: models/competition/services.py:905
 msgid "Impossibile cancellare la gara: ci sono già delle iscrizioni!"
 msgstr "The competition cannot be deleted: there are already registrations!"
 
-#: models/competition/services.py:855
+#: models/competition/services.py:921
 msgid "La gara non può essere cancellata in questo stato!"
 msgstr "The competition cannot be cancelled in this state!"
 
-#: models/competition/services.py:890
+#: models/competition/services.py:956
 #, python-format
 msgid ""
 "La %(gara)s del campionato '%(campionato)s' del %(data)s è stata "
@@ -1874,20 +1914,20 @@ msgstr ""
 "%(gara)s of the championship '%(campionato)s' on %(data)s has been "
 "cancelled."
 
-#: models/competition/services.py:897
+#: models/competition/services.py:963
 #, python-format
 msgid "La %(gara)s del %(data)s è stata cancellata."
 msgstr "%(gara)s on %(data)s has been cancelled."
 
-#: models/competition/services.py:908
+#: models/competition/services.py:974
 msgid "Gara Cancellata"
 msgstr "Competition cancelled"
 
-#: models/competition/services.py:1117
+#: models/competition/services.py:1183
 msgid "Gli admin non possono essere direttori di gara"
 msgstr "Admins cannot be competition directors"
 
-#: models/competition/services.py:1124
+#: models/competition/services.py:1190
 msgid "Solo gli utenti con ruolo direttore possono essere co-direttori"
 msgstr "Only users with the director role can be co-directors"
 
@@ -2046,16 +2086,16 @@ msgstr "Registration closes"
 msgid "Iscrizioni aperte — %(n)s posti liberi"
 msgstr "Registration open — %(n)s seats left"
 
-#: models/competition/spareggio_service.py:534
+#: models/competition/spareggio_service.py:571
 msgid "Nessun punteggio fornito"
 msgstr "No score provided"
 
-#: models/competition/spareggio_service.py:539
+#: models/competition/spareggio_service.py:576
 #: templates/direttore/_scripts.html:73
 msgid "I punteggi devono essere numeri interi non negativi"
 msgstr "Scores must be non-negative integers"
 
-#: models/competition/spareggio_service.py:553
+#: models/competition/spareggio_service.py:590
 #: templates/direttore/_scripts.html:74
 msgid ""
 "Serve un vincitore netto: il punteggio più alto del gruppo non può essere"
@@ -2064,7 +2104,7 @@ msgstr ""
 "A clear winner is required: the highest score in the group cannot be "
 "shared"
 
-#: models/competition/spareggio_service.py:560
+#: models/competition/spareggio_service.py:597
 #, python-format
 msgid ""
 "I primi %(num)s punteggi devono essere diversi fra loro e più alti degli "
@@ -2073,39 +2113,39 @@ msgstr ""
 "The top %(num)s scores must differ from each other and be higher than the"
 " rest"
 
-#: models/competition/spareggio_service.py:580
+#: models/competition/spareggio_service.py:617
 msgid "Nessun punteggio inserito"
 msgstr "No score entered"
 
-#: models/competition/spareggio_service.py:587
+#: models/competition/spareggio_service.py:624
 msgid "Tutti i punteggi devono essere numeri interi non negativi"
 msgstr "All scores must be non-negative integers"
 
-#: models/competition/spareggio_service.py:595
+#: models/competition/spareggio_service.py:632
 msgid "I punteggi devono essere tutti diversi per risolvere il parimerito"
 msgstr "Scores must all be different to break the tie"
 
-#: models/competition/spareggio_service.py:665
+#: models/competition/spareggio_service.py:702
 msgid "Punteggi spareggio salvati"
 msgstr "Tiebreaker scores saved"
 
-#: models/competition/spareggio_service.py:704
+#: models/competition/spareggio_service.py:741
 #, python-format
 msgid "Gruppo di parimerito alla posizione %(posizione)s non trovato"
 msgstr "Tied group at position %(posizione)s not found"
 
-#: models/competition/spareggio_service.py:723
+#: models/competition/spareggio_service.py:760
 #, python-format
 msgid "Il giocatore %(id)s non appartiene a questo gruppo"
 msgstr "Player %(id)s does not belong to this group"
 
-#: models/competition/spareggio_service.py:768
+#: models/competition/spareggio_service.py:805
 #: routes/admin/competition/rounds.py:481
 #, python-format
 msgid "Punteggi SSR per posizione %(posizione)s salvati"
 msgstr "SSR scores for position %(posizione)s saved"
 
-#: models/competition/spareggio_service.py:957
+#: models/competition/spareggio_service.py:994
 msgid "Classifica finale aggiornata"
 msgstr "Final standings updated"
 
@@ -2161,12 +2201,10 @@ msgid "Partita a tre non trovata"
 msgstr "Three-player match not found"
 
 #: models/competition/trio_service.py:55
-#, python-format
 msgid "Vincitore non valido per questa partita a tre"
 msgstr "Invalid winner for this three-player match"
 
 #: models/competition/trio_service.py:165
-#, python-format
 msgid "Nessun triangolo da rimuovere"
 msgstr "No rack to remove"
 
@@ -4686,7 +4724,6 @@ msgid "Qui si risponde solo per i giocatori fittizi: gli altri rispondono da sol
 msgstr "Here you only answer for dummy players: the others answer for themselves"
 
 #: models/prova/simulation_service.py:323
-#, python-format
 msgid "Questo invito ha già una risposta"
 msgstr "This invitation has already been answered"
 

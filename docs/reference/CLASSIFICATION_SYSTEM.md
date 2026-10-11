@@ -503,6 +503,26 @@ Per gare standalone:
   `gironi_della_gara.py`. I gironi esistono nelle gare singole e nei
   campionati a piazzamenti, dove la gara entra col suo posto (sezione 7.0).
 
+- **Tabellone dopo i gironi** (dal 2026-10-11, ADR-081): con
+  `Gara.final_phase_mode = "tabellone"` i primi `K` di ogni girone
+  (`qualifiers_per_group`, di norma 2) giocano un'eliminazione diretta dopo
+  l'ultimo turno dei gironi; la finalina è `third_place_match`. Teste di serie
+  per colonne (prima i primi, poi i secondi; dentro la colonna l'ordine della
+  classifica a gironi), bye ai migliori, chi viene dallo stesso girone tenuto
+  lontano (1ºA–2ºB, 1ºB–2ºA). Al taglio decide la catena di turno, come in
+  una classifica di turno; niente SSR. Le partite del tabellone si giocano «al
+  N». Solo con più gironi: partita con un girone solo, la gara finisce col
+  girone.
+
+  Classifica finale (`models/classification/fase_finale.py`): prima il
+  tabellone — 1° e 2° dalla finale, 3° e 4° dalla finalina, senza finalina due
+  terzi a pari merito, chi esce prima della semifinale per piazzamento nel
+  girone — poi i non qualificati nell'ordine dei gironi. Il sistema della gara
+  (WINS, RACK, POINTS) ordina i gironi e non cambia; nei turni del tabellone i
+  numeri delle righe restano quelli dei gironi. **Lo spareggio SSR non si
+  gioca**: il podio lo dà il tabellone, come nel sistema POSITION. Nessuna
+  fase finale nei campionati che sommano i totali.
+
 #### Eliminazione
 - Bracket a eliminazione diretta.
 - Posizioni determinate dalla progressione nel bracket.

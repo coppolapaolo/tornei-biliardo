@@ -222,6 +222,7 @@ class GaraService:
 
         GaraService._dispari_ammessi_dalla_strategia(gara)
         GaraService._verifica_gironi_ammessi(gara)
+        GaraService._verifica_fase_finale(gara)
 
         # Valida la configurazione matchmaking
         errors = gara.validate_strategy_configuration()
@@ -492,6 +493,15 @@ class GaraService:
         GaraService._dispari_ammessi_dalla_strategia(gara)
         if "max_groups" in kwargs or "matchmaking_strategy" in kwargs:
             GaraService._verifica_gironi_ammessi(gara)
+        if {
+            "final_phase_mode",
+            "max_groups",
+            "matchmaking_strategy",
+            "is_race_to",
+            "is_multi_set",
+            "is_race_to_sets",
+        } & kwargs.keys():
+            GaraService._verifica_fase_finale(gara)
 
         # Valida la configurazione classificazione dopo le modifiche
         from models.competition.validators import validate_gara
@@ -640,6 +650,62 @@ class GaraService:
                 "restano a girone unico: chi capita nel girone più numeroso "
                 "giocherebbe una partita in più. I gironi si usano nelle gare "
                 "singole e nei campionati a piazzamenti."
+            )
+        )
+
+    @staticmethod
+    def _verifica_fase_finale(gara: Gara) -> None:
+        """Il tabellone dopo i gironi: dove si può, e con quale distanza.
+
+        * Solo con più gironi: il tabellone è fra i primi di ogni girone, e
+          una gara a girone unico non ce l'ha (decisione del 2026-10-11).
+        * Nel tabellone non esiste il pareggio (SPECIFICHE.md, «Limite di
+          tempo»), quindi le partite si giocano **al N**, come in ogni
+          tabellone (`validators._validate_position_system`): con
+          «esattamente N» pari una partita finirebbe senza chi passa.
+        * In un campionato che somma i totali le gare sono un girone
+          all'italiana e basta: la classifica di una gara col tabellone viene
+          dal tabellone, non dai totali (ADR-080).
+        """
+        from flask_babel import gettext as _
+
+        from models.campionato.models import Campionato
+        from models.campionato.piazzamenti import somma_i_totali
+
+        if not gara.ha_tabellone_finale:
+            return
+        # Solo con più gironi (decisione dell'utente, 2026-10-11): il tabellone
+        # è fra i primi di **ogni** girone.
+        if gara.effective_max_groups <= 1:
+            raise ValueError(
+                _(
+                    "Il tabellone dopo i gironi si gioca solo con più gironi: "
+                    "scegli «Gironi: fino a 2» o più, oppure nessuna fase finale."
+                )
+            )
+        if not gara.is_race_to or (
+            gara.is_multi_set and not getattr(gara, "is_race_to_sets", True)
+        ):
+            raise ValueError(
+                _(
+                    "Con il tabellone dopo i gironi le partite si giocano «al "
+                    "N»: nel tabellone qualcuno deve passare il turno, e il "
+                    "pareggio non esiste."
+                )
+            )
+        if not gara.campionato_id:
+            return
+        campionato = db.session.get(Campionato, gara.campionato_id)
+        if not somma_i_totali(campionato):
+            return
+        if gara.playoff_config is not None and gara.classification_weight == 0:
+            return
+        raise ValueError(
+            _(
+                "In un campionato che somma vittorie, triangoli o punti le gare "
+                "non hanno una fase finale: la classifica di una gara col "
+                "tabellone viene dal tabellone, non dai totali. La fase finale "
+                "si usa nelle gare singole e nei campionati a piazzamenti."
             )
         )
 

@@ -3370,3 +3370,146 @@ class TestAPariPuntiNelCampionatoAPiazzamenti:
         assert totali[a.id]["piazzamenti"] == {1: 3}
         assert totali[b.id]["piazzamenti"] == {2: 3}
         assert totali[c.id]["piazzamenti"] == {2: 1, 3: 2}
+
+
+class TestLaFaseFinaleDopoIGironi:
+    """`SPECIFICHE.md` («Turno», «Fase finale dopo i gironi»; «Limite di
+    tempo»; «Classifica», «La classifica a gironi»), 2026-10-11, PR 5 del
+    piano dei gironi."""
+
+    def test_di_norma_nessuna_e_passano_due(self, db_session):
+        """> fra tre: **nessuna** (la gara finisce coi gironi, ed è il
+        > default) […] i primi `K` di ogni girone (di norma 2)."""
+        from models.matchmaking.fase_finale import FaseFinale
+
+        gara = _gara(db_session)
+        gara.matchmaking_strategy = "round_robin"
+        assert gara.effective_final_phase_mode is FaseFinale.NESSUNA
+        assert gara.effective_qualifiers_per_group == 2
+        gara.final_phase_mode = "tabellone"
+        assert gara.ha_tabellone_finale
+        gara.matchmaking_strategy = "amalfi"
+        assert not gara.ha_tabellone_finale  # solo il girone all'italiana
+
+    def test_chi_passa_e_quanti(self):
+        """> `K` va da 1 al numero di giocatori del girone più piccolo, e i
+        > qualificati devono essere almeno due […] chi si è ritirato lascia il
+        > posto al successivo del suo girone."""
+        from models.matchmaking.fase_finale import (
+            qualificati_dei_gironi,
+            verifica_qualificati,
+        )
+
+        assert verifica_qualificati([4, 3], 4) == "girone"
+        assert verifica_qualificati([4, 3], 3) is None
+        assert qualificati_dei_gironi({0: [1, 2, 3]}, 2, {1, 3}) == {0: [1, 3]}
+
+    def test_taglia_e_turni(self):
+        """> la potenza di 2 subito sopra i qualificati (da 2 in su: con due
+        > gironi e un qualificato si gioca la sola finale) […] due gironi da 4
+        > con `K` = 2 fanno 3 + 2 turni."""
+        from models.matchmaking.fase_finale import (
+            taglia_del_tabellone,
+            turni_del_tabellone,
+        )
+        from models.matchmaking.gironi import turni_dei_gironi
+
+        assert taglia_del_tabellone(2) == 2
+        assert taglia_del_tabellone(6) == 8
+        assert turni_dei_gironi([4, 4]) + turni_del_tabellone(4) == 3 + 2
+
+    def test_teste_di_serie_per_colonne_e_bye_ai_migliori_primi(self):
+        """> prima tutti i primi dei gironi, poi tutti i secondi […] dentro
+        > una colonna i migliori nell'ordine della classifica a gironi […] con
+        > tre gironi e `K` = 2, ai due migliori primi."""
+        from models.matchmaking.bracket import standard_bracket_order
+        from models.matchmaking.fase_finale import semina_del_tabellone
+
+        # Classifica a gironi: C1, A1, B1, A2, C2, B2.
+        seme = semina_del_tabellone(
+            {0: [11, 12], 1: [21, 22], 2: [31, 32]}, [31, 11, 21, 12, 32, 22]
+        )
+        assert seme == [31, 11, 21, 12, 32, 22]
+        # Tabellone da 8: le teste di serie 7 e 8 non ci sono, e i loro
+        # avversari — le teste di serie 2 e 1 — passano il turno.
+        ordine = standard_bracket_order(8)
+        coppie = [ordine[i : i + 2] for i in range(0, 8, 2)]
+        con_bye = sorted(min(c) for c in coppie if max(c) > len(seme))
+        assert [seme[s - 1] for s in con_bye] == [31, 11]
+
+    def test_finalina_o_due_terzi_poi_piazzamento_nel_girone(self):
+        """> 1° e 2° dalla finale, 3° e 4° dalla finalina; **senza finalina**
+        > i due semifinalisti sconfitti sono **terzi a pari merito** […] chi
+        > esce allo stesso turno prima della semifinale […] si ordina per
+        > **piazzamento nel girone** […] poi i **non qualificati**."""
+        from models.classification.fase_finale import classifica_con_tabellone
+
+        gironi = [(1, [11]), (2, [21]), (3, [12]), (4, [22]), (5, [13]), (6, [23])]
+        con_finalina = classifica_con_tabellone([[11], [21], [22], [12]], gironi)
+        assert [ids for _p, ids in con_finalina] == [[11], [21], [22], [12], [13], [23]]
+        senza = classifica_con_tabellone(
+            [[11], [21], [12, 22]], gironi, pari_merito={12, 22}
+        )
+        assert senza[2] == (3, [12, 22])
+        quarti = classifica_con_tabellone(
+            [[11], [21], [13, 23], [12, 22]],
+            gironi,
+            pari_merito={13, 23},
+        )
+        assert quarti[3:] == [(5, [12]), (6, [22])]
+
+    def test_limite_della_fase_finale_a_tre_stati(self, db_session):
+        """> **come i gironi** (il default), **senza limite**, oppure un
+        > numero di minuti diverso. L'ordine è: l'override del singolo turno,
+        > poi il limite della fase finale, poi quello della gara."""
+        gara = _gara(db_session)
+        gara.matchmaking_strategy = "round_robin"
+        gara.time_limit_minutes = 30
+        assert gara.effective_final_phase_time_limit_minutes == 30
+        gara.final_phase_time_limit_minutes = 0
+        assert gara.effective_final_phase_time_limit_minutes is None
+        gara.final_phase_time_limit_minutes = 45
+        assert gara.effective_final_phase_time_limit_minutes == 45
+
+    def test_nel_tabellone_si_gioca_al_n(self, db_session):
+        """> le partite si giocano «al N» (con «esattamente N» la gara col
+        > tabellone viene rifiutata, come ogni tabellone)."""
+        from models.competition.services import GaraService
+
+        gara = _gara(db_session)
+        gara.matchmaking_strategy = "round_robin"
+        gara.final_phase_mode = "tabellone"
+        gara.max_groups = 2
+        gara.is_race_to = False
+        with pytest.raises(ValueError):
+            GaraService._verifica_fase_finale(gara)
+        gara.is_race_to = True
+        GaraService._verifica_fase_finale(gara)
+
+    def test_solo_con_piu_gironi(self, db_session):
+        """> Il **tabellone** esiste solo nelle gare che possono avere **più
+        > gironi** […] con il girone unico non si sceglie."""
+        from models.competition.services import GaraService
+
+        gara = _gara(db_session)
+        gara.matchmaking_strategy = "round_robin"
+        gara.final_phase_mode = "tabellone"
+        gara.is_race_to = True
+        gara.max_groups = 1
+        with pytest.raises(ValueError):
+            GaraService._verifica_fase_finale(gara)
+        gara.max_groups = 2
+        GaraService._verifica_fase_finale(gara)
+
+    def test_il_taglio_e_una_classifica_di_turno(self):
+        """> chi passa fra il `K`-esimo e il `K+1`-esimo di un girone si decide
+        > **come in una classifica di turno**: con la **catena di turno** […]
+        > Niente spareggio SSR a metà gara."""
+        import inspect
+
+        from models.competition import fase_finale_service
+
+        sorgente = inspect.getsource(fase_finale_service.semina)
+        assert "per_il_taglio=True" in sorgente
+        sorgente = inspect.getsource(fase_finale_service.ordine_dei_gironi)
+        assert "catena_di_turno(gara, g)" in sorgente

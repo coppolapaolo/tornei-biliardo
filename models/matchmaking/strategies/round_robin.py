@@ -7,9 +7,11 @@ Requirements: SPECIFICHE.md - Round Robin campionato format
 from __future__ import annotations
 
 import logging
+from dataclasses import replace
 from typing import Sequence, List, Optional, Tuple, Dict, Any, TYPE_CHECKING
 
 from .base import Pairing, BaseStrategy
+from .direct_elimination import DirectEliminationStrategy
 
 if TYPE_CHECKING:
     pass
@@ -89,6 +91,15 @@ class RoundRobinStrategy(BaseStrategy):
         self, gara: object, round_number: int
     ) -> List[Pairing]:
         """Generate pairings for a specific round using Round Robin algorithm."""
+        from models.competition.fase_finale_service import (
+            si_gioca_il_tabellone,
+            turni_dei_gironi,
+        )
+
+        if si_gioca_il_tabellone(gara):
+            fine_dei_gironi = turni_dei_gironi(gara)
+            if round_number > fine_dei_gironi:
+                return self._tabellone_finale(gara, round_number, fine_dei_gironi)
         try:
             gironi = self._gironi(gara)
             if gironi:
@@ -197,10 +208,88 @@ class RoundRobinStrategy(BaseStrategy):
             )
         return pairings
 
+    def _tabellone_finale(
+        self, gara: object, round_number: int, fine_dei_gironi: int
+    ) -> List[Pairing]:
+        """Il tabellone dopo i gironi: il sorteggio, poi l'eliminazione diretta.
+
+        Il primo turno dopo i gironi **sorteggia** il tabellone fra i primi `K`
+        di ogni girone, in ordine di testa di serie (`fase_finale_service.
+        semina`): i bye, quando i qualificati non sono una potenza di 2, vanno
+        ai migliori. Chi viene dallo stesso girone si tiene lontano come nel
+        tabellone finale della formula FISBB (`_assign_slots(groups_of=…)`):
+        con due gironi e due qualificati le semifinali sono 1ºA–2ºB e
+        1ºB–2ºA. Se la gara separa i compagni di squadra, si separano le
+        squadre.
+
+        Dal turno dopo è eliminazione diretta pura, letta dal tabellone
+        persistito: i nodi portano `bracket_group` NULL, ed è così che si
+        distinguono dalle partite dei gironi.
+        """
+        from models.competition.fase_finale_service import semina
+        from models.match.models import Match
+        from models.matchmaking.fase_finale import taglia_del_tabellone
+        from models.status_enum import MatchStatus
+
+        tabellone = _TabelloneFinale()
+        if round_number > fine_dei_gironi + 1:
+            pairings = tabellone._generate_subsequent_round_pairings(
+                gara, round_number  # type: ignore[arg-type]
+            )
+        else:
+            gironi_giocati = Match.query.filter(
+                Match.gara_id == getattr(gara, "id", None),
+                Match.round_number <= fine_dei_gironi,
+            ).all()
+            if not gironi_giocati or any(
+                not MatchStatus.is_finished(m.status) for m in gironi_giocati
+            ):
+                return []
+            seme, girone_di = semina(gara)
+            if len(seme) < 2:
+                return []
+            taglia = taglia_del_tabellone(len(seme))
+            separa: Optional[Dict[int, Optional[int]]] = None
+            if not getattr(gara, "separate_teammates", False) and (
+                len(set(girone_di.values())) > 1
+            ):
+                separa = {pid: girone_di[pid] for pid in seme}
+            slots = tabellone._assign_slots(
+                gara,  # type: ignore[arg-type]
+                seme,
+                taglia,
+                None,
+                rng=tabellone._derived_rng(gara, "tabellone-finale"),
+                groups_of=separa,
+            )
+            pairings = tabellone._pairings_from_slots(
+                slots, taglia, round_number=round_number
+            )
+        attivi = {i.user_id for i in self._get_active_inscriptions(gara)}
+        return [self._a_tavolino_contro_chi_non_c_e(p, attivi) for p in pairings]
+
+    @staticmethod
+    def _a_tavolino_contro_chi_non_c_e(pairing: Pairing, attivi: set) -> Pairing:
+        """Chi non è più in gara perde il nodo a tavolino, come nei gironi."""
+        if pairing.is_bye or len(pairing.players) != 2:
+            return pairing
+        assenti = tuple(p for p in pairing.players if p not in attivi)
+        if not assenti:
+            return pairing
+        return replace(pairing, forfeit_players=assenti)
+
     def has_round(self, gara: object, round_number: int) -> bool:
-        """Il turno esiste se almeno un girone lo gioca."""
+        """Il turno esiste se almeno un girone lo gioca, o se è del tabellone."""
         if not super().has_round(gara, round_number):
             return False
+        from models.competition.fase_finale_service import (
+            si_gioca_il_tabellone,
+            turni_dei_gironi,
+        )
+
+        if si_gioca_il_tabellone(gara):
+            if round_number > turni_dei_gironi(gara):
+                return True
         gironi = self._gironi(gara)
         if not gironi:
             return True
@@ -403,6 +492,22 @@ class RoundRobinStrategy(BaseStrategy):
     def get_matches_per_player(self, player_count: int) -> int:
         """Calculate matches per player in Round Robin."""
         return max(0, player_count - 1)
+
+
+class _TabelloneFinale(DirectEliminationStrategy):
+    """Il tabellone dopo i gironi: eliminazione diretta, da 2 in su.
+
+    Sottoclasse invece di riuso diretto per una sola costante: il pavimento
+    del tabellone. L'eliminazione diretta parte da 4, il tabellone dopo i
+    gironi anche da 2 (due gironi, un qualificato per girone: la sola finale).
+    Tutto il resto — slot canonici, bye ai primi, separazione, finalina,
+    lettura dei turni successivi — è lo stesso codice.
+    """
+
+    name = "round_robin_tabellone_finale"
+    display_name = "Tabellone finale dopo i gironi"
+    min_players = 2
+    min_bracket_size = 2
 
 
 class RoundRobinPairingStrategy(RoundRobinStrategy):

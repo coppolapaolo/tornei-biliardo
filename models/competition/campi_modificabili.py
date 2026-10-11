@@ -59,6 +59,9 @@ REGOLE: FrozenSet[str] = frozenset(
         "break_rule",
         "has_handicap",
         "time_limit_minutes",
+        # Il limite di tempo della fase finale: come quello dei gironi, vale
+        # per le partite che nasceranno.
+        "final_phase_time_limit_minutes",
         "catena_turno",
         "odd_number_policy",
         "x_challenge_id",
@@ -92,6 +95,10 @@ STRUTTURA: FrozenSet[str] = frozenset(
         # I gironi del girone all'italiana (ADR-076): si fissano all'avvio.
         "max_groups",
         "group_seeding",
+        # La fase finale dopo i gironi: quanti turni ha la gara, e chi passa,
+        # si decide all'avvio.
+        "final_phase_mode",
+        "qualifiers_per_group",
         "min_participants",
         "max_participants",
     }
