@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.69.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.69.0...v1.69.1) (2026-10-11)
+
+
+### Correzioni
+
+* il pari merito si mostra sempre sulla posizione più alta ([#661](https://github.com/coppolapaolo/tornei-biliardo/issues/661)) ([82a0982](https://github.com/coppolapaolo/tornei-biliardo/commit/82a0982e7634feecc8c3b14657f5b52c3091d50c))
+
 ## [1.69.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.68.0...v1.69.0) (2026-10-11)
 
 
