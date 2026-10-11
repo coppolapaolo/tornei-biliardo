@@ -8,12 +8,72 @@
    delle vittorie (ADR-078). #}
 {% set is_points = classification_sys == 'POINTS' %}
 {% set is_random_strategy = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
+{# Gironi multipli (ADR-076): mentre si gioca una tabella per girone, a gara
+   finita la classifica della gara con la colonna «Girone». #}
+{% set _gironi = gironi_in_pagina(gara, classification) %}
+{% set _con_girone = classification and not _gironi and girone_della_riga(classification[0]) %}
 <section class="c7-stack">
     <h3 style="margin: 0;">
         {% if is_random_strategy %}{{ _('Classifica complessiva') }}{% else %}{{ _('Classifica dopo il turno %(num)s', num=round_number) }}{% endif %}
     </h3>
 
-    {% if classification %}
+    {% if _gironi %}
+    {% for g in _gironi %}
+    <div class="c7-stack" style="gap: 8px;" data-girone="{{ g.nome }}">
+    <div class="c7-kicker">{{ _('Girone %(nome)s', nome=g.nome) }}</div>
+    <div class="c7-table-wrap table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">{{ _('Pos.') }}</th>
+                    <th style="width: 35%;">{{ _('Giocatore') }}</th>
+                    {% if is_points %}<th style="width: 16%;">{{ _('Punti') }}</th>
+                    {% elif not is_rack_only %}<th style="width: 16%;">{{ _('Vittorie') }}</th>{% endif %}
+                    <th style="width: 18%;">{% if is_rack_only %}{{ _('Triangoli totali') }}{% else %}{{ _('Diff. triangoli') }}{% endif %}</th>
+                    <th style="width: 18%;">{{ _('Turno prec.') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in g.righe %}
+                {% set player_class = v.riga %}
+                <tr>
+                    <td><span class="c7-num" style="{% if v.posizione <= 3 %}color: var(--c7-accent);{% else %}color: var(--c7-ink-faint);{% endif %}">{{ v.posizione }}</span></td>
+                    <td><strong>{{ player_class.user.username }}</strong></td>
+                    {% if is_points %}
+                    <td><span class="c7-num">{{ player_class.points or 0 }}</span></td>
+                    {% elif not is_rack_only %}
+                    <td><span class="c7-num">{{ player_class.matches_won }}</span></td>
+                    {% endif %}
+                    <td>
+                        {% set rack_value = player_class.ranking_rack_value %}
+                        {% if is_rack_only %}<span class="c7-num">{{ rack_value }}</span>
+                        {% elif rack_value > 0 %}<span class="c7-num" style="color: var(--c7-ok);">+{{ rack_value }}</span>
+                        {% elif rack_value < 0 %}<span class="c7-num" style="color: var(--c7-err);">{{ rack_value }}</span>
+                        {% else %}<span class="c7-num" style="color: var(--c7-ink-faint);">0</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if v.precedente %}
+                        {% set diff = v.precedente - v.posizione %}
+                        <span class="c7-num" style="color: var(--c7-ink-muted);">{{ v.precedente }}</span>
+                        {% if diff > 0 %}
+                        <i class="fas fa-arrow-up" style="color: var(--c7-ok); font-size: 11px;"
+                           title="{{ ngettext('Sale di %(num)d posizione', 'Sale di %(num)d posizioni', diff, num=diff) }}"></i>
+                        {% elif diff < 0 %}
+                        <i class="fas fa-arrow-down" style="color: var(--c7-err); font-size: 11px;"
+                           title="{{ ngettext('Scende di %(num)d posizione', 'Scende di %(num)d posizioni', -diff, num=-diff) }}"></i>
+                        {% endif %}
+                        {% else %}
+                        <span style="color: var(--c7-ink-faint);">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </div>
+    {% endfor %}
+    {% elif classification %}
     <div class="c7-table-wrap table-responsive">
         <table class="table">
             <thead>
@@ -44,7 +104,13 @@
                     <td>
                         <span class="c7-num" style="{% if player_class.position <= 3 %}color: var(--c7-accent);{% else %}color: var(--c7-ink-faint);{% endif %}">{{ player_class.position }}</span>
                     </td>
-                    <td><strong>{{ player_class.user.username }}</strong></td>
+                    <td><strong>{{ player_class.user.username }}</strong>
+                        {# A gara finita, da dove viene ognuno (ADR-076): sotto il
+                           nome, non in una colonna che nella colonna laterale
+                           non entrerebbe (issue #152). #}
+                        {% set _gr = girone_della_riga(player_class) if _con_girone else none %}
+                        {% if _gr %}<div style="font-size: 12px; color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)sº girone %(nome)s', pos=_gr[1], nome=_gr[0]) }}</div>{% endif %}
+                    </td>
                     {% if is_points %}
                     <td><span class="c7-num">{{ player_class.points or 0 }}</span></td>
                     {% elif not is_rack_only %}

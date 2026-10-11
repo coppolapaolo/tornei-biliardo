@@ -13,56 +13,42 @@
    estrazione), `round_number` (0 = complessiva, formula casuale). Opzionali:
    `ssr_scores_map` (la pastiglia SSR), `pari_ids` (la pastiglia «pari» sui
    parimerito ancora aperti, 4.4), `medaglie` (le posizioni 1–3 nei colori
-   delle medaglie, 5.1), `titolo_classifica` e `nota_testa`. Chi guarda usa `_classification_mobile.html`. #}
-{% if classification %}
-{% set _rack = classification[0].is_rack_ranking %}
-{% set _posizione = classification[0].is_position_ranking %}
-{% set _punti = classification[0].is_points_ranking %}
-{% set _casuale = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
-{% set _prime = 6 %}
-<section class="c7-stack c7-classifica" style="gap:10px" id="classificaDirettore">
-  <div class="c7-sechead">
-    <h3>{% if titolo_classifica is defined and titolo_classifica %}{{ titolo_classifica }}{% else %}{{ _('Classifica (triangoli)') if _rack else _('Classifica') }}{% endif %}</h3>
-    <span class="c7-sechead__note">
-      {% if nota_testa is defined and nota_testa %}{{ nota_testa }}{% elif _casuale or not round_number %}{{ _('complessiva') }}{% else %}{{ _('dopo il turno %(n)s', n=round_number) }}{% endif %}
-    </span>
-  </div>
-  {% if classification|length > _prime %}
-  <div class="c7-classifica__pillole">
-    <button type="button" class="c7-pill is-active" aria-pressed="true" data-classifica-vista="prime" onclick="mostraClassifica('prime')">{{ _('Prime %(n)s', n=_prime) }}</button>
-    <button type="button" class="c7-pill" aria-pressed="false" data-classifica-vista="tutti" onclick="mostraClassifica('tutti')">{{ _('Tutti (%(n)s)', n=classification|length) }}</button>
-  </div>
-  {% endif %}
-  <div class="c7-rows">
-    <div class="c7-rows__row c7-classifica__testa">
-      <span class="c7-classifica__pos"></span>
-      <span class="c7-classifica__trend"></span>
-      <span class="c7-classifica__gioc c7-label">{{ _('Giocatore') }}</span>
-      <span class="c7-classifica__col c7-label">{{ _('Vinti') if _rack else (_('Punti') if _punti else _('Vinte')) }}</span>
-      <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Persi') if _rack else _('Diff') }}</span>
-    </div>
-    {% for riga in classification %}
-    {% set _mov = (riga.previous_position - riga.position) if riga.previous_position else none %}
-    <div class="c7-rows__row c7-classifica__riga{% if loop.index > _prime %} c7-classifica__riga--oltre{% endif %}" data-oltre="{{ '1' if loop.index > _prime else '0' }}"{% if loop.index > _prime %} hidden{% endif %}>
-      {% if medaglie is defined and medaglie %}
-      <span class="c7-pos c7-pos--lg c7-classifica__medaglia{% if riga.position <= 3 %} c7-pos--{{ riga.position }}{% endif %}">{{ riga.position }}</span>
+   delle medaglie, 5.1), `titolo_classifica` e `nota_testa`. Chi guarda usa `_classification_mobile.html`.
+
+   Gironi multipli (ADR-076): mentre si gioca, una tabella per girone
+   («Girone A», «Girone B»), ciascuna nell'ordine del girone e con la freccia
+   rispetto alla posizione nel girone al turno prima (`gironi_in_pagina`). A
+   gara finita la classifica della gara, con accanto a ogni nome girone e
+   posizione nel girone. Col girone unico non cambia niente. #}
+{% macro _riga(riga, posizione, mov, oltre, medaglie, girone) %}
+    <div class="c7-rows__row c7-classifica__riga{% if oltre %} c7-classifica__riga--oltre{% endif %}" data-oltre="{{ '1' if oltre else '0' }}"{% if oltre %} hidden{% endif %}>
+      {% if medaglie %}
+      <span class="c7-pos c7-pos--lg c7-classifica__medaglia{% if posizione <= 3 %} c7-pos--{{ posizione }}{% endif %}">{{ posizione }}</span>
       {% else %}
-      <span class="c7-num c7-classifica__pos{% if riga.position <= 3 %} c7-classifica__pos--podio{% endif %}">{{ riga.position }}</span>
+      <span class="c7-num c7-classifica__pos{% if posizione <= 3 %} c7-classifica__pos--podio{% endif %}">{{ posizione }}</span>
       {% endif %}
-      <span class="c7-classifica__trend" role="img" aria-label="{% if _mov is none %}{{ _('primo turno') }}{% elif _mov > 0 %}{{ _('sale di %(n)s', n=_mov) }}{% elif _mov < 0 %}{{ _('scende di %(n)s', n=-_mov) }}{% else %}{{ _('stabile') }}{% endif %}">
-        {% if _mov is none %}<span class="c7-classifica__trend-eq" aria-hidden="true"></span>
-        {% elif _mov > 0 %}<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l8 12H4z" fill="var(--c7-ok)"/></svg>
-        {% elif _mov < 0 %}<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19L4 7h16z" fill="var(--c7-err)"/></svg>
+      <span class="c7-classifica__trend" role="img" aria-label="{% if mov is none %}{{ _('primo turno') }}{% elif mov > 0 %}{{ _('sale di %(n)s', n=mov) }}{% elif mov < 0 %}{{ _('scende di %(n)s', n=-mov) }}{% else %}{{ _('stabile') }}{% endif %}">
+        {% if mov is none %}<span class="c7-classifica__trend-eq" aria-hidden="true"></span>
+        {% elif mov > 0 %}<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l8 12H4z" fill="var(--c7-ok)"/></svg>
+        {% elif mov < 0 %}<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19L4 7h16z" fill="var(--c7-err)"/></svg>
         {% else %}<span class="c7-classifica__trend-eq" aria-hidden="true"></span>{% endif %}
       </span>
       <span class="c7-avatar c7-avatar--sm">{{ riga.user.username[:2]|upper }}</span>
       <span class="c7-classifica__gioc c7-rows__title">{{ riga.user.username }}</span>
+      {# A gara finita, da dove viene ognuno: «1º girone A» (ADR-076). #}
+      {% if girone %}
+      <span class="c7-state c7-classifica__pill c7-classifica__girone-pill" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)sº girone %(nome)s', pos=girone[1], nome=girone[0]) }}</span>
+      {% endif %}
+      {{ caller() }}
+    </div>
+{% endmacro %}
+{% macro _colonne(riga, _rack, _punti, ssr_scores_map, pari_ids) %}
       {# Dove lo spareggio ha deciso l'ordine, la pastiglia lo dice (canvas
          5.1); dove il pari merito e' ancora da sciogliere, anche (4.4). #}
       {% if ssr_scores_map and ssr_scores_map.get(riga.user_id) is not none %}
       <span class="c7-state c7-state--warn c7-classifica__pill" title="{{ _('Spot Shot Rally: %(punti)s punti', punti=ssr_scores_map.get(riga.user_id)) }}">SSR {{ ssr_scores_map.get(riga.user_id) }}</span>
       {% endif %}
-      {% if pari_ids is defined and riga.user_id in pari_ids %}
+      {% if pari_ids and riga.user_id in pari_ids %}
       <span class="c7-state c7-state--warn c7-classifica__pill">{{ _('pari') }}</span>
       {% endif %}
       {% if _rack %}
@@ -73,9 +59,63 @@
       {% set _diff = riga.ranking_rack_value %}
       <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if _diff > 0 %}+{% endif %}{{ _diff }}</span>
       {% endif %}
+{% endmacro %}
+{% if classification %}
+{% set _rack = classification[0].is_rack_ranking %}
+{% set _posizione = classification[0].is_position_ranking %}
+{% set _punti = classification[0].is_points_ranking %}
+{% set _casuale = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
+{% set _prime = 6 %}
+{% set _ssr = ssr_scores_map if ssr_scores_map is defined else none %}
+{% set _pari = pari_ids if pari_ids is defined else none %}
+{% set _gironi = gironi_in_pagina(gara, classification) %}
+{% set _oltre = namespace(n=0) %}
+{% for g in _gironi %}{% if g.righe|length > _prime %}{% set _oltre.n = _oltre.n + 1 %}{% endif %}{% endfor %}
+<section class="c7-stack c7-classifica" style="gap:10px" id="classificaDirettore">
+  <div class="c7-sechead">
+    <h3>{% if titolo_classifica is defined and titolo_classifica %}{{ titolo_classifica }}{% else %}{{ _('Classifica (triangoli)') if _rack else _('Classifica') }}{% endif %}</h3>
+    <span class="c7-sechead__note">
+      {% if nota_testa is defined and nota_testa %}{{ nota_testa }}{% elif _casuale or not round_number %}{{ _('complessiva') }}{% else %}{{ _('dopo il turno %(n)s', n=round_number) }}{% endif %}
+    </span>
+  </div>
+  {% if (not _gironi and classification|length > _prime) or _oltre.n %}
+  <div class="c7-classifica__pillole">
+    <button type="button" class="c7-pill is-active" aria-pressed="true" data-classifica-vista="prime" onclick="mostraClassifica('prime')">{{ _('Prime %(n)s', n=_prime) }}</button>
+    <button type="button" class="c7-pill" aria-pressed="false" data-classifica-vista="tutti" onclick="mostraClassifica('tutti')">{{ _('Tutti (%(n)s)', n=classification|length) }}</button>
+  </div>
+  {% endif %}
+  {% set _testa %}
+    <div class="c7-rows__row c7-classifica__testa">
+      <span class="c7-classifica__pos"></span>
+      <span class="c7-classifica__trend"></span>
+      <span class="c7-classifica__gioc c7-label">{{ _('Giocatore') }}</span>
+      <span class="c7-classifica__col c7-label">{{ _('Vinti') if _rack else (_('Punti') if _punti else _('Vinte')) }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Persi') if _rack else _('Diff') }}</span>
     </div>
+  {% endset %}
+  {% if _gironi %}
+  {# Una tabella per girone, ciascuna nel suo ordine (ADR-076). #}
+  {% for g in _gironi %}
+  <div class="c7-stack c7-classifica__girone" style="gap:8px" data-girone="{{ g.nome }}">
+    <div class="c7-kicker">{{ _('Girone %(nome)s', nome=g.nome) }}</div>
+    <div class="c7-rows">
+      {{ _testa }}
+      {% for v in g.righe %}
+      {% call _riga(v.riga, v.posizione, (v.precedente - v.posizione) if v.precedente else none,
+                    loop.index > _prime, false, none) %}{{ _colonne(v.riga, _rack, _punti, _ssr, _pari) }}{% endcall %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="c7-rows">
+    {{ _testa }}
+    {% for riga in classification %}
+    {% call _riga(riga, riga.position, (riga.previous_position - riga.position) if riga.previous_position else none,
+                  loop.index > _prime, medaglie is defined and medaglie, girone_della_riga(riga)) %}{{ _colonne(riga, _rack, _punti, _ssr, _pari) }}{% endcall %}
     {% endfor %}
   </div>
+  {% endif %}
   <div class="c7-nota">
     {# Nel girone all'italiana il riposo non vale niente (SPECIFICHE.md, nota del 2026-10-11). #}
     {% set _girone = gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value %}
@@ -86,6 +126,8 @@
     {% elif _punti %}{{ _('Ordinata per punti: %(punti)s. A pari punti decidono i criteri dei pari merito. La X a tavolino vale una vittoria.', punti=descrivi_punti(punti_della_gara(gara))) }}
     {% elif _girone %}{{ _('Ordinata per vittorie, poi differenza triangoli. Il riposo non vale niente: né vittorie né triangoli.') }}
     {% else %}{{ _('Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una vittoria e zero differenza.') }}{% endif %}
+    {% if _gironi %}{{ _('Ogni girone ha la sua classifica: a gara finita vengono prima i primi di ogni girone, poi i secondi, confrontati per partita giocata.') }}
+    {% elif girone_della_riga(classification[0]) %}{{ _('Prima i primi di ogni girone, poi i secondi, e così via, confrontati per partita giocata; accanto al nome, la posizione nel girone.') }}{% endif %}
     {% if medaglie is defined and medaglie and round_number and round_number > 1 %}{{ _('La freccia confronta con la classifica dopo il turno %(n)s.', n=round_number - 1) }}
     {% else %}{{ _('La freccia confronta con il turno prima.') }}{% endif %}
     {% if ssr_scores_map %}{{ _('SSR segna chi è stato messo in ordine dallo spareggio.') }}{% endif %}

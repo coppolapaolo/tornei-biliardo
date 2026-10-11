@@ -689,6 +689,14 @@ def create_app(config_name=None, *, da_script: bool = False):
     from models.matchmaking.gironi import nome_del_girone
 
     app.jinja_env.globals["nome_del_girone"] = nome_del_girone
+    # Le classifiche per girone delle pagine della gara (ADR-076).
+    from models.classification.gironi_in_pagina import (
+        girone_della_riga,
+        gironi_in_pagina,
+    )
+
+    app.jinja_env.globals["gironi_in_pagina"] = gironi_in_pagina
+    app.jinja_env.globals["girone_della_riga"] = girone_della_riga
 
     # Register image path template functions
     from utils.image_paths import challenge_image_url, challenge_image_filename

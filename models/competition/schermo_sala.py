@@ -50,6 +50,7 @@ from models.competition.tabellone_view import (
     costruisci_tabellone,
     nome_del_nodo,
 )
+from models.classification.gironi_in_pagina import dividi_per_girone, girone_della_riga
 from models.matchmaking.configuration import BRACKET_STRATEGIES, MatchmakingStrategy
 from models.status_enum import GaraStatus, MatchStatus
 
@@ -102,6 +103,17 @@ class RigaSala:
     valore: int
     #: La seconda colonna, gia' scritta: «+4» a vittorie, i persi a RACK.
     secondo: str
+    #: A gara finita in una gara a più gironi: (nome del girone, posizione
+    #: nel girone), che la pagina scrive «1º girone A» (ADR-076).
+    girone: Optional[Tuple[str, int]] = None
+
+
+@dataclass(frozen=True)
+class GironeSala:
+    """Un girone con la sua classifica, mentre si gioca (ADR-076)."""
+
+    nome: str
+    righe: Tuple[RigaSala, ...]
 
 
 @dataclass(frozen=True)
@@ -239,6 +251,8 @@ class SchermoSala:
     tabellone: Optional[TabelloneSala] = None
     #: Gare a tabellone concluse: le bande della classifica finale.
     bande: List[Banda] = field(default_factory=list)
+    #: Gara a più gironi in gioco: una classifica per girone (ADR-076).
+    gironi: Tuple[GironeSala, ...] = ()
 
     @property
     def podio(self) -> List[Tuple[Any, ...]]:
@@ -339,30 +353,41 @@ def _tavoli(
     return caselle
 
 
+def _riga_sala(r: Any, rack: bool, posizione: int, con_girone: bool) -> RigaSala:
+    """Una riga di classifica nelle colonne del sistema (ADR-047)."""
+    nome = _nome(r.user)
+    girone = girone_della_riga(r) if con_girone else None
+    if rack:
+        persi = (
+            "–" if r.racks_won is None else str(r.racks_won - (r.rack_difference or 0))
+        )
+        return RigaSala(posizione, nome, r.total_racks_value, persi, girone)
+    diff = r.ranking_rack_value
+    primo = (
+        (r.points or 0)
+        if getattr(r, "is_points_ranking", False) is True
+        else (r.matches_won or 0)
+    )
+    return RigaSala(posizione, nome, primo, f"{diff:+d}" if diff else "0", girone)
+
+
 def _righe(rows: List) -> Tuple[List[RigaSala], bool]:
     """Le righe di classifica nelle colonne del sistema (ADR-047)."""
     rack = bool(rows) and bool(getattr(rows[0], "is_rack_ranking", False))
-    righe: List[RigaSala] = []
-    for r in rows:
-        nome = _nome(r.user)
-        if rack:
-            persi = (
-                "–"
-                if r.racks_won is None
-                else str(r.racks_won - (r.rack_difference or 0))
-            )
-            righe.append(RigaSala(r.position, nome, r.total_racks_value, persi))
-        else:
-            diff = r.ranking_rack_value
-            primo = (
-                (r.points or 0)
-                if getattr(r, "is_points_ranking", False) is True
-                else (r.matches_won or 0)
-            )
-            righe.append(
-                RigaSala(r.position, nome, primo, f"{diff:+d}" if diff else "0")
-            )
-    return righe, rack
+    return [_riga_sala(r, rack, r.position, True) for r in rows], rack
+
+
+def _gironi_sala(gara: Any, rows: List, rack: bool) -> Tuple[GironeSala, ...]:
+    """Una classifica per girone mentre si gioca, o niente (ADR-076)."""
+    if gara.status != GaraStatus.PLAYING.value:
+        return ()
+    return tuple(
+        GironeSala(
+            nome=g.nome,
+            righe=tuple(_riga_sala(v.riga, rack, v.posizione, False) for v in g.righe),
+        )
+        for g in dividi_per_girone(rows)
+    )
 
 
 def _ultimo_turno_chiuso(matches: List, prima_di: int) -> Optional[int]:
@@ -650,6 +675,7 @@ def schermo_sala(
         turno_concluso=concluso,
         tabellone=tabellone,
         bande=bande,
+        gironi=_gironi_sala(gara, righe_classifica, rack),
     )
 
 
@@ -662,6 +688,7 @@ __all__ = [
     "NodoSala",
     "PartitaChiusa",
     "RamoSala",
+    "GironeSala",
     "RigaSala",
     "SchermoSala",
     "StatoNodo",

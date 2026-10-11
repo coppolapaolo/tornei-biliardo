@@ -149,8 +149,14 @@ appartenenza.
   alla nascita (`GaraService._copia_dal_campionato`, `proposte.CAMPI_PROPOSTI`),
   il foglio di avvio con «Quanti gironi?» e la composizione
   (`_avvia_gara.html`, `rounds._gironi_dal_foglio`), la frase della formula
-  (`GironiService.frase`) in regolamento e pagine. Le tabelle per girone
-  arrivano con la PR successiva.
+  (`GironiService.frase`) in regolamento e pagine.
+- Le pagine (2026-10-11): mentre la gara si gioca, una classifica per girone
+  nella pagina del direttore, in quella pubblica e sullo schermo in sala, e la
+  tessera dice la posizione nel girone; a gara finita (o in attesa dello
+  spareggio) la classifica della gara con «1º girone A» accanto al nome. La
+  divisione la fa `classification/gironi_in_pagina.py` dalle righe già
+  ordinate (`group_index`, `group_position`): nessun calcolo nuovo. Le partite
+  del direttore dicono il loro girone (`Match.bracket_group`).
 - Fase finale dopo i gironi (tabellone, finali per piazzamento): PR successive
   del piano. Con più di due gironi, le finali per piazzamento restano un punto
   aperto.

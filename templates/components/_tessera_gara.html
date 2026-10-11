@@ -225,7 +225,8 @@
       {% if card.classifica %}
       <div class="c7-kicker">{{ _('Classifica provvisoria dopo il turno %(n)s', n=card.classifica.turno) }}</div>
       <div class="mt-1" style="font-size:14px;font-weight:800">
-        {{ _('Sei %(pos)s° su %(tot)s', pos=card.classifica.posizione, tot=card.classifica.su) }}
+        {% if card.classifica.girone %}{{ _('Sei %(pos)s° su %(tot)s nel girone %(nome)s', pos=card.classifica.posizione, tot=card.classifica.su, nome=card.classifica.girone) }}
+        {% else %}{{ _('Sei %(pos)s° su %(tot)s', pos=card.classifica.posizione, tot=card.classifica.su) }}{% endif %}
       </div>
       {% endif %}
       {% if card.altre_partite %}
