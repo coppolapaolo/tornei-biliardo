@@ -57,8 +57,17 @@
           {{ d.riga('fa-diagram-project', t.forma(forma), _('con gli iscritti di adesso'), tone='ok') }}
           {% endif %}
           {% elif _girone %}
-          {{ d.riga('fa-diagram-project', _('Il calendario si fissa adesso'),
-                    (_('ognuno incontra tutti gli altri del suo girone; i gironi giocano in parallelo') if _ag else _('ognuno incontra tutti gli altri una volta; i turni si giocano uno alla volta')), tone='ok') }}
+          {# «In parallelo» solo con più gironi: la frase segue la scelta del
+             numero di gironi qui sotto (`data-se-gironi`), e col girone unico
+             possibile soltanto non compare mai. #}
+          {% set _uno = _('ognuno incontra tutti gli altri una volta; i turni si giocano uno alla volta') %}
+          {% set _piu = _('ognuno incontra tutti gli altri del suo girone; i gironi giocano in parallelo') %}
+          {% if _ag and _ag.massimo > 1 %}
+          {% set _sotto %}<span data-se-gironi="piu"{% if _ag.proposta == 1 %} hidden{% endif %}>{{ _piu }}</span><span data-se-gironi="uno"{% if _ag.proposta != 1 %} hidden{% endif %}>{{ _uno }}</span>{% endset %}
+          {% else %}
+          {% set _sotto = _uno %}
+          {% endif %}
+          {{ d.riga('fa-diagram-project', _('Il calendario si fissa adesso'), _sotto, tone='ok') }}
           {% elif gara.creates_all_rounds_at_startup() %}
           {{ d.riga('fa-diagram-project', ngettext('%(n)d turno generato adesso', '%(n)d turni generati adesso', gara.rounds_count, n=gara.rounds_count),
                     _('la formula casuale crea tutti i turni all’avvio'), tone='ok') }}
@@ -163,3 +172,19 @@
   </div>
 </div>
 {% if x_choice_last_inscribed or _ag %}{{ form_macros_scripts() }}{% endif %}
+{% if _ag and _ag.massimo > 1 %}
+<script>
+// «I gironi giocano in parallelo» solo se se ne sceglie più di uno.
+(function () {
+  var foglio = document.getElementById('avviaGaraModal');
+  if (!foglio) return;
+  foglio.addEventListener('change', function (ev) {
+    if (!ev.target || ev.target.name !== 'groups_count') return;
+    var uno = ev.target.value === '1';
+    foglio.querySelectorAll('[data-se-gironi]').forEach(function (el) {
+      el.hidden = (el.getAttribute('data-se-gironi') === 'uno') !== uno;
+    });
+  });
+})();
+</script>
+{% endif %}

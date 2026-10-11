@@ -25,5 +25,34 @@
 {% block content %}
 <div class="c7-stack">
   {% include "components/_bracket_view.html" %}
+
+  {# Il tabellone dopo i gironi (ADR-081): sotto, le classifiche dei gironi
+     da cui viene, con chi ne e' uscito per giocarlo. #}
+  {% if gironi %}
+  {% import "components/_taglio.html" as taglio with context %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _('Classifiche dei gironi') }}</h2>
+      <span class="c7-sechead__note">{{ _('chi è passato al tabellone') }}</span>
+    </div>
+    <div class="c7-gironi-finali">
+      {% for g in gironi %}
+      <div class="c7-stack" style="gap:8px" data-girone="{{ g.nome }}">
+        <div class="c7-kicker">{{ _('Girone %(nome)s', nome=g.nome) }}</div>
+        <div class="c7-rows">
+          {% for v in g.righe %}
+          {{ taglio.riga_del_taglio(v) }}
+          <div class="c7-rows__row">
+            <span class="c7-num c7-gironi-finali__pos">{{ v.posizione }}</span>
+            <span class="c7-rows__title c7-gironi-finali__nome">{{ v.riga.user.username }}</span>
+            {{ taglio.segno(v) }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
 </div>
 {% endblock %}

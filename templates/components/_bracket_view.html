@@ -10,7 +10,8 @@
 
    Attese dal chiamante: `gara`, `boards` (le lavagne di
    `models/competition/tabellone_view.costruisci_tabellone`), `has_bracket`,
-   `user_can_manage`, `forfeit_user_ids`.
+   `user_can_manage`, `forfeit_user_ids`; facoltativo `dopo_i_gironi` (il
+   tabellone dopo i gironi del girone all'italiana, ADR-081).
 
    Il prototipo non ha questa schermata — `#8b` e' il segnapunti da tavolo,
    non un tabellone di torneo — quindi la forma e' interpretata da `#8a`: la
@@ -120,7 +121,7 @@
     <h2>{{ _('Girone %(num)s', num=board.group + 1) }}</h2>
     <span class="c7-sechead__note">{{ _('Qualificano in quattro: due imbattuti e due ripescati') }}</span>
   </div>
-  {% elif boards | length > 1 %}
+  {% elif boards | length > 1 or (dopo_i_gironi is defined and dopo_i_gironi) %}
   <div class="c7-sechead">
     <h2>{{ _('Tabellone finale') }}</h2>
     <span class="c7-sechead__note">{{ _('Fra i qualificati dei gironi') }}</span>

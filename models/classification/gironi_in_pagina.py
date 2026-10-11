@@ -17,8 +17,18 @@ pagina resta quella di sempre.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from dataclasses import dataclass, replace
+from typing import (
+    Any,
+    Collection,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 from models.matchmaking.gironi import nome_del_girone
 
@@ -37,6 +47,11 @@ class RigaDelGirone:
     posizione: int
     #: La posizione mostrata nel girone dopo il turno prima, se c'era.
     precedente: Optional[int] = None
+    #: Col tabellone dopo i gironi, quando si sa chi passa (ADR-081): True
+    #: «al tabellone», False «fuori», None se non si sa ancora.
+    taglio: Optional[bool] = None
+    #: La riga del taglio sta sopra questa: è il primo dei «fuori».
+    primo_fuori: bool = False
 
 
 @dataclass(frozen=True)
@@ -126,6 +141,45 @@ def _posizioni_nel_girone_prima(righe: Sequence[Any]) -> Dict[int, int]:
     }
 
 
+def segna_il_taglio(
+    gironi: Sequence[GironeInPagina], qualificati: Optional[Collection[int]]
+) -> List[GironeInPagina]:
+    """Chi va al tabellone e chi no, in ogni girone, con la riga del taglio.
+
+    Chi passa lo decide la catena di turno all'ultimo turno dei gironi, che
+    finisce col sorteggio (`fase_finale_service.semina`): due «2º pari
+    merito» — la posizione mostrata è la stessa — possono stare uno sopra e
+    uno sotto il taglio. Dentro un girone i qualificati vengono prima, nel
+    loro ordine: fra due pari merito l'ordine lo dà proprio quella catena.
+
+    Args:
+        gironi: le classifiche per girone (`dividi_per_girone`).
+        qualificati: chi gioca il tabellone, o None se non si sa ancora: allora
+            le righe restano come sono.
+    """
+    if qualificati is None:
+        return list(gironi)
+    segnati = []
+    for g in gironi:
+        dentro = [v for v in g.righe if v.riga.user_id in qualificati]
+        fuori = [v for v in g.righe if v.riga.user_id not in qualificati]
+        righe = [replace(v, taglio=True) for v in dentro] + [
+            replace(v, taglio=False, primo_fuori=bool(dentro) and i == 0)
+            for i, v in enumerate(fuori)
+        ]
+        segnati.append(replace(g, righe=tuple(righe)))
+    return segnati
+
+
+def _chi_va_al_tabellone(gara: Any) -> Optional[Collection[int]]:
+    """I qualificati al tabellone dopo i gironi, se la gara ne ha uno."""
+    if getattr(gara, "ha_tabellone_finale", False) is not True:
+        return None
+    from models.competition.fase_finale_service import chi_va_al_tabellone
+
+    return chi_va_al_tabellone(gara)
+
+
 def gironi_in_pagina(gara: Any, righe: Optional[Iterable[Any]]) -> List[GironeInPagina]:
     """Le classifiche per girone da mostrare, o vuota se va mostrata la gara.
 
@@ -139,7 +193,10 @@ def gironi_in_pagina(gara: Any, righe: Optional[Iterable[Any]]) -> List[GironeIn
     gironi = dividi_per_girone(tutte)
     if not gironi:
         return []
-    return dividi_per_girone(tutte, _posizioni_nel_girone_prima(tutte))
+    return segna_il_taglio(
+        dividi_per_girone(tutte, _posizioni_nel_girone_prima(tutte)),
+        _chi_va_al_tabellone(gara),
+    )
 
 
 def girone_della_riga(riga: Any) -> Optional[Tuple[str, int]]:
@@ -160,4 +217,5 @@ __all__ = [
     "dividi_per_girone",
     "girone_della_riga",
     "gironi_in_pagina",
+    "segna_il_taglio",
 ]

@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Collection, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from models.competition.direttore_view import (
     StatoPartita,
@@ -47,12 +47,19 @@ from models.competition.tabellone_view import (
     Posto,
     Tabellone,
     bande_finali,
-    costruisci_tabellone,
     nome_del_nodo,
 )
-from models.classification.gironi_in_pagina import dividi_per_girone, girone_della_riga
+from models.competition.tabellone_della_gara import (
+    albero_della_gara,
+    tabellone_della_gara,
+)
+from models.classification.gironi_in_pagina import (
+    dividi_per_girone,
+    girone_della_riga,
+    segna_il_taglio,
+)
 from models.classification.models import posizione_mostrata
-from models.matchmaking.configuration import BRACKET_STRATEGIES, MatchmakingStrategy
+from models.matchmaking.configuration import MatchmakingStrategy
 from models.status_enum import GaraStatus, MatchStatus
 
 
@@ -107,6 +114,11 @@ class RigaSala:
     #: A gara finita in una gara a più gironi: (nome del girone, posizione
     #: nel girone), che la pagina scrive «1º girone A» (ADR-076).
     girone: Optional[Tuple[str, int]] = None
+    #: Col tabellone dopo i gironi (ADR-081): True «al tabellone», False
+    #: «fuori», None se non si sa ancora chi passa.
+    taglio: Optional[bool] = None
+    #: La riga del taglio sta sopra questa.
+    primo_fuori: bool = False
 
 
 @dataclass(frozen=True)
@@ -261,11 +273,17 @@ class SchermoSala:
         return [b.righe for b in self.bande if b.posizione <= 3]
 
 
-def fase_schermo(gara) -> FaseSchermo:
+def fase_schermo(gara, partite: Iterable = ()) -> FaseSchermo:
+    """Che cosa mostra lo schermo.
+
+    Il tabellone — di formato, o dopo i gironi dal suo sorteggio (ADR-081) —
+    prende il posto della fase di gioco: lo dice `tabellone_della_gara`, che
+    per il secondo ha bisogno delle partite.
+    """
     stato = gara.status
     if stato in (GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value):
         return FaseSchermo.ATTESA
-    if gara.matchmaking_strategy in BRACKET_STRATEGIES:
+    if tabellone_della_gara(gara, partite).da_mostrare:
         # Nel tabellone non si spareggia (ADR-040): o si gioca, o e' finita.
         if stato in (GaraStatus.COMPLETED.value, GaraStatus.CANCELLED.value):
             return FaseSchermo.CONCLUSA
@@ -379,16 +397,32 @@ def _righe(rows: List) -> Tuple[List[RigaSala], bool]:
     return [_riga_sala(r, rack, posizione_mostrata(r), True) for r in rows], rack
 
 
-def _gironi_sala(gara: Any, rows: List, rack: bool) -> Tuple[GironeSala, ...]:
-    """Una classifica per girone mentre si gioca, o niente (ADR-076)."""
+def _gironi_sala(
+    gara: Any,
+    rows: List,
+    rack: bool,
+    al_tabellone: Optional[Collection[int]] = None,
+) -> Tuple[GironeSala, ...]:
+    """Una classifica per girone mentre si gioca, o niente (ADR-076).
+
+    Con `al_tabellone` (chi gioca il tabellone dopo i gironi, ADR-081) ogni
+    riga dice se passa, e la riga del taglio separa chi passa da chi no.
+    """
     if gara.status != GaraStatus.PLAYING.value:
         return ()
     return tuple(
         GironeSala(
             nome=g.nome,
-            righe=tuple(_riga_sala(v.riga, rack, v.posizione, False) for v in g.righe),
+            righe=tuple(
+                replace(
+                    _riga_sala(v.riga, rack, v.posizione, False),
+                    taglio=v.taglio,
+                    primo_fuori=v.primo_fuori,
+                )
+                for v in g.righe
+            ),
         )
-        for g in dividi_per_girone(rows)
+        for g in segna_il_taglio(dividi_per_girone(rows), al_tabellone)
     )
 
 
@@ -590,6 +624,7 @@ def schermo_sala(
     iscritti: int,
     *,
     posizioni: Optional[Dict[int, int]] = None,
+    al_tabellone: Optional[Collection[int]] = None,
 ) -> SchermoSala:
     """Tutto quello che lo schermo in sala mostra, per questa gara.
 
@@ -597,8 +632,8 @@ def schermo_sala(
     concluse: la lettura sta nel chiamante, perche' qui non si interroga il
     database.
     """
-    fase = fase_schermo(gara)
     partite = list(matches)
+    fase = fase_schermo(gara, partite)
     righe_classifica = list(classifica)
     turno = gara.display_round or 0
     turni = gara.rounds_count or turno
@@ -611,13 +646,7 @@ def schermo_sala(
     ):
         turno_classifica = righe_classifica[0].round_number
 
-    albero: Optional[Tabellone] = None
-    if gara.matchmaking_strategy in BRACKET_STRATEGIES:
-        albero = costruisci_tabellone(
-            partite,
-            strategy=gara.matchmaking_strategy,
-            finalina=bool(getattr(gara, "third_place_match", False)),
-        )
+    albero: Optional[Tabellone] = albero_della_gara(gara, partite)
 
     del_turno = [m for m in partite if m.round_number == turno]
     concluso = bool(del_turno) and all(
@@ -677,7 +706,7 @@ def schermo_sala(
         turno_concluso=concluso,
         tabellone=tabellone,
         bande=bande,
-        gironi=_gironi_sala(gara, righe_classifica, rack),
+        gironi=_gironi_sala(gara, righe_classifica, rack, al_tabellone),
     )
 
 
