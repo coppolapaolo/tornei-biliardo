@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.71.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.70.1...v1.71.0) (2026-10-11)
+
+
+### Funzioni nuove
+
+* regole della finale per fase e nome del turno sulla tessera ([#669](https://github.com/coppolapaolo/tornei-biliardo/issues/669)) ([3acccaa](https://github.com/coppolapaolo/tornei-biliardo/commit/3acccaa27ab47d1fb261657851b16568f719e1a0))
+
 ## [1.70.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.70.0...v1.70.1) (2026-10-11)
 
 
