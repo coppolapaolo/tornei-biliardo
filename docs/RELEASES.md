@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.67.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.67.1...v1.67.2) (2026-10-11)
+
+
+### Correzioni
+
+* l'editor delle catene sul telefono e i messaggi della gara tradotti ([#653](https://github.com/coppolapaolo/tornei-biliardo/issues/653)) ([0034c2c](https://github.com/coppolapaolo/tornei-biliardo/commit/0034c2c48e988649bef673878c560d24ad34ae5b))
+
 ## [1.67.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.67.0...v1.67.1) (2026-10-11)
 
 
