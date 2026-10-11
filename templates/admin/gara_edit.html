@@ -74,11 +74,16 @@
 
             if (oddPolicySelect) {
                 const allowedOddPolicies = constraints.odd_policies || ['bye'];
+                const gironeScelto = selectedStrategy === {{ MatchmakingStrategy.ROUND_ROBIN.value|tojson }};
                 Array.from(oddPolicySelect.options).forEach(option => {
                     if (option.value) {
                         option.disabled = !allowedOddPolicies.includes(option.value);
                         if (option.disabled && option.selected) {
                             oddPolicySelect.value = allowedOddPolicies[0];
+                        }
+                        // Nel girone il riposo ha un nome suo: non vale punti.
+                        if (option.dataset.labelGirone) {
+                            option.textContent = gironeScelto ? option.dataset.labelGirone : option.dataset.label;
                         }
                     }
                 });
@@ -120,7 +125,18 @@
             if (!oddPolicySelect || !classificationSelect) return;
 
             const system = classificationSelect.value;
-            const validPolicies = classificationOddPolicies[system] || ['bye'];
+            const strategy = strategySelect ? strategySelect.value : '';
+            const strategyPolicies = (strategyConstraints[strategy]?.constraints || {}).odd_policies;
+            let validPolicies = classificationOddPolicies[system] || ['bye'];
+            // Nel girone all'italiana decide solo la strategia: il riposo non
+            // vale niente, e per questo e' ammesso anche coi triangoli totali
+            // (SPECIFICHE.md, nota del 2026-10-11).
+            const girone = strategy === {{ MatchmakingStrategy.ROUND_ROBIN.value|tojson }};
+            if (girone) {
+                validPolicies = strategyPolicies || ['bye'];
+            } else if (strategyPolicies) {
+                validPolicies = validPolicies.filter(p => strategyPolicies.includes(p));
+            }
 
             Array.from(oddPolicySelect.options).forEach(option => {
                 if (option.value) {
@@ -129,6 +145,10 @@
                     option.style.display = isValid ? '' : 'none';
                     if (option.disabled && option.selected) {
                         oddPolicySelect.value = validPolicies[0] || 'bye';
+                    }
+                    // Il nome del riposo cambia col girone: li' non si vince a tavolino.
+                    if (option.dataset.labelGirone) {
+                        option.textContent = girone ? option.dataset.labelGirone : option.dataset.label;
                     }
                 }
             });
@@ -171,7 +191,10 @@
         }
 
         if (strategySelect) {
-            strategySelect.addEventListener('change', updateStrategyUI);
+            strategySelect.addEventListener('change', function () {
+                updateStrategyUI();
+                updateOddPoliciesForClassification();
+            });
         }
         if (oddPolicySelect) {
             oddPolicySelect.addEventListener('change', function () {

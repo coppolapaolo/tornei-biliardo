@@ -82,8 +82,8 @@ hints:
   section: primo_turno
 - id: gara.dispari
   label: If players are odd
-  short: 'X by walkover, X by walkover with drill, three-player match or waitlist. Not asked on brackets: whoever is left
-    over goes straight through.'
+  short: 'X by walkover, X with drill, three-player match or waitlist. In a round robin only the rest, which scores
+    nothing. Not asked on brackets.'
   anchor: gara-dispari
   screens:
   - admin.competition.create_gara_standalone

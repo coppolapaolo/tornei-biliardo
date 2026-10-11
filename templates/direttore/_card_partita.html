@@ -27,7 +27,8 @@
    - set        → sopra i set vinti in sola lettura, sotto gli stepper del set
                   in corso; a set chiuso «Inizia il set N». Chiusa, si corregge
                   dal foglio set per set;
-   - x          → la X a tavolino: un lato, «riposa» o «passa il turno»;
+   - x          → la X a tavolino: un lato, «riposa» o «passa il turno»; nel
+                  girone il riposo, che non vale punti (2026-10-11);
    - x_esercizio → la X con esercizio (SPECIFICHE riga 65): un lato con lo
                   stepper del punteggio fino alla distanza del turno, e
                   «Convalida». Non salva al tocco: il punteggio arriva in
@@ -69,12 +70,12 @@
 {% if forma == 'x' %}
 <article class="c7-card c7-card--locked c7-partita c7-partita--x">
   <div class="c7-partita__testa">
-    <span class="c7-state c7-state--info">{{ _('X a tavolino') }}</span>
+    <span class="c7-state c7-state--info">{{ (_('Riposo') if match.is_riposo else _('X a tavolino')) }}</span>
   </div>
   <div class="c7-partita__lati">
     <div class="c7-partita__lato c7-partita__lato--letto">
       <div class="c7-partita__nome">{{ match.player1.username }}</div>
-      <div class="c7-partita__num c7-num">{{ _('passa il turno') if match.bracket_type else _('riposa') }}</div>
+      <div class="c7-partita__num c7-num">{{ _('passa il turno') if match.bracket_type else (_('riposa, non vale punti') if match.is_riposo else _('riposa')) }}</div>
     </div>
   </div>
   {% if _dest %}

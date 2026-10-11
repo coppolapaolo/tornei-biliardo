@@ -194,7 +194,7 @@
         <label for="odd_number_policy" class="form-label">{{ _('Giocatori dispari') }}</label>
         <select class="form-select" id="odd_number_policy" name="odd_number_policy">
           {% for valore, nome in opzioni_dispari() %}
-          <option value="{{ valore }}" {% if (gara.odd_number_policy or 'bye') == valore %}selected{% endif %}>{{ nome }}</option>
+          <option value="{{ valore }}" {% if (gara.odd_number_policy or 'bye') == valore %}selected{% endif %} data-label="{{ nome }}"{% if valore == OddNumberPolicy.BYE.value %} data-label-girone="{{ valore|etichetta_dispari(MatchmakingStrategy.ROUND_ROBIN.value) }}"{% endif %}>{{ nome }}</option>
           {% endfor %}
         </select>
         <div id="trio_warning" class="form-text" style="display:none;color:var(--c7-err-ink)">

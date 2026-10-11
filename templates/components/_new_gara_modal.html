@@ -261,8 +261,12 @@
                                 <div class="mb-3">
                                     <label for="odd_number_policy" class="form-label">{{ _("Gestione Dispari") }}</label>
                                     <select class="form-control" name="odd_number_policy" id="create_odd_number_policy">
-                                        {% set scelta_dispari = campionato.default_odd_policy or 'bye' %}
-                                        {% for valore, nome in opzioni_dispari() %}
+                                        {# La strategia la fissa il campionato: col girone resta il solo
+                                           riposo, e la X con prova proposta ripiega li' (SPECIFICHE.md,
+                                           nota del 2026-10-11). #}
+                                        {% set opzioni_modale = opzioni_dispari(strategy=campionato.campionato_type) %}
+                                        {% set scelta_dispari = odd_policy_for_strategy(campionato.campionato_type, campionato.default_odd_policy or OddNumberPolicy.BYE.value) %}
+                                        {% for valore, nome in opzioni_modale %}
                                         <option value="{{ valore }}" {% if scelta_dispari == valore %}selected{% endif %}>{{ nome }}</option>
                                         {% endfor %}
                                     </select>

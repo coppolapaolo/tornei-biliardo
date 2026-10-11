@@ -36,6 +36,16 @@ class Pairing:
     bracket_slot: Optional[int] = None  # posizione 0-based nel round
     bracket_group: Optional[int] = None  # girone FISBB; None = tabellone finale
 
+    # Il riposo del girone all'italiana (`is_bye=True` con un solo giocatore)
+    # **non vale niente**: la partita nasce senza vincitore, e in classifica
+    # non porta vittorie, punti né triangoli (SPECIFICHE.md, nota del
+    # 2026-10-11). Le altre strategie lasciano False: la loro X vale una
+    # vittoria.
+    riposo: bool = False
+    # Chi in questa coppia non è più in gara (escluso con la policy EXCLUDE):
+    # la partita nasce chiusa a tavolino, come contro chi ha dato forfait.
+    forfeit_players: Tuple[int, ...] = ()
+
     @property
     def player1_id(self) -> Optional[int]:
         """Get first player ID."""

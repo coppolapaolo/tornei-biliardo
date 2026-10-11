@@ -48,6 +48,11 @@ Immutable dataclass representing a match pairing.
 
 **Fields:** `players` (tuple of IDs), `is_bye`, `round_number`, `notes`
 
+`riposo=True` (con `is_bye`): il riposo del girone all'italiana, che nasce
+**senza vincitore** e non vale niente. `forfeit_players`: chi nella coppia non
+è più in gara (escluso con EXCLUDE) — la partita nasce a tavolino, come contro
+un forfait (SPECIFICHE.md, nota del 2026-10-11).
+
 **Properties:** `player1_id`, `player2_id`, `is_trio`, `is_valid_pairing`
 
 ### BaseStrategy (Abstract)

@@ -414,6 +414,16 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         ).first()
 
     @property
+    def is_riposo(self) -> bool:
+        """Il riposo del girone all'italiana: visibile, ma non vale niente.
+
+        Nasce `is_bye` **senza vincitore** (SPECIFICHE.md, nota del
+        2026-10-11): la X delle altre strategie ha sempre un vincitore — chi
+        la riceve — e vale una vittoria.
+        """
+        return bool(self.is_bye) and self.winner_id is None
+
+    @property
     def is_x_with_challenge(self) -> bool:
         """Questa X si sostituisce con una prova invece di stare fermi.
 

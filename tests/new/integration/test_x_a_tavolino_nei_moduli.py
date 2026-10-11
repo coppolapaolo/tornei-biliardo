@@ -81,8 +81,12 @@ def test_la_gara_singola_propone_la_x_a_tavolino(client, director):
     menu = _menu_dispari(pagina, "odd_number_policy")
 
     # La X resta la scelta predefinita anche ora che non e' la prima voce.
-    assert re.search(r'value="bye"\s+selected>X a tavolino<', menu)
-    assert "Riposo" not in menu and "Match a 3" not in menu
+    # Fra `selected` e il nome ci sono gli attributi coi due nomi della voce:
+    # col girone all'italiana il riposo si chiama a modo suo, perche' non vale
+    # punti (SPECIFICHE.md, nota del 2026-10-11), e lo cambia il JavaScript.
+    assert re.search(r'value="bye"\s+selected[^>]*>X a tavolino<', menu)
+    assert 'data-label-girone="Riposo, non vale punti"' in menu
+    assert ">Riposo" not in menu and "Match a 3" not in menu
 
 
 def test_la_modifica_del_campionato_ritrova_la_lista_d_attesa(

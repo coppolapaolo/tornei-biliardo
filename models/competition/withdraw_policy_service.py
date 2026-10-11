@@ -407,6 +407,30 @@ class WithdrawPolicyService:
         }
 
     @staticmethod
+    def fuori_dalla_gara(gara_id: int, user_ids) -> set[int]:
+        """Fra `user_ids`, chi non ha più un'iscrizione attiva nella gara.
+
+        È l'escluso della policy EXCLUDE, la cui iscrizione viene cancellata:
+        nel girone all'italiana resta nel calendario, e le sue partite
+        nascono vinte a tavolino dall'avversario.
+        """
+        candidati = {u for u in user_ids if u is not None}
+        if not candidati:
+            return set()
+        iscritti = {
+            ins.user_id
+            for ins in db.session.query(Inscription)
+            .filter(
+                Inscription.gara_id == gara_id,
+                Inscription.user_id.in_(candidati),
+                Inscription.is_withdrawn == False,  # noqa: E712
+                Inscription.is_waitlist == False,  # noqa: E712
+            )
+            .all()
+        }
+        return candidati - iscritti
+
+    @staticmethod
     def is_player_forfeit(gara_id: int, user_id: int) -> bool:
         """
         Check if a specific player is marked as forfeit in this gara.

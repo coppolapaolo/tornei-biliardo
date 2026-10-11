@@ -296,6 +296,12 @@ class ScoreAggregator:
         if pid not in player_stats:
             player_stats[pid] = _nuove_statistiche()
 
+        # Il riposo del girone all'italiana nasce senza vincitore e non vale
+        # niente: chi riposa resta in classifica, ma senza vittorie, punti né
+        # triangoli (SPECIFICHE.md, nota del 2026-10-11).
+        if match.winner_id is None:
+            return
+
         # Bye player gets automatic win. La X vale una vittoria anche a punti
         # (SPECIFICHE.md, «Strategia di abbinamento»).
         player_stats[pid]["matches_won"] += 1

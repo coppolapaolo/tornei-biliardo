@@ -16,10 +16,14 @@ iscritti attivi. Due conseguenze:
 
 La correzione: dopo il primo turno l'ordine si ricava dalla classifica di
 partenza persistita (`SeedingService`), che contiene anche chi si ritira. Chi
-è escluso resta al suo posto nel calendario e il suo avversario di quel turno
-riposa, come vuole la gestione del dispari (SPECIFICHE.md, «policy per il
-forfait», EXCLUDE: «Se questo cambia la parità dei giocatori, si applica la
-gestione dispari configurata»).
+è escluso resta al suo posto nel calendario.
+
+Dal 2026-10-11 il suo avversario di quel turno **vince a tavolino**, come
+contro un forfait (SPECIFICHE.md, «policy per il forfait», nota del
+2026-10-11): la coppia resta intera e l'escluso viaggia in `forfeit_players`.
+Fino a quella data l'avversario «riposava con la X», e questo test lo
+difendeva; la regola l'ha cambiata l'utente, non è una deviazione. Se l'escluso
+era chi riposava, quel posto non produce partite.
 """
 
 from __future__ import annotations
@@ -101,13 +105,20 @@ def _turno(gara: Gara, round_number: int) -> List[Tuple[int, ...]]:
 
 
 def _senza(pairings: List[Tuple[int, ...]], escluso: int) -> List[Tuple[int, ...]]:
-    """Gli stessi abbinamenti con `escluso` tolto: il suo avversario riposa."""
-    risultato = []
-    for pairing in pairings:
-        resto = tuple(p for p in pairing if p != escluso)
-        if resto:
-            risultato.append(resto)
-    return risultato
+    """Gli stessi abbinamenti dopo l'esclusione di `escluso`.
+
+    Le coppie restano quelle: contro l'escluso si vince a tavolino. Sparisce
+    solo il suo riposo, che non ha nessuno da far giocare.
+    """
+    return [p for p in pairings if p != (escluso,)]
+
+
+def _esclusi_del_turno(gara: Gara, round_number: int) -> List[Tuple[int, ...]]:
+    """Per ogni abbinamento del turno, chi ci sta dentro senza essere in gara."""
+    db.session.expire_all()
+    gara = db.session.get(Gara, gara.id)
+    strategy = get_registry().get("round_robin")
+    return [tuple(p.forfeit_players) for p in strategy.create_round(gara, round_number)]
 
 
 def _coppie(schedule: Schedule) -> List[frozenset]:
@@ -172,6 +183,12 @@ class TestCalendarioStabileAiRitiri:
             assert _turno(gara, r) == _senza(
                 previsto[r], escluso
             ), f"turno {r}: il ritiro ha spostato le coppie"
+            # Nella coppia con l'escluso, è lui a perdere a tavolino.
+            atteso = [
+                (escluso,) if escluso in p and len(p) == 2 else ()
+                for p in _senza(previsto[r], escluso)
+            ]
+            assert _esclusi_del_turno(gara, r) == atteso
 
     def test_forfait_resta_nel_calendario(self, db_session):
         """Con FORFEIT chi si ritira resta negli abbinamenti, al suo posto."""

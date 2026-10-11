@@ -389,7 +389,10 @@ class StrategyConfiguration:
 STRATEGY_CONSTRAINTS = {
     MatchmakingStrategy.ROUND_ROBIN: {
         "first_round_policies": ["random"],
-        "odd_policies": ["bye", "bye_with_challenge"],
+        # Nel girone il dispari si gestisce solo col riposo, che non vale
+        # niente (SPECIFICHE.md, nota del 2026-10-11): una prova al posto del
+        # riposo non avrebbe niente da dare in classifica.
+        "odd_policies": ["bye"],
         "fixed_rounds": True,
         "anti_rematch": False,
         "anti_rematch_required": False,
@@ -745,3 +748,24 @@ def bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
             )
 
     return derived
+
+
+def odd_policy_for_strategy(strategy: Any, odd_policy: Any) -> Any:
+    """La formula dei dispari che la gara tiene davvero, data la strategia.
+
+    Col girone all'italiana il dispari si gestisce solo col riposo semplice
+    (SPECIFICHE.md, nota del 2026-10-11): la X con prova non c'è più. Una gara
+    girone a cui arriva «X con prova» — proposta dal campionato, da un modulo
+    vecchio, da una configurazione di playoff — **ripiega sul riposo** invece
+    di essere rifiutata: è la stessa scelta, «chi è di troppo sta fermo», detta
+    nell'unica forma che il girone ammette. Ogni altra combinazione torna
+    com'è, e la validano i vincoli di sempre.
+    """
+    strategia = getattr(strategy, "value", strategy)
+    formula = getattr(odd_policy, "value", odd_policy)
+    if (
+        strategia == MatchmakingStrategy.ROUND_ROBIN.value
+        and formula == OddNumberPolicy.BYE_WITH_CHALLENGE.value
+    ):
+        return OddNumberPolicy.BYE.value
+    return formula

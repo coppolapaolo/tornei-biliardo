@@ -166,6 +166,10 @@ def create_matches_from_pairings(
         }
 
         if len(pairing.players) == 1 and pairing.is_bye:
+            # Il riposo del girone all'italiana nasce **senza vincitore**: non
+            # vale niente in classifica (SPECIFICHE.md, nota del 2026-10-11).
+            # La X delle altre strategie resta una vittoria.
+            riposo = bool(getattr(pairing, "riposo", False))
             match = Match(
                 **common_kwargs,
                 **bracket_kwargs,
@@ -173,15 +177,20 @@ def create_matches_from_pairings(
                 player2_id=None,
                 is_bye=True,
                 player1_score=bye_score,
-                winner_id=pairing.players[0],
+                winner_id=None if riposo else pairing.players[0],
                 status="pending",
             )
             db.session.add(match)
             db.session.flush()
             MatchStateService.to_completed(match.id)
         elif len(pairing.players) == 2 and not pairing.is_bye:
-            player1_forfeit = pairing.players[0] in forfeit_user_ids
-            player2_forfeit = pairing.players[1] in forfeit_user_ids
+            # Chi non e' piu' in gara (l'escluso del girone, `forfeit_players`)
+            # vale come chi ha dato forfait: la partita nasce a tavolino.
+            in_forfait = forfeit_user_ids | set(
+                getattr(pairing, "forfeit_players", ()) or ()
+            )
+            player1_forfeit = pairing.players[0] in in_forfait
+            player2_forfeit = pairing.players[1] in in_forfait
 
             if player1_forfeit or player2_forfeit:
                 if player1_forfeit and player2_forfeit:

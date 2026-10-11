@@ -110,6 +110,8 @@ Assegna **punti per posizione** nel tabellone di eliminazione.
 | **POINTS** | ✅ | ✅ (dist. 2-7) | ✅ (punti vittoria, 0 diff) | ✅ | N/A |
 | **POSITION** | ❌ | N/A | Bye bracket | N/A | N/A |
 
+**Girone all'italiana (Round Robin)**: l'unica formula è il **riposo**, che non vale niente con qualunque sistema — 0 vittorie, 0 punti, 0 rack, nessun match giocato. Per questo col girone il riposo è ammesso anche col sistema RACK (ognuno riposa una volta, e lo zero tocca tutti), e la X con challenge non si può scegliere: se il campionato la propone, la gara a girone ripiega sul riposo. Vedi [sezione 3.2](#32-bye-semplice) e SPECIFICHE.md, nota del 2026-10-11.
+
 **NO**: Se abilitato, i giocatori che rendono il numero dispari vanno in lista d'attesa fino a quando non si iscrive un altro giocatore. Vedi [sezione 3.5](#35-no-nessuna-gestione-dispari).
 
 ### 2.4 Forfait Policy
@@ -183,13 +185,20 @@ Questo rende il punteggio comparabile ai match normali.
 
 ### 3.2 Bye semplice
 
-- **Solo per Sistema WINS**
+- **Per Sistema WINS e POINTS** (Random, Amalfi)
 - Il giocatore con bye riceve: **1 vittoria, 0 diff rack**
 - Non gioca quel turno.
 
+**Il riposo del girone all'italiana** (dal 2026-10-11). Col Round Robin la stessa
+formula non vale niente: il match di riposo nasce **senza vincitore**
+(`Match.is_riposo`), e chi riposa riceve 0 vittorie, 0 punti, 0 rack — resta in
+classifica, ma senza niente in più. Vale con WINS, POINTS e RACK. L'avversario di
+un giocatore **escluso** a girone in corso (policy EXCLUDE) non riposa: vince a
+tavolino, rack pieni fino alla distanza del turno, come contro un forfait.
+
 ### 3.3 Bye con Challenge
 
-- **Per Sistema RACK e WINS**
+- **Per Sistema RACK e WINS** (Random, Amalfi: col Round Robin non c'è)
 - Il giocatore con bye esegue una challenge con punteggio 0-N (N = distanza).
 
 | Sistema | Risultato |
@@ -416,7 +425,7 @@ Per gare standalone:
 |-----------|-------------|---------------------|
 | **Random** | Abbinamenti casuali, nessuna ripetizione nella stessa gara | RACK, WINS |
 | **Amalfi** | Abbinamenti per prossimità in classifica, evita ripetizioni | RACK, WINS |
-| **Round Robin** | Tutti contro tutti | RACK, WINS |
+| **Round Robin** | Tutti contro tutti | RACK, WINS, POINTS |
 | **Eliminazione** | Bracket, chi perde esce | POSITION |
 | **Doppio KO** | Bracket con ripescaggio (una sconfitta ti manda nel losers bracket) | POSITION |
 
@@ -433,7 +442,9 @@ Per gare standalone:
 
 #### Round Robin
 - Ogni giocatore affronta tutti gli altri una volta.
-- Numero turni = N-1 (dove N = numero giocatori).
+- Numero turni = N-1 con N pari, **N con N dispari** (N = numero giocatori):
+  nel dispari ognuno riposa una volta, e il riposo non vale niente.
+- Dispari: solo il riposo (vedi [sezione 3.2](#32-bye-semplice)).
 
 #### Eliminazione
 - Bracket a eliminazione diretta.
@@ -460,7 +471,7 @@ SE sistema = RACK:
     OPPURE Race to N (con warning)
   ✓ multi-set = No
   ✓ dispari ∈ {NO, Trio, Bye+Challenge, Bye+N_rack}
-  ✗ dispari ≠ Bye semplice
+  ✗ dispari ≠ Bye semplice, tranne col Round Robin (il riposo, che non vale niente)
   ✓ matchmaking ∈ {Random, Amalfi, Round Robin}
   ✗ matchmaking ∉ {Eliminazione, Doppio KO}
 ```
@@ -475,6 +486,7 @@ SE sistema = WINS:
   ✓ dispari ∈ {NO, Trio, Bye, Bye+Challenge}
   ✓ matchmaking ∈ {Random, Amalfi, Round Robin}
   ✗ matchmaking ∉ {Eliminazione, Doppio KO}
+  ✓ Round Robin: dispari = solo il riposo (Bye, che non vale niente)
 ```
 
 ### 9.2-bis Validazioni per Sistema POINTS
@@ -522,37 +534,36 @@ Riepilogo di tutte le combinazioni valide.
 
 | # | Sistema | Distanza | Multi-set | Dispari | Forfait | Matchmaking |
 |---|---------|----------|-----------|---------|---------|-------------|
-| 1 | RACK | Exactly N | No | NO | EXCLUDE/FORFEIT | Random/Amalfi/RR |
+| 1 | RACK | Exactly N | No | NO | EXCLUDE/FORFEIT | Random/Amalfi |
 | 2 | RACK | Exactly N | No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Random |
 | 3 | RACK | Exactly N | No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Amalfi |
-| 4 | RACK | Exactly N | No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Round Robin |
-| 5 | RACK | Exactly N | No | Bye+Challenge | EXCLUDE/FORFEIT | Random |
-| 6 | RACK | Exactly N | No | Bye+Challenge | EXCLUDE/FORFEIT | Amalfi |
-| 7 | RACK | Exactly N | No | Bye+Challenge | EXCLUDE/FORFEIT | Round Robin |
-| 8 | RACK | Exactly N | No | Bye+N rack | EXCLUDE/FORFEIT | Random |
-| 9 | RACK | Exactly N | No | Bye+N rack | EXCLUDE/FORFEIT | Amalfi |
-| 10 | RACK | Exactly N | No | Bye+N rack | EXCLUDE/FORFEIT | Round Robin |
-| 11 | RACK | Race to N ⚠️ | No | NO/Trio/Bye+Ch/Bye+N | EXCLUDE/FORFEIT | Random/Amalfi/RR |
-| 12 | WINS | Race to N | Sì/No | NO | EXCLUDE/FORFEIT | Random/Amalfi/RR |
-| 13 | WINS | Race to N | Sì/No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Random |
-| 14 | WINS | Race to N | Sì/No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Amalfi |
-| 15 | WINS | Race to N | Sì/No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Round Robin |
-| 16 | WINS | Race to N | Sì/No | Bye | EXCLUDE/FORFEIT | Random |
-| 17 | WINS | Race to N | Sì/No | Bye | EXCLUDE/FORFEIT | Amalfi |
-| 18 | WINS | Race to N | Sì/No | Bye | EXCLUDE/FORFEIT | Round Robin |
-| 19 | WINS | Race to N | Sì/No | Bye+Challenge | EXCLUDE/FORFEIT | Random |
-| 20 | WINS | Race to N | Sì/No | Bye+Challenge | EXCLUDE/FORFEIT | Amalfi |
-| 21 | WINS | Race to N | Sì/No | Bye+Challenge | EXCLUDE/FORFEIT | Round Robin |
-| 22 | WINS | Exactly N disp | Sì/No | NO/Trio/Bye/Bye+Ch | EXCLUDE/FORFEIT | Random/Amalfi/RR |
-| 23 | WINS | Exactly N pari | Sì/No | NO/Trio/Bye/Bye+Ch | EXCLUDE/FORFEIT | Random/Amalfi/RR |
-| 24 | POSITION | Race to N | Sì/No | Bracket bye | FORFEIT | Eliminazione |
-| 25 | POSITION | Race to N | Sì/No | Bracket bye | FORFEIT | Doppio KO |
-| 26 | POSITION | Exactly N disp | Sì/No | Bracket bye | FORFEIT | Eliminazione |
-| 27 | POSITION | Exactly N disp | Sì/No | Bracket bye | FORFEIT | Doppio KO |
+| 4 | RACK | Exactly N | No | Bye+Challenge | EXCLUDE/FORFEIT | Random |
+| 5 | RACK | Exactly N | No | Bye+Challenge | EXCLUDE/FORFEIT | Amalfi |
+| 6 | RACK | Exactly N | No | Bye+N rack | EXCLUDE/FORFEIT | Random |
+| 7 | RACK | Exactly N | No | Bye+N rack | EXCLUDE/FORFEIT | Amalfi |
+| 8 | RACK | Exactly N | No | Riposo (non vale) | EXCLUDE/FORFEIT | Round Robin |
+| 9 | RACK | Race to N ⚠️ | No | NO/Trio/Bye+Ch/Bye+N | EXCLUDE/FORFEIT | Random/Amalfi |
+| 10 | RACK | Race to N ⚠️ | No | Riposo (non vale) | EXCLUDE/FORFEIT | Round Robin |
+| 11 | WINS | Race to N | Sì/No | NO | EXCLUDE/FORFEIT | Random/Amalfi |
+| 12 | WINS | Race to N | Sì/No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Random |
+| 13 | WINS | Race to N | Sì/No | Trio (dist 2-7) | EXCLUDE/FORFEIT | Amalfi |
+| 14 | WINS | Race to N | Sì/No | Bye | EXCLUDE/FORFEIT | Random |
+| 15 | WINS | Race to N | Sì/No | Bye | EXCLUDE/FORFEIT | Amalfi |
+| 16 | WINS | Race to N | Sì/No | Riposo (non vale) | EXCLUDE/FORFEIT | Round Robin |
+| 17 | WINS | Race to N | Sì/No | Bye+Challenge | EXCLUDE/FORFEIT | Random |
+| 18 | WINS | Race to N | Sì/No | Bye+Challenge | EXCLUDE/FORFEIT | Amalfi |
+| 19 | WINS | Exactly N disp | Sì/No | NO/Trio/Bye/Bye+Ch | EXCLUDE/FORFEIT | Random/Amalfi |
+| 20 | WINS | Exactly N pari | Sì/No | NO/Trio/Bye/Bye+Ch | EXCLUDE/FORFEIT | Random/Amalfi |
+| 21 | WINS | Exactly N | Sì/No | Riposo (non vale) | EXCLUDE/FORFEIT | Round Robin |
+| 22 | POSITION | Race to N | Sì/No | Bracket bye | FORFEIT | Eliminazione |
+| 23 | POSITION | Race to N | Sì/No | Bracket bye | FORFEIT | Doppio KO |
+| 24 | POSITION | Exactly N disp | Sì/No | Bracket bye | FORFEIT | Eliminazione |
+| 25 | POSITION | Exactly N disp | Sì/No | Bracket bye | FORFEIT | Doppio KO |
 
 **Legenda:**
 - ⚠️ = Permesso con warning (comportamento potenzialmente controintuitivo)
-- Exactly N pari (combo 23) = pareggi possibili (0 vittorie, 0 diff a entrambi)
+- Exactly N pari (combo 20, e 21 con N pari) = pareggi possibili (0 vittorie, 0 diff a entrambi)
+- Riposo (non vale) = il riposo del girone all'italiana: 0 vittorie, 0 punti, 0 rack (SPECIFICHE.md, nota del 2026-10-11). Col girone le altre formule dei dispari non si possono scegliere (`STRATEGY_CONSTRAINTS`). Fino al 2026-10-11 questa tabella elencava anche Trio, NO, Bye+Challenge e Bye+N rack col Round Robin, che il codice non ammetteva già prima
 - NO = nessuna gestione dispari, giocatori dispari vanno in lista d'attesa
 
 ---

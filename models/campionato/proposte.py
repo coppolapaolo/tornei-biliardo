@@ -85,6 +85,12 @@ def proposta(campionato: Any, cambi: Mapping[str, Iterable[Any]]) -> List[GaraPr
             if campo_gara is None:
                 continue
             attuale = valore_della_gara(gara, campo_gara)
+            if campo_gara == "odd_number_policy":
+                # Col girone la X con prova ripiega sul riposo (SPECIFICHE.md,
+                # nota del 2026-10-11): si propone quello che la gara terrebbe.
+                from models.matchmaking.configuration import odd_policy_for_strategy
+
+                nuovo = odd_policy_for_strategy(gara.matchmaking_strategy, nuovo)
             if serializza(attuale) == serializza(nuovo):
                 continue  # la gara ha già il valore nuovo
             voce.campi.append(

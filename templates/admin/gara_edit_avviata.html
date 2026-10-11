@@ -196,7 +196,7 @@
       <div class="flex-fill" style="min-width:220px">
         <label for="odd_number_policy" class="form-label">{{ _('Giocatori dispari') }}</label>
         <select class="form-select" id="odd_number_policy" name="odd_number_policy">
-          {% for valore, nome in opzioni_dispari(gara.classification_system) %}
+          {% for valore, nome in opzioni_dispari(gara.classification_system, gara.matchmaking_strategy) %}
           <option value="{{ valore }}" {% if (gara.odd_number_policy or 'bye') == valore %}selected{% endif %}>{{ nome }}</option>
           {% endfor %}
         </select>

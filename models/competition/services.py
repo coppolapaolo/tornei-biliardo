@@ -206,6 +206,8 @@ class GaraService:
                 if hasattr(gara, key):
                     setattr(gara, key, value)
 
+        GaraService._dispari_ammessi_dalla_strategia(gara)
+
         # Valida la configurazione matchmaking
         errors = gara.validate_strategy_configuration()
         if errors:
@@ -462,6 +464,8 @@ class GaraService:
                 gara_time=gara.time,
             )
 
+        GaraService._dispari_ammessi_dalla_strategia(gara)
+
         # Valida la configurazione classificazione dopo le modifiche
         from models.competition.validators import validate_gara
 
@@ -556,6 +560,24 @@ class GaraService:
         if all(getattr(gara, colonna, None) is None for colonna in COLONNE_DELLA_GARA):
             return
         valida_punti(*punti_della_gara(gara).come_tupla())
+
+    @staticmethod
+    def _dispari_ammessi_dalla_strategia(gara: Gara) -> None:
+        """Col girone all'italiana la X con prova ripiega sul riposo semplice.
+
+        SPECIFICHE.md, nota del 2026-10-11: nel girone il dispari si gestisce
+        solo col riposo, che non vale niente. Qui passa ogni gara che nasce o
+        cambia — modulo, campionato che propone, playoff — quindi la regola
+        non dipende da quale schermata l'ha scritta.
+        """
+        from models.matchmaking.configuration import odd_policy_for_strategy
+
+        formula = odd_policy_for_strategy(
+            gara.matchmaking_strategy, gara.odd_number_policy
+        )
+        if formula != gara.odd_number_policy:
+            gara.odd_number_policy = formula
+            gara.x_challenge_id = None
 
     @staticmethod
     def _copia_dal_campionato(campionato_id: int, kwargs: Dict[str, Any]) -> None:

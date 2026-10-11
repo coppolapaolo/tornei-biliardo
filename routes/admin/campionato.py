@@ -195,7 +195,12 @@ def wizard_step2():
     classification_system = session[WIZARD_SESSION_KEY].get(
         "default_classification_system", "WINS"
     )
-    odd_policies = opzioni_dispari(classification_system)
+    # Col girone all'italiana resta il solo riposo (SPECIFICHE.md, nota del
+    # 2026-10-11).
+    odd_policies = opzioni_dispari(
+        classification_system,
+        strategy=session[WIZARD_SESSION_KEY].get("campionato_type"),
+    )
 
     return render_template(
         "admin/campionato_wizard_step2.html",

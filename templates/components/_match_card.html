@@ -19,7 +19,7 @@
   <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
     <div style="display: flex; align-items: center; gap: 6px;">
       {% if match.is_bye %}
-      <span class="c7-state c7-state--info">{{ _('X a tavolino') }}</span>
+      <span class="c7-state c7-state--info">{{ (_('Riposo') if match.is_riposo else _('X a tavolino')) }}</span>
       {% elif match.status == MatchStatus.PENDING.value %}
       <span class="c7-state c7-state--warn">{{ _('Da giocare') }}</span>
       {% elif match.status == MatchStatus.PLAYING.value %}
@@ -44,7 +44,7 @@
         {% if match.is_trio and match.trio_match %}
           {% set player_display = match.trio_match.player1.username ~ ' · ' ~ match.trio_match.player2.username ~ ' · ' ~ match.trio_match.player3.username %}
         {% else %}
-          {% set player_display = match.player1.username ~ ' vs ' ~ (match.player2.username if not match.is_bye else _('X a tavolino')) %}
+          {% set player_display = match.player1.username ~ ' vs ' ~ (match.player2.username if not match.is_bye else (_('Riposo') if match.is_riposo else _('X a tavolino'))) %}
         {% endif %}
         {% if match.table_assignment %}
         <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#tableAssignmentModal"
@@ -117,7 +117,7 @@
         <span style="font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .5;">vs</span>
         <div>
           {% if match.is_bye %}
-          <div style="font-size: 14px; font-weight: 800; opacity: .6;">{{ _('X a tavolino') }}</div>
+          <div style="font-size: 14px; font-weight: 800; opacity: .6;">{{ (_('Riposo') if match.is_riposo else _('X a tavolino')) }}</div>
           {% else %}
           <div style="font-size: 14px; font-weight: 800; {% if p2_forfeit %}color: var(--c7-ink-faint); text-decoration: line-through;{% endif %}">
             {{ match.player2.username }}

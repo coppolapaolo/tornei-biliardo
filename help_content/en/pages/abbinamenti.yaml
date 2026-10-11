@@ -81,6 +81,17 @@ blocks:
       From eight people up it takes a whole day, or more tables than you
       usually have.
 
+  - type: note
+    tone: info
+    title: "With an odd number someone rests, and the rest scores nothing"
+    text: >-
+      With an odd number of players one player **rests** each round: you see
+      it in the round, but it brings nothing — no wins, no points, no racks.
+      Everyone rests once, so nobody gains from it. If the director
+      **removes** a player during the round robin, whoever was due to meet
+      them in later rounds **wins by walkover**, with all the racks of the
+      distance.
+
   - type: heading
     id: eliminazione
     title: "Knockout"

@@ -107,7 +107,9 @@ blocks:
           resta negli abbinamenti e i suoi avversari vincono senza giocare —
           più semplice, ma un avversario si ritrova con una partita vuota. Con
           **escludi** esce dagli abbinamenti: più pulito, ma cambia la parità e
-          può far scattare la gestione del numero dispari. Sui tabelloni non si
+          può far scattare la gestione del numero dispari. Nel girone
+          all'italiana chi viene escluso resta nel calendario, e chi doveva
+          incontrarlo vince a tavolino. Sui tabelloni non si
           chiede: il ritiro è sempre una vincita a tavolino, perché una volta
           sorteggiato il tabellone non si tocca più e togliere qualcuno
           lascerebbe una casella vuota.
@@ -170,7 +172,8 @@ blocks:
         text: >-
           Cosa succede quando i giocatori sono in numero dispari e uno
           resterebbe senza avversario. Spiegate una per una in [Quando i
-          giocatori sono dispari](/aiuto/approfondimenti/numero_dispari). Sui
+          giocatori sono dispari](/aiuto/approfondimenti/numero_dispari). Col
+          girone all'italiana resta solo il riposo, che non vale punti. Sui
           tabelloni non si chiede: chi resta fuori dal conto passa
           direttamente al turno successivo, ed è il modo in cui un tabellone si
           costruisce, non una politica da scegliere.

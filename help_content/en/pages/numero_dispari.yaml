@@ -44,6 +44,16 @@ blocks:
       play would collect zero racks and be heavily penalised. In that case use
       the X by walkover with drill.
 
+  - type: note
+    tone: info
+    title: "In a round robin you simply rest"
+    text: >-
+      In a round robin the only option is the **rest**, and the rest **scores
+      nothing**: zero wins, zero points, zero racks. It penalises nobody,
+      because everyone rests exactly once — which is why it works with every
+      standings system, «Racks» included. The X with drill, the trio and the
+      waitlist cannot be chosen there.
+
   - type: heading
     id: riposo_challenge
     title: "2. X by walkover with drill"
@@ -219,6 +229,8 @@ blocks:
     items:
       - q: "I got a win without playing. Is that a mistake?"
         a: "No: that is the X by walkover, and it goes in turn to whoever is left without an opponent. It counts as a win with zero rack difference."
+      - q: "In a round robin I rested and got nothing in the standings. Is that right?"
+        a: "Yes: in a round robin the rest scores nothing, neither wins nor racks. Everyone rests once, so in the end nobody comes out ahead."
       - q: "Why am I on the waitlist when there are still places?"
         a: "Because the competition needs an even number of players and your registration would make it odd. You will get in as soon as someone else registers."
       - q: "Trio is not selectable."

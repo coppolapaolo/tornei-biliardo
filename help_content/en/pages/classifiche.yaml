@@ -76,7 +76,7 @@ blocks:
     items:
       - "**Win** and **loss**: the points you chose for each."
       - "**Draw** — an even exact number of racks (3-3 at 6), or a match stopped on time while level — the draw points to both."
-      - "**X by walkover**: worth a win, with zero rack difference. With the exercise in place of the X, the difference is the exercise score."
+      - "**X by walkover**: worth a win, with zero rack difference. With the exercise in place of the X, the difference is the exercise score. In a round robin whoever has no opponent **rests**, and the rest is worth zero points."
       - "**Three-player match** with a winner: the win to them, the loss to the other two. With no winner, whoever is level at the top gets the draw and the third, if behind, the loss (at 4-4-1: draw, draw, loss). Whoever withdraws gets the loss."
 
   - type: text
@@ -196,6 +196,8 @@ blocks:
         text: >-
           Whoever is left without an opponent gets a win and zero rack
           difference: neither rewarded nor penalised against those who played.
+          In a round robin they **rest** instead, and the rest scores nothing:
+          no wins, no points, no racks.
       - name: "Forfeit"
         text: >-
           Whoever abandons leaves their opponent all the remaining racks. Those

@@ -171,6 +171,14 @@ class GamificationEventHandlers:
             )
 
             forfeit_ids = WithdrawPolicyService.get_forfeit_user_ids(match.gara_id)
+            # Chi è stato escluso (policy EXCLUDE) non ha più l'iscrizione, e
+            # quindi non compare fra i forfait: nel girone all'italiana il suo
+            # posto nel calendario produce comunque una vittoria a tavolino
+            # dell'avversario (SPECIFICHE.md, nota del 2026-10-11). Non è
+            # una partita giocata, e la sconfitta non gli porta punti.
+            forfeit_ids |= WithdrawPolicyService.fuori_dalla_gara(
+                match.gara_id, (event.player1_id, event.player2_id)
+            )
 
         try:
             # Determine loser

@@ -108,7 +108,9 @@ blocks:
           walkover** they stay in the pairings and their opponents win without
           playing — simpler, but one opponent ends up with an empty match. With
           **remove** they drop out of the pairings: cleaner, but it changes the
-          parity and can trigger the odd-number handling. On brackets it is not
+          parity and can trigger the odd-number handling. In a round robin the
+          removed player stays in the schedule, and whoever was due to meet them
+          wins by walkover. On brackets it is not
           asked: withdrawing is always a walkover, because once the bracket has
           been drawn it is not touched again and removing somebody would leave
           an empty slot.
@@ -170,7 +172,8 @@ blocks:
         text: >-
           What happens when the number of players is odd and someone would be
           left without an opponent. Explained one by one in [When the number of
-          players is odd](/aiuto/approfondimenti/numero_dispari). On brackets it
+          players is odd](/aiuto/approfondimenti/numero_dispari). In a round
+          robin only the rest is left, and it scores nothing. On brackets it
           is not asked: whoever is left over from the count goes straight
           through to the next round, and that is how a bracket is built, not a
           policy to choose.
