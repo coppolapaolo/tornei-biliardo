@@ -339,13 +339,15 @@ def _classifiche(
     piazzamenti: Dict[int, int] = {}
     con_classifica: Set[int] = set()
 
-    def _accumula(righe: Iterable[Tuple[int, int, int, str]]) -> None:
-        for gara_id, posizione, uid, username in righe:
+    def _accumula(righe: Iterable[Tuple[int, int, Optional[int], int, str]]) -> None:
+        for gara_id, posizione, mostrata, uid, username in righe:
             con_classifica.add(gara_id)
             if posizione == 1:
                 primi.setdefault(gara_id, []).append(username)
             if user_id is not None and uid == user_id:
-                piazzamenti[gara_id] = posizione
+                # Il piazzamento si mostra: a pari merito la posizione più
+                # alta (SPECIFICHE.md, «Classifica», nota del 2026-10-11).
+                piazzamenti[gara_id] = mostrata if mostrata is not None else posizione
 
     condizioni = [GaraClassification.position == 1]
     if user_id is not None:
@@ -354,6 +356,7 @@ def _classifiche(
         db.session.query(
             GaraClassification.gara_id,
             GaraClassification.position,
+            GaraClassification.shown_position,
             GaraClassification.user_id,
             User.username,
         )
@@ -389,6 +392,7 @@ def _classifiche(
             db.session.query(
                 RoundClassification.gara_id,
                 RoundClassification.position,
+                RoundClassification.shown_position,
                 RoundClassification.user_id,
                 User.username,
             )

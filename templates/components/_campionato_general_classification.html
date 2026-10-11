@@ -100,10 +100,15 @@
       <span class="c7-kicker">{{ _('Fuori dai playoff') }}</span>
     </div>
     {% endif %}
-    {% set _mov = (dati.previous_position - position) if dati.previous_position else none %}
+    {# La posizione mostrata: chi è separato solo dal sorteggio è a pari
+       merito, alla posizione più alta (SPECIFICHE.md, nota del 2026-10-11).
+       L'ordine delle righe e la zona playoff restano quelli della catena. #}
+    {% set _pos = dati.get('shown_position', position) %}
+    {% set _prima = dati.get('shown_previous_position', dati.previous_position) %}
+    {% set _mov = (_prima - _pos) if _prima else none %}
     <div class="c7-rows__row c7-classifica__riga{% if dati.user_id in _in_zona %} c7-cg__riga--zona{% endif %}"
          data-oltre="{{ '1' if _oltre else '0' }}"{% if _oltre %} hidden{% endif %}>
-      <span class="c7-num c7-classifica__pos{% if position <= 3 %} c7-classifica__pos--podio{% endif %}">{{ position }}</span>
+      <span class="c7-num c7-classifica__pos{% if _pos <= 3 %} c7-classifica__pos--podio{% endif %}">{{ _pos }}</span>
       {% if not _finale %}
       <span class="c7-classifica__trend" role="img" aria-label="{% if _mov is none %}{{ _('primo turno') }}{% elif _mov > 0 %}{{ _('sale di %(n)s', n=_mov) }}{% elif _mov < 0 %}{{ _('scende di %(n)s', n=-_mov) }}{% else %}{{ _('stabile') }}{% endif %}">
         {% if _mov is none or _mov == 0 %}<span class="c7-classifica__trend-eq" aria-hidden="true"></span>

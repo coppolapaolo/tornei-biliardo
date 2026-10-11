@@ -66,7 +66,9 @@ def podio_da_classifica(
     """I primi tre di `calculate_general_classification`, così come li ordina."""
     return [
         PostoPodio(
-            posizione=posizione,
+            # La posizione mostrata: due primi a pari merito sono primi
+            # entrambi (SPECIFICHE.md, «Classifica», nota del 2026-10-11).
+            posizione=dati.get("shown_position", posizione),
             user_id=dati.get("user_id"),
             nome=str(dati.get("username") or "—"),
         )

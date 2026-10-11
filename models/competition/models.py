@@ -1158,7 +1158,8 @@ class Gara(SoftDeleteMixin, db.Model):
         arriva lo spareggio della catena di gara.
 
         Returns:
-            List[dict]: Lista di dizionari con 'position', 'user', 'username'
+            List[dict]: Lista di dizionari con 'position',
+                        'posizione_mostrata', 'user', 'username'
                         per i premiati. Lista vuota se la gara
                         non è completata o non ha classifiche.
         """
@@ -1182,6 +1183,9 @@ class Gara(SoftDeleteMixin, db.Model):
                 podium.append(
                     {
                         "position": rc.position,
+                        # Quella da mostrare: i pari merito sulla più alta
+                        # (SPECIFICHE.md, «Classifica», nota del 2026-10-11).
+                        "posizione_mostrata": rc.posizione_mostrata,
                         "user": rc.user,
                         "username": rc.user.username if rc.user else "?",
                     }

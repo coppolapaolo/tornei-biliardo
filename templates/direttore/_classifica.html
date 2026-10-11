@@ -111,7 +111,12 @@
   <div class="c7-rows">
     {{ _testa }}
     {% for riga in classification %}
-    {% call _riga(riga, riga.position, (riga.previous_position - riga.position) if riga.previous_position else none,
+    {# La posizione mostrata: il pari merito sta sulla più alta, anche quando
+       a separare due giocatori è solo il sorteggio (SPECIFICHE.md, nota del
+       2026-10-11). La freccia confronta posizioni mostrate. #}
+    {% set _pos = posizione_mostrata(riga) %}
+    {% set _prima = posizione_mostrata_prima(riga) %}
+    {% call _riga(riga, _pos, (_prima - _pos) if _prima else none,
                   loop.index > _prime, medaglie is defined and medaglie, girone_della_riga(riga)) %}{{ _colonne(riga, _rack, _punti, _ssr, _pari) }}{% endcall %}
     {% endfor %}
   </div>

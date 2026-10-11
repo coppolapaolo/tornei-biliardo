@@ -175,6 +175,15 @@ legge dalla storia. L'editor sta in `editor_catena.py` +
 Il sorteggio è un hash del seme (`draw_seed` della gara, id del campionato):
 mai l'id del giocatore. POSITION non passa dal motore (ADR-040).
 
+**Posizione che decide e posizione mostrata** (2026-10-11, ADR-078
+emendamento). `position` è l'ordine col sorteggio: decide abbinamenti,
+inviti, punti. Chi è separato **solo** dal sorteggio è a pari merito e si
+mostra alla posizione più alta: `shown_position` / `shown_group_position` /
+`shown_previous_position` sulle righe, `posizione_mostrata(riga)` per
+leggerle (ripiega su `position` sulle righe di prima). Una definizione sola,
+`ordinamento.posizioni_mostrate`. Chi **mostra** una posizione legge quella
+mostrata; chi **decide** legge `position`.
+
 ## Do Not
 
 - **Do not use legacy static methods** - Prefer `StrategyBasedClassificationService`

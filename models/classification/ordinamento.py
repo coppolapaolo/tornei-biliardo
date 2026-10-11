@@ -408,10 +408,49 @@ class Scontro:
 
 @dataclass(frozen=True)
 class Fascia:
-    """Una posizione della classifica e chi la occupa (più d'uno = pari merito)."""
+    """Una posizione della classifica e chi la occupa (più d'uno = pari merito).
+
+    ``posizione`` è quella che **decide** (abbinamenti, taglio, inviti, punti):
+    col sorteggio in catena è sempre distinta. ``mostrata`` è quella da
+    **mostrare**: chi è separato da chi lo precede solo dal sorteggio è a pari
+    merito, e ne prende la posizione (`posizioni_mostrate`). None vale la
+    posizione.
+    """
 
     posizione: int
     giocatori: Tuple[Concorrente, ...]
+    mostrata: Optional[int] = None
+
+    @property
+    def posizione_mostrata(self) -> int:
+        return self.posizione if self.mostrata is None else self.mostrata
+
+
+def posizioni_mostrate(righe: Sequence[Tuple[int, Any]]) -> List[int]:
+    """Le posizioni da mostrare: il pari merito sta sulla posizione più alta.
+
+    La **definizione unica** di pari merito nelle pagine (SPECIFICHE.md,
+    «Classifica», nota del 2026-10-11). ``righe`` è la classifica in ordine,
+    una coppia per giocatore: la posizione che decide e una chiave di
+    **merito** — uguale per chi è pari su tutti i criteri veri della catena,
+    cioè tutti tranne il sorteggio. Chi ha lo stesso merito della riga prima
+    ne prende la posizione mostrata; gli altri tengono la propria.
+
+    Il pari merito è fra righe **vicine**: due giocatori con lo stesso merito
+    ma separati da un terzo (lo scontro diretto può farlo) restano separati.
+    Le posizioni già condivise (1, 2, 2, 4) restano come sono.
+
+    Regola dell'utente, 2026-10-11: «Il pari merito va sempre sulla posizione
+    più alta. Se uno è pari merito col primo allora è primo pari merito, non
+    secondo.»
+    """
+    mostrate: List[int] = []
+    for indice, (posizione, merito) in enumerate(righe):
+        if indice and merito == righe[indice - 1][1]:
+            mostrate.append(mostrate[-1])
+        else:
+            mostrate.append(posizione)
+    return mostrate
 
 
 def chiave_di_sorteggio(seme: object, player_id: int) -> int:
@@ -624,14 +663,46 @@ def ordina(
     Returns:
         Le fasce in ordine. Una fascia di più giocatori è un pari merito: i suoi
         giocatori condividono la posizione, e la successiva salta (1, 2, 2, 4).
+        Chi è separato solo dal sorteggio ha la sua fascia e la sua posizione,
+        ma la posizione **mostrata** di chi lo precede (`Fascia.mostrata`).
     """
     voci = tuple(catena)
     if completa and not any(v.criterio is Criterio.SORTEGGIO for v in voci):
         voci = voci + (Voce(Criterio.SORTEGGIO),)
     motore = _Motore(principale, scontri)
+    tutti = list(concorrenti)
+    fasce = _fasce(motore, tutti, principale, voci, da_posizione)
+    if not any(v.criterio is Criterio.SORTEGGIO for v in voci):
+        return fasce
+    # Il merito: la stessa catena senza il sorteggio. Chi vi resta nella
+    # stessa fascia è pari su tutti i criteri veri.
+    senza_sorteggio = tuple(v for v in voci if v.criterio is not Criterio.SORTEGGIO)
+    merito = {
+        c.player_id: indice
+        for indice, fascia in enumerate(
+            _fasce(motore, tutti, principale, senza_sorteggio, da_posizione)
+        )
+        for c in fascia.giocatori
+    }
+    righe = [(f.posizione, merito[c.player_id]) for f in fasce for c in f.giocatori]
+    mostrate = iter(posizioni_mostrate(righe))
+    risultato: List[Fascia] = []
+    for fascia in fasce:
+        mostrata = [next(mostrate) for _c in fascia.giocatori][0]
+        risultato.append(Fascia(fascia.posizione, fascia.giocatori, mostrata))
+    return risultato
+
+
+def _fasce(
+    motore: "_Motore",
+    concorrenti: List[Concorrente],
+    principale: Criterio,
+    voci: Catena,
+    da_posizione: int,
+) -> List[Fascia]:
     fasce: List[Fascia] = []
     posizione = da_posizione
-    for gruppo in _per_valore(list(concorrenti), lambda c: _valore(c, principale)):
+    for gruppo in _per_valore(concorrenti, lambda c: _valore(c, principale)):
         for fascia in motore.ordina_gruppo(gruppo, voci, posizione):
             fasce.append(Fascia(posizione, tuple(fascia)))
             posizione += len(fascia)
@@ -752,6 +823,7 @@ __all__ = [
     "normalizza_catena",
     "ordina",
     "parse_catena",
+    "posizioni_mostrate",
     "prima_dello_ssr",
     "seme_del_campionato",
     "seme_della_gara",

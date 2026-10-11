@@ -84,7 +84,11 @@ che la taglia dei gironi falsa (vedi «Rischi»). Ora:
    (`Criterio.PIAZZAMENTI`, nuovo), posizione dopo la gara precedente,
    scontri diretti, sorteggio. Vittorie, triangoli, differenza e SSR no.
    **Default**: migliori piazzamenti → sorteggio. L'ordine è sempre completo,
-   come in ogni classifica generale: i pari non condividono più il posto.
+   come in ogni classifica generale: i pari non condividono più il posto
+   che decide. *Emendato il 2026-10-11 (ADR-078, emendamento): chi è
+   separato solo dal sorteggio si **mostra** a pari merito, alla posizione
+   più alta; l'ordine delle righe e la posizione che decide restano quelli
+   della catena.*
 3. **Migliori piazzamenti** («countback»): si confrontano quanti primi posti,
    poi quanti secondi, e così via. Il posto è `GaraClassification.position`,
    quindi due secondi a pari merito (1, 2, 2, 4) contano entrambi come un

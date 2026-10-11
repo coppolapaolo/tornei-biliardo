@@ -68,7 +68,8 @@ blocks:
       sempre col sorteggio, perché due giocatori non possono restare alla pari
       quando si decide chi gioca con chi. Quella della **classifica finale**
       può lasciare dei pari merito: chi resta pari dopo tutti i criteri
-      condivide la posizione.
+      condivide la posizione. In tutte e due, chi è separato **solo** dal
+      sorteggio si vede a pari merito, alla posizione più alta.
 
   - type: heading
     id: come

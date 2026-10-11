@@ -195,13 +195,15 @@ def _gara_activities(user_id: int) -> List[Activity]:
     out: List[Activity] = []
     for row in rows:
         total = field_sizes.get(row.gara_id, 0)
-        if row.position <= 3:
+        # La posizione mostrata: a pari merito la più alta (2026-10-11).
+        posizione = row.posizione_mostrata
+        if posizione <= 3:
             outcome = "win"
-        elif total and row.position <= total / 2:
+        elif total and posizione <= total / 2:
             outcome = "neutral"
         else:
             outcome = "draw"
-        text = _("%(pos)s°", pos=row.position)
+        text = _("%(pos)s°", pos=posizione)
         gara_name = row.gara.display_name if row.gara else _("Gara")
         out.append(
             Activity(
@@ -213,11 +215,11 @@ def _gara_activities(user_id: int) -> List[Activity]:
                     _(
                         "%(gara)s, %(pos)s° su %(total)s",
                         gara=gara_name,
-                        pos=row.position,
+                        pos=posizione,
                         total=total,
                     )
                     if total
-                    else _("%(gara)s, %(pos)s°", gara=gara_name, pos=row.position)
+                    else _("%(gara)s, %(pos)s°", gara=gara_name, pos=posizione)
                 ),
             )
         )
@@ -762,7 +764,7 @@ def _campionato_row(user_id: int) -> List[Dict[str, Any]]:
             "color_role": "accent",
             "title": _(
                 "%(pos)s° in %(campionato)s",
-                pos=row.position,
+                pos=row.posizione_mostrata,
                 campionato=row.campionato.name,
             ),
             "subtitle": ngettext(

@@ -91,7 +91,7 @@
                                 {% if gara.status == GaraStatus.COMPLETED.value %}
                                     {# Use max round_number, not gara.current_round, so SSR finals show correctly #}
                                     {% set user_rcs = gara.round_classifications | selectattr('user_id', 'equalto', current_user.id) | sort(attribute='round_number', reverse=True) | list %}
-                                    {% set user_final_position = user_rcs[0].position if user_rcs else None %}
+                                    {% set user_final_position = user_rcs[0].posizione_mostrata if user_rcs else None %}
 
                                     {% if user_final_position %}
                                     <p class="mb-0">

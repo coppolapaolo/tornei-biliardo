@@ -231,7 +231,8 @@ def _classifica(campionato, generale) -> List[RigaClassifica]:
 
     return [
         RigaClassifica(
-            posizione=posizione,
+            # Pari merito sulla posizione più alta (nota del 2026-10-11).
+            posizione=dati.get("shown_position", posizione),
             nome=dati.get("username", "—"),
             valore=dati.get(chiave, 0) or 0,
             unita=unita,

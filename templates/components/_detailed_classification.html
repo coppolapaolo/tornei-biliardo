@@ -100,9 +100,13 @@
             </thead>
             <tbody>
                 {% for player_class in classification %}
+                {# Pari merito sulla posizione più alta (SPECIFICHE.md, nota del
+                   2026-10-11); la freccia confronta posizioni mostrate. #}
+                {% set _pos = posizione_mostrata(player_class) %}
+                {% set _prima = posizione_mostrata_prima(player_class) %}
                 <tr>
                     <td>
-                        <span class="c7-num" style="{% if player_class.position <= 3 %}color: var(--c7-accent);{% else %}color: var(--c7-ink-faint);{% endif %}">{{ player_class.position }}</span>
+                        <span class="c7-num" style="{% if _pos <= 3 %}color: var(--c7-accent);{% else %}color: var(--c7-ink-faint);{% endif %}">{{ _pos }}</span>
                     </td>
                     <td><strong>{{ player_class.user.username }}</strong>
                         {# A gara finita, da dove viene ognuno (ADR-076): sotto il
@@ -140,9 +144,9 @@
                     </td>
                     {% endif %}
                     <td>
-                        {% if player_class.previous_position %}
-                        {% set diff = player_class.previous_position - player_class.position %}
-                        <span class="c7-num" style="color: var(--c7-ink-muted);">{{ player_class.previous_position }}</span>
+                        {% if _prima %}
+                        {% set diff = _prima - _pos %}
+                        <span class="c7-num" style="color: var(--c7-ink-muted);">{{ _prima }}</span>
                         {% if diff > 0 %}
                         <i class="fas fa-arrow-up" style="color: var(--c7-ok); font-size: 11px;"
                            title="{{ ngettext('Sale di %(num)d posizione', 'Sale di %(num)d posizioni', diff, num=diff) }}"></i>

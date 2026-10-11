@@ -421,7 +421,7 @@ La classifica del campionato **aggrega sommando** le classifiche delle singole g
 | **RACK** | Σ rack totali vinti |
 | **WINS** | Σ vittorie, Σ diff rack |
 | **POINTS** | Σ punti (pesati) |
-| **POSITION** | Σ punti del posto in ogni gara (pesati), poi Σ vittorie e Σ diff rack; i pari condividono il posto |
+| **POSITION** | Σ punti del posto in ogni gara (pesati), poi la catena della classifica generale (di norma migliori piazzamenti → sorteggio, ADR-080); chi è separato solo dal sorteggio si mostra a pari merito alla posizione più alta (2026-10-11) |
 
 ### 7.3 Partecipazione parziale
 

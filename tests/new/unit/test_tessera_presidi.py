@@ -59,7 +59,7 @@ def test_podio_e_classifica_usano_lo_stesso_chip_di_posizione():
     gara, campionato = (
         _senza_commenti(t.read_text(encoding="utf-8")) for t in TESSERE[:2]
     )
-    assert "c7-pos--{{ pos + 1 }}" in gara
+    assert "c7-pos--{{ _mostrata }}" in gara
     assert "c7-pos--' ~ riga.posizione" in campionato
     for testo in (gara, campionato):
         assert "fa-medal" not in testo

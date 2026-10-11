@@ -91,7 +91,7 @@
       <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
         {% for p in podium[:3] %}
         <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
-          <span class="c7-num" style="width: 18px; color: {% if loop.index == 1 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ loop.index }}</span>
+          <span class="c7-num" style="width: 18px; color: {% if p.posizione_mostrata == 1 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ p.posizione_mostrata }}</span>
           <strong style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.username }}</strong>
         </div>
         {% endfor %}

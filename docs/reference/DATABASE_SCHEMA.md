@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-10-07 10:41 UTC
+> Last updated: 2026-10-11 20:00 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -244,6 +244,7 @@
 | `default_odd_policy` | VARCHAR(30) | NO |  | bye |  |
 | `default_anti_rematch` | BOOLEAN | NO |  | True |  |
 | `default_classification_system` | VARCHAR(10) | NO |  | WINS |  |
+| `default_gara_classification_system` | VARCHAR(10) | YES |  |  |  |
 | `default_points_win` | INTEGER | NO |  | 3 |  |
 | `default_points_draw` | INTEGER | NO |  | 1 |  |
 | `default_points_loss` | INTEGER | NO |  | 0 |  |
@@ -255,6 +256,8 @@
 | `scoring_policy` | VARCHAR(50) | NO |  | classic |  |
 | `has_handicap` | BOOLEAN | NO |  | False |  |
 | `default_time_limit_minutes` | INTEGER | NO |  | 0 |  |
+| `default_max_groups` | INTEGER | NO |  | 1 |  |
+| `default_group_seeding` | VARCHAR(20) | NO |  | sorteggio |  |
 | `default_catena_turno` | TEXT | YES |  |  |  |
 | `default_catena_gara` | TEXT | YES |  |  |  |
 | `catena_generale` | TEXT | YES |  |  |  |
@@ -342,6 +345,8 @@
 | `draw_seed` | INTEGER | YES |  |  |  |
 | `seeding_rating` | VARCHAR(16) | NO |  | elo |  |
 | `double_ko_rounds` | INTEGER | YES |  |  |  |
+| `max_groups` | INTEGER | YES |  |  |  |
+| `group_seeding` | VARCHAR(20) | YES |  |  |  |
 | `catena_turno` | TEXT | YES |  |  |  |
 | `catena_gara` | TEXT | YES |  |  |  |
 | `tiebreaker_challenge_id` | INTEGER | YES | FK→challenge.id |  |  |
@@ -381,6 +386,7 @@
 | `waitlist_reason` | VARCHAR(20) | YES |  |  |  |
 | `squadra_id` | INTEGER | YES | FK→squadra.id |  |  |
 | `categoria_id` | INTEGER | YES | FK→categoria.id |  |  |
+| `group_index` | INTEGER | YES |  |  |  |
 
 **Constraints:**
 - UNIQUE(gara_id, user_id)
@@ -658,6 +664,7 @@
 | `total_point_difference` | INTEGER | YES |  | 0 |  |
 | `gare_played` | INTEGER | YES |  | 0 |  |
 | `total_position_points` | INTEGER | YES |  | 0 |  |
+| `shown_position` | INTEGER | YES |  |  |  |
 | `created_at` | DATETIME | NO |  | func |  |
 | `updated_at` | DATETIME | NO |  | func |  |
 
@@ -679,6 +686,10 @@
 | `racks_lost` | INTEGER | YES |  | 0 |  |
 | `rack_difference` | INTEGER | YES |  | 0 |  |
 | `points` | INTEGER | YES |  |  |  |
+| `group_index` | INTEGER | YES |  |  |  |
+| `group_position` | INTEGER | YES |  |  |  |
+| `shown_position` | INTEGER | YES |  |  |  |
+| `shown_group_position` | INTEGER | YES |  |  |  |
 | `tied_with_player_ids` | JSON | YES |  |  |  |
 | `tiebreaker_resolved` | BOOLEAN | YES |  | True |  |
 | `spot_shot_wins` | INTEGER | YES |  | 0 |  |
@@ -707,6 +718,11 @@
 | `racks_won` | INTEGER | YES |  |  |  |
 | `previous_position` | INTEGER | YES |  |  |  |
 | `points` | INTEGER | YES |  |  |  |
+| `group_index` | INTEGER | YES |  |  |  |
+| `group_position` | INTEGER | YES |  |  |  |
+| `shown_position` | INTEGER | YES |  |  |  |
+| `shown_group_position` | INTEGER | YES |  |  |  |
+| `shown_previous_position` | INTEGER | YES |  |  |  |
 | `created_at` | DATETIME | YES |  | func |  |
 
 **Constraints:**

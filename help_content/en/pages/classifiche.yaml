@@ -155,9 +155,10 @@ blocks:
       - name: "Round standings"
         values: "by default: rack difference → position in the previous round → draw"
         text: >-
-          They drive the pairings, so they never leave a tie: they always end
-          with the draw. The SSR tiebreaker is not here, it is played after the
-          competition.
+          They drive the pairings, so they put everyone in a line: they always
+          end with the draw. Players separated only by the draw are still
+          tied, and are shown in the same place. The SSR tiebreaker is not
+          here, it is played after the competition.
       - name: "Final standings of the competition"
         values: "by default: rack difference → SSR tiebreaker up to 3rd place"
         text: >-
@@ -166,10 +167,22 @@ blocks:
       - name: "Overall championship standings"
         values: "by default: rack difference → SSR (sum) → position after the previous competition → draw"
         text: >-
-          The championship chooses them, and they leave no ties: playoff
-          invitations start from there. In a placement championship, by
+          The championship chooses them, and they put everyone in a line:
+          playoff invitations start from there. Players separated only by the
+          draw are still shown as tied. In a placement championship, by
           default: best placements (more first places, then more second
           places…) → draw.
+
+  - type: note
+    tone: info
+    title: "A tie always takes the higher place"
+    text: >-
+      If two players are level on everything and only the draw separates
+      them, they are **tied** and both are shown in the higher place: two
+      first places are both «1», and the next player is «3». Your card says
+      so: «You are tied 1 of 8». The draw only matters where a single place
+      is needed — who plays whom, who gets into the playoffs, placement
+      points — and there the row above goes first.
 
   - type: note
     tone: info
@@ -237,7 +250,7 @@ blocks:
       - q: "I have more wins but I am behind."
         a: "Then the competition uses the «Racks» system, where total racks count and wins do not. The system is shown on the competition card."
       - q: "Two players share the same position."
-        a: "They finished level in a position for which no tie-break was planned. That is the director's choice, not a fault."
+        a: "They are tied: they have the same numbers and at most the draw separates them, or they finished level in a position for which no tie-break was planned. A tie is always shown in the higher place, and it is not a fault."
       - q: "The standings did not update after my match."
         a: "They are recalculated when every match in the round is finished."
       - q: "How do the championship standings add up?"

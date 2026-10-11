@@ -277,6 +277,35 @@ tabellone non aveva la voce «Posizione» e a ogni salvataggio mandava
   `_fasce`.
 - Classifica generale: `TournamentStatisticsService._sort_and_rank_players`.
 
+## Emendamento del 2026-10-11: il sorteggio non toglie il pari merito
+
+Decisione dell'utente: «Il pari merito va sempre sulla posizione più alta. Se
+uno è pari merito col primo allora è primo pari merito, non secondo.»
+
+Il sorteggio resta l'ultimo criterio e l'ordine del turno e del campionato
+resta completo: la posizione che **decide** (abbinamenti, taglio, inviti,
+punti del piazzamento) non cambia. Accanto c'è la posizione **mostrata**:
+chi è pari su tutti i criteri tranne il sorteggio prende quella più alta del
+gruppo (1, 1, 3).
+
+- **Una definizione sola**: `ordinamento.posizioni_mostrate`. Il motore la
+  applica in `ordina` confrontando la catena con e senza sorteggio
+  (`Fascia.posizione_mostrata`); il pari merito vale fra righe **vicine**,
+  così lo scontro diretto, che può separare due giocatori pari sul resto,
+  non crea pari merito falsi. `SpareggioService.assign_shared_positions` la
+  riusa.
+- **Persistita**: `shown_position` (più `shown_group_position` e, per la
+  freccia, `shown_previous_position`) su `round_classification`,
+  `gara_classification` e `classification`; NULL sulle righe di prima, che
+  ripiegano sulla posizione (`PosizioneMostrataMixin`). La classifica
+  generale, calcolata al volo, porta `shown_position` e
+  `shown_previous_position` nei dati di ogni riga.
+- **Mostrata ovunque**: classifiche di turno e di gara (anche per girone),
+  schermo in sala, tessere (`dove_sei`: «Sei 1° pari merito su 4»), podi,
+  classifica generale, vetrine, storico e profilo.
+- **Fuori**: le bande del tabellone (ADR-040) hanno già posizioni condivise
+  e la loro etichetta a intervallo («5°–8°»).
+
 ## Riferimenti
 
 - ADR-040 (pari merito per banda nel tabellone), ADR-047 (il sistema decide
