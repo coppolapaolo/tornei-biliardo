@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.61.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.60.1...v1.61.0) (2026-10-11)
+
+
+### Funzioni nuove
+
+* nel girone all'italiana il riposo non vale e l'escluso dà la vittoria a tavolino ([#637](https://github.com/coppolapaolo/tornei-biliardo/issues/637)) ([bb519f7](https://github.com/coppolapaolo/tornei-biliardo/commit/bb519f7192f69e13db1769c8a09be069c4085577))
+
 ## [1.60.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.60.0...v1.60.1) (2026-10-08)
 
 
