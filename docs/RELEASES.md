@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.62.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.61.0...v1.62.0) (2026-10-11)
+
+
+### Funzioni nuove
+
+* gironi multipli nel girone all'italiana, modello e classifiche ([#639](https://github.com/coppolapaolo/tornei-biliardo/issues/639)) ([d3f9122](https://github.com/coppolapaolo/tornei-biliardo/commit/d3f9122290218493226617e25f625e63c50574d7))
+
 ## [1.61.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.60.1...v1.61.0) (2026-10-11)
 
 
