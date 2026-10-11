@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.70.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.70.0...v1.70.1) (2026-10-11)
+
+
+### Correzioni
+
+* le bande del tabellone dicono «5° pari merito» invece di «5°–8°» ([#667](https://github.com/coppolapaolo/tornei-biliardo/issues/667)) ([f8aeadf](https://github.com/coppolapaolo/tornei-biliardo/commit/f8aeadf88ad50fb694c5f5046c4a98afcc82de2e))
+
 ## [1.70.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.69.1...v1.70.0) (2026-10-11)
 
 
