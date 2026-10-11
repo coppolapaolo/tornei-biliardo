@@ -11,6 +11,7 @@ from flask import (
     flash,
     jsonify,
 )
+from flask_babel import gettext as _
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
@@ -34,7 +35,10 @@ from . import competition_bp
 # ha mai avuto quel limite.
 # ────────────────────────────────────────────────────────────────────────────────
 
-ESERCIZI_NON_AMMESSI = "Gli esercizi fra i turni non valgono in questa gara"
+
+def _esercizi_non_ammessi() -> str:
+    """Tradotto a ogni richiesta, nella lingua di chi la fa."""
+    return _("Gli esercizi fra i turni non valgono in questa gara")
 
 
 @competition_bp.route("/<int:gara_id>/challenges")
@@ -47,7 +51,7 @@ def get_gara_challenges(gara_id):
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
     if not gara.ammette_esercizi_fra_i_turni:
-        return jsonify({"success": False, "error": ESERCIZI_NON_AMMESSI}), 400
+        return jsonify({"success": False, "error": _esercizi_non_ammessi()}), 400
 
     try:
         gara_challenges = GaraChallengeService.get_gara_challenges(gara_id)
@@ -89,7 +93,7 @@ def add_challenge_to_gara(gara_id):
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
     if not gara.ammette_esercizi_fra_i_turni:
-        return jsonify({"success": False, "error": ESERCIZI_NON_AMMESSI}), 400
+        return jsonify({"success": False, "error": _esercizi_non_ammessi()}), 400
 
     # Solo se la gara non è ancora iniziata (SETUP o INSCRIPTION)
     if gara.status not in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]:
@@ -97,8 +101,10 @@ def add_challenge_to_gara(gara_id):
             jsonify(
                 {
                     "success": False,
-                    "error": "Non è possibile aggiungere challenge dopo "
-                    "l'inizio della gara",
+                    "error": _(
+                        "Non è possibile aggiungere esercizi dopo "
+                        "l'inizio della gara"
+                    ),
                 }
             ),
             400,
@@ -109,7 +115,9 @@ def add_challenge_to_gara(gara_id):
         challenge_id_str = request.form.get("challenge_id", "").strip()
         if not challenge_id_str:
             return (
-                jsonify({"success": False, "error": "Devi selezionare una challenge"}),
+                jsonify(
+                    {"success": False, "error": _("Devi selezionare un esercizio")}
+                ),
                 400,
             )
 
@@ -128,7 +136,7 @@ def add_challenge_to_gara(gara_id):
         return jsonify(
             {
                 "success": True,
-                "message": "Challenge aggiunta con successo",
+                "message": _("Esercizio aggiunto"),
                 "gara_challenge_id": gara_challenge.id,
             }
         )
@@ -150,7 +158,7 @@ def remove_challenge_from_gara(gara_id):
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
     if not gara.ammette_esercizi_fra_i_turni:
-        return jsonify({"success": False, "error": ESERCIZI_NON_AMMESSI}), 400
+        return jsonify({"success": False, "error": _esercizi_non_ammessi()}), 400
 
     try:
         data = request.get_json()
@@ -158,14 +166,16 @@ def remove_challenge_from_gara(gara_id):
 
         if not gara_challenge_id:
             return (
-                jsonify({"success": False, "error": "ID gara challenge mancante"}),
+                jsonify(
+                    {"success": False, "error": _("Esercizio della gara non indicato")}
+                ),
                 400,
             )
 
         # Verifica che la gara challenge appartenga alla gara corrente
         gara_challenge = db.session.get(GaraChallenge, gara_challenge_id)
         if not gara_challenge or gara_challenge.gara_id != gara_id:
-            return jsonify({"success": False, "error": "Challenge non trovata"}), 404
+            return jsonify({"success": False, "error": _("Esercizio non trovato")}), 404
 
         # Rimuovi la challenge (o disattivala se ci sono già tentativi)
         success = GaraChallengeService.remove_challenge_from_gara(
@@ -173,11 +183,9 @@ def remove_challenge_from_gara(gara_id):
         )
 
         if success:
-            return jsonify(
-                {"success": True, "message": "Challenge rimossa con successo"}
-            )
+            return jsonify({"success": True, "message": _("Esercizio rimosso")})
         else:
-            return jsonify({"success": False, "error": "Challenge non trovata"}), 404
+            return jsonify({"success": False, "error": _("Esercizio non trovato")}), 404
 
     except Exception as e:
         return safe_json_error(e, "removing challenge from gara")
@@ -289,21 +297,23 @@ def create_new_challenge():
 
         if not description:
             return (
-                jsonify({"success": False, "error": "La descrizione è obbligatoria"}),
+                jsonify(
+                    {"success": False, "error": _("La descrizione è obbligatoria")}
+                ),
                 400,
             )
 
         # Handle image upload (required)
         if "image" not in request.files or not request.files["image"].filename:
             return (
-                jsonify({"success": False, "error": "L'immagine è obbligatoria"}),
+                jsonify({"success": False, "error": _("L'immagine è obbligatoria")}),
                 400,
             )
 
         file = request.files["image"]
         if not file or not file.filename:
             return (
-                jsonify({"success": False, "error": "L'immagine è obbligatoria"}),
+                jsonify({"success": False, "error": _("L'immagine è obbligatoria")}),
                 400,
             )
 
@@ -315,7 +325,7 @@ def create_new_challenge():
         if file_size > 5 * 1024 * 1024:  # 5MB
             return (
                 jsonify(
-                    {"success": False, "error": "Immagine troppo grande (max 5MB)"}
+                    {"success": False, "error": _("Immagine troppo grande (max 5MB)")}
                 ),
                 400,
             )
@@ -323,7 +333,7 @@ def create_new_challenge():
         filename = secure_filename(file.filename)
         if not filename:
             return (
-                jsonify({"success": False, "error": "Nome file non valido"}),
+                jsonify({"success": False, "error": _("Nome file non valido")}),
                 400,
             )
 
@@ -336,8 +346,9 @@ def create_new_challenge():
                 jsonify(
                     {
                         "success": False,
-                        "error": "Formato file non supportato. "
-                        "Usa JPG, PNG, GIF o WebP",
+                        "error": _(
+                            "Formato file non supportato. Usa JPG, PNG, GIF o WebP"
+                        ),
                     }
                 ),
                 400,
@@ -371,7 +382,7 @@ def create_new_challenge():
         return jsonify(
             {
                 "success": True,
-                "message": "Challenge creata con successo",
+                "message": _("Esercizio creato"),
                 "challenge_id": challenge.id,
                 "challenge_name": challenge.get_display_name(),
             }
@@ -393,12 +404,12 @@ def get_gara_challenge_classification(gara_id):
     gara = db.get_or_404(Gara, gara_id)
 
     if not gara.ammette_esercizi_fra_i_turni:
-        flash(ESERCIZI_NON_AMMESSI, "error")
+        flash(_esercizi_non_ammessi(), "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Verifica se ci sono challenge attive
     if not GaraChallengeService.has_active_challenges(gara_id):
-        flash("Nessuna challenge attiva per questa gara", "info")
+        flash(_("Nessun esercizio attivo in questa gara"), "info")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Aggiorna e ottieni la classificazione

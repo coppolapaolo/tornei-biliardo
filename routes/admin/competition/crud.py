@@ -71,7 +71,7 @@ def create_gara_standalone():
 
             name = request.form.get("name", "").strip()
             if not name:
-                flash("Il nome della competizione è obbligatorio!", "error")
+                flash(_("Il nome della competizione è obbligatorio!"), "error")
                 return redirect(url_for("admin.competition.create_gara_standalone"))
 
             # Parse common fields
@@ -91,7 +91,13 @@ def create_gara_standalone():
             # Validate strategy configuration
             errors = GaraFormParser.validate_strategy(data)
             if errors:
-                flash(f"Configurazione non valida: {', '.join(errors)}", "error")
+                flash(
+                    _(
+                        "Configurazione non valida: %(errori)s",
+                        errori=", ".join(errors),
+                    ),
+                    "error",
+                )
                 return redirect(url_for("admin.competition.create_gara_standalone"))
 
             # Competizione di prova (ADR-058): stessa gara, con il flag e la
@@ -137,10 +143,10 @@ def create_gara_standalone():
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
 
         except ValueError as e:
-            flash(f"Errore nella creazione: {str(e)}", "error")
+            flash(_("Errore nella creazione: %(errore)s", errore=str(e)), "error")
             return redirect(url_for("admin.competition.create_gara_standalone"))
         except Exception as e:
-            flash(f"Errore imprevisto: {str(e)}", "error")
+            flash(_("Errore imprevisto: %(errore)s", errore=str(e)), "error")
             return redirect(url_for("admin.competition.create_gara_standalone"))
 
     # GET request - show form
@@ -191,7 +197,14 @@ def get_strategy_constraints(strategy):
         )
     except ValueError:
         return (
-            jsonify({"success": False, "error": f"Strategia '{strategy}' non valida"}),
+            jsonify(
+                {
+                    "success": False,
+                    "error": _(
+                        "Strategia '%(strategia)s' non valida", strategia=strategy
+                    ),
+                }
+            ),
             400,
         )
 
@@ -211,7 +224,7 @@ def create_gara():
 
     # Codice esistente per gare con campionato...
     if not campionato_id:
-        flash("Campionato ID mancante!", "error")
+        flash(_("Campionato non indicato."), "error")
         return redirect(url_for("dashboard.dashboard"))
 
     campionato_id = int(campionato_id)
@@ -240,7 +253,7 @@ def create_gara():
     if not (
         current_user.is_admin or (current_user.is_director and is_campionato_director)
     ):
-        flash("Non puoi creare gare in questo campionato.", "error")
+        flash(_("Non puoi creare gare in questo campionato."), "error")
         return redirect(url_for("dashboard.dashboard"))
 
     number = int(request.form["number"])
@@ -248,7 +261,7 @@ def create_gara():
     # Verifica che il numero gara non esista già
     existing = Gara.query.filter_by(campionato_id=campionato_id, number=number).first()
     if existing:
-        flash(f"La gara {number} esiste già!")
+        flash(_("La gara %(numero)s esiste già!", numero=number), "error")
         return redirect(
             url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
         )
@@ -469,7 +482,13 @@ def edit_gara(gara_id):
 
             errors = GaraFormParser.validate_strategy(data)
             if errors:
-                flash(f"Configurazione non valida: {', '.join(errors)}", "error")
+                flash(
+                    _(
+                        "Configurazione non valida: %(errori)s",
+                        errori=", ".join(errors),
+                    ),
+                    "error",
+                )
                 return redirect(url_for("admin.competition.edit_gara", gara_id=gara_id))
 
             data["name"] = request.form.get("name", gara.name)
@@ -763,12 +782,15 @@ def soft_delete_gara(gara_id):
 
         if cascade_option == "keep_matches":
             flash(
-                f"{gara_name} eliminata. I match sono stati mantenuti "
-                "come match individuali.",
+                _(
+                    "%(gara)s eliminata. Le partite sono state mantenute "
+                    "come partite individuali.",
+                    gara=gara_name,
+                ),
                 "success",
             )
         else:
-            flash(f"{gara_name} eliminata con successo!", "success")
+            flash(_("%(gara)s eliminata con successo!", gara=gara_name), "success")
 
     except ValueError as ve:
         flash(str(ve), "error")
