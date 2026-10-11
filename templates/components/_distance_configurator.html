@@ -83,12 +83,12 @@ Parametri:
             {{ _('Sul tabellone si gioca sempre a chi arriva prima: conta solo chi passa il turno, quindi i triangoli giocati dopo che il vincitore è deciso non cambierebbero nulla.') }}
         </div></div>
     </div>
-    {# Il tabellone dopo i gironi (ADR-081): anche lì si gioca a chi arriva
+    {# Il tabellone o le finali per piazzamento dopo i gironi (ADR-081): si gioca a chi arriva
        prima, e la regola vale per tutta la gara, gironi compresi. #}
     <div id="gironi-distance-note" class="c7-flash c7-flash--info" style="display:none;margin-top:12px">
         <span class="c7-flash__ico"><i class="fas fa-circle-info"></i></span>
         <div class="c7-flash__body"><div class="c7-flash__text">
-            {{ _('Con il tabellone dopo i gironi si gioca a chi arriva prima, anche nei gironi: nel tabellone qualcuno deve passare il turno, e il pareggio non esiste.') }}
+            {{ _('Con una fase finale dopo i gironi si gioca a chi arriva prima, anche nei gironi: nelle finali ogni partita deve avere un vincitore, e il pareggio non esiste.') }}
         </div></div>
     </div>
 </section>
@@ -174,9 +174,9 @@ function syncBracketDistance() {
     if (!nota || !strategy) { return; }
 
     const isTabellone = {{ bracket_strategies|tojson }}.indexOf(strategy.value) >= 0;
-    /* Il tabellone dopo i gironi lo dice il blocco dei gironi (`campo_gironi.js`). */
-    const isGironi = !isTabellone && typeof window.gironiConTabellone === 'function'
-        && window.gironiConTabellone();
+    /* La fase finale dopo i gironi la dice il blocco dei gironi (`campo_gironi.js`). */
+    const isGironi = !isTabellone && typeof window.gironiConFaseFinale === 'function'
+        && window.gironiConFaseFinale();
     const isBracket = isTabellone || isGironi;
     const notaGironi = document.getElementById('gironi-distance-note');
     if (notaGironi) { notaGironi.style.display = isGironi ? '' : 'none'; }

@@ -98,7 +98,8 @@ class NomeRound:
     vincenti (numero: il turno dei vincenti nel doppio KO), recupero (numero),
     finalina, bella, gironi (numero: il turno di gara della fase a gironi),
     piazzamento (numero: la coppia delle finali per piazzamento, da 1: la 1
-    gioca per il 1°/2° posto, la 2 per il 3°/4°).
+    gioca per il 1°/2° posto, la 2 per il 3°/4°), finali_piazzamento (il
+    turno di gara delle finali per piazzamento).
     """
 
     chiave: str

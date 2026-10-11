@@ -11,14 +11,17 @@
  *   (`data-piazzamenti-da`): solo un campionato a piazzamenti propone i
  *   gironi, chi somma i totali resta a girone unico (ADR-080).
  * - Composizione e compagni compaiono solo con un tetto di almeno 2 gironi.
- * - Così la fase finale (ADR-081): col girone unico la gara non ha tabellone.
- *   Qualificati, finalina, limite e distanza della fase finale e le regole
- *   della sola finale compaiono solo col tabellone, e il valore solo con
- *   «Un limite diverso» o «Un'altra distanza». Ogni cambio avvisa
- *   la distanza (`window.updateDistancePreview`) e chi ascolta
- *   `gara:fase-finale`: col tabellone «esattamente N» non si offre.
- *   `window.gironiConTabellone()` risponde se nel modulo è scelto il
- *   tabellone dopo i gironi.
+ * - Così la fase finale (ADR-081): col girone unico la gara non ha fase
+ *   finale. «Finali per piazzamento» compare solo con «Gironi: fino a 2»
+ *   (`data-fase-se-due`): con un altro tetto la voce si nasconde e, se era
+ *   scelta, si torna a «Nessuna». Limite e distanza della fase finale e le
+ *   regole della sola finale compaiono col tabellone e con le finali;
+ *   qualificati e finalina solo col tabellone; il valore solo con «Un limite
+ *   diverso» o «Un'altra distanza». Ogni cambio avvisa la distanza
+ *   (`window.updateDistancePreview`) e chi ascolta `gara:fase-finale`: con
+ *   una fase finale «esattamente N» non si offre.
+ *   `window.gironiConFaseFinale()` risponde se nel modulo è scelta una fase
+ *   finale (tabellone o finali per piazzamento).
  * - Le voci di un menu che cambiano nome col girone (`data-label-girone`, per
  *   esempio «Escludi» nella gestione dei ritiri) seguono la stessa strategia:
  *   il menu porta `data-segue-strategia` col selettore della strategia.
@@ -61,23 +64,54 @@
       : null;
 
     var fase = blocco.querySelector('[data-fase-finale]');
+    var seFinale = blocco.querySelector('[data-fase-se-finale]');
     var seTabellone = blocco.querySelector('[data-fase-se-tabellone]');
     var regole = blocco.querySelectorAll('[data-fase-regola]');
 
-    function syncFase(acceso) {
+    function selezionate() {
+      Array.prototype.forEach.call(
+        fase.querySelectorAll('.c7-choice input[type="radio"]'),
+        function (r) { r.closest('.c7-choice').classList.toggle('is-selected', r.checked); }
+      );
+    }
+
+    function syncFase(acceso, dueGironi) {
       if (!fase) { return; }
       var tabellone = fase.querySelector('[data-fase-tabellone]');
-      var conTabellone = acceso && tabellone && tabellone.checked;
+      var piazzamento = fase.querySelector('[data-fase-piazzamento]');
+      var vocePiazzamento = fase.querySelector('[data-fase-se-due]');
+      /* Le finali per piazzamento, solo con «Gironi: fino a 2». */
+      if (piazzamento) {
+        if (vocePiazzamento) { vocePiazzamento.hidden = !dueGironi; }
+        if (!dueGironi && piazzamento.checked) {
+          var nessuna = fase.querySelector('[data-fase-nessuna]');
+          if (nessuna) { nessuna.checked = true; }
+          selezionate();
+        }
+        piazzamento.disabled = !acceso || !dueGironi;
+      }
+      var conTabellone = !!(acceso && tabellone && tabellone.checked);
+      var conFinali = !!(acceso && dueGironi && piazzamento && piazzamento.checked);
+      var conFase = conTabellone || conFinali;
+      if (seFinale) { seFinale.hidden = !conFase; }
       if (seTabellone) {
         seTabellone.hidden = !conTabellone;
         spegni(seTabellone, !conTabellone);
       }
-      Array.prototype.forEach.call(regole, function (r) { syncTempo(r, !!conTabellone); });
+      Array.prototype.forEach.call(
+        blocco.querySelectorAll('[data-fase-solo-tabellone]'),
+        function (n) { n.hidden = !conTabellone; }
+      );
+      Array.prototype.forEach.call(
+        blocco.querySelectorAll('[data-fase-solo-piazzamento]'),
+        function (n) { n.hidden = !conFinali; }
+      );
+      Array.prototype.forEach.call(regole, function (r) { syncTempo(r, conFase); });
       if (typeof window.updateDistancePreview === 'function') {
         window.updateDistancePreview();
       }
       document.dispatchEvent(new CustomEvent('gara:fase-finale', {
-        detail: { tabellone: !!conTabellone }
+        detail: { tabellone: conTabellone, piazzamento: conFinali, faseFinale: conFase }
       }));
     }
 
@@ -93,7 +127,7 @@
         sePiu.hidden = !piu;
         spegni(sePiu, !piu);
       }
-      syncFase(!!piu);
+      syncFase(!!piu, !!(piu && parseInt(tetto.value, 10) === 2));
     }
 
     /* Le card di «Composizione dei gironi»: la spunta segue la scelta. */
@@ -125,11 +159,12 @@
     sync();
   }
 
-  /* Nel modulo è scelto il tabellone dopo i gironi? Un blocco nascosto ha i
-   * campi spenti, quindi conta solo quello visibile. */
-  window.gironiConTabellone = function () {
+  /* Nel modulo è scelta una fase finale dopo i gironi — il tabellone o le
+   * finali per piazzamento? In entrambe si gioca «al N». Un blocco nascosto
+   * ha i campi spenti, quindi conta solo quello visibile. */
+  window.gironiConFaseFinale = function () {
     return !!document.querySelector(
-      '[data-gironi]:not([hidden]) [data-fase-tabellone]:checked:not(:disabled)'
+      '[data-gironi]:not([hidden]) [data-fase-al-n]:checked:not(:disabled)'
     );
   };
 

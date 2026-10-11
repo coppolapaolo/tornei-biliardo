@@ -89,6 +89,15 @@ class Anteprima:
         return self.qualificati_per_girone > 0
 
     @property
+    def girone_unico_senza_fase_finale(self) -> bool:
+        """La gara prevede una fase finale, che con un girone solo non si gioca.
+
+        Il tabellone o le finali per piazzamento: in entrambi i casi la gara
+        partita con un girone solo finisce col girone.
+        """
+        return self.girone_unico_senza_tabellone or self.finali_per_piazzamento
+
+    @property
     def turni(self) -> Dict[int, int]:
         """Numero di gironi → turni della gara.
 
@@ -216,6 +225,34 @@ def descrivi_fase_finale(
     in_finale = _regole_dette(distanza_finale, minuti_finale)
     if in_finale:
         frase += _("; la finale %(regole)s", regole=in_finale)
+    return frase + "."
+
+
+def descrivi_finali_per_piazzamento(
+    minuti: Optional[int] = None,
+    *,
+    distanza: Optional[int] = None,
+    minuti_finale: Optional[int] = None,
+    distanza_finale: Optional[int] = None,
+) -> str:
+    """La frase delle finali per piazzamento (ADR-081, emendamento 2026-10-12).
+
+    «Poi le finali per piazzamento: il 1° del girone A contro il 1° del
+    girone B per il 1° posto, il 2° contro il 2° per il 3° posto, e così via;
+    nelle finali al 4, 45 minuti a partita; la finale per il 1° posto al 7,
+    senza limite di tempo.» Come `descrivi_fase_finale`, si dice solo ciò che
+    è diverso; la finale, per le sue regole, è la partita per il 1°/2° posto.
+    """
+    frase = _(
+        "Poi le finali per piazzamento: il 1° del girone A contro il 1° del "
+        "girone B per il 1° posto, il 2° contro il 2° per il 3° posto, e così via"
+    )
+    nelle_finali = _regole_dette(distanza, minuti)
+    if nelle_finali:
+        frase += _("; nelle finali %(regole)s", regole=nelle_finali)
+    in_finale = _regole_dette(distanza_finale, minuti_finale)
+    if in_finale:
+        frase += _("; la finale per il 1° posto %(regole)s", regole=in_finale)
     return frase + "."
 
 
@@ -463,7 +500,8 @@ class GironiService:
         """La frase della formula a gironi di una gara, o None col girone unico.
 
         Con il tabellone dopo i gironi segue la frase della fase finale
-        (`descrivi_fase_finale`). Una gara partita con un girone solo non ha
+        (`descrivi_fase_finale`), con le finali per piazzamento la loro
+        (`descrivi_finali_per_piazzamento`). Una gara partita con un girone solo non ha
         frase: è il girone di sempre, e il tabellone non si gioca.
         """
         if gara is None or not _a_gironi_possibili(gara):
@@ -480,7 +518,14 @@ class GironiService:
             gara.effective_group_seeding,
             bool(gara.separate_teammates),
         )
-        if gara.ha_tabellone_finale:
+        if gara.ha_finali_per_piazzamento:
+            frase += " " + descrivi_finali_per_piazzamento(
+                gara.final_phase_time_limit_minutes,
+                distanza=gara.final_phase_distance,
+                minuti_finale=gara.final_time_limit_minutes,
+                distanza_finale=gara.final_distance,
+            )
+        elif gara.ha_tabellone_finale:
             frase += " " + descrivi_fase_finale(
                 gara.effective_qualifiers_per_group,
                 bool(gara.third_place_match),
@@ -504,6 +549,7 @@ __all__ = [
     "GironiService",
     "come_si_compongono",
     "descrivi_fase_finale",
+    "descrivi_finali_per_piazzamento",
     "descrivi_gironi",
     "nome_del_girone",
     "voci_della_composizione",

@@ -764,7 +764,7 @@
         const i18n = {
             exactNumber: {{ _("Esatto numero: {distance} triangoli totali")|tojson }},
             raceTo: {{ _("Al {distance} (si vince a {distance} triangoli)")|tojson }},
-            soloAlN: {{ _("Con il tabellone dopo i gironi si gioca a chi arriva prima: nel tabellone il pareggio non esiste.")|tojson }}
+            soloAlN: {{ _("Con una fase finale dopo i gironi si gioca a chi arriva prima: nelle finali il pareggio non esiste.")|tojson }}
         };
         function updateGameModeText() {
             if (!distanceInput || !gameModeText) return;
@@ -775,7 +775,7 @@
             } else {
                 gameModeText.textContent = i18n.raceTo.replace(/\{distance\}/g, distance);
             }
-            if (typeof window.gironiConTabellone === 'function' && window.gironiConTabellone()) {
+            if (typeof window.gironiConFaseFinale === 'function' && window.gironiConFaseFinale()) {
                 gameModeText.textContent += ' · ' + i18n.soloAlN;
             }
         }
@@ -788,10 +788,10 @@
 
             const distance = parseInt(distanceInput?.value) || 0;
 
-            // Col tabellone dopo i gironi (ADR-081) si gioca a chi arriva
+            // Con una fase finale dopo i gironi (ADR-081) si gioca a chi arriva
             // prima: il numero esatto non si offre (`campo_gironi.js`).
-            const conTabellone = typeof window.gironiConTabellone === 'function'
-                && window.gironiConTabellone();
+            const conTabellone = typeof window.gironiConFaseFinale === 'function'
+                && window.gironiConFaseFinale();
             if (conTabellone) {
                 exactNumberCheckbox.disabled = true;
                 exactNumberCheckbox.checked = false;

@@ -181,12 +181,12 @@
       {% include "components/_campo_limite_tempo.html" %}
     </div>
     {% endif %}
-    {% if 'final_phase_time_limit_minutes' in ammessi and gara.ha_tabellone_finale %}
-    {# Il limite della fase finale (ADR-081): vale per i turni del tabellone
-       che devono ancora cominciare. #}
+    {% if 'final_phase_time_limit_minutes' in ammessi and gara.ha_fase_finale %}
+    {# Il limite della fase finale (ADR-081): vale per i turni del tabellone,
+       o per le finali per piazzamento, che devono ancora cominciare. #}
     <div style="max-width:420px">
       {% with tempo_valore=gara.final_phase_time_limit_minutes,
-              tempo_nota=_('Vale per le partite del tabellone dei turni che devono ancora cominciare.') %}
+              tempo_nota=(_('Vale per le finali, se non sono ancora cominciate.') if gara.ha_finali_per_piazzamento else _('Vale per le partite del tabellone dei turni che devono ancora cominciare.')) %}
       {% include "components/_campo_limite_fase_finale.html" %}
       {% endwith %}
       {% if 'final_phase_distance' in ammessi %}
@@ -199,7 +199,11 @@
       {% if 'final_time_limit_minutes' in ammessi %}
       <div class="mt-4 mb-3" data-fase-la-finale>
         <div class="form-label mb-0" data-help="gara-regole-finale">{{ _('La finale') }}</div>
+        {% if gara.ha_finali_per_piazzamento %}
+        <div class="c7-choice__desc">{{ _('Solo la partita per il 1°/2° posto: le altre finali giocano come la fase finale.') }}</div>
+        {% else %}
         <div class="c7-choice__desc">{{ _('Solo la partita per il 1° posto: la finalina gioca come il resto del tabellone.') }}</div>
+        {% endif %}
         {% with tempo_valore=gara.final_time_limit_minutes, tempo_finale=true %}
         {% include "components/_campo_limite_fase_finale.html" %}
         {% endwith %}

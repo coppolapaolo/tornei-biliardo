@@ -32,7 +32,10 @@
      gironi (ADR-081) — nessuna o tabellone, qualificati per girone, finalina
      e limite di tempo della fase finale (None come i gironi, 0 senza limite,
      N minuti). Il blocco sta dentro «più gironi»: col girone unico la gara
-     non ha tabellone. «Finali per piazzamento» non si offre ancora.
+     non ha fase finale. «Finali per piazzamento» compare solo con «Gironi:
+     fino a 2» (`data-fase-se-due`), e con quella voce spariscono
+     qualificati e finalina: ci giocano tutti, e ogni posto ha la sua finale.
+     Limite, distanza e regole della finale valgono per entrambe.
    - fase_distanza, fase_finale_tempo, fase_finale_distanza: la distanza della
      fase finale (None come i gironi) e le regole della sola finale (None come
      la fase finale), emendamento del 2026-10-12. #}
@@ -44,7 +47,10 @@
 {% set _visibile = gironi_visibile|default(true) %}
 {% set _sistema_da = gironi_sistema_da|default('') %}
 {% set _fase = fase_modo|default(FaseFinale.NESSUNA.value) or FaseFinale.NESSUNA.value %}
+{% set _fase_pz = _fase == FaseFinale.PIAZZAMENTO.value and _tetto == 2 %}
+{% set _fase = FaseFinale.NESSUNA.value if (_fase == FaseFinale.PIAZZAMENTO.value and not _fase_pz) else _fase %}
 {% set _fase_tab = _fase == FaseFinale.TABELLONE.value %}
+{% set _fase_fin = _fase_tab or _fase_pz %}
 {% set _k = (fase_k|default(2)) or 2 %}
 {% set _tempo = fase_tempo|default(none) %}
 {% set _spento = (not _visibile and not _da) or _tetto <= 1 %}
@@ -101,12 +107,17 @@
       <div class="c7-stack" role="radiogroup">
         {% for valore, nome, spiegazione in [
              (FaseFinale.NESSUNA.value, _('Nessuna'), _('La gara finisce coi gironi: prima tutti i primi, poi tutti i secondi, e così via.')),
-             (FaseFinale.TABELLONE.value, _('Tabellone'), _('I primi di ogni girone giocano un tabellone a eliminazione diretta: con due gironi e due qualificati, 1ºA–2ºB e 1ºB–2ºA.'))] %}
-        <label class="c7-choice{{ ' is-selected' if valore == _fase }}">
+             (FaseFinale.TABELLONE.value, _('Tabellone'), _('I primi di ogni girone giocano un tabellone a eliminazione diretta: con due gironi e due qualificati, 1ºA–2ºB e 1ºB–2ºA.')),
+             (FaseFinale.PIAZZAMENTO.value, _('Finali per piazzamento'), _('Con due gironi, il 1º di A contro il 1º di B per il primo posto, il 2º contro il 2º per il terzo, e così via: giocano tutti, in un turno solo.'))] %}
+        {% set _pz = valore == FaseFinale.PIAZZAMENTO.value %}
+        <label class="c7-choice{{ ' is-selected' if valore == _fase }}"
+               {% if _pz %}data-fase-se-due{% if _tetto != 2 %} hidden{% endif %}{% endif %}>
           <input type="radio" name="{{ _pre }}final_phase_mode" value="{{ valore }}" class="d-none"
-                 {% if valore == FaseFinale.TABELLONE.value %}data-fase-tabellone{% endif %}
+                 {% if valore == FaseFinale.TABELLONE.value %}data-fase-tabellone data-fase-al-n{% endif %}
+                 {% if _pz %}data-fase-piazzamento data-fase-al-n{% endif %}
+                 {% if valore == FaseFinale.NESSUNA.value %}data-fase-nessuna{% endif %}
                  {% if valore == _fase %}checked{% endif %}
-                 {% if _spento %}disabled{% endif %}>
+                 {% if _spento or (_pz and _tetto != 2) %}disabled{% endif %}>
           <span class="flex-fill">
             <span class="c7-choice__title d-block">{{ nome }}</span>
             <span class="c7-choice__desc d-block">{{ spiegazione }}</span>
@@ -116,7 +127,8 @@
         {% endfor %}
       </div>
 
-      <div class="mt-3" data-fase-se-tabellone {% if not _fase_tab %}hidden{% endif %}>
+      <div class="mt-3" data-fase-se-finale {% if not _fase_fin %}hidden{% endif %}>
+      <div data-fase-se-tabellone {% if not _fase_tab %}hidden{% endif %}>
         <label for="{{ _id }}{{ _pre }}qualifiers_per_group" class="form-label" data-help="gara-qualificati-per-girone">{{ _('Qualificati per girone') }}</label>
         <select class="form-select" id="{{ _id }}{{ _pre }}qualifiers_per_group" name="{{ _pre }}qualifiers_per_group"
                 {% if _spento or not _fase_tab %}disabled{% endif %}>
@@ -138,11 +150,12 @@
                    {% if _spento or not _fase_tab %}disabled{% endif %}>
           </span>
         </label>
+      </div>
 
-        {% with tempo_prefisso=_pre, tempo_id=_id, tempo_valore=_tempo, tempo_spento=(_spento or not _fase_tab) %}
+        {% with tempo_prefisso=_pre, tempo_id=_id, tempo_valore=_tempo, tempo_spento=(_spento or not _fase_fin) %}
         {% include "components/_campo_limite_fase_finale.html" %}
         {% endwith %}
-        {% with distanza_prefisso=_pre, distanza_id=_id, distanza_valore=fase_distanza|default(none), distanza_spento=(_spento or not _fase_tab) %}
+        {% with distanza_prefisso=_pre, distanza_id=_id, distanza_valore=fase_distanza|default(none), distanza_spento=(_spento or not _fase_fin) %}
         {% include "components/_campo_distanza_fase_finale.html" %}
         {% endwith %}
 
@@ -151,16 +164,17 @@
            turno sarà la finale. #}
         <div class="mt-4" data-fase-la-finale>
           <div class="form-label mb-0" data-help="gara-regole-finale">{{ _('La finale') }}</div>
-          <div class="c7-choice__desc">{{ _('Solo la partita per il 1° posto: la finalina gioca come il resto del tabellone.') }}</div>
-          {% with tempo_prefisso=_pre, tempo_id=_id, tempo_valore=fase_finale_tempo|default(none), tempo_spento=(_spento or not _fase_tab), tempo_finale=true %}
+          <div class="c7-choice__desc" data-fase-solo-tabellone {% if not _fase_tab %}hidden{% endif %}>{{ _('Solo la partita per il 1° posto: la finalina gioca come il resto del tabellone.') }}</div>
+          <div class="c7-choice__desc" data-fase-solo-piazzamento {% if not _fase_pz %}hidden{% endif %}>{{ _('Solo la partita per il 1°/2° posto: le altre finali giocano come la fase finale.') }}</div>
+          {% with tempo_prefisso=_pre, tempo_id=_id, tempo_valore=fase_finale_tempo|default(none), tempo_spento=(_spento or not _fase_fin), tempo_finale=true %}
           {% include "components/_campo_limite_fase_finale.html" %}
           {% endwith %}
-          {% with distanza_prefisso=_pre, distanza_id=_id, distanza_valore=fase_finale_distanza|default(none), distanza_spento=(_spento or not _fase_tab), distanza_finale=true %}
+          {% with distanza_prefisso=_pre, distanza_id=_id, distanza_valore=fase_finale_distanza|default(none), distanza_spento=(_spento or not _fase_fin), distanza_finale=true %}
           {% include "components/_campo_distanza_fase_finale.html" %}
           {% endwith %}
         </div>
 
-        <div class="c7-nota mt-3">{{ _('Nel tabellone si gioca a chi arriva prima: qualcuno deve passare il turno, e il pareggio non esiste. Per questo la gara non si gioca a «esattamente N» triangoli.') }}</div>
+        <div class="c7-nota mt-3">{{ _('Nella fase finale si gioca a chi arriva prima: ogni partita deve avere un vincitore, e il pareggio non esiste. Per questo la gara non si gioca a «esattamente N» triangoli.') }}</div>
       </div>
     </div>
   </div>

@@ -188,7 +188,7 @@ hints:
   section: gironi
 - id: gara.fase_finale
   label: Final phase
-  short: 'Only with more than one group: «Bracket» sends the top players of each group to a knockout bracket (1stA–2ndB and 1stB–2ndA). «None» ends the competition with the groups.'
+  short: 'Only with more than one group: «Bracket» sends the top players of each group to a bracket (1stA–2ndB, 1stB–2ndA). With two groups, «Placement finals»: 1st vs 1st, 2nd vs 2nd…'
   anchor: gara-fase-finale
   screens:
   - admin.competition.create_gara_standalone

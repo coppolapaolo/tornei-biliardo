@@ -51,6 +51,8 @@ from models.competition.tabellone_view import (
 from models.competition.tabellone_della_gara import (
     albero_della_gara,
     nomi_dei_nodi,
+    nomi_del_turno_delle_finali,
+    nomi_delle_partite,
     tabellone_della_gara,
 )
 from models.classification.gironi_in_pagina import (
@@ -266,6 +268,9 @@ class SchermoSala:
     bande: List[Banda] = field(default_factory=list)
     #: Gara a più gironi in gioco: una classifica per girone (ADR-076).
     gironi: Tuple[GironeSala, ...] = ()
+    #: Il nome del turno in gioco quando non è un tabellone: le finali per
+    #: piazzamento («Finali per piazzamento»).
+    nomi_turno: Tuple[NomeRound, ...] = ()
 
     @property
     def podio(self) -> List[Tuple[Any, ...]]:
@@ -647,6 +652,7 @@ def schermo_sala(
         turno_classifica = righe_classifica[0].round_number
 
     albero: Optional[Tabellone] = albero_della_gara(gara, partite)
+    nomi_finali = tuple(nomi_del_turno_delle_finali(gara, partite).get(turno, []))
 
     del_turno = [m for m in partite if m.round_number == turno]
     concluso = bool(del_turno) and all(
@@ -667,7 +673,14 @@ def schermo_sala(
         caselle = _tavoli(partite, turno, tavoli, rounds)
     elif fase in (FaseSchermo.GIOCO, FaseSchermo.SPAREGGIO):
         if fase == FaseSchermo.GIOCO:
-            caselle = _tavoli(partite, turno, tavoli)
+            # Le finali per piazzamento hanno un nome sulla casella: «Finale
+            # 3°/4° posto» (ADR-081, emendamento del 2026-10-12).
+            caselle = _tavoli(
+                partite,
+                turno,
+                tavoli,
+                nomi_delle_partite(gara, partite) if nomi_finali else None,
+            )
             # A turno concluso le stesse partite stanno gia' tutte sotto
             # «turno prima», qui sotto: elencarle due volte non aggiunge.
             if not concluso:
@@ -702,6 +715,7 @@ def schermo_sala(
         tabellone=tabellone,
         bande=bande,
         gironi=_gironi_sala(gara, righe_classifica, rack, al_tabellone),
+        nomi_turno=nomi_finali,
     )
 
 

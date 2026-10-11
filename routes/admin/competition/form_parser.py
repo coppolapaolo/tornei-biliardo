@@ -114,21 +114,28 @@ def leggi_composizione(grezzo: Any) -> str:
 
 
 def leggi_fase_finale(grezzo: Any) -> str:
-    """La fase finale dal modulo: nessuna o tabellone (ADR-081).
+    """La fase finale dal modulo: nessuna, tabellone o finali per piazzamento.
 
-    «Finali per piazzamento» esiste nel dominio ma non si gioca ancora: il
-    modulo non la offre, e qui si rifiuta se arriva lo stesso.
+    ADR-081; le finali per piazzamento dal suo emendamento del 2026-10-12.
+    Che il tetto dei gironi le ammetta lo controlla `leggi_la_fase_finale`.
     """
     from models.matchmaking.fase_finale import FaseFinale
 
     valore = str(grezzo or "").strip() or FaseFinale.NESSUNA.value
-    if valore == FaseFinale.PIAZZAMENTO.value:
-        raise ValueError(
-            _("Le finali per piazzamento non si possono ancora scegliere.")
-        )
-    if valore not in (FaseFinale.NESSUNA.value, FaseFinale.TABELLONE.value):
+    if valore not in {f.value for f in FaseFinale}:
         raise ValueError(_("Fase finale sconosciuta: %(v)s", v=valore))
     return valore
+
+
+def messaggio_piazzamento_con_due_gironi() -> str:
+    """Perché le finali per piazzamento vogliono «Gironi: fino a 2».
+
+    Lo stesso testo per il modulo e per i servizi della gara e del campionato.
+    """
+    return _(
+        "Le finali per piazzamento si giocano fra due gironi: "
+        "scegli «Gironi: fino a 2», oppure un'altra fase finale."
+    )
 
 
 def leggi_qualificati(grezzo: Any) -> int:
@@ -158,8 +165,19 @@ def leggi_la_fase_finale(form: Any, prefisso: str, tetto: Any) -> Dict[str, Any]
     gara non ha tabellone (decisione del 2026-10-11), quindi la fase finale
     torna «nessuna» e la finalina si spegne, anche se il modulo non le manda.
     Assenti dal modulo, gli altri campi non si toccano.
+
+    Le **finali per piazzamento** si scelgono solo con «Gironi: fino a 2»:
+    con un tetto più alto si rifiutano qui, dove chi l'ha scelto è ancora
+    davanti al modulo. Ci giocano tutti, quindi i qualificati per girone non
+    si leggono, e ogni posto ha la sua finale: niente finalina. Restano il
+    limite e la distanza della fase finale e le regole della sola finale (la
+    partita per il 1°/2° posto).
     """
-    from models.matchmaking.fase_finale import FaseFinale, limite_dal_modulo
+    from models.matchmaking.fase_finale import (
+        FaseFinale,
+        limite_dal_modulo,
+        verifica_piazzamento,
+    )
 
     data: Dict[str, Any] = {}
     if (tetto or 1) <= 1:
@@ -171,12 +189,15 @@ def leggi_la_fase_finale(form: Any, prefisso: str, tetto: Any) -> Dict[str, Any]
         return data
     data[campo] = leggi_fase_finale(form.get(campo))
     tabellone = data[campo] == FaseFinale.TABELLONE.value
+    piazzamento = data[campo] == FaseFinale.PIAZZAMENTO.value
+    if piazzamento and verifica_piazzamento(int(tetto)) is not None:
+        raise ValueError(messaggio_piazzamento_con_due_gironi())
     data[f"{prefisso}third_place_match"] = (
         tabellone and form.get(f"{prefisso}third_place_match") == "on"
     )
-    if not tabellone:
+    if not (tabellone or piazzamento):
         return data
-    if f"{prefisso}qualifiers_per_group" in form:
+    if tabellone and f"{prefisso}qualifiers_per_group" in form:
         data[f"{prefisso}qualifiers_per_group"] = leggi_qualificati(
             form.get(f"{prefisso}qualifiers_per_group")
         )

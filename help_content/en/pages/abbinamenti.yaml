@@ -202,6 +202,30 @@ blocks:
       of the evening remain.
 
   - type: heading
+    id: finali_piazzamento
+    title: "After the groups: the placement finals"
+
+  - type: text
+    text: >-
+      With **two groups** the competition can end with the **placement
+      finals**: 1st of group A against 1st of group B for first place, 2nd
+      against 2nd for third, and so on. Everyone plays, in a single round. In
+      the form the option **Final phase → Placement finals** appears only
+      with **Groups: up to 2**; you don't choose qualifiers or a 3rd place
+      match, because every place has its own final. The final phase time
+      limit and distance apply here too, and **the final**, with its own
+      rules, is the 1st/2nd place match.
+
+  - type: list
+    title: "The rules"
+    items:
+      - "The finals round is counted at the start: two groups of 4 make 3 group rounds plus 1. The start sheet shows it on each option."
+      - "If at the start you choose **a single group**, the finals **are not played**: the competition ends with the group, and the start sheet says so."
+      - "With groups of different sizes (5 and 4) the last of the larger group has no opponent: they are 9th directly."
+      - "There are no draws: matches are **race to N**, and «Exactly N racks» cannot be chosen."
+      - "Once the groups are over the director's command becomes **Start the finals**. Each match has its name — «Final for 1/2 place», «Final for 3/4 place» — on the card of whoever plays it and on the venue screen."
+
+  - type: heading
     id: eliminazione
     title: "Knockout"
 

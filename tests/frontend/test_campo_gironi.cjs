@@ -1,8 +1,10 @@
 /*
  * static/js/campo_gironi.js — la fase finale dopo i gironi nei moduli
- * (ADR-081): si vede solo con più gironi, qualificati/finalina/limite solo
- * col tabellone, i minuti solo con «Un limite diverso». Un campo nascosto è
- * spento, quindi non arriva al server.
+ * (ADR-081): si vede solo con più gironi, qualificati/finalina solo col
+ * tabellone, limite e distanza col tabellone e con le finali per
+ * piazzamento, che si offrono solo con «Gironi: fino a 2»; i minuti solo con
+ * «Un limite diverso». Un campo nascosto è spento, quindi non arriva al
+ * server.
  */
 const assert = require("assert");
 const fs = require("fs");
@@ -21,14 +23,18 @@ function pagina({ tetto = "2", fase = "nessuna", modo = "gironi" } = {}) {
       <select name="max_groups" data-gironi-tetto>
         <option value="1" ${tetto === "1" ? "selected" : ""}>1</option>
         <option value="2" ${tetto === "2" ? "selected" : ""}>2</option>
+        <option value="3" ${tetto === "3" ? "selected" : ""}>3</option>
       </select>
       <div data-gironi-se-piu>
         <div data-fase-finale>
-          <label class="c7-choice"><input type="radio" name="final_phase_mode" value="nessuna" ${fase === "nessuna" ? "checked" : ""}></label>
-          <label class="c7-choice"><input type="radio" name="final_phase_mode" value="tabellone" data-fase-tabellone ${fase === "tabellone" ? "checked" : ""}></label>
+          <label class="c7-choice"><input type="radio" name="final_phase_mode" value="nessuna" data-fase-nessuna ${fase === "nessuna" ? "checked" : ""}></label>
+          <label class="c7-choice"><input type="radio" name="final_phase_mode" value="tabellone" data-fase-tabellone data-fase-al-n ${fase === "tabellone" ? "checked" : ""}></label>
+          <label class="c7-choice" data-fase-se-due id="vocePiazzamento"><input type="radio" name="final_phase_mode" value="piazzamento" data-fase-piazzamento data-fase-al-n ${fase === "piazzamento" ? "checked" : ""}></label>
+          <div data-fase-se-finale id="seFinale">
           <div data-fase-se-tabellone>
             <select name="qualifiers_per_group"><option value="2">2</option></select>
             <input type="checkbox" name="third_place_match">
+          </div>
             <div data-fase-regola>
               <select name="final_phase_time_limit" data-fase-regola-modo>
                 <option value="gironi" ${modo === "gironi" ? "selected" : ""}>g</option>
@@ -44,6 +50,8 @@ function pagina({ tetto = "2", fase = "nessuna", modo = "gironi" } = {}) {
               </select>
               <div data-fase-regola-campo id="distanzaFinale"><input name="final_distance"></div>
             </div>
+            <div data-fase-solo-tabellone id="descTabellone"></div>
+            <div data-fase-solo-piazzamento id="descPiazzamento"></div>
           </div>
         </div>
       </div>
@@ -92,7 +100,7 @@ check("senza tabellone qualificati, finalina e limite sono nascosti e spenti", (
   assert.strictEqual(p.seTabellone.hidden, true);
   assert.strictEqual(p.campo("qualifiers_per_group").disabled, true);
   assert.strictEqual(p.campo("third_place_match").disabled, true);
-  assert.strictEqual(p.win.gironiConTabellone(), false);
+  assert.strictEqual(p.win.gironiConFaseFinale(), false);
 });
 
 check("col tabellone si accendono, e i minuti solo con un limite diverso", () => {
@@ -106,25 +114,25 @@ check("col tabellone si accendono, e i minuti solo con un limite diverso", () =>
   p.modo("minuti");
   assert.strictEqual(p.minuti.hidden, false);
   assert.strictEqual(p.campo("final_phase_time_limit_minutes").disabled, false);
-  assert.strictEqual(p.win.gironiConTabellone(), true);
+  assert.strictEqual(p.win.gironiConFaseFinale(), true);
   assert.strictEqual(p.eventi[p.eventi.length - 1], true);
 });
 
 check("col girone unico la fase finale si spegne tutta", () => {
   const p = pagina({ fase: "tabellone", modo: "minuti" });
-  assert.strictEqual(p.win.gironiConTabellone(), true);
+  assert.strictEqual(p.win.gironiConFaseFinale(), true);
   p.tetto("1");
   assert.strictEqual(p.campo("final_phase_mode").disabled, true);
   assert.strictEqual(p.seTabellone.hidden, true);
   assert.strictEqual(p.campo("final_phase_time_limit_minutes").disabled, true);
-  assert.strictEqual(p.win.gironiConTabellone(), false);
+  assert.strictEqual(p.win.gironiConFaseFinale(), false);
   assert.strictEqual(p.eventi[p.eventi.length - 1], false);
 });
 
 check("fuori dal girone all'italiana non c'è tabellone dopo i gironi", () => {
   const p = pagina({ fase: "tabellone" });
   p.strategia("amalfi");
-  assert.strictEqual(p.win.gironiConTabellone(), false);
+  assert.strictEqual(p.win.gironiConFaseFinale(), false);
   assert.strictEqual(p.campo("qualifiers_per_group").disabled, true);
 });
 
@@ -144,6 +152,38 @@ check("la distanza della finale segue il tabellone e la sua voce", () => {
   assert.strictEqual(p.minuti.hidden, true);
   p.tetto("1");
   assert.strictEqual(p.campo("final_distance").disabled, true);
+});
+
+check("le finali per piazzamento: limite e regole sì, qualificati e finalina no", () => {
+  const p = pagina();
+  const doc = p.win.document;
+  assert.strictEqual(doc.getElementById("vocePiazzamento").hidden, false);
+  p.fase("piazzamento");
+  assert.strictEqual(doc.getElementById("seFinale").hidden, false);
+  assert.strictEqual(p.seTabellone.hidden, true);
+  assert.strictEqual(p.campo("qualifiers_per_group").disabled, true);
+  assert.strictEqual(p.campo("third_place_match").disabled, true);
+  assert.strictEqual(p.campo("final_phase_time_limit").disabled, false);
+  assert.strictEqual(p.campo("final_distance_mode").disabled, false);
+  assert.strictEqual(doc.getElementById("descTabellone").hidden, true);
+  assert.strictEqual(doc.getElementById("descPiazzamento").hidden, false);
+  // Anche qui si gioca «al N».
+  assert.strictEqual(p.win.gironiConFaseFinale(), true);
+});
+
+check("le finali per piazzamento solo con due gironi: con tre si torna a nessuna", () => {
+  const p = pagina({ fase: "piazzamento" });
+  const doc = p.win.document;
+  p.tetto("3");
+  assert.strictEqual(doc.getElementById("vocePiazzamento").hidden, true);
+  assert.strictEqual(p.campo("final_phase_mode").checked, true);  // «nessuna»
+  assert.strictEqual(doc.querySelector("[data-fase-piazzamento]").disabled, true);
+  assert.strictEqual(doc.getElementById("seFinale").hidden, true);
+  assert.strictEqual(p.campo("final_phase_time_limit").disabled, true);
+  assert.strictEqual(p.win.gironiConFaseFinale(), false);
+  p.tetto("2");
+  assert.strictEqual(doc.getElementById("vocePiazzamento").hidden, false);
+  assert.strictEqual(doc.querySelector("[data-fase-piazzamento]").disabled, false);
 });
 
 console.log(`${controlli} controlli superati`);

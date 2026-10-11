@@ -168,7 +168,7 @@ girone, e la gara partita con un girone solo finisce col girone.
   finale (`components/_campo_limite_fase_finale.html`, tre stati:
   `LimiteDellaFaseFinale`). Col girone unico il blocco si spegne e il parser
   scrive «nessuna» (`form_parser.leggi_la_fase_finale`, lo stesso per gara e
-  campionato). «Finali per piazzamento» non si offre e il parser la rifiuta.
+  campionato). «Finali per piazzamento» non si offriva ancora (dal 2026-10-12 sì, vedi «Interfaccia delle finali»).
   Col tabellone «esattamente N» sparisce dal configuratore della distanza e
   dal modale, con la nota che spiega perché; il servizio resta il garante.
   La finalina del tabellone a eliminazione diretta ha lo stesso nome di
@@ -256,7 +256,7 @@ perché prima dell'avvio non si sa quale numero di turno sarà la finale
 
 **Il valore `piazzamento` di `Gara.final_phase_mode` diventa una formula**
 (PR 6 del piano dei gironi, prima metà: dominio, turni e classifica; i moduli
-e le pagine arrivano con la seconda, e fino ad allora il parser la rifiuta).
+e le pagine arrivano con la seconda: vedi «Interfaccia delle finali» qui sotto).
 
 - **Solo con due gironi.** `fase_finale.verifica_piazzamento`: la gara deve
   avere «gironi: fino a 2» (`GaraService._verifica_fase_finale`, anche per una
@@ -309,6 +309,36 @@ non fa query, non avrebbe potuto nominarle.
 Presidi: `test_finali_per_piazzamento_regole.py`,
 `test_gironi_finali_per_piazzamento.py`,
 `test_specifiche_conformita.py::TestLeFinaliPerPiazzamento`.
+
+### Interfaccia delle finali (2026-10-12, seconda metà)
+
+- **Moduli**: nel blocco dei gironi la terza voce «Finali per piazzamento»
+  compare solo con «Gironi: fino a 2» (`data-fase-se-due`, `campo_gironi.js`:
+  con un altro tetto si nasconde e la scelta torna a «Nessuna»). Con quella
+  voce spariscono qualificati per girone e finalina; restano limite e
+  distanza della fase finale e le regole della sola finale, che qui è la
+  partita per il 1°/2° posto. `form_parser.leggi_la_fase_finale` la accetta
+  solo con tetto 2, per la gara e per il campionato a piazzamenti;
+  `TournamentService._verifica_piazzamento_proposto` è il garante sul
+  campionato. «Esattamente N» sparisce come col tabellone
+  (`window.gironiConFaseFinale`).
+- **Nomi**: `NomeRound("piazzamento", coppia)` per la partita («Finale 3°/4°
+  posto», macro `finale_per_il_posto`) e `NomeRound("finali_piazzamento")`
+  per il turno («Finali per piazzamento», «Finali pronte», «Avvia le
+  finali»). Il turno lo dà `tabellone_della_gara.nomi_del_turno_delle_finali`,
+  puro: le partite `PP` se sono nate, altrimenti l'ultimo turno della gara
+  quando i gironi in campo sono due. Lo usano la pagina del direttore
+  (`turno_finali`) e lo schermo in sala (`SchermoSala.nomi_turno`, e i nomi
+  sulle caselle); la tessera in dashboard passava già da
+  `nomi_delle_partite`.
+- **Foglio di avvio**: la riga «Poi le finali per piazzamento», il turno in
+  più su «2 gironi», e su «Girone unico» «le finali non si giocano: la gara
+  finisce col girone» (`Anteprima.girone_unico_senza_fase_finale`).
+- **Frase**: `descrivi_finali_per_piazzamento`, in coda a quella dei gironi;
+  nel regolamento del campionato qualificati e finalina tacciono.
+- **Restano** (PR successiva): nelle classifiche per girone la finale che
+  ognuno giocherà, la vista del turno delle finali nelle pagine pubbliche e
+  la classifica della serata a gara conclusa.
 
 ## Riferimenti
 

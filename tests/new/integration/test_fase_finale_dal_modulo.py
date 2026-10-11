@@ -161,8 +161,8 @@ def test_il_modulo_porta_la_fase_finale(client, direttore):
     assert 'name="qualifiers_per_group"' in pagina
     assert 'name="final_phase_time_limit"' in pagina
     assert "Fase finale" in pagina
-    # Le finali per piazzamento non si scelgono ancora.
-    assert 'value="piazzamento"' not in pagina
+    # Le finali per piazzamento si scelgono (con «Gironi: fino a 2»).
+    assert 'value="piazzamento"' in pagina
 
 
 def test_due_gironi_k2_con_finalina_fino_alla_classifica(client, db_session, direttore):

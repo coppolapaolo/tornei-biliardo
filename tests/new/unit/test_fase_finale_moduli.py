@@ -7,7 +7,7 @@ Il dominio ha i suoi test (`test_gironi_fase_finale_regole.py`,
 * il modulo della gara legge fase finale, qualificati per girone, finalina e
   limite di tempo della fase finale solo col girone all'italiana, e solo
   quando i gironi possono essere più di uno;
-* «finali per piazzamento» non si sceglie ancora (arriva con la PR 6);
+* «finali per piazzamento» ha i suoi test in `test_finali_per_piazzamento_moduli.py`;
 * il campionato a piazzamenti propone i quattro valori, e la gara li riceve
   alla nascita (ADR-075);
 * un campionato che passa a sommare i totali toglie la fase finale;
@@ -90,9 +90,10 @@ class TestModuloGara:
         assert dati["final_phase_mode"] == "nessuna"
         assert dati["third_place_match"] is False
 
-    def test_piazzamento_non_si_sceglie_ancora(self, app):
-        with pytest.raises(ValueError):
-            _parse(app, final_phase_mode="piazzamento")
+    def test_piazzamento_con_due_gironi(self, app):
+        """Dal 2026-10-12 si sceglie (`test_finali_per_piazzamento_moduli.py`)."""
+        dati = _parse(app, final_phase_mode="piazzamento")
+        assert dati["final_phase_mode"] == "piazzamento"
 
     def test_fase_sconosciuta_si_rifiuta(self, app):
         with pytest.raises(ValueError):

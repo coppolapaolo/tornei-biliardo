@@ -18,7 +18,9 @@
    tabellone dopo i gironi (ADR-081) i turni di ogni voce contano anche
    quelli del tabellone, e la voce «Girone unico» dice che il tabellone non
    si gioca: la gara finisce col girone
-   (`Anteprima.girone_unico_senza_tabellone`). #}
+   (`Anteprima.girone_unico_senza_tabellone`). Lo stesso per le finali per
+   piazzamento (emendamento del 2026-10-12): un turno in più con due gironi,
+   e col girone unico non si giocano (`Anteprima.finali_per_piazzamento`). #}
 {% from "components/_form_macros.html" import choice, form_macros_scripts %}
 
 {% import "components/_tabellone_macros.html" as t with context %}
@@ -79,6 +81,10 @@
           {{ d.riga('fa-sitemap', ngettext('Poi il tabellone fra i primi di ogni girone', 'Poi il tabellone fra i primi %(num)d di ogni girone', _ag.qualificati_per_girone),
                     (_('a eliminazione diretta, con la finalina; con un girone solo non si gioca') if gara.third_place_match else _('a eliminazione diretta; con un girone solo non si gioca')),
                     tone=('ok' if _ag.massimo > 1 else 'warn')) }}
+          {% elif _ag and _ag.finali_per_piazzamento %}
+          {{ d.riga('fa-medal', _('Poi le finali per piazzamento'),
+                    _('1° contro 1°, 2° contro 2°, e così via, in un turno solo; con un girone solo non si giocano'),
+                    tone=('ok' if _ag.massimo > 1 else 'warn')) }}
           {% endif %}
           {% if _girone %}
             {# Nel girone il riposo non vale niente (SPECIFICHE.md, nota del
@@ -108,9 +114,9 @@
           {% if g == 1 %}
             {% set _titolo = _('Girone unico') %}
             {% set _desc = _('tutti contro tutti') %}
-            {% if _ag.girone_unico_senza_tabellone %}
-              {# Il tabellone è fra i primi di ogni girone (ADR-081). #}
-              {% set _desc = _desc ~ ' · ' ~ _('il tabellone non si gioca: la gara finisce col girone') %}
+            {% if _ag.girone_unico_senza_fase_finale %}
+              {# La fase finale è fra i gironi (ADR-081): con uno solo non si gioca. #}
+              {% set _desc = _desc ~ ' · ' ~ (_('il tabellone non si gioca: la gara finisce col girone') if _ag.girone_unico_senza_tabellone else _('le finali non si giocano: la gara finisce col girone')) %}
             {% endif %}
           {% else %}
             {% set _titolo = _('%(n)s gironi', n=g) %}
@@ -119,6 +125,8 @@
             {% set _desc = _pezzi|join(' · ') %}
             {% if _ag.girone_unico_senza_tabellone %}
               {% set _desc = _desc ~ ' · ' ~ _('poi il tabellone') %}
+            {% elif _ag.finali_per_piazzamento %}
+              {% set _desc = _desc ~ ' · ' ~ _('poi le finali') %}
             {% endif %}
           {% endif %}
           {% set _titolo = _titolo ~ ' · ' ~ ngettext('%(num)d turno', '%(num)d turni', _ag.turni[g]) %}
