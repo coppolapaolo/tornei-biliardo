@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.67.4](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.67.3...v1.67.4) (2026-10-11)
+
+
+### Correzioni
+
+* tre test rossi su main fuori dalla CI, uno era il codice ([#658](https://github.com/coppolapaolo/tornei-biliardo/issues/658)) ([5432d8f](https://github.com/coppolapaolo/tornei-biliardo/commit/5432d8f8656197d354d671788c7e70f9342be4d3))
+
 ## [1.67.3](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.67.2...v1.67.3) (2026-10-11)
 
 
