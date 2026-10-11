@@ -5,10 +5,12 @@ punti; vince sempre chi ha l'ELO più alto, 3-0. Con la composizione per ELO
 il girone A è (1°, 4°, 5°, 7°) e il B (2°, 3°, 6°) — l'indice è il posto
 nella fila dell'ELO.
 
-* Dentro il girone si ordina sui punti, con la X che vale una vittoria.
-* Nella gara prima i primi, poi i secondi: per partita giocata, senza la X.
-  Il primo di A ha 9 punti in 3 partite, il primo di B 6 in 2 più la X: pari,
-  e anche la differenza per partita è pari — lo spareggio SSR li separa.
+* Dentro il girone si ordina sui punti; il riposo del girone da tre non vale
+  niente (SPECIFICHE.md, nota del 2026-10-11).
+* Nella gara prima i primi, poi i secondi: per partita giocata. Il primo di A
+  ha 9 punti in 3 partite, il primo di B 6 in 2 (più un riposo, che non
+  conta): pari, e anche la differenza per partita è pari — lo spareggio SSR
+  li separa.
 """
 
 from __future__ import annotations
@@ -32,7 +34,7 @@ from models.match.services import RackService
 from models.status_enum import MatchStatus
 from models.user.role_enum import UserRole
 
-pytestmark = pytest.mark.integration
+pytestmark = pytest.mark.unit
 
 
 def _utente(role: str, elo=None) -> User:
@@ -124,8 +126,10 @@ class TestClassificaDelTurno:
         assert [righe[i].group_index for i in b] == [1] * 3
         assert [righe[i].group_position for i in a] == [1, 2, 3, 4]
         assert [righe[i].group_position for i in b] == [1, 2, 3]
-        # La X vale una vittoria dentro il girone: 2 vinte + X = 9 punti.
-        assert righe[p[1].id].points == 9
+        # Il riposo non vale niente: 2 vinte = 6 punti, e nessuna vittoria in
+        # più per il riposo.
+        assert righe[p[1].id].points == 6
+        assert righe[p[1].id].matches_won == 2
 
     def test_prima_i_primi_poi_i_secondi(self, db_session):
         gara, _p = _gara_giocata()
@@ -140,14 +144,14 @@ class TestClassificaDelTurno:
 
 
 class TestClassificaDellaGara:
-    def test_per_partita_giocata_senza_la_x(self, db_session):
+    def test_per_partita_giocata(self, db_session):
         gara, p = _gara_giocata()
         SpareggioService.apply_final_positions(gara.id)
         db.session.commit()
         pos = _posizioni(gara)
         # I due primi sono pari per partita: condividono il primo posto.
         assert pos[p[0].id] == pos[p[1].id] == 1
-        # Secondi: il 4° (6 punti in 3) davanti al 3° (3 punti in 2, senza X).
+        # Secondi: il 4° (6 punti in 3) davanti al 3° (3 punti in 2).
         assert (pos[p[3].id], pos[p[2].id]) == (3, 4)
         assert (pos[p[4].id], pos[p[5].id]) == (5, 6)
         assert pos[p[6].id] == 7

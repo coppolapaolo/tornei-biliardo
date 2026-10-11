@@ -2,7 +2,7 @@
 
 Il calcolo sta in `gironi.py`, puro. Qui si leggono i giocatori di una gara
 (da una classifica già aggregata o dalle righe di un turno), le partite
-giocate senza la X e gli scontri, e si chiama `ordina_a_gironi`. Lo usano la
+giocate e gli scontri, e si chiama `ordina_a_gironi`. Lo usano la
 classifica di turno (`StrategyBasedClassificationService`) e quella di gara
 (`SpareggioService._fasce`): una risposta sola per entrambe.
 """
@@ -23,8 +23,13 @@ from .ordinamento import (
 from .score_aggregator import ScoreAggregator
 
 
-def giocate_senza_x(gara_id: int, fino_al_turno: int) -> Dict[int, Giocate]:
-    """Le partite giocate da ognuno fino a quel turno, senza la X."""
+def giocate(gara_id: int, fino_al_turno: int) -> Dict[int, Giocate]:
+    """Le partite giocate da ognuno fino a quel turno.
+
+    Vinte, perse e pareggiate: il riposo non è nessuna delle tre, perché
+    nasce senza vincitore e non vale niente (SPECIFICHE.md, nota del
+    2026-10-11); la vittoria a tavolino contro un escluso è una vinta.
+    """
     return {
         s.player_id: Giocate(
             partite=s.matches_won + s.matches_lost + s.matches_drawn,
@@ -33,9 +38,7 @@ def giocate_senza_x(gara_id: int, fino_al_turno: int) -> Dict[int, Giocate]:
             differenza_rack=s.rack_difference,
             punti=s.points,
         )
-        for s in ScoreAggregator().aggregate_round_scores(
-            gara_id, fino_al_turno, escludi_x=True
-        )
+        for s in ScoreAggregator().aggregate_round_scores(gara_id, fino_al_turno)
     }
 
 
@@ -72,11 +75,13 @@ def classifica_a_gironi(
     completa: bool,
 ) -> ClassificaAGironi:
     """La classifica della gara a gironi, con la catena data."""
-    scontri = scontri_delle_gare([gara.id], fino_al_turno) if usa_scontri(catena) else ()
+    scontri = (
+        scontri_delle_gare([gara.id], fino_al_turno) if usa_scontri(catena) else ()
+    )
     return ordina_a_gironi(
         concorrenti,
         girone,
-        giocate_senza_x(gara.id, fino_al_turno),
+        giocate(gara.id, fino_al_turno),
         criterio_principale(sistema_della_gara(gara)),
         catena,
         scontri=scontri,
@@ -84,4 +89,4 @@ def classifica_a_gironi(
     )
 
 
-__all__ = ["classifica_a_gironi", "concorrente", "giocate_senza_x"]
+__all__ = ["classifica_a_gironi", "concorrente", "giocate"]

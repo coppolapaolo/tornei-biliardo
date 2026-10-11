@@ -27,7 +27,7 @@ from models.matchmaking.bootstrap import get_registry
 from models.status_enum import WithdrawPolicy
 from models.user.role_enum import UserRole
 
-pytestmark = pytest.mark.integration
+pytestmark = pytest.mark.unit
 
 
 def _utente(role: str, elo: Optional[int] = None) -> User:
@@ -224,10 +224,30 @@ class TestRitiri:
 
         gara = db.session.get(Gara, gara.id)
         assert GironiService.girone_dei_giocatori(gara) == gironi_prima
+        # Le coppie restano quelle del calendario: l'escluso resta al suo
+        # posto e il suo avversario vince a tavolino (SPECIFICHE.md, nota del
+        # 2026-10-11). Sparisce solo il suo riposo, se ne aveva uno.
+        strategy = get_registry().get("round_robin")
         for r in range(2, 6):
-            atteso = []
-            for players_, gruppo in previsto[r]:
-                resto = tuple(p for p in players_ if p != escluso)
-                if resto:
-                    atteso.append((resto, gruppo))
+            atteso = [
+                (players_, gruppo)
+                for players_, gruppo in previsto[r]
+                if players_ != (escluso,)
+            ]
             assert _turno(gara, r) == atteso, f"turno {r}"
+            for p in strategy.create_round(gara, r):
+                if escluso in p.players:
+                    assert p.forfeit_players == (escluso,)
+                    assert not p.is_bye
+
+
+class TestRiposoNeiGironi:
+    def test_il_riposo_del_girone_dispari_non_vale_niente(self, db_session):
+        """Il girone da cinque riposa senza vincitore, come il girone unico."""
+        gara, _ = _gara(11)
+        RoundService.start_first_round(gara.id)
+        riposi = db.session.query(Match).filter_by(gara_id=gara.id, is_bye=True).all()
+        assert len(riposi) == 1
+        assert riposi[0].is_riposo
+        assert riposi[0].winner_id is None
+        assert riposi[0].bracket_group is not None

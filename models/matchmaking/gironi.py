@@ -174,7 +174,9 @@ def ordine_di_composizione(
         return (i.elo is None, -(i.elo or 0))
 
     if composizione is ComposizioneGironi.ELO:
-        ordinati = sorted(per_id, key=lambda i: (*chiave_elo(i), sorteggio[i.player_id]))
+        ordinati = sorted(
+            per_id, key=lambda i: (*chiave_elo(i), sorteggio[i.player_id])
+        )
     elif composizione is ComposizioneGironi.CATEGORIA:
         ordinati = sorted(
             per_id,

@@ -201,9 +201,7 @@ class GironiService:
 
         girone: Dict[int, int] = {}
         partite = (
-            db.session.query(
-                Match.player1_id, Match.player2_id, Match.bracket_group
-            )
+            db.session.query(Match.player1_id, Match.player2_id, Match.bracket_group)
             .filter(
                 Match.gara_id == gara.id,
                 Match.round_number == 1,

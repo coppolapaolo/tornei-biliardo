@@ -45,22 +45,30 @@ class TestPrimiPoiSecondi:
         punti = {1: 9, 2: 6, 3: 2, 4: 3, 5: 1, 6: 0}
         concorrenti = [_c(p, punti=v) for p, v in punti.items()]
         giocate = {p: Giocate(partite=2, punti=v) for p, v in punti.items()}
-        esito = ordina_a_gironi(
-            concorrenti, girone, giocate, Criterio.PUNTI, (DIFF,)
-        )
+        esito = ordina_a_gironi(concorrenti, girone, giocate, Criterio.PUNTI, (DIFF,))
         assert _ordine(esito) == [[1], [4], [2], [5], [3], [6]]
         assert esito.posizione_nel_girone == {1: 1, 2: 2, 3: 3, 4: 1, 5: 2, 6: 3}
         assert esito.girone == girone
 
-    def test_gironi_di_taglia_diversa_per_partita_giocata_senza_x(self):
-        """Il primo del girone da sei e quello del girone da cinque (con la X)."""
-        # A (sei): 4 vinte su 5 = 12 punti in 5 partite.
-        # B (cinque): 3 vinte su 4 più la X = 12 punti, ma 9 in 4 partite.
+    def test_gironi_di_taglia_diversa_per_partita_giocata(self):
+        """Il primo del girone da sei e quello del girone da cinque."""
+        # A (sei): 4 vinte su 5 = 12 punti in 5 partite, 2,4 a partita.
+        # B (cinque): 3 vinte su 4 = 9 punti, il riposo non vale: 2,25.
+        # Sui totali vincerebbe A (12 a 9) anche se B avesse vinto tutte e 4
+        # (12 a 12): il confronto giusto è la media.
         girone = {1: 0, 2: 1}
-        concorrenti = [_c(1, punti=12), _c(2, punti=12)]
+        concorrenti = [_c(1, punti=12), _c(2, punti=9)]
         giocate = {1: Giocate(partite=5, punti=12), 2: Giocate(partite=4, punti=9)}
         esito = ordina_a_gironi(concorrenti, girone, giocate, Criterio.PUNTI, ())
         assert _ordine(esito) == [[1], [2]]
+
+    def test_il_girone_piccolo_tutto_vinto_supera_il_grande(self):
+        """4 su 4 nel girone da cinque batte 4 su 5 nel girone da sei."""
+        girone = {1: 0, 2: 1}
+        concorrenti = [_c(1, punti=12), _c(2, punti=12)]
+        giocate = {1: Giocate(partite=5, punti=12), 2: Giocate(partite=4, punti=12)}
+        esito = ordina_a_gironi(concorrenti, girone, giocate, Criterio.PUNTI, ())
+        assert _ordine(esito) == [[2], [1]]
 
     def test_lo_scontro_diretto_fra_gironi_non_decide(self):
         girone = {1: 0, 2: 1}

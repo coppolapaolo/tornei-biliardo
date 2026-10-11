@@ -2498,6 +2498,201 @@ class TestIlGironeAllItaliana:
         assert _punteggi(gara.id)[avversario.id].matches_won == 1
 
 
+# ══ I gironi multipli ════════════════════════════════════════════════════
+
+
+@pytest.mark.unit
+class TestIGironi:
+    """`SPECIFICHE.md` righe 114-122 («Turno», «Gironi multipli») e 372-377
+    («Classifica», «La classifica a gironi»), 2026-10-11, ADR-076."""
+
+    def test_vuoto_o_uno_e_il_girone_unico(self, db_session):
+        """> La gara dice un **tetto**, «gironi: fino a N», da 1 a 8; vuoto o 1
+        > vuol dire **girone unico** […] Le altre strategie non hanno gironi."""
+        from models.matchmaking.gironi import tetto_di_gironi
+
+        assert [tetto_di_gironi(v) for v in (None, 0, 1, 2, 8, 9)] == [
+            1,
+            1,
+            1,
+            2,
+            8,
+            8,
+        ]
+        gara = _gara(db_session)
+        gara.max_groups = 4
+        assert gara.effective_max_groups == 1  # amalfi: niente gironi
+        gara.matchmaking_strategy = "round_robin"
+        assert gara.effective_max_groups == 4
+        gara.max_groups = None
+        assert gara.effective_max_groups == 1  # gara singola: girone unico
+
+    def test_il_numero_esatto_e_la_proposta(self):
+        """> da 1 al tetto, con almeno **3 giocatori per girone**. La proposta
+        > è **un girone ogni 6 iscritti, arrotondato per eccesso** […] con 11
+        > iscritti e tetto 2, due gironi. […] (8 iscritti: al più 2 gironi)."""
+        from models.matchmaking.gironi import (
+            gironi_possibili,
+            proposta_di_gironi,
+            verifica_numero_di_gironi,
+        )
+
+        assert proposta_di_gironi(11, 2) == 2
+        assert proposta_di_gironi(12, 8) == 2
+        assert proposta_di_gironi(13, 8) == 3
+        assert proposta_di_gironi(5, 2) == 1
+        assert gironi_possibili(8, 3) == 2
+        assert verifica_numero_di_gironi(8, 3, 3) == "giocatori"
+        assert verifica_numero_di_gironi(9, 3, 3) is None
+        assert verifica_numero_di_gironi(12, 3, 2) == "tetto"
+
+    def test_le_taglie(self):
+        """> 11 iscritti in 2 gironi fanno 6 e 5, in 3 gironi 4, 4 e 3."""
+        from models.matchmaking.gironi import taglie_dei_gironi
+
+        assert taglie_dei_gironi(11, 2) == [6, 5]
+        assert taglie_dei_gironi(11, 3) == [4, 4, 3]
+
+    def test_uno_per_girone_andata_e_ritorno(self):
+        """> con due gironi il 1° va in A, il 2° e il 3° in B, il 4° e il 5°
+        > in A, e così via."""
+        from models.matchmaking.gironi import (
+            ComposizioneGironi,
+            Iscritto,
+            componi_gironi,
+        )
+
+        iscritti = [Iscritto(player_id=p, elo=2000 - p) for p in range(1, 9)]
+        a, b = componi_gironi(iscritti, 2, ComposizioneGironi.ELO, seme="x")
+        assert sorted(a) == [1, 4, 5, 8]
+        assert sorted(b) == [2, 3, 6, 7]
+
+    def test_per_elo_e_per_categoria(self):
+        """> **per ELO** (dal più alto; chi non ha ELO in fondo), **per
+        > categoria** (nell'ordine […]; chi non ha categoria in fondo; dentro
+        > la categoria per ELO)."""
+        from models.matchmaking.gironi import (
+            ComposizioneGironi,
+            Iscritto,
+            ordine_di_composizione,
+        )
+
+        iscritti = [
+            Iscritto(1, elo=None, categoria=0),
+            Iscritto(2, elo=1500, categoria=1),
+            Iscritto(3, elo=1800, categoria=None),
+            Iscritto(4, elo=1600, categoria=0),
+        ]
+        assert ordine_di_composizione(iscritti, ComposizioneGironi.ELO, "s") == [
+            3,
+            4,
+            2,
+            1,
+        ]
+        assert ordine_di_composizione(iscritti, ComposizioneGironi.CATEGORIA, "s") == [
+            4,
+            1,
+            2,
+            3,
+        ]
+
+    def test_turni_paralleli(self):
+        """> I turni della gara sono quelli del **girone più numeroso** […]
+        > 11 iscritti in 6 e 5: entrambi i gironi giocano 5 turni […] 13
+        > iscritti in 7 e 6: 7 turni, e il girone da 6 si ferma dopo il
+        > quinto."""
+        from models.matchmaking.gironi import turni_dei_gironi, turni_del_girone
+
+        assert turni_dei_gironi([6, 5]) == 5
+        assert turni_dei_gironi([7, 6]) == 7
+        assert turni_del_girone(6) == 5
+
+    def test_il_riposo_e_il_tavolino_valgono_anche_nei_gironi(self):
+        """> con le regole del paragrafo qui sopra (riposo che non vale niente,
+        > avversario dell'escluso che vince a tavolino)."""
+        from models.matchmaking.strategies.round_robin import RoundRobinStrategy
+
+        riga = [(1, 2), (3,), (4, 5)]
+        pairings = RoundRobinStrategy._pairings_della_riga(
+            riga, {1, 2, 3, 4}, round_number=2, bracket_group=1
+        )
+        riposo = next(p for p in pairings if p.players == (3,))
+        assert riposo.is_bye and riposo.riposo
+        tavolino = next(p for p in pairings if 5 in p.players)
+        assert tavolino.players == (4, 5) and tavolino.forfeit_players == (5,)
+        assert not tavolino.is_bye
+        assert {p.bracket_group for p in pairings} == {1}
+
+    def test_nella_gara_per_partita_giocata(self):
+        """> il primo del girone da 6 con 4 vittorie su 5 (12 punti, 2,4 a
+        > partita) viene **dopo** il primo del girone da 5 con 4 su 4 (12
+        > punti, 3 a partita), e **prima** di quello con 3 su 4 (9 punti, 2,25
+        > a partita)."""
+        from models.classification.gironi import Giocate, ordina_a_gironi
+        from models.classification.ordinamento import Concorrente, Criterio
+
+        girone = {1: 0, 2: 1}
+        sei = Giocate(partite=5, vittorie=4, punti=12)
+        for cinque, atteso in (
+            (Giocate(partite=4, vittorie=4, punti=12), [2, 1]),
+            (Giocate(partite=4, vittorie=3, punti=9), [1, 2]),
+        ):
+            esito = ordina_a_gironi(
+                [Concorrente(1, punti=12), Concorrente(2, punti=cinque.punti)],
+                girone,
+                {1: sei, 2: cinque},
+                Criterio.PUNTI,
+                (),
+            )
+            assert [c.player_id for f in esito.fasce for c in f.giocatori] == atteso
+
+    def test_prima_i_primi_poi_i_secondi(self):
+        """> vengono prima tutti i **primi** dei gironi, ordinati fra loro, poi
+        > tutti i **secondi**, e così via."""
+        from models.classification.gironi import Giocate, ordina_a_gironi
+        from models.classification.ordinamento import Concorrente, Criterio
+
+        girone = {1: 0, 2: 0, 3: 1, 4: 1}
+        punti = {1: 9, 2: 6, 3: 3, 4: 0}
+        esito = ordina_a_gironi(
+            [Concorrente(p, punti=v) for p, v in punti.items()],
+            girone,
+            {p: Giocate(partite=3, punti=v) for p, v in punti.items()},
+            Criterio.PUNTI,
+            (),
+        )
+        assert [[c.player_id for c in f.giocatori] for f in esito.fasce] == [
+            [1],
+            [3],
+            [2],
+            [4],
+        ]
+        assert esito.posizione_nel_girone == {1: 1, 2: 2, 3: 1, 4: 2}
+
+    def test_fra_gironi_lo_scontro_diretto_non_decide(self):
+        """> Fra gironi diversi lo **scontro diretto non decide** — non si sono
+        > incontrati — e si passa al criterio dopo; chi resta pari condivide
+        > la posizione."""
+        from models.classification.gironi import Giocate, ordina_a_gironi
+        from models.classification.ordinamento import (
+            Concorrente,
+            Criterio,
+            Voce,
+        )
+
+        girone = {1: 0, 2: 1}
+        giocate = {p: Giocate(partite=2, punti=6) for p in (1, 2)}
+        concorrenti = [Concorrente(p, punti=6) for p in (1, 2)]
+        esito = ordina_a_gironi(
+            concorrenti,
+            girone,
+            giocate,
+            Criterio.PUNTI,
+            (Voce(Criterio.SCONTRI_DIRETTI),),
+        )
+        assert [[c.player_id for c in f.giocatori] for f in esito.fasce] == [[1, 2]]
+
+
 # ══ Il limite di tempo ═══════════════════════════════════════════════════
 
 

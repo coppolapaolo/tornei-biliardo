@@ -98,47 +98,13 @@ class RoundRobinStrategy(BaseStrategy):
             if len(player_ids) < 2:
                 return []
 
-            # Chi non gioca piu' (escluso dalla regola EXCLUDE, o comunque non
-            # piu' fra gli attivi) resta al suo posto nel calendario, e il suo
-            # avversario di quel turno vince **a tavolino**, come contro chi
-            # ha dato forfait (SPECIFICHE.md, «policy per il forfait», nota
-            # del 2026-10-11): la coppia nasce intera e l'escluso viaggia in
-            # `forfeit_players`, che `create_matches_from_pairings` tratta
-            # come un forfait. Fino a quella data l'avversario «riposava con
-            # la X». Se l'escluso era chi riposava, o se sono esclusi tutti e
-            # due, quel posto non produce partite. Con FORFEIT l'iscrizione
-            # resta attiva e la strada e' la stessa, via `forfeit_user_ids`.
             active_ids = {i.user_id for i in self._get_active_inscriptions(gara)}
-
             schedule = self._generate_round_robin_schedule(player_ids)
             if round_number > len(schedule):
                 return []
-
-            pairings: List[Pairing] = []
-            for pairing in schedule[round_number - 1]:
-                attivi = tuple(p for p in pairing if p in active_ids)
-                if not attivi:
-                    continue
-                if len(pairing) == 1:
-                    # Il riposo del dispari: resta visibile, ma non vale
-                    # niente — zero vittorie, zero punti, zero triangoli.
-                    pairings.append(
-                        Pairing(
-                            players=attivi,
-                            round_number=round_number,
-                            is_bye=True,
-                            riposo=True,
-                        )
-                    )
-                    continue
-                pairings.append(
-                    Pairing(
-                        players=tuple(pairing),
-                        round_number=round_number,
-                        forfeit_players=tuple(p for p in pairing if p not in attivi),
-                    )
-                )
-            return pairings
+            return self._pairings_della_riga(
+                schedule[round_number - 1], active_ids, round_number
+            )
 
         except Exception:
             # La lista vuota non e' piu' un esito silenzioso: dal 2026-08-28
@@ -164,7 +130,7 @@ class RoundRobinStrategy(BaseStrategy):
 
         I gironi si giocano in parallelo, ognuno col suo calendario, e le
         partite portano il girone in `bracket_group`. Un girone che ha finito
-        il suo calendario non gioca più: nessuna partita, neanche una X.
+        il suo calendario non gioca più: nessuna partita, neanche un riposo.
         """
         active_ids = {i.user_id for i in self._get_active_inscriptions(gara)}
         pairings: List[Pairing] = []
@@ -172,18 +138,63 @@ class RoundRobinStrategy(BaseStrategy):
             schedule = self._generate_round_robin_schedule(gironi[gruppo])
             if round_number > len(schedule):
                 continue
-            for pairing in schedule[round_number - 1]:
-                players = tuple(p for p in pairing if p in active_ids)
-                if not players:
-                    continue
+            pairings.extend(
+                self._pairings_della_riga(
+                    schedule[round_number - 1],
+                    active_ids,
+                    round_number,
+                    bracket_group=gruppo,
+                )
+            )
+        return pairings
+
+    @staticmethod
+    def _pairings_della_riga(
+        riga: List[Tuple[int, ...]],
+        active_ids: set,
+        round_number: int,
+        bracket_group: Optional[int] = None,
+    ) -> List[Pairing]:
+        """Gli accoppiamenti di una riga del calendario, girone unico o no.
+
+        Chi non gioca piu' (escluso dalla regola EXCLUDE, o comunque non piu'
+        fra gli attivi) resta al suo posto nel calendario, e il suo avversario
+        di quel turno vince **a tavolino**, come contro chi ha dato forfait
+        (SPECIFICHE.md, «policy per il forfait», nota del 2026-10-11): la
+        coppia nasce intera e l'escluso viaggia in `forfeit_players`, che
+        `create_matches_from_pairings` tratta come un forfait. Fino a quella
+        data l'avversario «riposava con la X». Se l'escluso era chi riposava,
+        o se sono esclusi tutti e due, quel posto non produce partite. Con
+        FORFEIT l'iscrizione resta attiva e la strada e' la stessa, via
+        `forfeit_user_ids`.
+
+        Il riposo del dispari resta visibile ma non vale niente: zero
+        vittorie, zero punti, zero triangoli. Vale uguale in ogni girone.
+        """
+        pairings: List[Pairing] = []
+        for pairing in riga:
+            attivi = tuple(p for p in pairing if p in active_ids)
+            if not attivi:
+                continue
+            if len(pairing) == 1:
                 pairings.append(
                     Pairing(
-                        players=players,
+                        players=attivi,
                         round_number=round_number,
-                        is_bye=(len(players) == 1),
-                        bracket_group=gruppo,
+                        is_bye=True,
+                        riposo=True,
+                        bracket_group=bracket_group,
                     )
                 )
+                continue
+            pairings.append(
+                Pairing(
+                    players=tuple(pairing),
+                    round_number=round_number,
+                    forfeit_players=tuple(p for p in pairing if p not in attivi),
+                    bracket_group=bracket_group,
+                )
+            )
         return pairings
 
     def has_round(self, gara: object, round_number: int) -> bool:

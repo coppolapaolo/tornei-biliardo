@@ -9,11 +9,13 @@ Due classifiche in una:
 2. **della gara**, senza fase finale: prima tutti i primi dei gironi, ordinati
    fra loro, poi tutti i secondi, e così via. Fra gironi di taglia diversa il
    confronto si fa **per partita giocata**: vittorie, triangoli e punti
-   divisi per le partite giocate, senza la X — la X non è una partita, e in
-   un girone dispari ognuno ne ha una, quindi dentro il girone non sposta
-   niente ma fra gironi regalerebbe una vittoria a chi sta in quello dispari.
-   Lo scontro diretto fra gironi diversi non decide: non si sono incontrati, e
-   il motore passa da solo al criterio dopo.
+   divisi per le partite giocate davvero. Un girone da sei ne gioca cinque a
+   testa, uno da cinque quattro: i totali non sono confrontabili, le medie
+   sì. Il riposo da calendario non è una partita e non vale niente
+   (SPECIFICHE.md, nota del 2026-10-11), quindi non entra né nei numeri né
+   nel divisore; la vittoria a tavolino contro un escluso invece è una
+   partita, e conta. Lo scontro diretto fra gironi diversi non decide: non si
+   sono incontrati, e il motore passa da solo al criterio dopo.
 
 Il modulo è puro come `ordinamento.py`: chi lo chiama aggrega i numeri.
 """
@@ -29,7 +31,7 @@ from .ordinamento import Concorrente, Criterio, Fascia, Scontro, Voce, ordina
 
 @dataclass(frozen=True)
 class Giocate:
-    """Le partite giocate da un giocatore senza la X, e cosa ci ha fatto."""
+    """Le partite giocate da un giocatore (il riposo no), e cosa ci ha fatto."""
 
     partite: int = 0
     vittorie: int = 0
@@ -50,7 +52,7 @@ class ClassificaAGironi:
 def per_partita(c: Concorrente, giocate: Optional[Giocate]) -> Concorrente:
     """Il concorrente con i numeri divisi per le partite giocate.
 
-    Chi non ha ancora giocato (solo la X, al primo turno) vale zero.
+    Chi non ha ancora giocato (ha solo riposato, al primo turno) vale zero.
     """
     g = giocate or Giocate()
     if g.partite <= 0:
@@ -77,10 +79,9 @@ def ordina_a_gironi(
     """Ordina una gara a più gironi.
 
     Args:
-        concorrenti: tutti i giocatori, con i numeri di sempre (X compresa).
+        concorrenti: tutti i giocatori, con i totali di sempre.
         girone: giocatore → girone. Chi manca non entra in classifica.
-        giocate: giocatore → partite giocate senza la X, per il confronto fra
-            gironi.
+        giocate: giocatore → partite giocate, per il confronto fra gironi.
         principale, catena, scontri, completa: come in `ordinamento.ordina`.
 
     Returns:

@@ -938,9 +938,7 @@ class SpareggioService:
                 if gironi:
                     gruppo, nel_girone = gironi.get(round_class.user_id, (None, None))
                     gara_class.group_index = round_class.group_index = gruppo
-                    gara_class.group_position = round_class.group_position = (
-                        nel_girone
-                    )
+                    gara_class.group_position = round_class.group_position = nel_girone
 
         return True, "Classifica finale aggiornata"
 

@@ -24,7 +24,7 @@ un errore: una migration che solleva non viene marcata applicata e
 
 import sqlite3
 
-migration_name = "20261007_gironi"
+migration_name = "20261011_gironi"
 
 COLONNE = (
     ("campionato", "default_max_groups", "INTEGER NOT NULL DEFAULT 1"),
