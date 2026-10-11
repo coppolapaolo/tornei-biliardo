@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     from models.shared.operation_result import OperationResult
 from datetime import date, datetime
 
+from flask_babel import gettext as _
+
 from models.base import db, utc_now
 from models.status_enum import GaraStatus
 from .models import Gara, Inscription
@@ -86,8 +88,14 @@ class GaraService:
             prev_datetime = datetime.combine(prev_gara.date, prev_time)
             if gara_datetime < prev_datetime:
                 raise ValueError(
-                    f"La data/ora della gara {number} deve essere successiva "
-                    f"alla gara {prev_gara.number} ({prev_gara.date} {prev_time})"
+                    _(
+                        "La data/ora della gara %(numero)s deve essere successiva "
+                        "alla gara %(altra)s (%(data)s %(ora)s)",
+                        numero=number,
+                        altra=prev_gara.number,
+                        data=prev_gara.date,
+                        ora=prev_time,
+                    )
                 )
 
         # Trova gara successiva (min number > N)
@@ -105,8 +113,14 @@ class GaraService:
             next_datetime = datetime.combine(next_gara.date, next_time)
             if gara_datetime > next_datetime:
                 raise ValueError(
-                    f"La data/ora della gara {number} deve essere precedente "
-                    f"alla gara {next_gara.number} ({next_gara.date} {next_time})"
+                    _(
+                        "La data/ora della gara %(numero)s deve essere precedente "
+                        "alla gara %(altra)s (%(data)s %(ora)s)",
+                        numero=number,
+                        altra=next_gara.number,
+                        data=next_gara.date,
+                        ora=next_time,
+                    )
                 )
 
     # -----------------------------
@@ -132,14 +146,14 @@ class GaraService:
         #   l'admin/director che la crea)
         if not campionato_id and not director_id:
             raise ValueError(
-                "Una Gara deve avere un campionato_id o un director_id (standalone)."
+                _("Una gara deve appartenere a un campionato o avere un direttore.")
             )
 
         # Validazione data - non può essere nel passato
         from datetime import date as date_type
 
         if isinstance(date, date_type) and date < date_type.today():
-            raise ValueError("Data della gara non può essere nel passato")
+            raise ValueError(_("Data della gara non può essere nel passato"))
 
         # Validazione date sequenziali (solo per gare di campionato)
         if campionato_id:
@@ -212,7 +226,9 @@ class GaraService:
         # Valida la configurazione matchmaking
         errors = gara.validate_strategy_configuration()
         if errors:
-            raise ValueError(f"Configurazione non valida: {', '.join(errors)}")
+            raise ValueError(
+                _("Configurazione non valida: %(errori)s", errori=", ".join(errors))
+            )
 
         # Valida la configurazione classificazione (RACK/WINS/POSITION)
         from models.competition.validators import validate_gara
@@ -221,8 +237,10 @@ class GaraService:
         classification_errors, classification_warnings = validate_gara(gara)
         if classification_errors:
             raise ValueError(
-                "Configurazione classificazione non valida: "
-                f"{', '.join(classification_errors)}"
+                _(
+                    "Configurazione classificazione non valida: %(errori)s",
+                    errori=", ".join(classification_errors),
+                )
             )
         # Warnings vengono loggati ma non bloccano
         if classification_warnings:
@@ -341,7 +359,7 @@ class GaraService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
 
         from models.competition.campi_modificabili import (
             REGOLE,
@@ -395,9 +413,11 @@ class GaraService:
             ]
             if in_conflitto:
                 raise ConflictError(
-                    "Nel frattempo qualcun altro ha modificato: "
-                    + ", ".join(in_conflitto)
-                    + ". Ricarica la pagina e rifai la modifica."
+                    _(
+                        "Nel frattempo qualcun altro ha modificato: %(campi)s. "
+                        "Ricarica la pagina e rifai la modifica.",
+                        campi=", ".join(in_conflitto),
+                    )
                 )
 
         # La capienza non scende sotto chi è già dentro: toglierebbe il posto
@@ -407,8 +427,12 @@ class GaraService:
             dentro = gara.get_active_inscriptions_count()
             if nuovo_max < dentro:
                 raise ValueError(
-                    f"Ci sono già {dentro} iscritti: la capienza non può scendere "
-                    f"a {nuovo_max}."
+                    _(
+                        "Ci sono già %(dentro)s iscritti: la capienza non può "
+                        "scendere a %(nuovo)s.",
+                        dentro=dentro,
+                        nuovo=nuovo_max,
+                    )
                 )
 
         accende_squadre = bool(kwargs.get("separate_teammates")) and not bool(
@@ -476,8 +500,10 @@ class GaraService:
         classification_errors, classification_warnings = validate_gara(gara)
         if classification_errors:
             raise ValueError(
-                "Configurazione classificazione non valida: "
-                f"{', '.join(classification_errors)}"
+                _(
+                    "Configurazione classificazione non valida: %(errori)s",
+                    errori=", ".join(classification_errors),
+                )
             )
         # Warnings vengono loggati ma non bloccano
         if classification_warnings:
@@ -592,8 +618,6 @@ class GaraService:
         e nei campionati a piazzamenti. Il garante è il servizio: il modulo
         non mostra il campo, ma una gara nasce anche da altre strade.
         """
-        from flask_babel import gettext as _
-
         from models.campionato.models import Campionato
         from models.campionato.piazzamenti import somma_i_totali
         from models.matchmaking.configuration import MatchmakingStrategy
@@ -773,7 +797,7 @@ class GaraService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise NotFoundError(f"Gara {gara_id} non trovata")
+            raise NotFoundError(_("Gara %(id)s non trovata", id=gara_id))
 
         gara.set_available_tables(tables)
         gara.assign_tables_by_ranking = assign_tables_by_ranking
@@ -808,11 +832,11 @@ class GaraService:
         """Cancella una gara se possibile."""
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
 
         if not gara.can_be_deleted():
             raise ValueError(
-                "Impossibile cancellare la gara: ci sono già delle iscrizioni!"
+                _("Impossibile cancellare la gara: ci sono già delle iscrizioni!")
             )
 
         GaraService._sgancia_dal_playoff(gara)
@@ -824,11 +848,11 @@ class GaraService:
         """Cancella una gara inviando notifiche a tutti i partecipanti iscritti."""
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
 
         # Verifica che la gara possa essere cancellata
         if gara.status not in (GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value):
-            raise ValueError("La gara non può essere cancellata in questo stato!")
+            raise ValueError(_("La gara non può essere cancellata in questo stato!"))
 
         # Ottieni tutti gli iscritti prima di cancellare
         inscriptions = db.session.query(Inscription).filter_by(gara_id=gara_id).all()
@@ -853,7 +877,7 @@ class GaraService:
                 NotificationType,
             )
 
-            from flask_babel import gettext as _, lazy_gettext as _l
+            from flask_babel import lazy_gettext as _l
 
             # Il testo si compone per ciascun partecipante, nella sua lingua
             # (ADR-062): qui si fissano solo i fatti, prima che la gara sparisca.
@@ -1034,12 +1058,12 @@ class GaraService:
     ) -> Gara:
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
 
         # Validazione finestra (se entrambe presenti)
         if start is not None and end is not None and start > end:
             raise ValueError(
-                "La data di inizio deve essere precedente alla data di fine!"
+                _("La data di inizio deve essere precedente alla data di fine!")
             )
 
         # Imposta campi data se forniti PRIMA della transizione di stato
@@ -1056,21 +1080,21 @@ class GaraService:
     def reopen_setup(gara_id: int) -> Gara:
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
         return StateService.reopen_setup(gara)
 
     @staticmethod
     def start_playing(gara_id: int) -> Gara:
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
         return StateService.start_playing(gara)
 
     @staticmethod
     def complete(gara_id: int) -> Gara:
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
         return StateService.complete(gara)
 
     @staticmethod
@@ -1090,14 +1114,14 @@ class GaraService:
 
         user = db.session.get(User, user_id)
         if user and user.is_admin:
-            raise ValidationError("Gli admin non possono essere direttori di gara")
+            raise ValidationError(_("Gli admin non possono essere direttori di gara"))
 
         # Solo utenti con ruolo director: la UI offre solo quelli, ma il
         # service non lo imponeva (un POST manuale poteva promuovere un
         # player a gestore). Allineato il 2026-06-10 (decisione batch 8).
         if not user or user.role != UserRole.DIRECTOR.value:
             raise ValidationError(
-                "Solo gli utenti con ruolo direttore possono essere co-direttori"
+                _("Solo gli utenti con ruolo direttore possono essere co-direttori")
             )
 
         # Controlla se già esiste
@@ -1302,7 +1326,7 @@ class GaraService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
 
         # If keep_matches: detach all matches from gara
         if cascade_option == "keep_matches":

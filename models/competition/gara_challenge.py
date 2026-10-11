@@ -17,6 +17,7 @@ Design Note (Sprint 11 - December 2025):
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from flask_babel import gettext as _
 from sqlalchemy import desc
 
 from ..base import db, BaseModel, utc_now
@@ -173,7 +174,7 @@ class GaraChallengeAttempt(BaseModel):
             gc = db.session.get(GaraChallenge, self.gara_challenge_id)
 
         if not gc:
-            raise ValueError("Cannot find gara_challenge")
+            raise ValueError(_("Esercizio della gara non trovato"))
 
         if gc.challenge.pass_fail_only:
             self.passed = passed

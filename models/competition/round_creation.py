@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Optional, Set
 
+from flask_babel import gettext as _
+
 from models.base import db, transactional
 from models.match.distance import Distance
 from models.status_enum import GaraStatus
@@ -367,7 +369,7 @@ class RoundCreationService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
 
         if gara.status != GaraStatus.PLAYING.value:
             StateService.start_playing(gara)
@@ -407,7 +409,7 @@ class RoundCreationService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} non trovata")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
 
         # Verifica precondizioni. Il limite non e' `rounds_count` ma cio' che
         # la strategia riconosce come turno: nel doppio KO la bella sta un
@@ -421,7 +423,7 @@ class RoundCreationService:
             else 1 <= round_number <= gara.rounds_count
         )
         if not turno_valido:
-            raise ValueError(f"Turno {round_number} non valido")
+            raise ValueError(_("Turno %(turno)s non valido", turno=round_number))
 
         # Verifica se esistono già match per questo turno
         existing_matches = (
@@ -448,7 +450,12 @@ class RoundCreationService:
 
         strategy = strategy_for_gara(gara)
         if not strategy:
-            raise ValueError(f"Strategia '{gara.matchmaking_strategy}' non trovata")
+            raise ValueError(
+                _(
+                    "Strategia di abbinamento «%(nome)s» non trovata",
+                    nome=gara.matchmaking_strategy,
+                )
+            )
 
         # Genera gli abbinamenti usando l'interfaccia della strategia
         pairings = strategy.create_round(gara, round_number)
@@ -462,8 +469,12 @@ class RoundCreationService:
         # disallineate: e' un difetto, e va detto invece che materializzato.
         if not pairings:
             raise ValueError(
-                f"Il turno {round_number} della gara {gara_id} non produce "
-                f"accoppiamenti: non c'e' nessun turno da avviare"
+                _(
+                    "Il turno %(turno)s della gara %(gara)s non produce "
+                    "accoppiamenti: non c'è nessun turno da avviare",
+                    turno=round_number,
+                    gara=gara_id,
+                )
             )
 
         # Materializza la classifica di partenza (turno 0) al primo turno.

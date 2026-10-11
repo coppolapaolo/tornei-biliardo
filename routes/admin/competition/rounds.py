@@ -991,31 +991,12 @@ def bulk_reset_round_matches(gara_id, round_number):
     from models.competition.round_manager import AdvancedRoundManager
 
     try:
-        success, message, stats = AdvancedRoundManager.bulk_reset_round_matches(
+        # Il messaggio del servizio porta già i conteggi: ripeterli qui
+        # faceva leggere due volte lo stesso numero.
+        success, message, _stats = AdvancedRoundManager.bulk_reset_round_matches(
             gara_id, round_number
         )
-
-        if success:
-            flash(
-                ngettext(
-                    "%(messaggio)s. %(num)d partita azzerata.",
-                    "%(messaggio)s. %(num)d partite azzerate.",
-                    stats["reset_count"],
-                    messaggio=message,
-                ),
-                "success",
-            )
-        else:
-            flash(
-                _(
-                    "%(messaggio)s. Partite azzerate: %(azzerate)s, errori: "
-                    "%(errori)s.",
-                    messaggio=message,
-                    azzerate=stats.get("reset_count", 0),
-                    errori=stats.get("error_count", 0),
-                ),
-                "warning",
-            )
+        flash(message, "success" if success else "warning")
     except Exception as e:
         logger.error(f"Error in bulk reset: {e}", exc_info=True)
         flash(_("Errore interno del server"), "danger")

@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import Optional
 
+from flask_babel import gettext as _
+
 from models.base import db
 from models.transaction.manager import transactional
 
@@ -46,11 +48,11 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            raise ValueError("Trio match non trovato")
+            raise ValueError(_("Partita a tre non trovata"))
 
         # Verifica che il vincitore sia tra i giocatori del trio
         if winner_id not in [trio.player1_id, trio.player2_id, trio.player3_id]:
-            raise ValueError("Vincitore non valido per questo trio")
+            raise ValueError(_("Vincitore non valido per questa partita a tre"))
 
         # Aggiungi rack e gestisci rotazione
         from models.match.trio_scoring_service import TrioScoringService
@@ -134,7 +136,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            raise ValueError("Trio match non trovato")
+            raise ValueError(_("Partita a tre non trovata"))
 
         # Use TrioScoringService for reset
         from models.match.trio_scoring_service import TrioScoringService
@@ -153,14 +155,14 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            raise ValueError("Trio match non trovato")
+            raise ValueError(_("Partita a tre non trovata"))
 
         # Remove last rack via service
         from models.match.trio_scoring_service import TrioScoringService
 
         removed_rack = TrioScoringService.remove_last_rack(trio.id, removed_by_id)
         if not removed_rack:
-            raise ValueError("Nessun rack da rimuovere")
+            raise ValueError(_("Nessun triangolo da rimuovere"))
 
         # Prepare response with new state
         state = trio.get_current_state()
@@ -237,7 +239,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            raise ValueError("Trio match non trovato")
+            raise ValueError(_("Partita a tre non trovata"))
 
         result = trio.confirm_result_by_admin()
 
@@ -288,7 +290,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            raise ValueError("Trio match non trovato")
+            raise ValueError(_("Partita a tre non trovata"))
 
         result = trio.confirm_result_by_player(user_id)
 
@@ -349,7 +351,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            raise ValueError("Trio match non trovato")
+            raise ValueError(_("Partita a tre non trovata"))
 
         match = trio.match
         motivo = AdvancedRoundManager.motivo_turno_superato(match) if match else None
@@ -358,7 +360,7 @@ class TrioMatchService:
 
         success = trio.handle_forfeit(forfeiting_player_id, added_by_id)
         if not success:
-            raise ValueError("Impossibile registrare il forfait")
+            raise ValueError(_("Impossibile registrare il forfait"))
 
         # La regola della gara vale per chi e' ancora in gara: chi ne e' gia'
         # uscito non ha un'iscrizione da marcare o da togliere.
@@ -418,7 +420,7 @@ class TrioMatchService:
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
-            raise ValueError("Trio match non trovato")
+            raise ValueError(_("Partita a tre non trovata"))
 
         # Get configuration based on gara distance
         config = trio.trio_config
@@ -430,11 +432,15 @@ class TrioMatchService:
         # Check no score exceeds max allowed
         for score in scores:
             if score < 0:
-                raise ValueError("I punteggi non possono essere negativi")
+                raise ValueError(_("I punteggi non possono essere negativi"))
             if score > max_allowed:
                 raise ValueError(
-                    f"Punteggio massimo per giocatore: {max_allowed} "
-                    f"(distanza {config.distance})"
+                    _(
+                        "Punteggio massimo per giocatore: %(massimo)s "
+                        "(distanza %(distanza)s)",
+                        massimo=max_allowed,
+                        distanza=config.distance,
+                    )
                 )
 
         # Use TrioScoringService for direct result setting

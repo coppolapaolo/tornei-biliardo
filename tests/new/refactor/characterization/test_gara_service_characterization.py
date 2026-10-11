@@ -137,7 +137,7 @@ class TestGaraServiceCharacterization:
 
         # Deve avere director_id o campionato_id
         with pytest.raises(
-            ValueError, match="deve avere un campionato_id o un director_id"
+            ValueError, match="deve appartenere a un campionato o avere un direttore"
         ):
             GaraService.create_gara(
                 number=1, name="Test", date=tomorrow, discipline="palla 8", distance=5

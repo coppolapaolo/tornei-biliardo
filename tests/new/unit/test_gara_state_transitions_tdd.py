@@ -226,7 +226,7 @@ class TestGaraStateTransitionsTDD:
         db_session.commit()
 
         # Try to complete tournament with pending matches
-        with pytest.raises(InvalidTransitionError, match="Match ancora in corso"):
+        with pytest.raises(InvalidTransitionError, match="Partite ancora in corso"):
             StateService.complete(gara)
 
     def test_rollback_from_playing_to_inscription_when_no_results_entered(

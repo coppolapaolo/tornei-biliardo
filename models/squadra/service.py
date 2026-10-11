@@ -23,6 +23,8 @@ from __future__ import annotations
 
 from typing import List, Optional, Sequence, Tuple
 
+from flask_babel import gettext as _
+
 from models.base import db
 from models.exceptions import (
     ConflictError,
@@ -133,17 +135,19 @@ class SquadraService:
     def assert_editable(gara) -> None:
         if not SquadraService.is_editable(gara):
             raise ConflictError(
-                "Il primo turno è già partito: il tabellone è estratto e la "
-                "squadra non è più modificabile."
+                _(
+                    "Il primo turno è già partito: il tabellone è estratto e la "
+                    "squadra non è più modificabile."
+                )
             )
 
     @staticmethod
     def _assert_can_manage_list(gara, actor) -> None:
         """L'elenco lo governa chi dirige quella competizione (US-3)."""
         if actor is None or not getattr(actor, "is_authenticated", False):
-            raise PermissionDeniedError("Accesso richiesto")
+            raise PermissionDeniedError(_("Accesso richiesto"))
         if not actor.can_manage_competition(gara.id):
-            raise PermissionDeniedError("Non gestisci questa competizione")
+            raise PermissionDeniedError(_("Non gestisci questa competizione"))
 
     # ── Elenco: creazione, rinomina, unione, disattivazione ──────────────
 
@@ -151,10 +155,13 @@ class SquadraService:
     def _clean_name(name: str) -> str:
         cleaned = " ".join((name or "").split())
         if not cleaned:
-            raise ValidationError("Il nome della squadra non può essere vuoto")
+            raise ValidationError(_("Il nome della squadra non può essere vuoto"))
         if len(cleaned) > MAX_NAME_LENGTH:
             raise ValidationError(
-                f"Il nome della squadra supera i {MAX_NAME_LENGTH} caratteri"
+                _(
+                    "Il nome della squadra supera i %(num)s caratteri",
+                    num=MAX_NAME_LENGTH,
+                )
             )
         return cleaned
 
@@ -173,7 +180,9 @@ class SquadraService:
         cleaned = SquadraService._clean_name(name)
         existing = SquadraService.find_by_name(gara, cleaned)
         if existing:
-            raise ConflictError(f"La squadra «{existing.name}» è già in elenco")
+            raise ConflictError(
+                _("La squadra «%(nome)s» è già in elenco", nome=existing.name)
+            )
 
         kind, owner_id = SquadraService.owner_of(gara)
         squadra = Squadra(
@@ -189,7 +198,7 @@ class SquadraService:
     def get_or_404(squadra_id: int) -> Squadra:
         squadra = db.session.get(Squadra, squadra_id)
         if not squadra:
-            raise NotFoundError("Squadra non trovata")
+            raise NotFoundError(_("Squadra non trovata"))
         return squadra
 
     @staticmethod
@@ -201,7 +210,9 @@ class SquadraService:
         cleaned = SquadraService._clean_name(new_name)
         clash = SquadraService.find_by_name(gara, cleaned)
         if clash and clash.id != squadra.id:
-            raise ConflictError(f"La squadra «{clash.name}» è già in elenco")
+            raise ConflictError(
+                _("La squadra «%(nome)s» è già in elenco", nome=clash.name)
+            )
 
         squadra.rename(cleaned)
         return squadra
@@ -217,7 +228,7 @@ class SquadraService:
         """
         SquadraService._assert_can_manage_list(gara, actor)
         if source_id == target_id:
-            raise ValidationError("Le due squadre da unire devono essere diverse")
+            raise ValidationError(_("Le due squadre da unire devono essere diverse"))
 
         source = SquadraService._owned(gara, source_id)
         target = SquadraService._owned(gara, target_id)
@@ -261,7 +272,7 @@ class SquadraService:
             else squadra.gara_id == owner_id
         )
         if not appartiene:
-            raise NotFoundError("Squadra non trovata in questa competizione")
+            raise NotFoundError(_("Squadra non trovata in questa competizione"))
         return squadra
 
     # ── Squadra di un iscritto ───────────────────────────────────────────
@@ -288,8 +299,10 @@ class SquadraService:
         """
         if not gara.separate_teammates:
             raise ValidationError(
-                "Le squadre non sono attive su questa gara: il sorteggio non "
-                "separa i compagni."
+                _(
+                    "Le squadre non sono attive su questa gara: il sorteggio non "
+                    "separa i compagni."
+                )
             )
         SquadraService.assert_editable(gara)
 
@@ -298,7 +311,7 @@ class SquadraService:
                 actor.id == inscription.user_id or actor.can_manage_competition(gara.id)
             ):
                 raise PermissionDeniedError(
-                    "Puoi cambiare solo la squadra della tua iscrizione"
+                    _("Puoi cambiare solo la squadra della tua iscrizione")
                 )
 
         inscription.squadra_id = (

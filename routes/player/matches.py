@@ -28,7 +28,7 @@ def add_trio_rack(match_id):
         # Get the trio match
         match = db.session.get(Match, match_id)
         if not match or not match.trio_match:
-            return jsonify({"error": "Trio match non trovato"}), 404
+            return jsonify({"error": _("Partita a tre non trovata")}), 404
 
         trio_id = match.trio_match.id
 
@@ -65,7 +65,7 @@ def remove_trio_rack(match_id):
         # Get the trio match
         match = db.session.get(Match, match_id)
         if not match or not match.trio_match:
-            return jsonify({"error": "Trio match non trovato"}), 404
+            return jsonify({"error": _("Partita a tre non trovata")}), 404
 
         trio_id = match.trio_match.id
 
@@ -92,7 +92,7 @@ def confirm_trio_result(match_id):
         # Get the trio match
         match = db.session.get(Match, match_id)
         if not match or not match.trio_match:
-            return jsonify({"error": "Trio match non trovato"}), 404
+            return jsonify({"error": _("Partita a tre non trovata")}), 404
 
         trio_id = match.trio_match.id
 
@@ -117,7 +117,7 @@ def forfeit_trio(match_id):
         # Get the trio match
         match = db.session.get(Match, match_id)
         if not match or not match.trio_match:
-            return jsonify({"error": "Trio match non trovato"}), 404
+            return jsonify({"error": _("Partita a tre non trovata")}), 404
 
         trio_id = match.trio_match.id
 
@@ -157,7 +157,7 @@ def add_rack_simplified(match_id):
     winner_id = request.form.get("winner_id", type=int)
 
     if not winner_id:
-        return jsonify({"error": "Winner ID is required"}), 400
+        return jsonify({"error": _("Manca il vincitore")}), 400
 
     # Chi dirige la gara e ci gioca resta su questo segnapunti — è quello
     # comodo da usare al tavolo, e il flusso player è la scelta giusta dopo
@@ -236,7 +236,7 @@ def remove_rack_simplified(match_id):
     player_id = request.form.get("player_id", type=int)
 
     if not player_id:
-        return jsonify({"error": "Player ID is required"}), 400
+        return jsonify({"error": _("Manca il giocatore")}), 400
 
     try:
         MatchService.remove_rack_for_player(

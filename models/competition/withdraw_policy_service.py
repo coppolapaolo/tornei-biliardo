@@ -259,7 +259,7 @@ class WithdrawPolicyService:
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} not found")
+            raise ValueError(_("Gara %(id)s non trovata", id=gara_id))
 
         inscription = (
             db.session.query(Inscription)
@@ -268,7 +268,12 @@ class WithdrawPolicyService:
         )
         if not inscription:
             raise ValueError(
-                f"User {user_id} not inscribed or already withdrawn from gara {gara_id}"
+                _(
+                    "L'utente %(utente)s non è iscritto alla gara %(gara)s, "
+                    "o si è già ritirato",
+                    utente=user_id,
+                    gara=gara_id,
+                )
             )
 
         # Complete ALL pending/playing matches for this player in this gara
@@ -366,7 +371,12 @@ class WithdrawPolicyService:
             return "excluded"
 
         else:
-            raise ValueError(f"Unknown withdraw policy: {gara.withdraw_policy}")
+            raise ValueError(
+                _(
+                    "Regola di ritiro sconosciuta: %(regola)s",
+                    regola=gara.withdraw_policy,
+                )
+            )
 
     @staticmethod
     def get_active_inscriptions(gara_id: int) -> list[Inscription]:

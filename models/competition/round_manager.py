@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Dict, Any, Optional, Tuple
 from enum import Enum
 
-from flask_babel import lazy_gettext as _
+from flask_babel import lazy_gettext as _, ngettext
 
 from models.base import db
 from models.competition.models import Gara
@@ -47,7 +47,7 @@ class AdvancedRoundManager:
         """
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            raise ValueError(f"Gara {gara_id} not found")
+            raise ValueError(str(_("Gara %(id)s non trovata", id=gara_id)))
 
         # Return special lock status for non-playing gare (with reason encoded)
         if gara.status != GaraStatus.PLAYING.value:
@@ -127,7 +127,7 @@ class AdvancedRoundManager:
         """Check if a match can be modified based on round locking rules."""
         match = db.session.get(Match, match_id)
         if not match:
-            return False, "Match non trovato"
+            return False, str(_("Partita non trovata"))
 
         # Handle matches without gara (standalone)
         if not match.gara_id:
@@ -135,7 +135,7 @@ class AdvancedRoundManager:
 
         gara = db.session.get(Gara, match.gara_id)
         if not gara:
-            return False, "Gara non trovata"
+            return False, str(_("Gara non trovata"))
 
         # Check gara status first for better error messages
         blocked_reason = AdvancedRoundManager._status_blocks_modification(gara)
@@ -256,7 +256,7 @@ class AdvancedRoundManager:
 
         match = db.session.get(Match, match_id)
         if not match:
-            return False, "Match non trovato"
+            return False, str(_("Partita non trovata"))
 
         # Always validate modification permission (no override)
         can_modify, reason = AdvancedRoundManager.can_modify_match(match_id)
@@ -277,7 +277,7 @@ class AdvancedRoundManager:
         )
 
         # Transaction managed by @transactional decorator
-        return True, "Match resettato con successo"
+        return True, str(_("Partita azzerata"))
 
     @staticmethod
     @transactional(domain="competition")
@@ -295,7 +295,7 @@ class AdvancedRoundManager:
         """
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            return False, "Gara non trovata"
+            return False, str(_("Gara non trovata"))
 
         # Stesso gate di stato di can_modify_match: cancellare un turno è una
         # modifica dei risultati a tutti gli effetti, e senza questo controllo
@@ -321,7 +321,9 @@ class AdvancedRoundManager:
 
         # Only allow canceling the current round or higher
         if round_number < gara.current_round:
-            return False, "Non puoi cancellare un turno precedente a quello corrente"
+            return False, str(
+                _("Non puoi cancellare un turno precedente a quello corrente")
+            )
 
         # Get all matches in the round
         round_matches = Match.query.filter_by(
@@ -329,7 +331,9 @@ class AdvancedRoundManager:
         ).all()
 
         if not round_matches:
-            return False, f"Nessun match trovato per il turno {round_number}"
+            return False, str(
+                _("Nessuna partita nel turno %(turno)s", turno=round_number)
+            )
 
         # Check if any matches have partial results (ADR-026 extended scope).
         # A match "has partial results" only when at least one player has won
@@ -362,8 +366,12 @@ class AdvancedRoundManager:
         if matches_with_results:
             return (
                 False,
-                "Alcuni match hanno già risultati parziali. "
-                "Reset i match prima di cancellare il turno.",
+                str(
+                    _(
+                        "Alcune partite hanno già risultati parziali: azzerale "
+                        "prima di cancellare il turno."
+                    )
+                ),
             )
 
         # Delete all matches in the round
@@ -408,7 +416,7 @@ class AdvancedRoundManager:
                     PlayoffService.riapri_inviti_all_annullo(gara)
 
         # Transaction managed by @transactional decorator
-        return True, f"Turno {round_number} cancellato con successo"
+        return True, str(_("Turno %(turno)s cancellato", turno=round_number))
 
     @staticmethod
     @transactional(domain="competition")
@@ -418,7 +426,7 @@ class AdvancedRoundManager:
         """Reset all matches in a round with statistics."""
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            return False, "Gara non trovata", {}
+            return False, str(_("Gara non trovata")), {}
 
         # Senza questo controllo il bulk falliva comunque, ma un match alla
         # volta: il director leggeva "N errori" invece del motivo reale.
@@ -436,7 +444,12 @@ class AdvancedRoundManager:
         if not completed_matches:
             return (
                 False,
-                f"Nessun match completato trovato nel turno {round_number}",
+                str(
+                    _(
+                        "Nessuna partita conclusa nel turno %(turno)s",
+                        turno=round_number,
+                    )
+                ),
                 {},
             )
 
@@ -476,10 +489,19 @@ class AdvancedRoundManager:
         }
 
         if error_count == 0:
-            return True, f"Tutti i {reset_count} match sono stati resettati", stats
-        else:
-            message = f"{reset_count} match resettati, {error_count} errori"
-            return False, message, stats
+            messaggio = ngettext(
+                "%(num)d partita azzerata.",
+                "Tutte le %(num)d partite azzerate.",
+                reset_count,
+            )
+            return True, messaggio, stats
+        messaggio = ngettext(
+            "%(num)d partita azzerata, errori: %(errori)d.",
+            "%(num)d partite azzerate, errori: %(errori)d.",
+            reset_count,
+            errori=error_count,
+        )
+        return False, messaggio, stats
 
     @staticmethod
     def get_round_modification_summary(gara_id: int) -> Dict[int, Dict[str, Any]]:

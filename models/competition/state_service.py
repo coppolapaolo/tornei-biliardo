@@ -7,12 +7,21 @@ while maintaining the same simple interface and behavior.
 
 import logging
 
+from flask_babel import gettext as _
+
 from models.base import db, transactional
 from models.status_enum import GaraStatus
 from models.exceptions import InvalidTransitionError
 from models.competition.models import Gara
 
 logger = logging.getLogger(__name__)
+
+
+def _etichetta_stato(stato: str | None) -> str:
+    """Lo stato della gara come lo legge il direttore, non il valore su disco."""
+    from utils.status_ui import StatusPresenter
+
+    return str(StatusPresenter.gara(stato or GaraStatus.SETUP.value)[1])
 
 
 class StateService:
@@ -27,8 +36,12 @@ class StateService:
         current_status = gara.status or GaraStatus.SETUP.value
         if current_status != expected.value:
             raise InvalidTransitionError(
-                f"Transizione non ammessa: {gara.status!r} → "
-                f"{expected.name.lower()} richiesta come stato corrente."
+                _(
+                    "Transizione non ammessa: la gara è «%(attuale)s», serve "
+                    "«%(richiesto)s».",
+                    attuale=_etichetta_stato(gara.status),
+                    richiesto=_etichetta_stato(expected.value),
+                )
             )
 
     @staticmethod
@@ -45,8 +58,6 @@ class StateService:
         # il direttore doveva fare con date inventate (SPECIFICHE.md,
         # «Playoff», nota del 2026-09-13).
         if gara.is_playoff:
-            from flask_babel import gettext as _
-
             raise InvalidTransitionError(
                 _(
                     "Al playoff si entra accettando l'invito: non ci sono "
@@ -56,7 +67,7 @@ class StateService:
 
         # Validazione: le date di iscrizione devono essere impostate
         if not gara.inscription_start or not gara.inscription_end:
-            raise InvalidTransitionError("Date di iscrizione non impostate")
+            raise InvalidTransitionError(_("Date di iscrizione non impostate"))
 
         gara.status = GaraStatus.INSCRIPTION.value
         db.session.add(gara)
@@ -94,8 +105,12 @@ class StateService:
 
         if count < min_required:
             raise InvalidTransitionError(
-                f"Giocatori insufficienti per iniziare la gara "
-                f"(minimo: {min_required}, iscritti: {count})"
+                _(
+                    "Giocatori insufficienti per iniziare la gara "
+                    "(minimo: %(minimo)s, iscritti: %(iscritti)s)",
+                    minimo=min_required,
+                    iscritti=count,
+                )
             )
 
         gara.status = GaraStatus.PLAYING.value
@@ -133,7 +148,7 @@ class StateService:
         )
 
         if pending_matches:
-            raise InvalidTransitionError("Match ancora in corso")
+            raise InvalidTransitionError(_("Partite ancora in corso"))
 
         # Lo spareggio porta alla chiusura: aspetta anche lui la prova della X
         # e gli esercizi dell'ultimo turno (SPECIFICHE.md riga 102).
@@ -174,10 +189,14 @@ class StateService:
         """Validate that gara is in one of the expected states."""
         current_status = gara.status or GaraStatus.SETUP.value
         if current_status not in [s.value for s in expected]:
-            allowed = " o ".join(s.name.lower() for s in expected)
+            allowed = ", ".join(f"«{_etichetta_stato(s.value)}»" for s in expected)
             raise InvalidTransitionError(
-                f"Transizione non ammessa: {gara.status!r} → "
-                f"richiesto uno tra: {allowed}."
+                _(
+                    "Transizione non ammessa: la gara è «%(attuale)s», serve "
+                    "uno fra %(ammessi)s.",
+                    attuale=_etichetta_stato(gara.status),
+                    ammessi=allowed,
+                )
             )
 
     @staticmethod
@@ -203,7 +222,7 @@ class StateService:
         )
 
         if pending_matches:
-            raise InvalidTransitionError("Match ancora in corso")
+            raise InvalidTransitionError(_("Partite ancora in corso"))
 
         # La prova della X e gli esercizi dell'ultimo turno: come una partita
         # non validata (SPECIFICHE.md riga 102).
