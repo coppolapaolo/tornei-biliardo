@@ -206,8 +206,9 @@ blocks:
     text: >-
       Si passa da «Solo i playoff» a «Campionato + gara di playoff» solo se la
       finale usa lo stesso sistema di classifica del campionato: altrimenti si
-      sommerebbero cose diverse, e l'app rifiuta il cambio. Il peso invece si
-      cambia sempre.
+      sommerebbero cose diverse, e l'app rifiuta il cambio. In un campionato a
+      piazzamenti il vincolo non c'è: della finale conta il posto, come di
+      ogni altra gara. Il peso invece si cambia sempre.
 
   - type: note
     tone: info

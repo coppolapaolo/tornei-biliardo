@@ -697,6 +697,17 @@ def create_app(config_name=None, *, da_script: bool = False):
 
     app.jinja_env.globals["gironi_in_pagina"] = gironi_in_pagina
     app.jinja_env.globals["girone_della_riga"] = girone_della_riga
+    # Come una gara entra nel campionato (ADR-080): a piazzamenti, o
+    # sommando i totali; e il sistema che il campionato dà alle sue gare.
+    from models.campionato.piazzamenti import (
+        e_a_piazzamenti,
+        sistema_delle_gare,
+        strategie_per_sistema,
+    )
+
+    app.jinja_env.globals["campionato_a_piazzamenti"] = e_a_piazzamenti
+    app.jinja_env.globals["sistema_delle_gare"] = sistema_delle_gare
+    app.jinja_env.globals["strategie_per_sistema"] = strategie_per_sistema
 
     # Register image path template functions
     from utils.image_paths import challenge_image_url, challenge_image_filename

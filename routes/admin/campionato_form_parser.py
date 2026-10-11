@@ -159,6 +159,44 @@ class CampionatoFormParser:
         return dict(zip(COLONNE_PROPOSTE, valida_punti(*grezzi).come_tupla()))
 
     @staticmethod
+    def parse_sistemi(form: MultiDict, tipo: Any) -> Dict[str, Any]:
+        """Come si classifica il campionato, e le sue serate (ADR-080).
+
+        ``default_classification_system``: sommando i totali (vittorie,
+        triangoli, punti) o a piazzamenti (POSITION); chi propone il
+        tabellone è a piazzamenti. ``default_gara_classification_system``:
+        a piazzamenti, il sistema proposto alle serate che non sono un
+        tabellone; sommando i totali non c'è (NULL), perché le gare hanno il
+        sistema del campionato.
+        """
+        from models.campionato.piazzamenti import (
+            sistema_del_campionato,
+            sistema_della_serata,
+        )
+        from models.status_enum import ClassificationSystem
+
+        sistema = sistema_del_campionato(
+            tipo, form.get("default_classification_system")
+        )
+        serate = (
+            sistema_della_serata(form.get("default_gara_classification_system"))
+            if sistema == ClassificationSystem.POSITION.value
+            else None
+        )
+        return {
+            "default_classification_system": sistema,
+            "default_gara_classification_system": serate,
+        }
+
+    @staticmethod
+    def sistema_delle_serate(sistemi: Dict[str, Any]) -> str:
+        """Il sistema con cui si ordinano le gare, dati i due di `parse_sistemi`."""
+        return (
+            sistemi.get("default_gara_classification_system")
+            or sistemi["default_classification_system"]
+        )
+
+    @staticmethod
     def parse_gironi(form: MultiDict) -> Dict[str, Any]:
         """Tetto e composizione dei gironi proposti alle gare (ADR-076).
 

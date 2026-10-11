@@ -314,8 +314,10 @@
                         </div>
 
                         {# I gironi del girone all'italiana (ADR-076): il campionato li
-                           propone già scritti, e la gara li può cambiare. #}
-                        {% with gironi_id='create_', gironi_visibile=(campionato.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value),
+                           propone già scritti, e la gara li può cambiare. Solo a
+                           piazzamenti: chi somma i totali resta a girone unico
+                           (ADR-080). #}
+                        {% with gironi_id='create_', gironi_visibile=(campionato.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value and campionato_a_piazzamenti(campionato)),
                                 gironi_tetto=campionato.default_max_groups, gironi_composizione=campionato.default_group_seeding,
                                 gironi_compagni=true %}
                         {% include "components/_campo_gironi.html" %}
@@ -393,7 +395,7 @@
                         <h6 class="text-primary mb-3"><i class="fas fa-balance-scale"></i> {{ _("Pari merito") }}</h6>
                         {# La classifica a punti (ADR-078): i punti che il
                            campionato propone, già scritti, solo se è a punti. #}
-                        {% if campionato and campionato.default_classification_system == 'POINTS' %}
+                        {% if campionato and sistema_delle_gare(campionato) == 'POINTS' %}
                         {% with punti_valori=punti_proposti(campionato) %}
                         {% include "components/_campo_punti.html" %}
                         {% endwith %}

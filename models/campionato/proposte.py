@@ -39,6 +39,8 @@ CAMPI_PROPOSTI: Dict[str, str] = {
     "default_points_loss": "points_loss",
     "default_max_groups": "max_groups",
     "default_group_seeding": "group_seeding",
+    # Il sistema delle serate di un campionato a piazzamenti (ADR-080).
+    "default_gara_classification_system": "classification_system",
 }
 
 #: I campi che hanno senso solo col girone all'italiana (ADR-076).
@@ -78,6 +80,12 @@ def _e_a_girone(gara: Any) -> bool:
     return gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value
 
 
+def _e_a_tabellone(gara: Any) -> bool:
+    from models.matchmaking.configuration import BRACKET_STRATEGIES
+
+    return gara.matchmaking_strategy in BRACKET_STRATEGIES
+
+
 def valore_della_gara(gara: Any, campo_gara: str) -> Any:
     return getattr(gara, campo_gara, None)
 
@@ -96,6 +104,10 @@ def proposta(campionato: Any, cambi: Mapping[str, Iterable[Any]]) -> List[GaraPr
             if campo_gara is None:
                 continue
             if campo_gara in _SOLO_GIRONE and not _e_a_girone(gara):
+                continue
+            # Il tabellone ha il piazzamento: un sistema da serata non lo
+            # riguarda (ADR-080).
+            if campo_gara == "classification_system" and _e_a_tabellone(gara):
                 continue
             attuale = valore_della_gara(gara, campo_gara)
             if campo_gara == "odd_number_policy":

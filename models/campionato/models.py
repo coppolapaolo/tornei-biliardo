@@ -53,6 +53,12 @@ class Campionato(db.Model):
     default_classification_system = db.Column(
         db.String(10), nullable=False, default="WINS"
     )  # Default: RACK, WINS, POINTS, POSITION (see docs/CLASSIFICATION_SYSTEM.md)
+    # Nei campionati a piazzamenti (POSITION) le gare si classificano col
+    # sistema della serata, che il campionato propone: WINS, RACK o POINTS.
+    # NULL = vittorie. Nei campionati che sommano i totali non si legge: le
+    # gare hanno il sistema del campionato. Si legge solo da
+    # `models/campionato/piazzamenti.py` (ADR-080).
+    default_gara_classification_system = db.Column(db.String(10), nullable=True)
     # Classifica a punti: i punti di vittoria, pareggio e sconfitta proposti
     # alle gare (ADR-075), che li ricevono quando nascono. Mai NULL: il
     # default dell'app è scritto, come il limite di tempo, così confronta pari
@@ -394,10 +400,11 @@ class Campionato(db.Model):
     def classification_system(self) -> ClassificationSystem:
         """Il sistema di classifica del campionato, normalizzato.
 
-        Unico punto da cui leggere «su cosa si ordina questo campionato». Le
-        gare che gli appartengono ereditano il valore e non possono
-        cambiarlo dall'interfaccia (`_gara_edit_form.html`), quindi il
-        campionato è la fonte per l'intera classifica generale.
+        Unico punto da cui leggere «su cosa si ordina questo campionato»,
+        cioè come le gare entrano nella classifica generale: sommando i
+        totali (WINS, RACK, POINTS, e allora le gare hanno questo sistema) o
+        a piazzamenti (POSITION, e allora ogni gara ha il sistema della sua
+        serata: `models/campionato/piazzamenti.sistema_delle_gare`, ADR-080).
 
         Da non confondere con `campionato_type`, che è la strategia di
         accoppiamento: vedi ADR-047.

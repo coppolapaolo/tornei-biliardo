@@ -29,7 +29,6 @@ from models.location.models import BilliardHall
 from models.matchmaking.configuration import (
     MatchmakingStrategy,
     OddNumberPolicy,
-    get_classification_compatibility_map,
 )
 from models.competition.constants import DEFAULT_DISTANCE
 from models.categoria.listino import ListinoService, leggi_dal_modulo
@@ -43,7 +42,6 @@ from utils import (
 from models.campionato.services import TournamentService
 from models.challenge.services import ChallengeService
 from .campionato_form_parser import CampionatoFormParser
-from .competition.form_parser import BRACKET_STRATEGIES
 
 # Initialize the TournamentService
 campionato_service = TournamentService()
@@ -60,6 +58,9 @@ WIZARD_SESSION_KEY = "campionato_wizard_data"
 CAMPIONATO_TYPES = [
     (MatchmakingStrategy.AMALFI.value, _l("Amalfi")),
     (MatchmakingStrategy.RANDOM.value, _l("Random")),
+    # Il girone all'italiana: a girone unico se il campionato somma i totali,
+    # anche a più gironi se è a piazzamenti (ADR-080).
+    (MatchmakingStrategy.ROUND_ROBIN.value, _l("Girone all'italiana")),
     (MatchmakingStrategy.DIRECT_ELIMINATION.value, _l("Eliminazione diretta")),
     (MatchmakingStrategy.DOUBLE_KNOCKOUT.value, _l("Doppio KO")),
 ]
@@ -95,7 +96,6 @@ def wizard_start():
     return render_template(
         "admin/campionato_wizard_step1.html",
         matchmaking_strategies=CAMPIONATO_TYPES,
-        classification_compatibility=get_classification_compatibility_map(),
         prove_attive=len(ProvaService.prove_attive(current_user.id)),
         limite_prove=LIMITE_PROVE_ATTIVE,
     )
@@ -135,16 +135,12 @@ def wizard_step2():
     if campionato_type not in CAMPIONATO_TYPE_VALUES:
         campionato_type = MatchmakingStrategy.AMALFI.value
 
-    # Un valore ignoto ricade su WINS (`ClassificationSystem.resolve`).
-    classification_system = ClassificationSystem.resolve(
-        request.form.get("default_classification_system")
-    ).value
-
-    # I formati a tabellone ammettono solo POSITION: imporlo qui evita che la
-    # scelta del sistema di classifica e quella del formato possano divergere
-    # (il wizard le presenta in due campi distinti).
-    if campionato_type in BRACKET_STRATEGIES:
-        classification_system = "POSITION"
+    # Sommando i totali o a piazzamenti, e il sistema delle serate (ADR-080).
+    # Chi propone il tabellone è a piazzamenti: imporlo qui evita che la
+    # scelta del sistema e quella del formato possano divergere (il wizard le
+    # presenta in due campi distinti). Un valore ignoto ricade su WINS.
+    sistemi = CampionatoFormParser.parse_sistemi(request.form, campionato_type)
+    classification_system = sistemi["default_classification_system"]
 
     challenge_mode = "challenge_mode" in request.form
 
@@ -175,6 +171,9 @@ def wizard_step2():
         "planned_gare_count": planned_gare_count,
         "campionato_type": campionato_type,
         "default_classification_system": classification_system,
+        "default_gara_classification_system": sistemi[
+            "default_gara_classification_system"
+        ],
         "challenge_mode": challenge_mode,
         "playoff_elite_enabled": playoff_elite_enabled,
         "playoff_elite_participants": playoff_elite_participants,
@@ -190,15 +189,14 @@ def wizard_step2():
         BilliardHall.query.filter_by(is_active=True).order_by(BilliardHall.name).all()
     )
 
-    # Le formule dei dispari compatibili col sistema scelto al passo 1, coi
-    # nomi che la gara mostrera' poi (unica fonte: utils.jinja).
-    classification_system = session[WIZARD_SESSION_KEY].get(
-        "default_classification_system", "WINS"
-    )
+    # Le formule dei dispari compatibili col sistema delle serate, coi nomi
+    # che la gara mostrera' poi (unica fonte: utils.jinja). A piazzamenti è
+    # quello delle serate, non POSITION (ADR-080).
+    sistema_gare = CampionatoFormParser.sistema_delle_serate(sistemi)
     # Col girone all'italiana resta il solo riposo (SPECIFICHE.md, nota del
     # 2026-10-11).
     odd_policies = opzioni_dispari(
-        classification_system,
+        sistema_gare,
         strategy=session[WIZARD_SESSION_KEY].get("campionato_type"),
     )
 
@@ -208,6 +206,7 @@ def wizard_step2():
         venues=venues,
         odd_policies=odd_policies,
         classification_system=classification_system,
+        sistema_gare=sistema_gare,
     )
 
 
@@ -237,15 +236,20 @@ def wizard_create():
 
     # Classification system comes from Step 1 (session)
     classification_system = wizard_data.get("default_classification_system", "WINS")
-    # Le catene degli spareggi del passo 2 (ADR-078), ammesse al sistema.
-    settings.update(
-        CampionatoFormParser.parse_catene(request.form, classification_system)
+    sistema_gare = CampionatoFormParser.sistema_delle_serate(
+        {
+            "default_classification_system": classification_system,
+            "default_gara_classification_system": wizard_data.get(
+                "default_gara_classification_system"
+            ),
+        }
     )
-    # I punti della classifica a punti, se il campionato è a punti.
+    # Le catene degli spareggi del passo 2 (ADR-078), ammesse al sistema
+    # delle gare (a piazzamenti, quello delle serate: ADR-080).
+    settings.update(CampionatoFormParser.parse_catene(request.form, sistema_gare))
+    # I punti della classifica a punti, se le gare sono a punti.
     try:
-        settings.update(
-            CampionatoFormParser.parse_punti(request.form, classification_system)
-        )
+        settings.update(CampionatoFormParser.parse_punti(request.form, sistema_gare))
     except ValueError as errore:
         flash(str(errore), "error")
         return redirect(url_for("admin.campionato.wizard_start"))
@@ -283,6 +287,9 @@ def wizard_create():
             is_active=True,
             planned_gare_count=wizard_data["planned_gare_count"],
             default_classification_system=classification_system,
+            default_gara_classification_system=wizard_data.get(
+                "default_gara_classification_system"
+            ),
             **settings,
         )
         if voci_listino:
@@ -594,17 +601,23 @@ def edit_campionato(campionato_id):
             # Default-gare settings (single source shared with wizard_create)
             settings = CampionatoFormParser.parse_default_settings(request.form)
             settings.update(CampionatoFormParser.parse_gironi(request.form))
+            # Sommando i totali o a piazzamenti, e il sistema delle serate
+            # (ADR-080): catene e punti proposti seguono quello delle gare.
+            campionato_type = request.form.get("campionato_type", "amalfi")
+            if campionato_type not in CAMPIONATO_TYPE_VALUES:
+                campionato_type = campionato.campionato_type
+            sistemi = CampionatoFormParser.parse_sistemi(request.form, campionato_type)
+            sistema_gare = CampionatoFormParser.sistema_delle_serate(sistemi)
+            catene = CampionatoFormParser.parse_catene(request.form, sistema_gare)
+            if (
+                sistemi["default_classification_system"]
+                == ClassificationSystem.POSITION.value
+            ):
+                # A piazzamenti la classifica generale non ha catena (ADR-040).
+                catene.pop("catena_generale", None)
+            settings.update(catene)
             settings.update(
-                CampionatoFormParser.parse_catene(
-                    request.form,
-                    request.form.get("default_classification_system", "WINS"),
-                )
-            )
-            settings.update(
-                CampionatoFormParser.parse_punti(
-                    request.form,
-                    request.form.get("default_classification_system", "WINS"),
-                )
+                CampionatoFormParser.parse_punti(request.form, sistema_gare)
             )
 
             # Il listino delle quote vale per tutte le serate (ADR-079): non è un
@@ -631,12 +644,10 @@ def edit_campionato(campionato_id):
                 motivo=request.form.get("motivo"),
                 # Step 1 fields
                 name=request.form["name"],
-                campionato_type=request.form.get("campionato_type", "amalfi"),
+                campionato_type=campionato_type,
                 planned_gare_count=planned_gare_count,
                 challenge_mode="challenge_mode" in request.form,
-                default_classification_system=request.form.get(
-                    "default_classification_system", "WINS"
-                ),
+                **sistemi,
                 # Step 2 fields - Default gare settings (shared parser)
                 **settings,
             )

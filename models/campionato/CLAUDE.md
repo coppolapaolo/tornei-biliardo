@@ -57,7 +57,11 @@ Si **copiano** sulla gara quando nasce (`GaraService._copia_dal_campionato`
 per le tre che fino al 2026-09-29 la gara rileggeva). Cambiarli non tocca le
 gare già create: `models/campionato/proposte.py` propone a quali gare non
 ancora avviate applicarli. Il sistema di classifica fa eccezione: vale per
-tutte le gare e si cambia finché nessuna è avviata. Il campionato non si
+tutte le gare e si cambia finché nessuna è avviata. Dice **come le gare
+entrano** nel campionato (ADR-080): WINS/RACK/POINTS sommano i totali (le gare
+hanno quel sistema e restano a girone unico), POSITION è a piazzamenti (gare
+di ogni formato, ognuna col sistema della sua serata, proposto da
+`default_gara_classification_system`). Le regole: `piazzamenti.py`. Il campionato non si
 blocca più (`can_be_modified` è sempre vero), e ogni modifica va nella storia
 (`settings_change.campionato_id`).
 

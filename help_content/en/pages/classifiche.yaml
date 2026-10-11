@@ -107,6 +107,22 @@ blocks:
       semi-finalists are both third, the four quarter-finalists all fifth. That
       is not a level finish to settle, it is what the path says.
 
+  - type: heading
+    id: piazzamenti
+    title: "The placement championship"
+
+  - type: text
+    text: >-
+      A championship can add up the competitions' numbers (wins, racks or
+      points) or use **placements**: each competition gives everyone the
+      points of the place they took in its final standings, with the
+      championship's position points table (usually 25, 18, 15, 12, then 8
+      from 5th to 8th and 4 from 9th to 16th). That way competitions can have
+      different formats — an evening with groups, an Amalfi one, a bracket —
+      and the size of a group does not matter. Anyone who misses a
+      competition gets zero; tied players get the points of the shared place.
+      Bracket championships always use placements.
+
   - type: text
     text: >-
       In a championship each position is worth a number of points, which add up
@@ -221,7 +237,7 @@ blocks:
       - q: "The standings did not update after my match."
         a: "They are recalculated when every match in the round is finished."
       - q: "How do the championship standings add up?"
-        a: "By summing: wins and rack difference with «Wins», total racks with «Racks», position points with «Position». If a competition carries a weight, its score is multiplied by that number first."
+        a: "By summing: wins and rack difference with «Wins», total racks with «Racks», points for the place in each competition with «Placements». If a competition carries a weight, its score is multiplied by that number first."
       - q: "In the championship two players have the same numbers: who is ahead?"
         a: "Whoever was ahead after the previous competition. If they were level there too, the draw decides: it is fixed, so the standings do not change each time you look, and it does not depend on who registered first."
       - q: "During a competition, level on wins and rack difference, who is ahead?"

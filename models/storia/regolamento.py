@@ -91,17 +91,30 @@ def frase_della_catena(oggetto: Any, campo: str) -> Optional[str]:
             if livello is Livello.TURNO
             else catene.catena_di_gara(oggetto)
         )
-    else:
+    elif livello is Livello.CAMPIONATO:
         sistema = ClassificationSystem.resolve(
             getattr(oggetto, "default_classification_system", None)
         )
         if not catene.ordina_con_la_catena(sistema):
             return None
-        catena = (
-            catene.catena_generale(oggetto, sistema)
-            if livello is Livello.CAMPIONATO
-            else catene.catena_proposta(oggetto, livello)
-        )
+        catena = catene.catena_generale(oggetto, sistema)
+    else:
+        # Le catene proposte alle gare si leggono nel sistema delle gare: in
+        # un campionato a piazzamenti quello delle serate (ADR-080).
+        # Un campionato a piazzamenti che propone il tabellone non ha catene
+        # da proporre (ADR-040), come prima.
+        from ..campionato.piazzamenti import TIPI_A_TABELLONE, sistema_delle_gare
+
+        if (
+            getattr(oggetto, "campionato_type", None) in TIPI_A_TABELLONE
+            and ClassificationSystem.resolve(
+                getattr(oggetto, "default_classification_system", None)
+            )
+            == ClassificationSystem.POSITION
+        ):
+            return None
+        sistema = ClassificationSystem.resolve(sistema_delle_gare(oggetto))
+        catena = catene.catena_proposta(oggetto, livello)
     return descrivi_catena(catena, sistema, livello)
 
 
@@ -305,6 +318,7 @@ def regolamento(gara: Any) -> Regolamento:
 CAMPI_DEL_CAMPIONATO: Tuple[str, ...] = (
     "campionato_type",
     "default_classification_system",
+    "default_gara_classification_system",
     "planned_gare_count",
     "default_venue_id",
     "default_entry_fee",
@@ -371,6 +385,12 @@ def _impostazioni(
                     Impostazione(campo, valore, ultima.get(campo), frase=frase)
                 )
             continue
+        # Il sistema delle serate vale solo a piazzamenti (ADR-080).
+        if campo == "default_gara_classification_system":
+            from ..campionato.piazzamenti import e_a_piazzamenti
+
+            if not e_a_piazzamenti(oggetto):
+                continue
         # I gironi proposti (ADR-076): tacciono col girone unico, come il
         # limite di tempo senza limite. Chi non usa l'opzione non la vede.
         if (

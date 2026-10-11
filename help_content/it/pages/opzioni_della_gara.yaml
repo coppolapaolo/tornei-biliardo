@@ -122,7 +122,9 @@ blocks:
           presenti, con almeno 3 giocatori per girone. Con più di un girone
           compaiono anche **Composizione dei gironi** (sorteggio, per ELO, per
           categoria) e la separazione dei compagni di squadra. Nei campionati
-          il valore lo propone il campionato. Vedi [Il girone all'italiana a
+          il valore lo propone il campionato, e c'è solo se il campionato è a
+          piazzamenti: chi somma vittorie, triangoli o punti resta a girone
+          unico. Vedi [Il girone all'italiana a
           più gironi](/aiuto/approfondimenti/abbinamenti#gironi).
         hint: gara.gironi
       - name: "Min partecipanti"

@@ -167,3 +167,11 @@ appartenenza.
   gironi».
 - ADR-038 (tabellone persistito), ADR-039 (separazione dei compagni), ADR-073
   (classifica generale), ADR-075 (il campionato propone), ADR-078 (catene).
+
+## Emendamento (2026-10-11, ADR-080)
+
+Il rischio scritto sopra — nella classifica generale contano i totali, e chi
+sta nel girone più numeroso gioca una partita in più — è stato chiuso
+dall'utente: i gironi multipli si usano nelle gare singole e nei campionati a
+piazzamenti, dove la gara entra col suo posto. Un campionato che somma i
+totali propone e accetta solo gare a girone unico.

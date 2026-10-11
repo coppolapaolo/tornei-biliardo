@@ -93,6 +93,7 @@ Crea un ADR quando:
 | ADR-077 | [Il limite di tempo è un riferimento visivo: interrompe il direttore](ADR-077-limite-di-tempo-visivo-interrompe-il-direttore.md) | Accepted | 2026-10-06 |
 | ADR-078 | [La catena degli spareggi: un motore solo, tre classifiche, tre catene](ADR-078-catena-degli-spareggi-motore-unico.md) | Accepted | 2026-10-07 |
 | ADR-079 | [Il listino delle quote: categorie anche senza handicap, solo informazione](ADR-079-listino-quote-categorie-senza-handicap.md) | Accepted | 2026-10-06 |
+| ADR-080 | [Il campionato a piazzamenti ammette gare di ogni formato](ADR-080-campionato-a-piazzamenti-con-gare-di-ogni-formato.md) | Accepted | 2026-10-11 |
 
 ## Come Creare un Nuovo ADR
 

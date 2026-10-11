@@ -173,7 +173,7 @@ hints:
 
   - id: gara.gironi
     label: "Gironi"
-    short: "Solo col girone all'italiana: «fino a N» divide gli iscritti in gironi giocati in parallelo. Quanti, lo scegli all'avvio, con almeno 3 giocatori per girone."
+    short: "Solo col girone all'italiana, e in un campionato solo a piazzamenti: «fino a N» divide gli iscritti in gironi paralleli. Quanti, lo scegli all'avvio, almeno 3 per girone."
     anchor: gara-gironi
     screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato, admin.competition.gara_detail]
     page: abbinamenti

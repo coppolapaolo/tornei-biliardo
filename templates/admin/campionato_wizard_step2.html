@@ -30,6 +30,7 @@
           {% if wizard_data.default_classification_system == 'WINS' %}{{ _("Vittorie") }}
           {% elif wizard_data.default_classification_system == 'RACK' %}{{ _("Triangoli totali") }}
           {% elif wizard_data.default_classification_system == 'POINTS' %}{{ _("Punti") }}
+          {% elif wizard_data.default_classification_system == 'POSITION' %}{{ _("Piazzamenti") }}
           {% else %}{{ wizard_data.default_classification_system }}{% endif %}
         </div>
       </div>
@@ -143,7 +144,9 @@
     </div>
 
     {# I gironi del girone all'italiana (ADR-076), proposti alle gare. #}
-    {% if wizard_data.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value %}
+    {# Solo a piazzamenti: sommando i totali le gare restano a girone unico
+       (ADR-080). #}
+    {% if wizard_data.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value and classification_system == 'POSITION' %}
     <div class="c7-card">
       {% with gironi_prefisso='default_', gironi_nota=_("Proposti a ogni gara del campionato, che può cambiarli. Quanti gironi, lo sceglie il direttore all'avvio di ogni gara, sugli iscritti presenti: almeno 3 giocatori per girone.") %}
       {% include "components/_campo_gironi.html" %}
@@ -206,7 +209,7 @@
     </div>
 
     {# I punti della classifica a punti (ADR-078), proposti alle gare. #}
-    {% if classification_system == 'POINTS' %}
+    {% if sistema_gare == 'POINTS' %}
     <div class="c7-card">
       {% with punti_prefisso='default_', punti_valori=punti_default, punti_nota=_("Proposti a ogni gara del campionato, che li riceve quando nasce. Si ordina solo sui punti; a pari punti decidono i criteri dei pari merito.") %}
       {% include "components/_campo_punti.html" %}
@@ -216,26 +219,36 @@
 
     {# Le catene degli spareggi (ADR-078): due proposte alle gare, una per la
        classifica generale. Sui campionati a tabellone non si usano (ADR-040). #}
-    {% if classification_system != 'POSITION' %}
+    {# A piazzamenti le due catene proposte seguono il sistema delle serate, e
+       la classifica generale non ne ha: chi resta pari condivide il posto
+       (ADR-040, ADR-080). Chi propone il tabellone non ne ha nessuna. #}
+    {% if wizard_data.campionato_type not in bracket_minimum_players %}
     <div class="c7-card">
       <h3 class="mb-1" data-help="campionato-spareggi">{{ _("Pari merito") }}</h3>
+      {% if classification_system == 'POSITION' %}
+      <p class="c7-nota mb-3">{{ _("Come si ordinano i giocatori a pari merito nelle gare. Le due catene sono proposte a ogni gara, che può cambiarle. Nella classifica generale chi ha gli stessi punti condivide il posto.") }}</p>
+      {% else %}
       <p class="c7-nota mb-3">{{ _("Come si ordinano i giocatori a pari merito. Le prime due catene sono proposte a ogni gara, che può cambiarle; la terza vale per la classifica generale.") }}</p>
+      {% endif %}
       {% import "components/_catena_spareggi.html" as catena with context %}
-      {{ catena.editor('default_catena_turno', editor_catena_campionato('turno', sistema=classification_system),
+      {{ catena.editor('default_catena_turno', editor_catena_campionato('turno', sistema=sistema_gare),
                        _('Classifica di turno'),
                        _("Da lì nascono gli abbinamenti: l'ordine è sempre completo, lo chiude il sorteggio.")) }}
-      {{ catena.editor('default_catena_gara', editor_catena_campionato('gara', sistema=classification_system),
+      {{ catena.editor('default_catena_gara', editor_catena_campionato('gara', sistema=sistema_gare),
                        _('Classifica finale di ogni gara'),
                        _('Chi resta pari condivide la posizione. Lo spareggio SSR si gioca a gara finita, fino al posto che scegli.')) }}
+      {% if classification_system != 'POSITION' %}
       {{ catena.editor('catena_generale', editor_catena_campionato('campionato', sistema=classification_system),
                        _('Classifica generale'),
                        _("Somma le classifiche delle gare. L'ordine è sempre completo: da lì partono gli inviti ai playoff.")) }}
+      {% endif %}
     </div>
     {% endif %}
 
-    {# Punti per posizione: solo sui campionati a tabellone. Qui il tipo è già
-       stato scelto allo step 1, quindi la visibilità si decide server-side. #}
-    {% if wizard_data.campionato_type in bracket_minimum_players %}
+    {# Punti per posizione: solo sui campionati a piazzamenti, di qualunque
+       formato (ADR-080). Il sistema è già stato scelto al passo 1, quindi la
+       visibilità si decide server-side. #}
+    {% if classification_system == 'POSITION' %}
       {% with position_points_visible = true %}
         {% include "components/_position_points.html" %}
       {% endwith %}

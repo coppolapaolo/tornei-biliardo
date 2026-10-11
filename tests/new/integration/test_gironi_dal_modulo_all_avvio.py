@@ -173,7 +173,10 @@ def _campionato(db_session, direttore, **campi):
         name=f"Lunedì al 74 {uuid.uuid4().hex[:6]}",
         campionato_type="round_robin",
         is_active=True,
-        default_classification_system="POINTS",
+        # I gironi li propone un campionato a piazzamenti, con le serate a
+        # punti: chi somma i totali resta a girone unico (ADR-080).
+        default_classification_system="POSITION",
+        default_gara_classification_system="POINTS",
         default_rounds_count=3,
         **campi,
     )
@@ -210,7 +213,8 @@ def test_la_modifica_del_campionato_salva_i_gironi(client, db_session, direttore
             "name": camp.name,
             "campionato_type": "round_robin",
             "planned_gare_count": "10",
-            "default_classification_system": "POINTS",
+            "default_classification_system": "POSITION",
+            "default_gara_classification_system": "POINTS",
             "default_odd_policy": "bye",
             "default_max_groups": "2",
             "default_group_seeding": "categoria",

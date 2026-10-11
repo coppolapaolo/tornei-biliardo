@@ -497,9 +497,12 @@ class PlayoffService:
             config.get_gara_params().get("matchmaking_strategy")
             or MatchmakingStrategy.AMALFI.value
         )
-        richiesto = (
-            config.classification_system
-            or config.campionato.classification_system.value
+        from ..campionato.piazzamenti import sistema_delle_gare
+
+        # Senza una scelta, il sistema che il campionato dà alle sue gare: in
+        # un campionato a piazzamenti quello delle serate (ADR-080).
+        richiesto = config.classification_system or sistema_delle_gare(
+            config.campionato
         )
         return ClassificationSystem.resolve(
             resolve_classification_system(strategia, richiesto)
@@ -563,6 +566,12 @@ class PlayoffService:
         from ..exceptions import ValidationError
 
         if config.decides_final_ranking and not somma:
+            return
+        from ..campionato.piazzamenti import e_a_piazzamenti
+
+        # A piazzamenti della finale si prende il piazzamento, come di ogni
+        # altra gara: qualunque formato si somma (ADR-080).
+        if e_a_piazzamenti(config.campionato):
             return
         if sistema_finale == config.campionato.classification_system.value:
             return

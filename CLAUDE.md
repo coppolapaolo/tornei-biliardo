@@ -644,6 +644,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [077](docs/adr/ADR-077-limite-di-tempo-visivo-interrompe-il-direttore.md) | il limite di tempo affianca la distanza ed è **solo visivo**: parte all'acchito o con «Avvia partita», si fissa sulla partita (ADR-075); a tempo scaduto non chiude niente, interrompe il direttore |
 | [078](docs/adr/ADR-078-catena-degli-spareggi-motore-unico.md) | i pari merito si risolvono con una **catena** di criteri applicata a gruppi da un motore solo (`models/classification/ordinamento.py`); turno, gara e campionato hanno ciascuno la sua; sorteggio deterministico, mai l'id; le catene si configurano (sulla gara, proposte dal campionato, più quella della classifica generale) e lo spareggio SSR è il criterio `ssr:N` della catena di gara; la classifica a punti (`POINTS`, vittoria/pareggio/sconfitta di norma 3/1/0, `classification/punti.py`) ordina solo sui punti |
 | [079](docs/adr/ADR-079-listino-quote-categorie-senza-handicap.md) | listino quote per categoria, **solo informazione**: `Categoria.entry_fee`; le categorie esistono anche senza handicap (`Gara.usa_categorie`) e lì non toccano l'ELO |
+| [080](docs/adr/ADR-080-campionato-a-piazzamenti-con-gare-di-ogni-formato.md) | il sistema del campionato dice **come le gare entrano**: sommando i totali (stesso sistema, girone unico) o **a piazzamenti** (gare di ogni formato, punti per posto); il sistema delle serate lo propone `default_gara_classification_system`, letto da `models/campionato/piazzamenti.py` |
 
 ---
 

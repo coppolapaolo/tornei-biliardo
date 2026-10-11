@@ -22,6 +22,9 @@
    - gironi_tetto, gironi_composizione: i valori da mostrare
    - gironi_strategia_da: selettore CSS del menu della strategia (facoltativo)
    - gironi_visibile: senza selettore, se mostrare il blocco (default sì)
+   - gironi_sistema_da: selettore CSS del menu del sistema del campionato
+     (facoltativo): il blocco si vede solo a piazzamenti (POSITION), perché
+     un campionato che somma i totali resta a girone unico (ADR-080)
    - gironi_compagni: mostra la separazione dei compagni (solo la gara)
    - gironi_compagni_valore: la separazione è accesa
    - gironi_nota: testo sotto il tetto (facoltativo) #}
@@ -31,8 +34,10 @@
 {% set _comp = gironi_composizione|default('sorteggio') or 'sorteggio' %}
 {% set _da = gironi_strategia_da|default('') %}
 {% set _visibile = gironi_visibile|default(true) %}
+{% set _sistema_da = gironi_sistema_da|default('') %}
 <div class="c7-gironi mb-3" data-gironi
      {% if _da %}data-strategia-da="{{ _da }}" data-girone="{{ MatchmakingStrategy.ROUND_ROBIN.value }}"{% endif %}
+     {% if _sistema_da %}data-piazzamenti-da="{{ _sistema_da }}"{% endif %}
      {% if not _visibile and not _da %}hidden{% endif %}>
   <label for="{{ _id }}{{ _pre }}max_groups" class="form-label" data-help="gara-gironi">{{ _('Gironi') }}</label>
   <select class="form-select" id="{{ _id }}{{ _pre }}max_groups" name="{{ _pre }}max_groups" data-gironi-tetto

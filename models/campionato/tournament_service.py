@@ -58,6 +58,7 @@ class TournamentService(TournamentStatisticsService):
             "default_time_limit_minutes",
             "default_max_groups",
             "default_group_seeding",
+            "default_gara_classification_system",
             "default_catena_turno",
             "default_catena_gara",
             "catena_generale",
@@ -74,6 +75,7 @@ class TournamentService(TournamentStatisticsService):
         director_id = kwargs.get("director_id")
 
         campionato = Campionato(name=name, **filtered_kwargs)
+        self._verifica_gironi_del_campionato(campionato)
         db.session.add(campionato)
         db.session.flush()  # Flush to ensure ID is assigned
 
@@ -118,6 +120,9 @@ class TournamentService(TournamentStatisticsService):
         default_odd_policy: str = "bye",
         default_anti_rematch: bool = True,
         default_classification_system: str = "WINS",
+        # Nei campionati a piazzamenti, il sistema proposto alle serate
+        # (ADR-080). None = vittorie.
+        default_gara_classification_system: Optional[str] = None,
         has_handicap: bool = False,
         # Limite di tempo per partita proposto alle gare (ADR-077). 0 = nessuno.
         default_time_limit_minutes: int = 0,
@@ -173,6 +178,7 @@ class TournamentService(TournamentStatisticsService):
             default_odd_policy=default_odd_policy,
             default_anti_rematch=default_anti_rematch,
             default_classification_system=default_classification_system,
+            default_gara_classification_system=default_gara_classification_system,
             has_handicap=has_handicap,
             default_time_limit_minutes=default_time_limit_minutes,
             default_max_groups=default_max_groups,
@@ -193,6 +199,7 @@ class TournamentService(TournamentStatisticsService):
             final_playoffs=final_playoffs,
             scoring_policy=scoring_policy,
         )
+        self._verifica_gironi_del_campionato(campionato)
         db.session.add(campionato)
         db.session.flush()  # Per ottenere l'ID senza commit completo
 
@@ -240,6 +247,7 @@ class TournamentService(TournamentStatisticsService):
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise NotFoundError("Campionato not found")
+        self._gironi_alla_somma(campionato, kwargs)
         prima = {
             campo: getattr(campionato, campo)
             for campo in kwargs
@@ -255,14 +263,18 @@ class TournamentService(TournamentStatisticsService):
         ) != ClassificationSystem.normalize(campionato.default_classification_system)
         if cambia_sistema:
             self._verifica_cambio_sistema(campionato)
+        from models.campionato.piazzamenti import sistema_delle_gare
+
+        gare_prima = sistema_delle_gare(campionato)
 
         # Aggiorna solo i campi forniti
         for field, value in kwargs.items():
             if hasattr(campionato, field):
                 setattr(campionato, field, value)
 
+        if cambia_sistema or sistema_delle_gare(campionato) != gare_prima:
+            self._adegua_catene_del_campionato(campionato, gare_prima, prima, kwargs)
         if cambia_sistema:
-            self._adegua_catene_del_campionato(campionato, nuovo_sistema, prima, kwargs)
             self._propaga_sistema(campionato, autore=autore, motivo=motivo)
 
         cambi = {campo: (prima[campo], getattr(campionato, campo)) for campo in prima}
@@ -313,21 +325,32 @@ class TournamentService(TournamentStatisticsService):
 
     @staticmethod
     def _adegua_catene_del_campionato(
-        campionato: Campionato, nuovo_sistema: Any, prima: Dict, kwargs: Dict
+        campionato: Campionato, gare_prima: Any, prima: Dict, kwargs: Dict
     ) -> None:
         """Cambiato il sistema, le catene di default del campionato lo seguono.
 
         Solo quelle che il modulo non ha mandato: le altre le ha già decise
-        il direttore. Il cambio finisce nella storia con gli altri.
+        il direttore. Il cambio finisce nella storia con gli altri. Le due
+        catene proposte alle gare seguono il sistema **delle gare** — in un
+        campionato a piazzamenti, quello delle serate (ADR-080) —, quella
+        della classifica generale il sistema del campionato.
         """
+        from models.campionato.piazzamenti import sistema_delle_gare
         from models.classification.catene import adegua_al_sistema
         from models.classification.ordinamento import Livello
         from models.status_enum import ClassificationSystem
 
-        vecchio = ClassificationSystem.resolve(
-            prima.get("default_classification_system")
+        vecchio_generale = ClassificationSystem.resolve(
+            prima.get(
+                "default_classification_system",
+                campionato.default_classification_system,
+            )
         )
-        nuovo = ClassificationSystem.resolve(nuovo_sistema)
+        nuovo_generale = ClassificationSystem.resolve(
+            campionato.default_classification_system
+        )
+        vecchio_gare = ClassificationSystem.resolve(gare_prima)
+        nuovo_gare = ClassificationSystem.resolve(sistema_delle_gare(campionato))
         for campo, livello in (
             ("default_catena_turno", Livello.TURNO),
             ("default_catena_gara", Livello.GARA),
@@ -335,11 +358,69 @@ class TournamentService(TournamentStatisticsService):
         ):
             if campo in kwargs:
                 continue
+            if livello is Livello.CAMPIONATO:
+                vecchio, nuovo = vecchio_generale, nuovo_generale
+            else:
+                vecchio, nuovo = vecchio_gare, nuovo_gare
+            if vecchio == nuovo:
+                continue
             attuale = getattr(campionato, campo)
             adeguata = adegua_al_sistema(attuale, livello, vecchio, nuovo)
             if adeguata is not None and adeguata != attuale:
                 prima[campo] = attuale
                 setattr(campionato, campo, adeguata)
+
+    @staticmethod
+    def _messaggio_girone_unico() -> str:
+        from flask_babel import gettext as _
+
+        return _(
+            "Un campionato che somma vittorie, triangoli o punti propone gare a "
+            "girone unico: chi capita nel girone più numeroso giocherebbe una "
+            "partita in più. Per i gironi scegli la classifica a piazzamenti."
+        )
+
+    @classmethod
+    def _verifica_gironi_del_campionato(cls, campionato: Campionato) -> None:
+        """Un campionato che somma i totali non propone più gironi (ADR-080)."""
+        from models.campionato.piazzamenti import somma_i_totali
+        from models.matchmaking.gironi import tetto_di_gironi
+
+        if (
+            somma_i_totali(campionato)
+            and tetto_di_gironi(campionato.default_max_groups) > 1
+        ):
+            raise ValidationError(cls._messaggio_girone_unico())
+
+    @classmethod
+    def _gironi_alla_somma(cls, campionato: Campionato, kwargs: Dict) -> None:
+        """I gironi proposti, quando il campionato somma (o passa a sommare).
+
+        Il modulo non mostra il campo a chi somma i totali, quindi non lo
+        manda: un tetto rimasto da quando il campionato era a piazzamenti
+        torna al girone unico, e il cambio finisce nella storia. Un tetto
+        chiesto esplicitamente si rifiuta.
+        """
+        from types import SimpleNamespace
+
+        from models.campionato.piazzamenti import somma_i_totali
+        from models.matchmaking.gironi import tetto_di_gironi
+
+        dopo = SimpleNamespace(
+            campionato_type=kwargs.get("campionato_type", campionato.campionato_type),
+            default_classification_system=kwargs.get(
+                "default_classification_system",
+                campionato.default_classification_system,
+            ),
+        )
+        if not somma_i_totali(dopo):
+            return
+        if "default_max_groups" in kwargs:
+            if tetto_di_gironi(kwargs["default_max_groups"]) > 1:
+                raise ValidationError(cls._messaggio_girone_unico())
+            return
+        if tetto_di_gironi(campionato.default_max_groups) > 1:
+            kwargs["default_max_groups"] = 1
 
     @staticmethod
     def _gare_col_sistema_del_campionato(campionato: Campionato) -> list:
@@ -402,15 +483,52 @@ class TournamentService(TournamentStatisticsService):
         from models.classification.catene import COLONNA_DELLA_GARA, adegua_al_sistema
         from models.status_enum import ClassificationSystem
 
+        from models.campionato.piazzamenti import (
+            TIPI_A_TABELLONE,
+            e_a_piazzamenti,
+            sistema_della_serata,
+            sistema_delle_gare,
+        )
+        from models.matchmaking.gironi import tetto_di_gironi
+
+        a_piazzamenti = e_a_piazzamenti(campionato)
         sistema = campionato.classification_system.value
         for gara in cls._gare_col_sistema_del_campionato(campionato):
             vecchio = gara.classification_system
-            gara.classification_system = resolve_classification_system(
-                gara.matchmaking_strategy, sistema
-            )
+            if a_piazzamenti:
+                # Le serate tengono il loro sistema: ordina solo la serata, e
+                # nel campionato conta il piazzamento (ADR-080).
+                richiesto = (
+                    sistema_della_serata(vecchio)
+                    if ClassificationSystem.normalize(vecchio)
+                    != ClassificationSystem.POSITION
+                    else None
+                ) or sistema_delle_gare(campionato)
+                gara.classification_system = resolve_classification_system(
+                    gara.matchmaking_strategy, richiesto
+                )
+            else:
+                # Sommando i totali le gare contano tutte la stessa cosa: un
+                # tabellone non ha totali da sommare, e i gironi tornano uno.
+                if gara.matchmaking_strategy in TIPI_A_TABELLONE:
+                    raise ValidationError(
+                        _(
+                            "La gara «%(gara)s» è a tabellone: in un campionato "
+                            "che somma vittorie, triangoli o punti non avrebbe "
+                            "totali da sommare. Cambiale formato, o resta a "
+                            "piazzamenti.",
+                            gara=gara.name,
+                        )
+                    )
+                gara.classification_system = resolve_classification_system(
+                    gara.matchmaking_strategy, sistema
+                )
             cambi: Dict[str, Any] = {
                 "classification_system": (vecchio, gara.classification_system)
             }
+            if not a_piazzamenti and tetto_di_gironi(gara.max_groups) > 1:
+                cambi["max_groups"] = (gara.max_groups, 1)
+                gara.max_groups = 1
             # Le catene di default seguono il sistema; quelle scelte restano.
             for livello, campo in COLONNA_DELLA_GARA.items():
                 prima = getattr(gara, campo)
