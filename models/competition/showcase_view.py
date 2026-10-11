@@ -272,7 +272,7 @@ def _formati_dei_turni(gara: Gara) -> List[tuple]:
     turno non si giocherà. Senza `rounds_count` resta il formato della gara:
     non si sa quanti turni descrivere.
 
-    Nei turni del tabellone dopo i gironi il ripiego è la distanza della fase
+    Nei turni della fase finale dopo i gironi il ripiego è la distanza della fase
     finale (`fase_finale_service.distanza_della_fase`, ADR-081): quei turni si
     conoscono dall'avvio. La distanza della sola finale non è di un turno —
     la finalina gioca accanto con quella della fase — e la dice la frase dei
@@ -280,15 +280,15 @@ def _formati_dei_turni(gara: Gara) -> List[tuple]:
     """
     from models.competition.fase_finale_service import (
         distanza_della_fase,
-        ha_tabellone_finale,
+        ha_fase_finale,
     )
     from models.competition.round_configuration import RoundConfiguration
 
     gara_irts = bool(getattr(gara, "is_race_to_sets", True))
-    con_tabellone = ha_tabellone_finale(gara)
+    con_fase_finale = ha_fase_finale(gara)
 
     def distanza(turno: int) -> int:
-        return distanza_della_fase(gara, turno) if con_tabellone else gara.distance
+        return distanza_della_fase(gara, turno) if con_fase_finale else gara.distance
 
     def della_gara(turno: int = 1):
         if distanza(turno) == gara.distance:

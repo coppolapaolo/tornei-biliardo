@@ -523,6 +523,15 @@ Per gare standalone:
   gioca**: il podio lo dà il tabellone, come nel sistema POSITION. Nessuna
   fase finale nei campionati che sommano i totali.
 
+- **Finali per piazzamento** (dal 2026-10-12, ADR-081 emendamento): con
+  `Gara.final_phase_mode = "piazzamento"`, solo con due gironi, dopo i gironi
+  un turno solo in cui il p-esimo di A gioca contro il p-esimo di B (posizioni
+  della catena di turno, come al taglio). Ogni finale assegna due posti,
+  vincitore e perdente, nell'ordine delle coppie; chi avanza nel girone più
+  numeroso è classificato direttamente, in fondo. Bande in
+  `fase_finale.bande_delle_finali`, composizione e numeri come col
+  tabellone; niente SSR.
+
 #### Eliminazione
 - Bracket a eliminazione diretta.
 - Posizioni determinate dalla progressione nel bracket.

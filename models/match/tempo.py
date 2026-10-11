@@ -60,7 +60,9 @@ def limite_del_turno(
        crea le partite: `fase_finale.la_finale_del_turno`), il limite della
        sola finale (`Gara.effective_final_time_limit_minutes`: come la fase
        finale, senza limite o N minuti). La finalina segue la fase finale;
-    3. nei turni del **tabellone dopo i gironi**, il limite della fase finale
+    3. nei turni della **fase finale dopo i gironi** (tabellone o finali per
+       piazzamento, dove la «finale» è quella per il 1°/2° posto), il limite
+       della fase finale
        (`Gara.effective_final_phase_time_limit_minutes`: come i gironi,
        senza limite o N minuti);
     4. il limite della **gara**.
@@ -82,7 +84,7 @@ def limite_del_turno(
     )
     if config is not None and config.time_limit_minutes is not None:
         return config.time_limit_minutes if config.time_limit_minutes > 0 else None
-    if getattr(gara, "ha_tabellone_finale", False) is True:
+    if getattr(gara, "ha_fase_finale", False) is True:
         from models.competition.fase_finale_service import e_della_fase_finale
 
         if e_della_fase_finale(gara, round_number):

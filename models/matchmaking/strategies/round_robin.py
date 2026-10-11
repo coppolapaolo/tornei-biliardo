@@ -93,6 +93,7 @@ class RoundRobinStrategy(BaseStrategy):
         """Generate pairings for a specific round using Round Robin algorithm."""
         from models.competition.fase_finale_service import (
             si_gioca_il_tabellone,
+            si_giocano_le_finali_per_piazzamento,
             turni_dei_gironi,
         )
 
@@ -100,6 +101,10 @@ class RoundRobinStrategy(BaseStrategy):
             fine_dei_gironi = turni_dei_gironi(gara)
             if round_number > fine_dei_gironi:
                 return self._tabellone_finale(gara, round_number, fine_dei_gironi)
+        elif si_giocano_le_finali_per_piazzamento(gara):
+            fine_dei_gironi = turni_dei_gironi(gara)
+            if round_number > fine_dei_gironi:
+                return self._finali_per_piazzamento(gara, round_number, fine_dei_gironi)
         try:
             gironi = self._gironi(gara)
             if gironi:
@@ -268,6 +273,52 @@ class RoundRobinStrategy(BaseStrategy):
         attivi = {i.user_id for i in self._get_active_inscriptions(gara)}
         return [self._a_tavolino_contro_chi_non_c_e(p, attivi) for p in pairings]
 
+    def _finali_per_piazzamento(
+        self, gara: object, round_number: int, fine_dei_gironi: int
+    ) -> List[Pairing]:
+        """Le finali per piazzamento: un turno solo, tutte in parallelo.
+
+        Il p-esimo del girone A contro il p-esimo del girone B, con le
+        posizioni nel girone decise come per il taglio del tabellone
+        (`fase_finale_service.incroci`). Ogni partita porta la coppia in
+        `bracket_slot` (0 per il 1°/2° posto) e il tipo `BRACKET_PLACEMENT`:
+        niente pareggio, e un nome («Finale 3°/4° posto»). Chi non è più in
+        gara perde la sua finale a tavolino; se non c'è più nessuno dei due la
+        partita non nasce, e i due restano a pari merito sui loro posti. Chi
+        avanza nel girone più numeroso si classifica direttamente: nessuna
+        partita, nemmeno un riposo.
+        """
+        from models.competition.fase_finale_service import incroci
+        from models.match.models import Match
+        from models.matchmaking.bracket import BRACKET_PLACEMENT
+        from models.status_enum import MatchStatus
+
+        if round_number != fine_dei_gironi + 1:
+            return []
+        gironi_giocati = Match.query.filter(
+            Match.gara_id == getattr(gara, "id", None),
+            Match.round_number <= fine_dei_gironi,
+        ).all()
+        if not gironi_giocati or any(
+            not MatchStatus.is_finished(m.status) for m in gironi_giocati
+        ):
+            return []
+        coppie, _diretti = incroci(gara)
+        attivi = {i.user_id for i in self._get_active_inscriptions(gara)}
+        pairings: List[Pairing] = []
+        for indice, (a, b) in enumerate(coppie):
+            if a not in attivi and b not in attivi:
+                continue
+            pairing = Pairing(
+                players=(a, b),
+                round_number=round_number,
+                bracket_type=BRACKET_PLACEMENT,
+                bracket_round=1,
+                bracket_slot=indice,
+            )
+            pairings.append(self._a_tavolino_contro_chi_non_c_e(pairing, attivi))
+        return pairings
+
     @staticmethod
     def _a_tavolino_contro_chi_non_c_e(pairing: Pairing, attivi: set) -> Pairing:
         """Chi non è più in gara perde il nodo a tavolino, come nei gironi."""
@@ -284,12 +335,18 @@ class RoundRobinStrategy(BaseStrategy):
             return False
         from models.competition.fase_finale_service import (
             si_gioca_il_tabellone,
+            si_giocano_le_finali_per_piazzamento,
             turni_dei_gironi,
         )
 
         if si_gioca_il_tabellone(gara):
             if round_number > turni_dei_gironi(gara):
                 return True
+        elif si_giocano_le_finali_per_piazzamento(gara):
+            # Le finali sono un turno solo, subito dopo i gironi.
+            fine = turni_dei_gironi(gara)
+            if round_number > fine:
+                return round_number == fine + 1
         gironi = self._gironi(gara)
         if not gironi:
             return True

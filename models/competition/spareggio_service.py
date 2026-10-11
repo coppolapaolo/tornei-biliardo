@@ -69,10 +69,11 @@ class SpareggioService:
         # Col tabellone dopo i gironi il podio lo dà il tabellone, e i due
         # semifinalisti senza finalina sono terzi a pari merito (UC6): come
         # nel sistema POSITION, lo spareggio inventerebbe una gerarchia che
-        # il tabellone non ha prodotto (ADR-040).
-        from models.competition.fase_finale_service import si_gioca_il_tabellone
+        # il tabellone non ha prodotto (ADR-040). Con le finali per
+        # piazzamento ogni posto lo assegna una finale, che ha un vincitore.
+        from models.competition.fase_finale_service import si_gioca_la_fase_finale
 
-        if si_gioca_il_tabellone(gara):
+        if si_gioca_la_fase_finale(gara):
             return False
         return ssr_della_catena(catena_di_gara(gara)) is not None
 

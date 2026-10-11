@@ -1,4 +1,4 @@
-"""La classifica finale di una gara a gironi con il tabellone (piano gironi, PR 5).
+"""La classifica finale di una gara a gironi con la fase finale (PR 5 e 6).
 
 La gara ha due fasi: i gironi, poi il tabellone fra i primi `K` di ogni
 girone. La classifica finale le compone così (SPECIFICHE.md, «La classifica a
@@ -15,13 +15,27 @@ gironi», nota del 2026-10-11):
 Mentre il tabellone si gioca, chi è ancora in corsa sta in cima, ordinato
 come la classifica a gironi: è la classifica provvisoria del turno.
 
+Con le **finali per piazzamento** (PR 6) le bande le dà `bande_delle_finali`:
+ogni finale assegna due posti, nell'ordine delle coppie, e chi si classifica
+senza finale — l'ultimo del girone più numeroso — viene dopo. La
+composizione è la stessa.
+
 Il modulo è puro come `gironi.py`: chi lo chiama porta le bande del tabellone
 e la classifica a gironi già fatta, in fasce.
 """
 
 from __future__ import annotations
 
-from typing import AbstractSet, Dict, List, Sequence, Tuple
+from typing import (
+    AbstractSet,
+    Dict,
+    FrozenSet,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 #: Una fascia: (posizione, giocatori a pari merito).
 FasciaDiId = Tuple[int, List[int]]
@@ -83,4 +97,46 @@ def classifica_con_tabellone(
     return fasce
 
 
-__all__ = ["FasciaDiId", "classifica_con_tabellone"]
+def bande_delle_finali(
+    coppie: Sequence[Tuple[int, int]],
+    vincitori: Mapping[int, Optional[int]],
+    diretti: Sequence[int],
+    *,
+    senza_partita: AbstractSet[int] = frozenset(),
+) -> Tuple[List[List[int]], FrozenSet[int]]:
+    """Le bande delle finali per piazzamento, e chi resta a pari merito.
+
+    Ogni finale assegna due posti, nell'ordine delle coppie: il vincitore
+    della coppia 0 è 1°, il perdente 2°; il vincitore della coppia 1 è 3°, e
+    così via. Chi si classifica direttamente — l'ultimo del girone più
+    numeroso — viene dopo l'ultima coppia. Le bande vanno a
+    `classifica_con_tabellone`, come quelle del tabellone.
+
+    Args:
+        coppie: le coppie, dalla finale per il 1°/2° posto.
+        vincitori: coppia → vincitore, o None se la finale non è decisa.
+        diretti: chi si classifica senza finale.
+        senza_partita: le coppie che non hanno una partita perché i due si
+            sono ritirati entrambi: restano a pari merito sui loro due posti.
+
+    Returns:
+        Le bande, dalla migliore, e i giocatori a pari merito. Una finale
+        ancora da giocare tiene i due nella stessa banda, senza pari merito:
+        li ordina la classifica a gironi, come nel tabellone in corso.
+    """
+    bande: List[List[int]] = []
+    pari = set()
+    for indice, (a, b) in enumerate(coppie):
+        vince = vincitori.get(indice)
+        if vince in (a, b):
+            bande.append([vince])
+            bande.append([b if vince == a else a])
+            continue
+        bande.append([a, b])
+        if indice in senza_partita:
+            pari.update((a, b))
+    bande.extend([pid] for pid in diretti)
+    return bande, frozenset(pari)
+
+
+__all__ = ["FasciaDiId", "bande_delle_finali", "classifica_con_tabellone"]

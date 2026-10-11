@@ -157,9 +157,9 @@ appartenenza.
   divisione la fa `classification/gironi_in_pagina.py` dalle righe già
   ordinate (`group_index`, `group_position`): nessun calcolo nuovo. Le partite
   del direttore dicono il loro girone (`Match.bracket_group`).
-- Fase finale dopo i gironi (tabellone, finali per piazzamento): PR successive
-  del piano. Con più di due gironi, le finali per piazzamento restano un punto
-  aperto.
+- Fase finale dopo i gironi (tabellone, finali per piazzamento): ADR-081 e il
+  suo emendamento del 2026-10-12. Le finali per piazzamento si giocano solo con
+  due gironi; con più di due restano un punto aperto.
 
 ## Riferimenti
 

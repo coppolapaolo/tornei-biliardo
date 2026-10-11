@@ -27,7 +27,11 @@ from flask_babel import ngettext
 from models.base import db
 from models.exceptions import ValidationError
 from models.matchmaking.configuration import MatchmakingStrategy
-from models.matchmaking.fase_finale import turni_del_tabellone, verifica_qualificati
+from models.matchmaking.fase_finale import (
+    turni_del_tabellone,
+    verifica_piazzamento,
+    verifica_qualificati,
+)
 from models.matchmaking.gironi import (
     MINIMO_PER_GIRONE,
     ComposizioneGironi,
@@ -72,6 +76,9 @@ class Anteprima:
     #: quanti passano al tabellone finale da ogni girone; 0 = nessun tabellone.
     #: Con un girone solo il tabellone non si gioca (`girone_unico_senza_tabellone`).
     qualificati_per_girone: int = 0
+    #: la gara finisce con le finali per piazzamento (un turno in più con due
+    #: gironi; con un girone solo non si giocano).
+    finali_per_piazzamento: bool = False
 
     @property
     def girone_unico_senza_tabellone(self) -> bool:
@@ -86,7 +93,7 @@ class Anteprima:
         """Numero di gironi → turni della gara.
 
         Quelli del girone più numeroso, più quelli del tabellone finale se la
-        gara ne ha uno.
+        gara ne ha uno, o il turno delle finali per piazzamento.
         """
         turni = {}
         for g, taglie in self.taglie.items():
@@ -94,6 +101,9 @@ class Anteprima:
             # Il tabellone si gioca solo con più gironi.
             if self.qualificati_per_girone and g >= 2:
                 turni[g] += turni_del_tabellone(self.qualificati_per_girone * g)
+            # Le finali per piazzamento, tutte in un turno, con due gironi.
+            if self.finali_per_piazzamento and verifica_piazzamento(g) is None:
+                turni[g] += 1
         return turni
 
 
@@ -243,6 +253,7 @@ class GironiService:
             qualificati_per_girone=(
                 gara.effective_qualifiers_per_group if gara.ha_tabellone_finale else 0
             ),
+            finali_per_piazzamento=gara.ha_finali_per_piazzamento,
         )
 
     @staticmethod
@@ -288,8 +299,20 @@ class GironiService:
         if motivo is not None:
             raise ValidationError(_("Il numero di gironi non è valido."))
 
+        if (
+            numero > 1
+            and gara.ha_finali_per_piazzamento
+            and verifica_piazzamento(numero) is not None
+        ):
+            raise ValidationError(
+                _(
+                    "Le finali per piazzamento si giocano fra due gironi: "
+                    "scegli due gironi, o uno solo."
+                )
+            )
+
         if numero <= 1:
-            # Col girone solo il tabellone non si gioca, anche se la gara lo
+            # Col girone solo la fase finale non si gioca, anche se la gara la
             # prevede: la gara finisce col girone, e la sua classifica è
             # quella finale (SPECIFICHE.md, «Fase finale dopo i gironi»).
             for iscrizione in iscrizioni:
@@ -312,12 +335,17 @@ class GironiService:
             iscrizione.group_index = girone_di[iscrizione.user_id]
         gara.rounds_count = turni_dei_gironi(
             [len(g) for g in composti]
-        ) + GironiService._turni_del_tabellone(gara, len(composti))
+        ) + GironiService._turni_della_fase_finale(gara, len(composti))
         return composti
 
     @staticmethod
-    def _turni_del_tabellone(gara: Gara, gironi: int) -> int:
-        """I turni del tabellone finale, se la gara ne ha uno; altrimenti zero."""
+    def _turni_della_fase_finale(gara: Gara, gironi: int) -> int:
+        """I turni della fase finale: del tabellone, o uno per le finali.
+
+        Le finali per piazzamento si giocano tutte nello stesso turno.
+        """
+        if gara.ha_finali_per_piazzamento:
+            return 1
         if not gara.ha_tabellone_finale:
             return 0
         return turni_del_tabellone(gara.effective_qualifiers_per_group * gironi)

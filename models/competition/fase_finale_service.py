@@ -10,7 +10,10 @@ Le regole stanno in `models/matchmaking/fase_finale.py` e
 * **come ne è uscito ognuno** (`bande`): le bande del tabellone, dalle sole
   partite della fase finale;
 * **la classifica finale** (`classifica_finale`): il tabellone, poi gli altri
-  nell'ordine dei gironi.
+  nell'ordine dei gironi;
+* **le finali per piazzamento** (`incroci`, PR 6): il p-esimo del girone A
+  contro il p-esimo del girone B, con le posizioni nel girone decise come per
+  il taglio; ogni finale assegna due posti (`bande`).
 
 Nessun metodo scrive: si chiamano dentro la generazione dei turni e dentro i
 calcoli di classifica, che hanno già la loro transazione.
@@ -28,6 +31,7 @@ from typing import Any, Dict, FrozenSet, List, Optional, Sequence, Tuple
 
 from models.base import db
 from models.matchmaking.fase_finale import (
+    incroci_per_piazzamento,
     qualificati_dei_gironi,
     semina_del_tabellone,
     verifica_qualificati,
@@ -39,6 +43,34 @@ from models.matchmaking.gironi import turni_del_girone
 def ha_tabellone_finale(gara: Any) -> bool:
     """La gara prevede il tabellone dopo i gironi? Solo un ``True`` vero conta."""
     return getattr(gara, "ha_tabellone_finale", False) is True
+
+
+def ha_finali_per_piazzamento(gara: Any) -> bool:
+    """La gara prevede le finali per piazzamento? Solo un ``True`` vero conta."""
+    return getattr(gara, "ha_finali_per_piazzamento", False) is True
+
+
+def ha_fase_finale(gara: Any) -> bool:
+    """La gara prevede una fase finale dopo i gironi: tabellone o finali."""
+    return ha_tabellone_finale(gara) or ha_finali_per_piazzamento(gara)
+
+
+def si_giocano_le_finali_per_piazzamento(gara: Any) -> bool:
+    """Le finali per piazzamento si giocano davvero: previste, e con due gironi.
+
+    Come il tabellone: se la gara parte con un girone solo la gara finisce
+    col girone. Con tre o più gironi non si arriva qui: l'avvio li rifiuta.
+    """
+    if not ha_finali_per_piazzamento(gara) or not getattr(gara, "id", None):
+        return False
+    from models.competition.gironi_service import GironiService
+
+    return bool(GironiService.girone_dei_giocatori(gara))
+
+
+def si_gioca_la_fase_finale(gara: Any) -> bool:
+    """Dopo i gironi si gioca qualcosa: il tabellone o le finali per piazzamento."""
+    return si_gioca_il_tabellone(gara) or si_giocano_le_finali_per_piazzamento(gara)
 
 
 def si_gioca_il_tabellone(gara: Any) -> bool:
@@ -77,8 +109,8 @@ def turni_dei_gironi(gara: Any) -> int:
 
 
 def e_della_fase_finale(gara: Any, round_number: Optional[int]) -> bool:
-    """Questo turno è del tabellone finale?"""
-    if round_number is None or not si_gioca_il_tabellone(gara):
+    """Questo turno è della fase finale: del tabellone o delle finali?"""
+    if round_number is None or not si_gioca_la_fase_finale(gara):
         return False
     return round_number > turni_dei_gironi(gara)
 
@@ -86,12 +118,13 @@ def e_della_fase_finale(gara: Any, round_number: Optional[int]) -> bool:
 def distanza_della_fase(gara: Any, round_number: Optional[int]) -> int:
     """La distanza di un turno senza override del turno (ADR-027, ADR-081).
 
-    Nei turni del tabellone dopo i gironi quella della fase finale
+    Nei turni della fase finale dopo i gironi — tabellone o finali per
+    piazzamento — quella della fase finale
     (`Gara.effective_final_phase_distance`: come i gironi o «al N»),
     altrimenti quella della gara. La sola finale può averne un'altra:
     `distanza_della_finale`.
     """
-    if ha_tabellone_finale(gara) and e_della_fase_finale(gara, round_number):
+    if ha_fase_finale(gara) and e_della_fase_finale(gara, round_number):
         return gara.effective_final_phase_distance
     return gara.distance
 
@@ -204,6 +237,21 @@ def semina(gara: Any) -> Tuple[List[int], Dict[int, int]]:
     return seme, {pid: posti[pid][0] for pid in seme}
 
 
+def incroci(gara: Any) -> Tuple[List[Tuple[int, int]], List[int]]:
+    """Le coppie delle finali per piazzamento, e chi si classifica diretto.
+
+    Le posizioni nel girone le decide la classifica di turno all'ultimo turno
+    dei gironi, come per il taglio del tabellone (`ordine_dei_gironi(
+    per_il_taglio=True)`): l'ordine è sempre completo. Ci sono tutti, anche
+    chi si è ritirato: perde la sua finale a tavolino.
+    """
+    _fasce, posti = ordine_dei_gironi(gara, per_il_taglio=True)
+    per_girone: Dict[int, List[int]] = {}
+    for pid in sorted(posti, key=lambda p: posti[p][1]):
+        per_girone.setdefault(posti[pid][0], []).append(pid)
+    return incroci_per_piazzamento(per_girone)
+
+
 def chi_va_al_tabellone(
     gara: Any, partite: Optional[Sequence[Any]] = None
 ) -> Optional[FrozenSet[int]]:
@@ -242,12 +290,14 @@ def chi_va_al_tabellone(
 
 
 def bande(gara: Any, fino_al_turno: int) -> Tuple[List[List[int]], FrozenSet[int]]:
-    """Le bande del tabellone finale, e chi resta terzo a pari merito.
+    """Le bande della fase finale, e chi resta a pari merito.
 
     Solo le partite della fase finale: quelle dei gironi non eliminano
     nessuno. Senza finalina i due semifinalisti sconfitti sono terzi a pari
-    merito (UC6).
+    merito (UC6). Con le finali per piazzamento: `_bande_delle_finali`.
     """
+    if ha_finali_per_piazzamento(gara):
+        return _bande_delle_finali(gara, fino_al_turno)
     from models.classification.bracket_standings import (
         BracketMatch,
         elimination_bands,
@@ -304,12 +354,52 @@ def bande(gara: Any, fino_al_turno: int) -> Tuple[List[List[int]], FrozenSet[int
     return elimination_bands(nodi), pari
 
 
+def _bande_delle_finali(
+    gara: Any, fino_al_turno: int
+) -> Tuple[List[List[int]], FrozenSet[int]]:
+    """Le bande delle finali per piazzamento: due posti per finale.
+
+    Le coppie sono quelle delle partite (`bracket_slot` è la coppia), che
+    restano anche se poi si corregge un risultato dei gironi; una coppia senza
+    partita — ritirati tutti e due — si legge dagli incroci e resta a pari
+    merito sui suoi due posti.
+    """
+    from models.classification.fase_finale import bande_delle_finali
+    from models.match.models import Match
+    from models.matchmaking.bracket import BRACKET_PLACEMENT
+    from models.status_enum import MatchStatus
+
+    coppie, diretti = incroci(gara)
+    partite = {
+        m.bracket_slot: m
+        for m in Match.query.filter(
+            Match.gara_id == gara.id,
+            Match.round_number > turni_dei_gironi(gara),
+            Match.round_number <= fino_al_turno,
+            Match.bracket_type == BRACKET_PLACEMENT,
+        ).all()
+    }
+    vincitori: Dict[int, Optional[int]] = {}
+    for indice in range(len(coppie)):
+        m = partite.get(indice)
+        if m is None:
+            continue
+        coppie[indice] = (m.player1_id, m.player2_id)
+        vincitori[indice] = m.winner_id if MatchStatus.is_finished(m.status) else None
+    senza_partita = (
+        {i for i in range(len(coppie)) if i not in partite}
+        if fino_al_turno > turni_dei_gironi(gara)
+        else set()
+    )
+    return bande_delle_finali(coppie, vincitori, diretti, senza_partita=senza_partita)
+
+
 def classifica_finale(
     gara: Any,
     fasce_dei_gironi: Sequence[Tuple[int, Sequence[int]]],
     fino_al_turno: int,
 ) -> List[Tuple[int, List[int]]]:
-    """Il tabellone, poi gli altri nell'ordine dei gironi (UC6)."""
+    """La fase finale, poi gli altri nell'ordine dei gironi (UC6)."""
     from models.classification.fase_finale import classifica_con_tabellone
 
     bande_tabellone, pari = bande(gara, fino_al_turno)
@@ -323,8 +413,13 @@ __all__ = [
     "distanza_della_fase",
     "distanza_della_finale",
     "e_della_fase_finale",
+    "ha_fase_finale",
+    "ha_finali_per_piazzamento",
     "ha_tabellone_finale",
+    "incroci",
     "si_gioca_il_tabellone",
+    "si_gioca_la_fase_finale",
+    "si_giocano_le_finali_per_piazzamento",
     "motivo_tabellone_impossibile",
     "ordine_dei_gironi",
     "semina",
