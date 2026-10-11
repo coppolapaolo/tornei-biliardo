@@ -76,7 +76,7 @@ blocks:
     items:
       - "**Vittoria** e **sconfitta**: i punti che hai scelto per ciascuna."
       - "**Pareggio** — a numero esatto di triangoli pari (3-3 al 6), o una partita fermata a tempo sul pari — i punti del pareggio a tutti e due."
-      - "**X a tavolino**: vale una vittoria, con zero differenza triangoli. Con l'esercizio al posto della X, la differenza è il punteggio della prova."
+      - "**X a tavolino**: vale una vittoria, con zero differenza triangoli. Con l'esercizio al posto della X, la differenza è il punteggio della prova. Nel girone all'italiana chi resta senza avversario **riposa**, e il riposo vale zero punti."
       - "**Partita a tre** con un vincitore: a lui la vittoria, agli altri due la sconfitta. Senza vincitore, chi è appaiato in testa prende il pareggio e il terzo, se staccato, la sconfitta (a 4-4-1: pareggio, pareggio, sconfitta). Chi si ritira prende la sconfitta."
 
   - type: text
@@ -195,6 +195,8 @@ blocks:
         text: >-
           Chi resta senza avversario riceve una vittoria e zero differenza
           triangoli: non viene né premiato né penalizzato rispetto a chi ha giocato.
+          Nel girone all'italiana invece si **riposa**, e il riposo non vale
+          niente: né vittorie, né punti, né triangoli.
       - name: "Forfait"
         text: >-
           Chi abbandona lascia all'avversario tutti i triangoli mancanti. Quei triangoli

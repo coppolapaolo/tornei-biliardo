@@ -457,16 +457,26 @@ def format_tpa(value) -> str:
     return f".{millesimi:03d}"
 
 
-def etichetta_dispari(policy) -> str:
+def etichetta_dispari(policy, strategy=None) -> str:
     """Il nome, tradotto, della formula che decide chi riposa coi dispari.
 
     Le schermate mostravano il valore della colonna ripulito a mano
     («Bye With Challenge»): inglese in una pagina italiana, e con la parola
     «bye» che l'interfaccia non usa mai. Un valore sconosciuto torna com'e'.
+
+    Con la strategia del girone all'italiana il riposo ha un nome suo: li'
+    chi riposa non vince a tavolino, e il riposo non vale niente
+    (SPECIFICHE.md, nota del 2026-10-11).
     """
-    from models.matchmaking.configuration import OddNumberPolicy
+    from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
 
     valore = getattr(policy, "value", policy)
+    strategia = getattr(strategy, "value", strategy)
+    if (
+        strategia == MatchmakingStrategy.ROUND_ROBIN.value
+        and valore == OddNumberPolicy.BYE.value
+    ):
+        return _("Riposo, non vale punti")
     etichette = {
         OddNumberPolicy.NO.value: _("Lista d'attesa"),
         OddNumberPolicy.BYE.value: _("X a tavolino"),
@@ -476,7 +486,7 @@ def etichetta_dispari(policy) -> str:
     return etichette.get(valore, valore or "")
 
 
-def opzioni_dispari(classification_system=None) -> list[tuple[str, str]]:
+def opzioni_dispari(classification_system=None, strategy=None) -> list[tuple[str, str]]:
     """Le formule dei dispari come voci di un menu: `(valore, nome tradotto)`.
 
     E' l'unica fonte delle opzioni dei moduli — creazione e modifica di gare e
@@ -490,16 +500,34 @@ def opzioni_dispari(classification_system=None) -> list[tuple[str, str]]:
     triangoli a chi riposa (`validators._validate_rack_system`). Senza, le
     formule ci sono tutte: serve ai moduli in cui il sistema si cambia nella
     stessa pagina.
+
+    Con una strategia restano solo le formule che quella strategia ammette
+    (`STRATEGY_CONSTRAINTS`). Col girone all'italiana e' il solo riposo, che
+    vale anche col sistema RACK: li' ognuno riposa una volta, e lo zero tocca
+    tutti (SPECIFICHE.md, nota del 2026-10-11).
     """
-    from models.matchmaking.configuration import OddNumberPolicy
+    from models.matchmaking.configuration import (
+        STRATEGY_CONSTRAINTS,
+        MatchmakingStrategy,
+        OddNumberPolicy,
+    )
     from models.status_enum import ClassificationSystem
 
     sistema = getattr(classification_system, "value", classification_system)
+    strategia = getattr(strategy, "value", strategy)
     escluse = {
         ClassificationSystem.RACK.value: {OddNumberPolicy.BYE.value},
     }.get(sistema, set())
+    ammesse = None
+    vincoli = next(
+        (v for k, v in STRATEGY_CONSTRAINTS.items() if k.value == strategia), None
+    )
+    if vincoli is not None:
+        ammesse = set(vincoli["odd_policies"])
+    if strategia == MatchmakingStrategy.ROUND_ROBIN.value:
+        escluse = set()
     return [
-        (policy.value, etichetta_dispari(policy.value))
+        (policy.value, etichetta_dispari(policy.value, strategia))
         for policy in OddNumberPolicy
-        if policy.value not in escluse
+        if policy.value not in escluse and (ammesse is None or policy.value in ammesse)
     ]

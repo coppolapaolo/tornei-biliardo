@@ -3,7 +3,15 @@
    Partita vinta a tavolino perche' il giocatore non ha avversario nel turno.
    "X a tavolino", mai "bye": e' la terminologia del design system, e le
    stringhe erano anche fuori da `_()`. #}
-{% if match.is_bye %}
+{% if match.is_riposo %}
+{# Il riposo del girone all'italiana: non vale niente (SPECIFICHE.md, nota del 2026-10-11). #}
+<div class="c7-card c7-card--info">
+    <div class="c7-kicker">{{ _('Riposo') }}</div>
+    <div style="font-size: 13px; font-weight: 600; line-height: 1.5; margin-top: 8px;">
+        {{ _('%(player)s riposa in questo turno: il riposo non vale punti.', player=match.player1.username) }}
+    </div>
+</div>
+{% elif match.is_bye %}
 <div class="c7-card c7-card--info">
     <div class="c7-kicker">{{ _('X a tavolino') }}</div>
     <div style="font-size: 13px; font-weight: 600; line-height: 1.5; margin-top: 8px;">

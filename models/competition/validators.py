@@ -153,8 +153,14 @@ def _validate_rack_system(
             "match più lunghi darebbero più opportunità di rack"
         )
 
-    # Bye semplice non permesso (0 rack = penalizzato)
-    if odd_handling == OddHandling.BYE:
+    # Bye semplice non permesso (0 rack = penalizzato). Non vale per il girone
+    # all'italiana: lì ognuno riposa esattamente una volta, e lo zero tocca
+    # tutti allo stesso modo — ed è l'unica formula dei dispari che il girone
+    # ammette (SPECIFICHE.md, nota del 2026-10-11).
+    if (
+        odd_handling == OddHandling.BYE
+        and matchmaking != MatchmakingStrategy.ROUND_ROBIN
+    ):
         errors.append(
             "Sistema RACK non supporta Bye semplice: "
             "il giocatore con bye riceverebbe 0 rack"

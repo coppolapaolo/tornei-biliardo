@@ -81,6 +81,16 @@ blocks:
       persone in su serve una giornata intera o più tavoli di quanti se ne
       hanno di solito.
 
+  - type: note
+    tone: info
+    title: "Con un numero dispari si riposa, e il riposo non vale"
+    text: >-
+      Con giocatori dispari a ogni turno uno **riposa**: lo vedi nel turno, ma
+      non gli porta niente — né vittorie, né punti, né triangoli. Tutti
+      riposano una volta, quindi nessuno ci guadagna. Se a girone in corso il
+      direttore **esclude** un giocatore, chi doveva incontrarlo nei turni
+      dopo **vince a tavolino**, con tutti i triangoli della distanza.
+
   - type: heading
     id: eliminazione
     title: "Eliminazione diretta"

@@ -42,7 +42,7 @@
       {% else %}
       <span{% if _finita and match.winner_id == match.player2_id %} class="c7-dim"{% endif %}>{{ match.player1.username }}</span>
       <span class="c7-riga-partita__sep">–</span>
-      {% if _stato == 'x' %}<span class="c7-dim">{{ _('X a tavolino') }}</span>
+      {% if _stato == 'x' %}<span class="c7-dim">{{ (_('Riposo') if match.is_riposo else _('X a tavolino')) }}</span>
       {% else %}<span{% if _finita and match.winner_id == match.player1_id %} class="c7-dim"{% endif %}>{{ match.player2.username }}</span>{% endif %}
       {% endif %}
     </div>

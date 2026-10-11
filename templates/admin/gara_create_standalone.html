@@ -333,7 +333,7 @@
                                             <select class="form-select form-select-sm" id="odd_number_policy"
                                                 name="odd_number_policy">
                                                 {% for valore, nome in opzioni_dispari() %}
-                                                <option value="{{ valore }}" {% if valore == 'bye' %}selected{% endif %}>{{ nome }}</option>
+                                                <option value="{{ valore }}" {% if valore == 'bye' %}selected{% endif %} data-label="{{ nome }}"{% if valore == OddNumberPolicy.BYE.value %} data-label-girone="{{ valore|etichetta_dispari(MatchmakingStrategy.ROUND_ROBIN.value) }}"{% endif %}>{{ nome }}</option>
                                                 {% endfor %}
                                             </select>
                                             <small id="trio_warning" class="text-warning small" style="display: none;">
@@ -733,11 +733,17 @@
             });
 
             const allowedOddPolicies = constraints.odd_policies || ['bye'];
+            // Nel girone all'italiana il riposo non vale niente e ha un nome
+            // suo (SPECIFICHE.md, nota del 2026-10-11).
+            const girone = selectedStrategy === {{ MatchmakingStrategy.ROUND_ROBIN.value|tojson }};
             Array.from(oddPolicySelect.options).forEach(option => {
                 if (option.value) {
                     option.disabled = !allowedOddPolicies.includes(option.value);
                     if (option.disabled && option.selected) {
                         oddPolicySelect.value = allowedOddPolicies[0];
+                    }
+                    if (option.dataset.labelGirone) {
+                        option.textContent = girone ? option.dataset.labelGirone : option.dataset.label;
                     }
                 }
             });

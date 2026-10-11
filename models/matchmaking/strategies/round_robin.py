@@ -91,12 +91,15 @@ class RoundRobinStrategy(BaseStrategy):
                 return []
 
             # Chi non gioca piu' (escluso dalla regola EXCLUDE, o comunque non
-            # piu' fra gli attivi) resta al suo posto nel calendario e diventa
-            # un "fantasma": il suo avversario di quel turno riposa, come
-            # vuole la gestione del dispari (SPECIFICHE.md, «policy per il
-            # forfait»). Con FORFEIT invece l'iscrizione resta attiva: la
-            # partita nasce e `create_matches_from_pairings` la chiude a
-            # tavolino.
+            # piu' fra gli attivi) resta al suo posto nel calendario, e il suo
+            # avversario di quel turno vince **a tavolino**, come contro chi
+            # ha dato forfait (SPECIFICHE.md, «policy per il forfait», nota
+            # del 2026-10-11): la coppia nasce intera e l'escluso viaggia in
+            # `forfeit_players`, che `create_matches_from_pairings` tratta
+            # come un forfait. Fino a quella data l'avversario «riposava con
+            # la X». Se l'escluso era chi riposava, o se sono esclusi tutti e
+            # due, quel posto non produce partite. Con FORFEIT l'iscrizione
+            # resta attiva e la strada e' la stessa, via `forfeit_user_ids`.
             active_ids = {i.user_id for i in self._get_active_inscriptions(gara)}
 
             schedule = self._generate_round_robin_schedule(player_ids)
@@ -105,14 +108,26 @@ class RoundRobinStrategy(BaseStrategy):
 
             pairings: List[Pairing] = []
             for pairing in schedule[round_number - 1]:
-                players = tuple(p for p in pairing if p in active_ids)
-                if not players:
+                attivi = tuple(p for p in pairing if p in active_ids)
+                if not attivi:
+                    continue
+                if len(pairing) == 1:
+                    # Il riposo del dispari: resta visibile, ma non vale
+                    # niente — zero vittorie, zero punti, zero triangoli.
+                    pairings.append(
+                        Pairing(
+                            players=attivi,
+                            round_number=round_number,
+                            is_bye=True,
+                            riposo=True,
+                        )
+                    )
                     continue
                 pairings.append(
                     Pairing(
-                        players=players,
+                        players=tuple(pairing),
                         round_number=round_number,
-                        is_bye=(len(players) == 1),
+                        forfeit_players=tuple(p for p in pairing if p not in attivi),
                     )
                 )
             return pairings

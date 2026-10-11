@@ -490,6 +490,7 @@ def create_app(config_name=None, *, da_script: bool = False):
         from models.matchmaking.configuration import (
             BRACKET_STRATEGIES,
             MatchmakingStrategy,
+            OddNumberPolicy,
             minimum_players_for,
         )
         from models.match.break_rules import BreakRule, DEFAULT_START_RULE, StartRule
@@ -521,6 +522,9 @@ def create_app(config_name=None, *, da_script: bool = False):
             # sempre e solo questo; l'altro vive dietro `_MATCHMAKING_MAP` e
             # non deve arrivare fino a un template.
             "MatchmakingStrategy": MatchmakingStrategy,
+            # Le formule dei dispari: il riposo del girone all'italiana ha un
+            # nome suo nei moduli (SPECIFICHE.md, nota del 2026-10-11).
+            "OddNumberPolicy": OddNumberPolicy,
             # Come si registra una prova di un esercizio (ADR-066): il modulo e
             # la pagina dell'allenamento scelgono i comandi da qui.
             "RecordingMode": RecordingMode,
@@ -663,6 +667,11 @@ def create_app(config_name=None, *, da_script: bool = False):
     app.jinja_env.filters["etichetta_dispari"] = etichetta_dispari
     # Le voci dei menu «giocatori dispari»: stessi nomi del filtro qui sopra.
     app.jinja_env.globals["opzioni_dispari"] = opzioni_dispari
+    # La formula che una gara di quella strategia tiene davvero: col girone la
+    # X con prova proposta dal campionato ripiega sul riposo.
+    from models.matchmaking.configuration import odd_policy_for_strategy
+
+    app.jinja_env.globals["odd_policy_for_strategy"] = odd_policy_for_strategy
 
     # Register image path template functions
     from utils.image_paths import challenge_image_url, challenge_image_filename

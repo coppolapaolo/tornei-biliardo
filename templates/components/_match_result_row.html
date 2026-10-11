@@ -53,7 +53,7 @@
     <td class="text-center" style="color: var(--c7-ink-faint); font-size: 12px;">vs</td>
     <td>
         {% if match.is_bye %}
-        <span style="color: var(--c7-ink-muted);">{{ _('X a tavolino') }}</span>
+        <span style="color: var(--c7-ink-muted);">{{ (_('Riposo') if match.is_riposo else _('X a tavolino')) }}</span>
         {% else %}
         <strong {% if p2_forfeit %}style="color: var(--c7-ink-faint); text-decoration: line-through;"{% endif %}>{{ match.player2.username }}</strong>
         {% if p2_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
@@ -95,7 +95,7 @@
         {# Determina se è una partita del giocatore corrente #}
         {% set is_my_match = user_inscription and current_user.is_authenticated and (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
         {% if match.is_bye %}
-        <span class="c7-state c7-state--info">{{ _('A tavolino') }}</span>
+        <span class="c7-state c7-state--info">{{ _('Riposo') if match.is_riposo else _('A tavolino') }}</span>
         {% elif match.status == MatchStatus.PENDING.value %}
             {% if is_my_match and not match.is_bye %}
             <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="c7-state c7-state--warn">{{ _('Da giocare') }}</a>

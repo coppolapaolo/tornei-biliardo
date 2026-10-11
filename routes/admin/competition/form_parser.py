@@ -23,6 +23,7 @@ from models.matchmaking.configuration import (
     FirstRoundPolicy,
     OddNumberPolicy,
     bracket_derived_fields,
+    odd_policy_for_strategy,
     resolve_classification_system,
 )
 from models.match.break_rules import BreakRule, StartRule
@@ -281,6 +282,16 @@ class GaraFormParser:
         # è stato letto — così una gara resta coerente anche se il form arriva
         # da una schermata vecchia o con il JavaScript spento.
         data.update(_bracket_derived_fields(data))
+
+        # Col girone all'italiana la X con prova ripiega sul riposo semplice
+        # (SPECIFICHE.md, nota del 2026-10-11): succede quando la propone il
+        # campionato, che non sa che strategia avrà ogni gara.
+        formula = odd_policy_for_strategy(
+            data["matchmaking_strategy"], data["odd_number_policy"]
+        )
+        if formula != data["odd_number_policy"]:
+            data["odd_number_policy"] = formula
+            data["x_challenge_id"] = None
 
         return data
 

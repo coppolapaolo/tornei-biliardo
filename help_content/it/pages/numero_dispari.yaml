@@ -44,6 +44,16 @@ blocks:
       accumulerebbe zero triangoli e verrebbe penalizzato pesantemente. In quel caso
       si usa la X a tavolino con esercizio.
 
+  - type: note
+    tone: info
+    title: "Nel girone all'italiana si riposa e basta"
+    text: >-
+      Col girone all'italiana l'unica soluzione è il **riposo**, e il riposo
+      **non vale niente**: zero vittorie, zero punti, zero triangoli. Non
+      penalizza nessuno, perché ognuno riposa esattamente una volta — per
+      questo va bene con ogni sistema di classifica, anche «Triangoli». La X
+      con esercizio, il trio e la lista d'attesa lì non si possono scegliere.
+
   - type: heading
     id: riposo_challenge
     title: "2. X a tavolino con esercizio"
@@ -220,6 +230,8 @@ blocks:
     items:
       - q: "Ho ricevuto una vittoria senza giocare. È un errore?"
         a: "No: è la X a tavolino, e tocca a turno a chi resta senza avversario. Vale una vittoria con zero differenza triangoli."
+      - q: "Nel girone all'italiana ho riposato e in classifica non ho preso niente. È giusto?"
+        a: "Sì: nel girone il riposo non vale niente, né vittorie né triangoli. Riposano tutti una volta, quindi alla fine nessuno ne esce avvantaggiato."
       - q: "Perché sono in lista d'attesa se ci sono ancora posti?"
         a: "Perché la gara richiede un numero pari di giocatori e la tua iscrizione lo renderebbe dispari. Entrerai appena si iscrive qualcun altro."
       - q: "Il trio non è selezionabile."

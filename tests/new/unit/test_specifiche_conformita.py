@@ -2364,10 +2364,15 @@ class TestLEsercizioConEstrazione:
 
 @pytest.mark.unit
 class TestIlGironeAllItaliana:
-    """`SPECIFICHE.md` riga 110.
+    """`SPECIFICHE.md` riga 112.
 
     > Con `N` giocatori servono `N-1` turni se `N` è pari e `N` turni se `N`
-    > è dispari: nel dispari ogni giocatore riposa una volta, con la X.
+    > è dispari: nel dispari ogni giocatore riposa una volta. **Il riposo nel
+    > girone non vale niente**: zero vittorie, zero punti, zero rack, e non è
+    > un match giocato
+
+    Fino al 2026-10-11 il riposo era «con la X», che vale una vittoria: la
+    regola l'ha cambiata l'utente (nota datata nella specifica).
     """
 
     @pytest.mark.parametrize("n", [3, 4, 5, 6, 7, 8, 11, 12])
@@ -2396,6 +2401,101 @@ class TestIlGironeAllItaliana:
         )
         riposi = [p[0] for turno in calendario for p in turno if len(p) == 1]
         assert sorted(riposi) == list(range(1, n + 1))
+
+    @staticmethod
+    def _riposo(db_session, sistema: str):
+        from models.competition.round_creation import create_matches_from_pairings
+        from models.matchmaking.strategies.base import Pairing
+
+        gara = _gara(db_session, sistema=sistema)
+        gara.matchmaking_strategy = "round_robin"
+        giocatore = _utente(db_session)
+        create_matches_from_pairings(
+            gara=gara,
+            pairings=[Pairing(players=(giocatore.id,), is_bye=True, riposo=True)],
+            round_number=1,
+            round_distance=gara.distance,
+        )
+        db_session.commit()
+        return gara, giocatore
+
+    @pytest.mark.parametrize("sistema", ["WINS", "RACK", "POINTS"])
+    def test_il_riposo_non_vale_niente(self, db_session, sistema):
+        """> zero vittorie, zero punti, zero rack, e non è un match giocato;
+        > chi riposa resta in classifica"""
+        gara, giocatore = self._riposo(db_session, sistema)
+        voce = _punteggi(gara.id)[giocatore.id]
+        assert (voce.matches_won, voce.matches_lost, voce.matches_drawn) == (0, 0, 0)
+        assert (voce.points, voce.racks_won, voce.racks_lost) == (0, 0, 0)
+
+    def test_nel_girone_il_dispari_solo_col_riposo(self):
+        """> Nel girone il dispari si gestisce **solo col riposo**: la X con
+        > esercizio non si può scegliere, e se il campionato la propone a una
+        > gara a girone, la gara ripiega sul riposo."""
+        from models.matchmaking.configuration import (
+            STRATEGY_CONSTRAINTS,
+            MatchmakingStrategy,
+            OddNumberPolicy,
+            odd_policy_for_strategy,
+        )
+
+        assert STRATEGY_CONSTRAINTS[MatchmakingStrategy.ROUND_ROBIN][
+            "odd_policies"
+        ] == [OddNumberPolicy.BYE.value]
+        assert (
+            odd_policy_for_strategy(
+                MatchmakingStrategy.ROUND_ROBIN, OddNumberPolicy.BYE_WITH_CHALLENGE
+            )
+            == OddNumberPolicy.BYE.value
+        )
+
+    def test_col_sistema_rack_il_riposo_e_ammesso(self):
+        """> nel girone il riposo è ammesso anche col sistema RACK"""
+        from models.competition import validators as v
+
+        errori, _avvisi = v.validate_gara_configuration(
+            classification_system=v.ClassificationSystem.RACK,
+            distance_type=v.DistanceType.EXACTLY,
+            distance=4,
+            multi_set=False,
+            odd_handling=v.OddHandling.BYE,
+            forfeit_policy=v.ForfeitPolicy.EXCLUDE,
+            matchmaking=v.MatchmakingStrategy.ROUND_ROBIN,
+        )
+        assert errori == []
+
+    def test_l_avversario_dell_escluso_vince_a_tavolino(self, db_session):
+        """`SPECIFICHE.md` riga 104.
+
+        > Nel **girone all'italiana** invece chi viene escluso resta al suo
+        > posto nel calendario, e il suo avversario dei turni successivi
+        > **vince a tavolino**, come contro un forfait: vittoria e rack pieni
+        > fino alla distanza di quel turno.
+
+        Il turno si gioca «al 3» in una gara «al 5»: il tavolino vale 3.
+        """
+        from models.competition.round_creation import create_matches_from_pairings
+        from models.matchmaking.strategies.base import Pairing
+
+        gara = _gara(db_session)
+        gara.matchmaking_strategy = "round_robin"
+        gara.is_race_to = True
+        avversario, escluso = _utente(db_session), _utente(db_session)
+        create_matches_from_pairings(
+            gara=gara,
+            pairings=[
+                Pairing(
+                    players=(escluso.id, avversario.id), forfeit_players=(escluso.id,)
+                )
+            ],
+            round_number=1,
+            round_distance=3,
+        )
+        db_session.commit()
+        partita = db_session.query(Match).filter_by(gara_id=gara.id).one()
+        assert partita.winner_id == avversario.id
+        assert (partita.player1_score, partita.player2_score) == (0, 3)
+        assert _punteggi(gara.id)[avversario.id].matches_won == 1
 
 
 # ══ Il limite di tempo ═══════════════════════════════════════════════════
