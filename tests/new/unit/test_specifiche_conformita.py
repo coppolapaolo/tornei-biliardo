@@ -3675,3 +3675,107 @@ class TestComeSiMostraIlPariMerito:
         assert {points_for_position(posizioni[p]) for p in (3, 4)} == {
             points_for_position(3)
         }
+
+
+class TestLeFinaliPerPiazzamento:
+    """`SPECIFICHE.md` («Turno», «Finali per piazzamento»; «Classifica», «La
+    classifica a gironi»), 2026-10-12, PR 6 del piano dei gironi."""
+
+    def test_il_p_esimo_contro_il_p_esimo_e_l_ultimo_diretto(self):
+        """> **1ºA–1ºB** per il 1°/2° posto, **2ºA–2ºB** per il 3°/4° […]
+        > Con 5 + 4 iscritti il 5º del girone da cinque è 9º."""
+        from models.matchmaking.fase_finale import incroci_per_piazzamento
+
+        a = ["1A", "2A", "3A", "4A", "5A"]
+        b = ["1B", "2B", "3B", "4B"]
+        coppie, diretti = incroci_per_piazzamento({0: a, 1: b})
+        assert coppie == [("1A", "1B"), ("2A", "2B"), ("3A", "3B"), ("4A", "4B")]
+        assert diretti == ["5A"]
+
+    def test_solo_con_due_gironi(self):
+        """> **Solo con due gironi** […] con «fino a 3» o più la formula non si
+        > sceglie."""
+        from models.matchmaking.fase_finale import verifica_piazzamento
+
+        assert verifica_piazzamento(2) is None
+        assert verifica_piazzamento(3) is not None
+
+    def test_un_turno_solo(self):
+        """> due gironi da 4 fanno 3 + 1 turni, 5 + 4 ne fanno 5 + 1."""
+        from models.competition.gironi_service import Anteprima
+
+        anteprima = Anteprima(
+            iscritti=9,
+            tetto=2,
+            massimo=2,
+            proposta=2,
+            taglie={2: [5, 4]},
+            finali_per_piazzamento=True,
+        )
+        assert anteprima.turni == {2: 6}
+        otto = Anteprima(
+            iscritti=8,
+            tetto=2,
+            massimo=2,
+            proposta=2,
+            taglie={2: [4, 4]},
+            finali_per_piazzamento=True,
+        )
+        assert otto.turni == {2: 4}
+
+    def test_la_finale_e_quella_del_primo_posto(self):
+        """> la **finale**, per le regole della sola finale, è la partita per il
+        > 1°/2° posto; le altre seguono la fase finale."""
+        from types import SimpleNamespace
+
+        from models.matchmaking.bracket import BRACKET_PLACEMENT
+        from models.matchmaking.fase_finale import la_finale_del_turno
+
+        nodi = [
+            SimpleNamespace(bracket_type=BRACKET_PLACEMENT, bracket_slot=s)
+            for s in (1, 0, 2, 3)
+        ]
+        assert la_finale_del_turno(nodi) is nodi[1]
+
+    def test_ogni_finale_assegna_due_posti(self):
+        """> Esempio: due gironi, 5 + 4. 1ºA–1ºB la vince 1ºB, 2ºA–2ºB la vince
+        > 2ºA, 3ºA–3ºB la vince 3ºB, 4ºA–4ºB la vince 4ºA: 1º 1ºB, 2º 1ºA, 3º
+        > 2ºA, 4º 2ºB, 5º 3ºB, 6º 3ºA, 7º 4ºA, 8º 4ºB, 9º 5ºA."""
+        from models.classification.fase_finale import (
+            bande_delle_finali,
+            classifica_con_tabellone,
+        )
+
+        # 1A=1, 2A=2, 3A=3, 4A=4, 5A=5; 1B=11, 2B=12, 3B=13, 4B=14
+        coppie = [(1, 11), (2, 12), (3, 13), (4, 14)]
+        bande, pari = bande_delle_finali(coppie, {0: 11, 1: 2, 2: 13, 3: 4}, [5])
+        gironi = [(1, [1, 11]), (3, [2, 12]), (5, [3, 13]), (7, [4, 14]), (9, [5])]
+        fasce = classifica_con_tabellone(bande, gironi, pari_merito=pari)
+        assert [ids for _pos, ids in fasce] == [
+            [11],
+            [1],
+            [2],
+            [12],
+            [13],
+            [3],
+            [4],
+            [14],
+            [5],
+        ]
+        assert [pos for pos, _ids in fasce] == list(range(1, 10))
+
+    def test_ritirati_tutti_e_due_restano_pari(self):
+        """> se si sono ritirati tutti e due, la finale non si gioca e i due
+        > restano a pari merito sui loro posti."""
+        from models.classification.fase_finale import (
+            bande_delle_finali,
+            classifica_con_tabellone,
+        )
+
+        bande, pari = bande_delle_finali(
+            [(1, 11), (2, 12)], {0: 1}, [], senza_partita={1}
+        )
+        fasce = classifica_con_tabellone(
+            bande, [(1, [1, 11]), (3, [2, 12])], pari_merito=pari
+        )
+        assert fasce == [(1, [1]), (2, [11]), (3, [2, 12])]

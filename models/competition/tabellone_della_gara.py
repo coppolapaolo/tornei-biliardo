@@ -70,10 +70,19 @@ NESSUN_TABELLONE = TabelloneDellaGara()
 
 
 def _nodi_dopo_i_gironi(partite: Sequence[Any]) -> List[Any]:
+    """I nodi del tabellone dopo i gironi.
+
+    Le finali per piazzamento (`BRACKET_PLACEMENT`) hanno un tipo e niente
+    girone, ma non sono un tabellone: nessuno passa a un turno dopo, e non
+    c'è un albero da disegnare.
+    """
+    from models.matchmaking.bracket import BRACKET_PLACEMENT
+
     return [
         m
         for m in partite
         if getattr(m, "bracket_type", None)
+        and getattr(m, "bracket_type", None) != BRACKET_PLACEMENT
         and getattr(m, "bracket_group", None) is None
     ]
 
@@ -149,8 +158,24 @@ def nomi_delle_partite(gara: Any, partite: Iterable[Any]) -> Dict[int, Any]:
     della gara. I nomi sono simbolici (`NomeRound`), le parole le mette il
     template. Le partite dei gironi del girone all'italiana non ci sono; nelle
     gare senza tabellone il dizionario è vuoto.
+
+    Le **finali per piazzamento** non hanno un albero: il nome viene dalla
+    coppia (`bracket_slot`), «Finale 1°/2° posto» per la 0, «Finale 3°/4°
+    posto» per la 1 — `NomeRound("piazzamento", coppia + 1)`.
     """
-    return nomi_dei_nodi(albero_della_gara(gara, partite))
+    from models.competition.tabellone_view import NomeRound
+    from models.matchmaking.bracket import BRACKET_PLACEMENT
+
+    tutte = list(partite)
+    nomi = nomi_dei_nodi(albero_della_gara(gara, tutte))
+    for m in tutte:
+        if (
+            getattr(m, "bracket_type", None) == BRACKET_PLACEMENT
+            and m.id is not None
+            and m.bracket_slot is not None
+        ):
+            nomi[m.id] = NomeRound("piazzamento", m.bracket_slot + 1)
+    return nomi
 
 
 def nomi_dei_nodi(albero: Any) -> Dict[int, Any]:

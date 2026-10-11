@@ -7,8 +7,9 @@ Un girone all'italiana — a uno o più gironi — può avere una **fase finale*
   i secondi» di ADR-076);
 * **tabellone**: i primi `K` di ogni girone (`Gara.qualifiers_per_group`)
   giocano un tabellone a eliminazione diretta;
-* **piazzamento**: il p-esimo di un girone contro il p-esimo dell'altro. Il
-  valore esiste, la formula arriva con la PR 6.
+* **piazzamento**: il p-esimo di un girone contro il p-esimo dell'altro
+  (`incroci_per_piazzamento`), con due gironi (PR 6): ogni finale assegna
+  due posti, e l'ultimo del girone più numeroso si classifica direttamente.
 
 Quattro domande, quattro risposte di questo modulo, tutte sul tabellone:
 
@@ -34,9 +35,9 @@ Quattro domande, quattro risposte di questo modulo, tutte sul tabellone:
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Container, Dict, List, Mapping, Optional, Sequence
+from typing import Any, Container, Dict, List, Mapping, Optional, Sequence, Tuple
 
-from .bracket import BRACKET_WINNERS, bracket_levels, bracket_size
+from .bracket import BRACKET_PLACEMENT, BRACKET_WINNERS, bracket_levels, bracket_size
 from .group_phase import seed_per_colonne
 
 #: Quanti passano per girone se la gara non lo dice.
@@ -47,6 +48,11 @@ MASSIMO_QUALIFICATI_PER_GIRONE = 8
 
 #: Il tabellone più piccolo: la sola finale.
 TAGLIA_MINIMA = 2
+
+#: Le finali per piazzamento si giocano fra due gironi: il p-esimo dell'uno
+#: contro il p-esimo dell'altro. Con più gironi la formula resta un punto
+#: aperto (ADR-076, ADR-081).
+MASSIMO_GIRONI_PER_PIAZZAMENTO = 2
 
 
 class FaseFinale(str, Enum):
@@ -211,6 +217,15 @@ def la_finale_del_turno(nodi: Sequence[Any]) -> Optional[Any]:
     2026-10-12). Si guardano i soli nodi del tabellone dopo i gironi, senza
     girone.
     """
+    piazzamenti = [
+        n for n in nodi if getattr(n, "bracket_type", None) == BRACKET_PLACEMENT
+    ]
+    if piazzamenti:
+        # Le finali per piazzamento: la finale è quella per il 1°/2° posto,
+        # la coppia 0. Le altre seguono la fase finale, come la finalina.
+        return next(
+            (n for n in piazzamenti if getattr(n, "bracket_slot", None) == 0), None
+        )
     vincenti = [
         n
         for n in nodi
@@ -218,6 +233,41 @@ def la_finale_del_turno(nodi: Sequence[Any]) -> Optional[Any]:
         and getattr(n, "bracket_group", None) is None
     ]
     return vincenti[0] if len(vincenti) == 1 else None
+
+
+def verifica_piazzamento(gironi: int) -> Optional[str]:
+    """Perché le finali per piazzamento non si fanno con questi gironi, o None.
+
+    Servono esattamente due gironi: con uno solo la gara finisce col girone
+    (lo decide l'avvio, non questa funzione), con tre o più la formula non è
+    ancora definita. Il motivo è una chiave, ``"gironi"``.
+    """
+    return None if gironi == MASSIMO_GIRONI_PER_PIAZZAMENTO else "gironi"
+
+
+def incroci_per_piazzamento(
+    ordine_nel_girone: Mapping[int, Sequence[int]],
+) -> Tuple[List[Tuple[int, int]], List[int]]:
+    """Le coppie delle finali per piazzamento, e chi si classifica diretto.
+
+    Il p-esimo del primo girone contro il p-esimo del secondo: la coppia 0
+    gioca per il 1°/2° posto, la 1 per il 3°/4°, e così via. Con gironi di
+    taglia diversa chi avanza nel girone più numeroso non ha avversario e si
+    classifica direttamente, dietro all'ultima coppia.
+
+    Args:
+        ordine_nel_girone: girone → giocatori dal primo all'ultimo, con tutti
+            i giocatori del girone (anche chi si è ritirato: perde la sua
+            finale a tavolino).
+
+    Raises:
+        ValueError: se i gironi non sono due.
+    """
+    if len(ordine_nel_girone) != MASSIMO_GIRONI_PER_PIAZZAMENTO:
+        raise ValueError(f"finali per piazzamento con {len(ordine_nel_girone)} gironi")
+    a, b = (list(ordine_nel_girone[g]) for g in sorted(ordine_nel_girone))
+    n = min(len(a), len(b))
+    return list(zip(a[:n], b[:n])), a[n:] + b[n:]
 
 
 def qualificati_per_girone(valore: object) -> int:
@@ -303,10 +353,12 @@ __all__ = [
     "FaseFinale",
     "LIMITE_MASSIMO_IN_MINUTI",
     "LimiteDellaFaseFinale",
+    "MASSIMO_GIRONI_PER_PIAZZAMENTO",
     "MASSIMO_QUALIFICATI_PER_GIRONE",
     "QUALIFICATI_PER_GIRONE_DEFAULT",
     "TAGLIA_MINIMA",
     "distanza_dal_modulo",
+    "incroci_per_piazzamento",
     "la_finale_del_turno",
     "limite_dal_modulo",
     "qualificati_dei_gironi",
@@ -314,5 +366,6 @@ __all__ = [
     "semina_del_tabellone",
     "taglia_del_tabellone",
     "turni_del_tabellone",
+    "verifica_piazzamento",
     "verifica_qualificati",
 ]

@@ -252,6 +252,64 @@ perché prima dell'avvio non si sa quale numero di turno sarà la finale
   sull'albero), la stessa delle caselle dello schermo in sala; le parole al
   singolare le dà la macro `nome_partita` di `_tabellone_macros.html`.
 
+## Emendamento del 2026-10-12: le finali per piazzamento
+
+**Il valore `piazzamento` di `Gara.final_phase_mode` diventa una formula**
+(PR 6 del piano dei gironi, prima metà: dominio, turni e classifica; i moduli
+e le pagine arrivano con la seconda, e fino ad allora il parser la rifiuta).
+
+- **Solo con due gironi.** `fase_finale.verifica_piazzamento`: la gara deve
+  avere «gironi: fino a 2» (`GaraService._verifica_fase_finale`, anche per una
+  gara che nasce dal campionato, che la riceve solo con quel tetto); l'avvio
+  rifiuta più di due gironi (`GironiService.fissa_all_avvio`). Con un girone
+  solo le finali non si giocano e la gara finisce col girone, come col
+  tabellone (`si_giocano_le_finali_per_piazzamento`). Con più gironi la
+  formula resta il punto aperto dell'ADR-076.
+- **Incroci** (`fase_finale.incroci_per_piazzamento`, puro;
+  `fase_finale_service.incroci`): il p-esimo del girone A contro il p-esimo
+  del girone B, con le posizioni nel girone della **catena di turno**
+  all'ultimo turno dei gironi, come il taglio (`ordine_dei_gironi(
+  per_il_taglio=True)`). Chi avanza nel girone più numeroso si classifica
+  direttamente.
+- **Un turno solo**, `turni_dei_gironi + 1`, generato da
+  `RoundRobinStrategy._finali_per_piazzamento` quando i gironi sono chiusi.
+  Le partite hanno `bracket_type = BRACKET_PLACEMENT` (`"PP"`),
+  `bracket_round` 1, `bracket_slot` = la coppia (0 per il 1°/2° posto),
+  `bracket_group` NULL. Il tipo proprio serve a tre cose: il pareggio è
+  rifiutato da solo (`chiusura.pareggio_ammesso` guarda il tipo), le partite
+  hanno un nome, e **non** sono un tabellone (`tabellone_della_gara` le
+  esclude dai nodi: niente albero da disegnare). Chi non è più in gara perde
+  la sua finale a tavolino; se non c'è più nessuno dei due la partita non
+  nasce.
+- **Regole**: sono partite della fase finale (`e_della_fase_finale`,
+  `distanza_della_fase`, `tempo.limite_del_turno` leggono
+  `Gara.ha_fase_finale`); la **finale** per le regole della sola finale è la
+  coppia 0 (`la_finale_del_turno`), le altre seguono la fase finale come la
+  finalina.
+- **Classifica** (`classification/fase_finale.bande_delle_finali`, puro;
+  `fase_finale_service._bande_delle_finali`): due bande per finale,
+  vincitore e perdente, nell'ordine delle coppie, poi i diretti; la
+  composizione è `classifica_con_tabellone`, la stessa del tabellone, quindi
+  `GaraClassification.position` e `shown_position` vengono dagli stessi
+  percorsi (`_con_il_tabellone`, `_fasce_col_tabellone`). Una finale da
+  giocare tiene i due nella stessa banda, ordinati dai gironi; una coppia
+  senza partita resta a pari merito. Niente spareggio SSR
+  (`tiebreakers_apply_to` guarda `si_gioca_la_fase_finale`).
+- **Nomi**: `tabellone_della_gara.nomi_delle_partite` dà alle finali
+  `NomeRound("piazzamento", coppia + 1)`, che le parole rendono «Finale
+  1°/2° posto», «Finale 3°/4° posto».
+- **Foglio di avvio**: `Anteprima.finali_per_piazzamento` conta il turno in
+  più con due gironi.
+
+**Alternativa respinta**: partite senza tipo, riconosciute dal numero del
+turno. Ogni controllo («si può pareggiare?», «come si chiama?») avrebbe
+dovuto chiedere le taglie dei gironi al database, e lo schermo in sala, che
+non fa query, non avrebbe potuto nominarle.
+
+Presidi: `test_finali_per_piazzamento_regole.py`,
+`test_gironi_finali_per_piazzamento.py`,
+`test_specifiche_conformita.py::TestLeFinaliPerPiazzamento`.
+
 ## Riferimenti
 
 - SPECIFICHE.md: «Turno» → «Fase finale dopo i gironi»; «Limite di tempo»;

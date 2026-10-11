@@ -37,7 +37,7 @@ def resolve_round_overrides(gara: Gara, round_number: int) -> dict:
     from models.competition.round_configuration import RoundConfiguration
 
     round_config = RoundConfiguration.get_for_gara_round(gara.id, round_number)
-    fase_finale = fase_finale_service.ha_tabellone_finale(
+    fase_finale = fase_finale_service.ha_fase_finale(
         gara
     ) and fase_finale_service.e_della_fase_finale(gara, round_number)
     distanza = fase_finale_service.distanza_della_fase(gara, round_number)

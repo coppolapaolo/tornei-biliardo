@@ -286,7 +286,8 @@ class Gara(SoftDeleteMixin, db.Model):
     group_seeding = db.Column(db.String(20), nullable=True)
     # La fase finale dopo i gironi (`FaseFinale`): nessuna, tabellone (i
     # primi `qualifiers_per_group` di ogni girone a eliminazione diretta),
-    # piazzamento. NULL = come il campionato, e su una gara singola nessuna.
+    # piazzamento (1ºA–1ºB, 2ºA–2ºB…, solo con due gironi). NULL = come il
+    # campionato, e su una gara singola nessuna.
     # Vale solo per il girone all'italiana: vedi `effective_final_phase_mode`.
     final_phase_mode = db.Column(db.String(20), nullable=True)
     # Quanti passano al tabellone da ogni girone: NULL = come il campionato,
@@ -576,6 +577,20 @@ class Gara(SoftDeleteMixin, db.Model):
         from models.matchmaking.fase_finale import FaseFinale
 
         return self.effective_final_phase_mode is FaseFinale.TABELLONE
+
+    @property
+    def ha_finali_per_piazzamento(self) -> bool:
+        """I gironi finiscono nelle finali per piazzamento: 1ºA–1ºB, 2ºA–2ºB…"""
+        from models.matchmaking.fase_finale import FaseFinale
+
+        return self.effective_final_phase_mode is FaseFinale.PIAZZAMENTO
+
+    @property
+    def ha_fase_finale(self) -> bool:
+        """Dopo i gironi si gioca qualcosa: il tabellone o le finali."""
+        from models.matchmaking.fase_finale import FaseFinale
+
+        return self.effective_final_phase_mode is not FaseFinale.NESSUNA
 
     @property
     def effective_qualifiers_per_group(self) -> int:

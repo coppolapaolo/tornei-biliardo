@@ -655,10 +655,12 @@ class GaraService:
 
     @staticmethod
     def _verifica_fase_finale(gara: Gara) -> None:
-        """Il tabellone dopo i gironi: dove si può, e con quale distanza.
+        """La fase finale dopo i gironi: dove si può, e con quale distanza.
 
         * Solo con più gironi: il tabellone è fra i primi di ogni girone, e
           una gara a girone unico non ce l'ha (decisione del 2026-10-11).
+        * Le finali per piazzamento, solo con **due** gironi: «Gironi: fino a
+          2» (PR 6 del piano; con più gironi la formula non è definita).
         * Nel tabellone non esiste il pareggio (SPECIFICHE.md, «Limite di
           tempo»), quindi le partite si giocano **al N**, come in ogni
           tabellone (`validators._validate_position_system`): con
@@ -672,11 +674,23 @@ class GaraService:
         from models.campionato.models import Campionato
         from models.campionato.piazzamenti import somma_i_totali
 
-        if not gara.ha_tabellone_finale:
+        if gara.ha_finali_per_piazzamento:
+            # Le finali per piazzamento: 1ºA–1ºB, 2ºA–2ºB… fra **due** gironi.
+            # Con più gironi la formula non è definita (ADR-076, ADR-081).
+            from models.matchmaking.fase_finale import verifica_piazzamento
+
+            if verifica_piazzamento(gara.effective_max_groups) is not None:
+                raise ValueError(
+                    _(
+                        "Le finali per piazzamento si giocano fra due gironi: "
+                        "scegli «Gironi: fino a 2», oppure un'altra fase finale."
+                    )
+                )
+        elif not gara.ha_tabellone_finale:
             return
         # Solo con più gironi (decisione dell'utente, 2026-10-11): il tabellone
         # è fra i primi di **ogni** girone.
-        if gara.effective_max_groups <= 1:
+        elif gara.effective_max_groups <= 1:
             raise ValueError(
                 _(
                     "Il tabellone dopo i gironi si gioca solo con più gironi: "
@@ -686,6 +700,14 @@ class GaraService:
         if not gara.is_race_to or (
             gara.is_multi_set and not getattr(gara, "is_race_to_sets", True)
         ):
+            if gara.ha_finali_per_piazzamento:
+                raise ValueError(
+                    _(
+                        "Con le finali per piazzamento le partite si giocano "
+                        "«al N»: ogni finale assegna due posti, e il pareggio "
+                        "non esiste."
+                    )
+                )
             raise ValueError(
                 _(
                     "Con il tabellone dopo i gironi le partite si giocano «al "
@@ -754,12 +776,18 @@ class GaraService:
 
         if kwargs.get("final_phase_mode") is None:
             # Il tabellone è fra i primi di ogni girone: una gara che nasce a
-            # girone unico non lo riceve (decisione del 2026-10-11).
-            kwargs["final_phase_mode"] = (
-                campionato.default_final_phase_mode
-                if tetto_di_gironi(kwargs.get("max_groups")) > 1
-                else FaseFinale.NESSUNA.value
-            )
+            # girone unico non lo riceve (decisione del 2026-10-11). Le finali
+            # per piazzamento vogliono due gironi esatti.
+            from models.matchmaking.fase_finale import verifica_piazzamento
+
+            tetto = tetto_di_gironi(kwargs.get("max_groups"))
+            proposta = FaseFinale.resolve(campionato.default_final_phase_mode)
+            if tetto <= 1 or (
+                proposta is FaseFinale.PIAZZAMENTO
+                and verifica_piazzamento(tetto) is not None
+            ):
+                proposta = FaseFinale.NESSUNA
+            kwargs["final_phase_mode"] = proposta.value
         if kwargs.get("qualifiers_per_group") is None:
             kwargs["qualifiers_per_group"] = campionato.default_qualifiers_per_group
         if "final_phase_time_limit_minutes" not in kwargs:

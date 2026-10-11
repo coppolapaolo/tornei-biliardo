@@ -31,6 +31,12 @@ BRACKET_LOSERS = "L"
 BRACKET_GRAND_FINAL = "GF"
 BRACKET_GRAND_FINAL_RESET = "GFR"
 BRACKET_THIRD_PLACE = "3P"
+# Le finali per piazzamento dopo i gironi del girone all'italiana (piano
+# gironi, PR 6): non sono un tabellone — nessuno passa a un turno dopo — ma
+# come i nodi del tabellone non ammettono pareggio e hanno un nome. Su queste
+# partite `bracket_slot` è la coppia, da 0: la finale per il 1°/2° posto è la
+# 0, quella per il 3°/4° la 1, e così via; `bracket_round` è 1.
+BRACKET_PLACEMENT = "PP"
 
 # Pavimenti di formato (US-4): sotto queste taglie il tabellone non ha senso
 # (per il doppio KO il losers bracket sarebbe troppo corto).
