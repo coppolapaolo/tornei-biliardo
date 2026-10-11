@@ -167,13 +167,13 @@ def admin_inscribe_user(gara_id):
         # Verifica che la gara esista
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            flash("Gara non trovata.", "error")
+            flash(_("Gara non trovata."), "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
         # Verifica che la gara sia ancora in fase di iscrizioni
         if gara.status != GaraStatus.INSCRIPTION.value:
             flash(
-                (
+                _(
                     "Non è possibile iscrivere utenti quando la gara non è in fase di "
                     "iscrizione."
                 ),
@@ -184,7 +184,7 @@ def admin_inscribe_user(gara_id):
         # Valida user_id dal form
         user_id_str = request.form.get("user_id")
         if not user_id_str:
-            flash("Nessun utente selezionato.", "error")
+            flash(_("Nessun utente selezionato."), "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
         user_id = int(user_id_str)
@@ -192,7 +192,7 @@ def admin_inscribe_user(gara_id):
         # Verifica che l'utente esista
         user = db.session.get(User, user_id)
         if not user:
-            flash("Utente non trovato.", "error")
+            flash(_("Utente non trovato."), "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
         # In una prova si iscrivono solo i fittizi (ADR-058): un utente vero
@@ -241,21 +241,32 @@ def admin_inscribe_user(gara_id):
 
             if inscription.is_waitlist:
                 flash(
-                    (
-                        f"Utente {user.username} aggiunto alla lista d'attesa "
-                        f"(posizione {inscription.waitlist_position})."
+                    _(
+                        "Utente %(utente)s aggiunto alla lista d'attesa "
+                        "(posizione %(posizione)s).",
+                        utente=user.username,
+                        posizione=inscription.waitlist_position,
                     ),
                     "warning",
                 )
             else:
-                flash(f"Utente {user.username} iscritto con successo.", "success")
+                flash(
+                    _("Utente %(utente)s iscritto con successo.", utente=user.username),
+                    "success",
+                )
         else:
-            flash(f"Utente {user.username} già iscritto a questa gara.", "warning")
+            flash(
+                _(
+                    "Utente %(utente)s già iscritto a questa gara.",
+                    utente=user.username,
+                ),
+                "warning",
+            )
 
     except ValueError as ve:
-        flash(f"Errore: {str(ve)}", "error")
+        flash(_("Errore: %(errore)s", errore=str(ve)), "error")
     except Exception as e:
-        flash(f"Errore durante l'iscrizione: {str(e)}", "error")
+        flash(_("Errore durante l'iscrizione: %(errore)s", errore=str(e)), "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -372,14 +383,17 @@ def add_director(gara_id):
         )
 
         if success:
-            flash("Direttore aggiunto con successo.")
+            flash(_("Direttore aggiunto con successo."), "success")
         else:
-            flash("Utente già presente come direttore.", "warning")
+            flash(_("Utente già presente come direttore."), "warning")
 
     except ValueError as e:
         flash(str(e), "error")
     except Exception as e:
-        flash(f"Errore durante l'aggiunta del direttore: {str(e)}", "error")
+        flash(
+            _("Errore durante l'aggiunta del direttore: %(errore)s", errore=str(e)),
+            "error",
+        )
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -394,8 +408,8 @@ def remove_director(gara_id):
     success = GaraService.remove_director(gara_id=gara_id, user_id=director_id)
 
     if success:
-        flash("Direttore rimosso con successo.")
+        flash(_("Direttore rimosso con successo."), "success")
     else:
-        flash("Errore: direttore non trovato.", "error")
+        flash(_("Errore: direttore non trovato."), "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))

@@ -10,7 +10,7 @@ from flask import (
     flash,
     jsonify,
 )
-from flask_babel import _
+from flask_babel import _, ngettext
 from flask_login import login_required, current_user
 
 from models import (
@@ -86,7 +86,7 @@ def start_first_round(gara_id):
         flash(str(ve), "error")
     except Exception as e:
         logger.error(f"Error starting first round: {e}", exc_info=True)
-        flash("Errore interno del server", "error")
+        flash(_("Errore interno del server"), "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -187,8 +187,11 @@ def terminate_gara(gara_id):
     # Accept both playing and awaiting_ssr statuses
     if gara.status not in [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]:
         if is_ajax:
-            return jsonify({"success": False, "error": "La gara non è in corso!"}), 400
-        flash("La gara non è in corso!", "error")
+            return (
+                jsonify({"success": False, "error": _("La gara non è in corso!")}),
+                400,
+            )
+        flash(_("La gara non è in corso!"), "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # For playing status, check if all rounds completed
@@ -200,12 +203,12 @@ def terminate_gara(gara_id):
                     jsonify(
                         {
                             "success": False,
-                            "error": "Non tutti i turni sono ancora completati!",
+                            "error": _("Non tutti i turni sono ancora completati!"),
                         }
                     ),
                     400,
                 )
-            flash("Non tutti i turni sono ancora completati!", "error")
+            flash(_("Non tutti i turni sono ancora completati!"), "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     rifiuto = _rifiuto_chiusura(gara, is_ajax)
@@ -247,20 +250,21 @@ def terminate_gara(gara_id):
             return jsonify(
                 {
                     "success": True,
-                    "message": "Gara terminata con successo!",
+                    "message": _("Gara terminata con successo!"),
                     "redirect": url_for(
                         "admin.competition.gara_detail", gara_id=gara_id
                     ),
                 }
             )
         flash(
-            "Gara terminata con successo! I risultati sono ora definitivi.", "success"
+            _("Gara terminata con successo! I risultati sono ora definitivi."),
+            "success",
         )
     except Exception as e:
         if is_ajax:
             return safe_json_error(e, "terminating gara")
         logger.error(f"Error terminating gara: {e}", exc_info=True)
-        flash("Errore interno del server", "error")
+        flash(_("Errore interno del server"), "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -284,12 +288,10 @@ def start_ssr(gara_id):
     if gara.status != GaraStatus.PLAYING.value:
         if is_ajax:
             return (
-                jsonify(
-                    {"success": False, "error": "La gara non è in stato 'in corso'!"}
-                ),
+                jsonify({"success": False, "error": _("La gara non è in corso!")}),
                 400,
             )
-        flash("La gara non è in stato 'in corso'!", "error")
+        flash(_("La gara non è in corso!"), "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Check all rounds completed
@@ -300,12 +302,12 @@ def start_ssr(gara_id):
                 jsonify(
                     {
                         "success": False,
-                        "error": "Non tutti i turni sono ancora completati!",
+                        "error": _("Non tutti i turni sono ancora completati!"),
                     }
                 ),
                 400,
             )
-        flash("Non tutti i turni sono ancora completati!", "error")
+        flash(_("Non tutti i turni sono ancora completati!"), "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     rifiuto = _rifiuto_chiusura(gara, is_ajax)
@@ -318,11 +320,14 @@ def start_ssr(gara_id):
         if is_ajax:
             return (
                 jsonify(
-                    {"success": False, "error": "Non ci sono parimerito da risolvere!"}
+                    {
+                        "success": False,
+                        "error": _("Non ci sono parimerito da risolvere!"),
+                    }
                 ),
                 400,
             )
-        flash("Non ci sono parimerito da risolvere!", "warning")
+        flash(_("Non ci sono parimerito da risolvere!"), "warning")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     try:
@@ -336,7 +341,7 @@ def start_ssr(gara_id):
             return jsonify(
                 {
                     "success": True,
-                    "message": (
+                    "message": _(
                         "Fase SSR avviata. Inserire i punteggi per i parimerito."
                     ),
                     "ssr_groups": all_groups,
@@ -345,12 +350,12 @@ def start_ssr(gara_id):
                     ),
                 }
             )
-        flash("Fase SSR avviata. Inserire i punteggi per i parimerito.", "success")
+        flash(_("Fase SSR avviata. Inserire i punteggi per i parimerito."), "success")
     except Exception as e:
         if is_ajax:
             return safe_json_error(e, "starting SSR")
         logger.error(f"Error starting SSR: {e}", exc_info=True)
-        flash("Errore interno del server", "error")
+        flash(_("Errore interno del server"), "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -420,12 +425,12 @@ def save_ssr_group(gara_id):
 
     # Accept both playing and awaiting_ssr states
     if gara.status not in [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]:
-        return jsonify({"success": False, "error": "La gara non è in corso!"}), 400
+        return jsonify({"success": False, "error": _("La gara non è in corso!")}), 400
 
     # Parse request data
     data = request.get_json()
     if not data:
-        return jsonify({"success": False, "error": "Dati non validi"}), 400
+        return jsonify({"success": False, "error": _("Dati non validi")}), 400
 
     group_position = data.get("group_position")
     raw_scores = data.get("scores")
@@ -433,7 +438,7 @@ def save_ssr_group(gara_id):
     if group_position is None or not raw_scores:
         return (
             jsonify(
-                {"success": False, "error": "Posizione gruppo e punteggi richiesti"}
+                {"success": False, "error": _("Posizione gruppo e punteggi richiesti")}
             ),
             400,
         )
@@ -445,7 +450,7 @@ def save_ssr_group(gara_id):
     except (ValueError, TypeError):
         return (
             jsonify(
-                {"success": False, "error": "I punteggi devono essere numeri interi"}
+                {"success": False, "error": _("I punteggi devono essere numeri interi")}
             ),
             400,
         )
@@ -472,7 +477,10 @@ def save_ssr_group(gara_id):
     return jsonify(
         {
             "success": True,
-            "message": f"Punteggi SSR per posizione {group_position} salvati",
+            "message": _(
+                "Punteggi SSR per posizione %(posizione)s salvati",
+                posizione=group_position,
+            ),
             "all_resolved": all_resolved,
             "ssr_groups": all_groups,
         }
@@ -496,7 +504,7 @@ def save_ssr_scores(gara_id):
 
     # Accept both playing and awaiting_ssr states
     if gara.status not in [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]:
-        return jsonify({"success": False, "error": "La gara non è in corso!"}), 400
+        return jsonify({"success": False, "error": _("La gara non è in corso!")}), 400
 
     # For playing status, check rounds completed
     if gara.status == GaraStatus.PLAYING.value:
@@ -506,7 +514,7 @@ def save_ssr_scores(gara_id):
                 jsonify(
                     {
                         "success": False,
-                        "error": "Non tutti i turni sono ancora completati!",
+                        "error": _("Non tutti i turni sono ancora completati!"),
                     }
                 ),
                 400,
@@ -515,7 +523,7 @@ def save_ssr_scores(gara_id):
     # Parse scores from request
     data = request.get_json()
     if not data or "scores" not in data:
-        return jsonify({"success": False, "error": "Dati non validi"}), 400
+        return jsonify({"success": False, "error": _("Dati non validi")}), 400
 
     # Convert string keys to integers and values to integers
     try:
@@ -523,7 +531,7 @@ def save_ssr_scores(gara_id):
     except (ValueError, TypeError):
         return (
             jsonify(
-                {"success": False, "error": "I punteggi devono essere numeri interi"}
+                {"success": False, "error": _("I punteggi devono essere numeri interi")}
             ),
             400,
         )
@@ -546,7 +554,7 @@ def save_ssr_scores(gara_id):
                 "success": False,
                 "needs_tiebreaker": True,
                 "tiebreakers": remaining_tiebreakers,
-                "message": "Alcuni spareggi non sono ancora risolti.",
+                "message": _("Alcuni spareggi non sono ancora risolti."),
             }
         )
 
@@ -556,7 +564,7 @@ def save_ssr_scores(gara_id):
         return jsonify(
             {
                 "success": True,
-                "message": "Gara terminata con successo!",
+                "message": _("Gara terminata con successo!"),
                 "redirect": url_for("admin.competition.gara_detail", gara_id=gara_id),
             }
         )
@@ -576,7 +584,10 @@ def amalfi_classification(gara_id, round_number):
 
     # Verifica che il turno sia valido
     if round_number < 1 or round_number > gara.rounds_count:
-        flash(f"Turno {round_number} non valido per questa gara!")
+        flash(
+            _("Turno %(turno)s non valido per questa gara!", turno=round_number),
+            "error",
+        )
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Verifica che il turno sia completato
@@ -585,7 +596,10 @@ def amalfi_classification(gara_id, round_number):
     ).all()
 
     if not matches_in_round:
-        flash(f"Il turno {round_number} non è ancora iniziato!")
+        flash(
+            _("Il turno %(turno)s non è ancora iniziato!", turno=round_number),
+            "warning",
+        )
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Controlla se tutti i match del turno sono completati.
@@ -603,8 +617,14 @@ def amalfi_classification(gara_id, round_number):
     ]
     if incomplete_matches:
         flash(
-            f"Il turno {round_number} non è ancora completato! "
-            f"Mancano {len(incomplete_matches)} partite."
+            ngettext(
+                "Il turno %(turno)s non è ancora completato! " "Manca %(num)d partita.",
+                "Il turno %(turno)s non è ancora completato! "
+                "Mancano %(num)d partite.",
+                len(incomplete_matches),
+                turno=round_number,
+            ),
+            "warning",
         )
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -653,7 +673,10 @@ def amalfi_start_round(gara_id, round_number):
         # Validazioni preliminari
         if round_number < 1 or round_number > gara.rounds_count:
             return jsonify(
-                {"success": False, "error": f"Turno {round_number} non valido!"}
+                {
+                    "success": False,
+                    "error": _("Turno %(turno)s non valido!", turno=round_number),
+                }
             )
 
         # Controlla se il turno è già stato avviato (idempotenza)
@@ -664,7 +687,9 @@ def amalfi_start_round(gara_id, round_number):
             return jsonify(
                 {
                     "success": False,
-                    "error": f"Il turno {round_number} è già stato avviato!",
+                    "error": _(
+                        "Il turno %(turno)s è già stato avviato!", turno=round_number
+                    ),
                 }
             )
 
@@ -672,7 +697,10 @@ def amalfi_start_round(gara_id, round_number):
             return jsonify(
                 {
                     "success": False,
-                    "error": f"Devi avviare prima il turno {gara.current_round + 1}!",
+                    "error": _(
+                        "Devi avviare prima il turno %(turno)s!",
+                        turno=gara.current_round + 1,
+                    ),
                 }
             )
 
@@ -681,7 +709,12 @@ def amalfi_start_round(gara_id, round_number):
         validation_result = strategy._validate_strategy_specific(gara)
         if validation_result["errors"]:
             errors = "; ".join(validation_result["errors"])
-            return jsonify({"success": False, "error": f"Errore Amalfi: {errors}"})
+            return jsonify(
+                {
+                    "success": False,
+                    "error": _("Errore Amalfi: %(errori)s", errori=errors),
+                }
+            )
 
         if round_number > 1:
             prev_matches = Match.query.filter_by(
@@ -697,8 +730,10 @@ def amalfi_start_round(gara_id, round_number):
                 return jsonify(
                     {
                         "success": False,
-                        "error": f"Completa prima tutte le partite del "
-                        f"turno {round_number-1}!",
+                        "error": _(
+                            "Completa prima tutte le partite del turno %(turno)s!",
+                            turno=round_number - 1,
+                        ),
                     }
                 )
 
@@ -748,7 +783,10 @@ def start_round_generic(gara_id, round_number):
         # Validazioni preliminari
         if round_number < 1 or round_number > gara.rounds_count:
             return jsonify(
-                {"success": False, "error": f"Turno {round_number} non valido!"}
+                {
+                    "success": False,
+                    "error": _("Turno %(turno)s non valido!", turno=round_number),
+                }
             )
 
         # Controlla se il turno è già stato avviato (idempotenza)
@@ -759,7 +797,9 @@ def start_round_generic(gara_id, round_number):
             return jsonify(
                 {
                     "success": False,
-                    "error": f"Il turno {round_number} è già stato avviato!",
+                    "error": _(
+                        "Il turno %(turno)s è già stato avviato!", turno=round_number
+                    ),
                 }
             )
 
@@ -767,7 +807,10 @@ def start_round_generic(gara_id, round_number):
             return jsonify(
                 {
                     "success": False,
-                    "error": f"Devi avviare prima il turno {gara.current_round + 1}!",
+                    "error": _(
+                        "Devi avviare prima il turno %(turno)s!",
+                        turno=gara.current_round + 1,
+                    ),
                 }
             )
 
@@ -778,7 +821,10 @@ def start_round_generic(gara_id, round_number):
             if validation_result["errors"]:
                 errors = "; ".join(validation_result["errors"])
                 return jsonify(
-                    {"success": False, "error": f"Errore configurazione: {errors}"}
+                    {
+                        "success": False,
+                        "error": _("Errore configurazione: %(errori)s", errori=errors),
+                    }
                 )
 
         # Controlla turni precedenti completati
@@ -796,8 +842,10 @@ def start_round_generic(gara_id, round_number):
                 return jsonify(
                     {
                         "success": False,
-                        "error": f"Completa prima tutte le partite del "
-                        f"turno {round_number-1}!",
+                        "error": _(
+                            "Completa prima tutte le partite del turno %(turno)s!",
+                            turno=round_number - 1,
+                        ),
                     }
                 )
 
@@ -899,7 +947,7 @@ def reset_match_advanced(gara_id, match_id):
             flash(message, "danger")
     except Exception as e:
         logger.error(f"Error resetting match: {e}", exc_info=True)
-        flash("Errore interno del server", "danger")
+        flash(_("Errore interno del server"), "danger")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -928,7 +976,7 @@ def cancel_round_advanced(gara_id, round_number):
             flash(message, "danger")
     except Exception as e:
         logger.error(f"Error cancelling round: {e}", exc_info=True)
-        flash("Errore interno del server", "danger")
+        flash(_("Errore interno del server"), "danger")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -948,16 +996,29 @@ def bulk_reset_round_matches(gara_id, round_number):
         )
 
         if success:
-            flash(f"{message}. {stats['reset_count']} match resettati.", "success")
+            flash(
+                ngettext(
+                    "%(messaggio)s. %(num)d partita azzerata.",
+                    "%(messaggio)s. %(num)d partite azzerate.",
+                    stats["reset_count"],
+                    messaggio=message,
+                ),
+                "success",
+            )
         else:
             flash(
-                f"{message}. {stats.get('reset_count', 0)} match resettati, "
-                f"{stats.get('error_count', 0)} errori.",
+                _(
+                    "%(messaggio)s. Partite azzerate: %(azzerate)s, errori: "
+                    "%(errori)s.",
+                    messaggio=message,
+                    azzerate=stats.get("reset_count", 0),
+                    errori=stats.get("error_count", 0),
+                ),
                 "warning",
             )
     except Exception as e:
         logger.error(f"Error in bulk reset: {e}", exc_info=True)
-        flash("Errore interno del server", "danger")
+        flash(_("Errore interno del server"), "danger")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
@@ -1158,7 +1219,10 @@ def upsert_round_config(gara_id: int, round_number: int):
             jsonify(
                 {
                     "success": False,
-                    "error": f"Turno {round_number} non valido per questa gara.",
+                    "error": _(
+                        "Turno %(turno)s non valido per questa gara.",
+                        turno=round_number,
+                    ),
                 }
             ),
             400,
@@ -1182,9 +1246,11 @@ def upsert_round_config(gara_id: int, round_number: int):
                 jsonify(
                     {
                         "success": False,
-                        "error": "Sul tabellone si gioca sempre a chi arriva "
-                        "prima: il numero esatto di rack non è ammesso, "
-                        "nemmeno per un singolo turno.",
+                        "error": _(
+                            "Sul tabellone si gioca sempre a chi arriva "
+                            "prima: il numero esatto di triangoli non è ammesso, "
+                            "nemmeno per un singolo turno."
+                        ),
                     }
                 ),
                 400,

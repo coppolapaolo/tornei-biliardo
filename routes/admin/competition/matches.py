@@ -96,7 +96,7 @@ def trio_forfeit(trio_id):
     try:
         forfeiting_player_id = request.form.get("player_id", type=int)
         if not forfeiting_player_id:
-            return jsonify({"error": "Player ID richiesto"}), 400
+            return jsonify({"error": _("Giocatore non indicato.")}), 400
 
         result = WithdrawPolicyService.ritira_dal_trio(
             trio_id, forfeiting_player_id, current_user.id
@@ -118,7 +118,7 @@ def trio_reset(trio_id):
     try:
         # Usa il service layer invece del direct database access
         TrioMatchService.reset_trio(trio_id)
-        return jsonify({"success": True, "message": "Trio resettato con successo"})
+        return jsonify({"success": True, "message": _("Trio resettato con successo")})
 
     except ValueError as ve:
         # Un rifiuto del dominio e' una risposta, non un guasto del server:

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-11 17:23+0200\n"
+"POT-Creation-Date: 2026-10-11 17:45+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -342,6 +342,8 @@ msgstr "This drill already has recorded attempts"
 #: models/challenge/authoring.py:290 models/challenge/profile_service.py:94
 #: models/challenge/rating_service.py:61 models/challenge/shot_service.py:87
 #: models/training_sheet/services.py:247
+#: routes/admin/competition/challenges.py:178
+#: routes/admin/competition/challenges.py:188
 msgid "Esercizio non trovato"
 msgstr "Drill not found"
 
@@ -5117,7 +5119,8 @@ msgid "Voce"
 msgstr "Item"
 
 #: models/user/profile_service.py:200
-#: routes/admin/competition/inscriptions.py:276
+#: routes/admin/competition/inscriptions.py:195
+#: routes/admin/competition/inscriptions.py:287
 msgid "Utente non trovato."
 msgstr "User not found."
 
@@ -5939,7 +5942,7 @@ msgstr "Playoff Elite"
 msgid "Playoff Academy"
 msgstr "Playoff Academy"
 
-#: routes/admin/campionato.py:339 routes/admin/competition/crud.py:125
+#: routes/admin/campionato.py:339 routes/admin/competition/crud.py:131
 #, python-format
 msgid "Prova «%(name)s» creata: solo tu la vedi."
 msgstr "Trial \"%(name)s\" created: only you can see it."
@@ -6258,91 +6261,193 @@ msgstr "Category disabled"
 msgid "Categoria eliminata"
 msgstr "Category deleted"
 
-#: routes/admin/competition/crud.py:134
+#: routes/admin/competition/challenges.py:41
+msgid "Gli esercizi fra i turni non valgono in questa gara"
+msgstr "Between-round drills don't apply to this competition"
+
+#: routes/admin/competition/challenges.py:105
+msgid "Non è possibile aggiungere esercizi dopo l'inizio della gara"
+msgstr "Drills can't be added once the competition has started"
+
+#: routes/admin/competition/challenges.py:119
+msgid "Devi selezionare un esercizio"
+msgstr "You must select a drill"
+
+#: routes/admin/competition/challenges.py:139
+msgid "Esercizio aggiunto"
+msgstr "Drill added"
+
+#: routes/admin/competition/challenges.py:170
+msgid "Esercizio della gara non indicato"
+msgstr "Competition drill not specified"
+
+#: routes/admin/competition/challenges.py:186
+msgid "Esercizio rimosso"
+msgstr "Drill removed"
+
+#: routes/admin/competition/challenges.py:301
+msgid "La descrizione è obbligatoria"
+msgstr "Description is required"
+
+#: routes/admin/competition/challenges.py:309
+#: routes/admin/competition/challenges.py:316
+msgid "L'immagine è obbligatoria"
+msgstr "Image is required"
+
+#: routes/admin/competition/challenges.py:328
+msgid "Immagine troppo grande (max 5MB)"
+msgstr "Image too large (max 5MB)"
+
+#: routes/admin/competition/challenges.py:336
+msgid "Nome file non valido"
+msgstr "Invalid file name"
+
+#: routes/admin/competition/challenges.py:350
+msgid "Formato file non supportato. Usa JPG, PNG, GIF o WebP"
+msgstr "Unsupported file format. Use JPG, PNG, GIF or WebP"
+
+#: routes/admin/competition/challenges.py:385
+msgid "Esercizio creato"
+msgstr "Drill created"
+
+#: routes/admin/competition/challenges.py:412
+msgid "Nessun esercizio attivo in questa gara"
+msgstr "No active drills in this competition"
+
+#: routes/admin/competition/crud.py:74
+msgid "Il nome della competizione è obbligatorio!"
+msgstr "Competition name is required!"
+
+#: routes/admin/competition/crud.py:96 routes/admin/competition/crud.py:487
+#, python-format
+msgid "Configurazione non valida: %(errori)s"
+msgstr "Invalid configuration: %(errori)s"
+
+#: routes/admin/competition/crud.py:140
 #, python-format
 msgid "Gara singola '%(name)s' creata con successo!"
 msgstr "Standalone competition '%(name)s' created successfully!"
 
-#: routes/admin/competition/crud.py:221
+#: routes/admin/competition/crud.py:146
+#, python-format
+msgid "Errore nella creazione: %(errore)s"
+msgstr "Error during creation: %(errore)s"
+
+#: routes/admin/competition/crud.py:149
+#, python-format
+msgid "Errore imprevisto: %(errore)s"
+msgstr "Unexpected error: %(errore)s"
+
+#: routes/admin/competition/crud.py:204
+#, python-format
+msgid "Strategia '%(strategia)s' non valida"
+msgstr "Invalid strategy '%(strategia)s'"
+
+#: routes/admin/competition/crud.py:227
+msgid "Campionato non indicato."
+msgstr "Championship not specified."
+
+#: routes/admin/competition/crud.py:234
 msgid "Non è possibile creare gare in un campionato terminato."
 msgstr "Cannot create competitions in a terminated championship."
 
-#: routes/admin/competition/crud.py:285
+#: routes/admin/competition/crud.py:256
+msgid "Non puoi creare gare in questo campionato."
+msgstr "You can't create competitions in this championship."
+
+#: routes/admin/competition/crud.py:264
+#, python-format
+msgid "La gara %(numero)s esiste già!"
+msgstr "Competition %(numero)s already exists!"
+
+#: routes/admin/competition/crud.py:298
 #, python-format
 msgid "Gara %(number)d creata con successo!"
 msgstr "Competition %(number)d created successfully!"
 
-#: routes/admin/competition/crud.py:295
+#: routes/admin/competition/crud.py:308
 msgid "Nessuna gara precedente da cui copiare gli iscritti."
 msgstr "No previous competition to copy players from."
 
-#: routes/admin/competition/crud.py:305
+#: routes/admin/competition/crud.py:318
 #, python-format
 msgid "%(num)d iscritto copiato dalla gara precedente."
 msgid_plural "%(num)d iscritti copiati dalla gara precedente."
 msgstr[0] "%(num)d player copied from the previous competition."
 msgstr[1] "%(num)d players copied from the previous competition."
 
-#: routes/admin/competition/crud.py:313
+#: routes/admin/competition/crud.py:326
 msgid "Nessun iscritto da copiare dalla gara precedente."
 msgstr "No players to copy from the previous competition."
 
-#: routes/admin/competition/crud.py:344
+#: routes/admin/competition/crud.py:357
 #, python-format
 msgid "La nuova data supera %(gara)s, che è già avviata: non si può spostare."
 msgstr ""
 "The new date goes past %(gara)s, which has already started: it cannot be "
 "moved."
 
-#: routes/admin/competition/crud.py:354
+#: routes/admin/competition/crud.py:367
 #, python-format
 msgid "Spostata insieme a %(gara)s"
 msgstr "Moved together with %(gara)s"
 
-#: routes/admin/competition/crud.py:389
+#: routes/admin/competition/crud.py:402
 #, python-format
 msgid "Iscrizione di %(nome)s riconfermata: resta scritto che l'hai fatto tu."
 msgstr "%(nome)s's entry reconfirmed: it stays on record that you did it."
 
-#: routes/admin/competition/crud.py:411
+#: routes/admin/competition/crud.py:424
 #, python-format
 msgid "Notifica mandata a %(num)d giocatore."
 msgid_plural "Notifica mandata a %(num)d giocatori."
 msgstr[0] "Notification sent to %(num)d player."
 msgstr[1] "Notification sent to %(num)d players."
 
-#: routes/admin/competition/crud.py:433
+#: routes/admin/competition/crud.py:446
 msgid "La gara è chiusa: non si modifica più."
 msgstr "The competition is closed: it can no longer be edited."
 
-#: routes/admin/competition/crud.py:486 routes/admin/competition/crud.py:497
-#: routes/admin/competition/crud.py:632 routes/admin/competition/crud.py:643
+#: routes/admin/competition/crud.py:505 routes/admin/competition/crud.py:516
+#: routes/admin/competition/crud.py:651 routes/admin/competition/crud.py:662
 msgid "Gara aggiornata: la modifica resta nella sua storia."
 msgstr "Competition updated: the change stays in its history."
 
-#: routes/admin/competition/crud.py:488 routes/admin/competition/crud.py:634
+#: routes/admin/competition/crud.py:507 routes/admin/competition/crud.py:653
 msgid "Nessuna modifica da salvare."
 msgstr "No changes to save."
 
-#: routes/admin/competition/crud.py:621
+#: routes/admin/competition/crud.py:640
 #, python-format
 msgid "Configurazione non valida: %(e)s"
 msgstr "Invalid configuration: %(e)s"
 
-#: routes/admin/competition/crud.py:697
+#: routes/admin/competition/crud.py:716
 msgid "Tavoli salvati."
 msgstr "Tables saved."
 
-#: routes/admin/competition/crud.py:722
+#: routes/admin/competition/crud.py:741
 #, python-format
 msgid "Gara «%(nome)s» eliminata."
 msgstr "Competition «%(nome)s» deleted."
 
-#: routes/admin/competition/crud.py:819
+#: routes/admin/competition/crud.py:786
+#, python-format
+msgid ""
+"%(gara)s eliminata. Le partite sono state mantenute come partite "
+"individuali."
+msgstr "%(gara)s deleted. Its matches were kept as individual matches."
+
+#: routes/admin/competition/crud.py:793
+#, python-format
+msgid "%(gara)s eliminata con successo!"
+msgstr "%(gara)s deleted successfully!"
+
+#: routes/admin/competition/crud.py:841
 msgid "La gara non è stata annullata per un errore imprevisto."
 msgstr "The competition was not cancelled because of an unexpected error."
 
-#: routes/admin/competition/crud.py:826
+#: routes/admin/competition/crud.py:848
 #, python-format
 msgid "«%(nome)s» annullata: gli iscritti ricevono la notifica."
 msgstr "«%(nome)s» cancelled: registered players will be notified."
@@ -6366,6 +6471,23 @@ msgstr ""
 "Entries cannot stay open past the start of the competition: the closing "
 "time was moved up to %(quando)s."
 
+#: routes/admin/competition/inscriptions.py:170
+#: routes/admin/competition/inscriptions.py:293
+msgid "Gara non trovata."
+msgstr "Competition not found."
+
+#: routes/admin/competition/inscriptions.py:177
+msgid ""
+"Non è possibile iscrivere utenti quando la gara non è in fase di "
+"iscrizione."
+msgstr ""
+"Users can't be registered while the competition is not open for "
+"registration."
+
+#: routes/admin/competition/inscriptions.py:187
+msgid "Nessun utente selezionato."
+msgstr "No user selected."
+
 #: routes/admin/competition/inscriptions.py:203
 msgid "In una competizione di prova si iscrivono solo i giocatori fittizi."
 msgstr "Only dummy players can enter a trial competition."
@@ -6378,32 +6500,82 @@ msgstr "A dummy player only plays in their own trial."
 msgid "data da definire"
 msgstr "date to be determined"
 
-#: routes/admin/competition/inscriptions.py:282
-msgid "Gara non trovata."
-msgstr "Competition not found."
+#: routes/admin/competition/inscriptions.py:245
+#, python-format
+msgid "Utente %(utente)s aggiunto alla lista d'attesa (posizione %(posizione)s)."
+msgstr "User %(utente)s added to the waiting list (position %(posizione)s)."
 
-#: routes/admin/competition/inscriptions.py:290
+#: routes/admin/competition/inscriptions.py:254
+#, python-format
+msgid "Utente %(utente)s iscritto con successo."
+msgstr "User %(utente)s registered successfully."
+
+#: routes/admin/competition/inscriptions.py:260
+#, python-format
+msgid "Utente %(utente)s già iscritto a questa gara."
+msgstr "User %(utente)s is already registered for this competition."
+
+#: routes/admin/competition/inscriptions.py:267
+#, python-format
+msgid "Errore: %(errore)s"
+msgstr "Error: %(errore)s"
+
+#: routes/admin/competition/inscriptions.py:269
+#, python-format
+msgid "Errore durante l'iscrizione: %(errore)s"
+msgstr "Error during registration: %(errore)s"
+
+#: routes/admin/competition/inscriptions.py:301
 msgid "Non è possibile disiscrivere utenti quando il primo turno è già iniziato."
 msgstr "Players cannot be removed once the first round has started."
 
-#: routes/admin/competition/inscriptions.py:304
+#: routes/admin/competition/inscriptions.py:315
 #, python-format
 msgid "%(username)s non è più iscritto."
 msgstr "%(username)s is no longer registered."
 
-#: routes/admin/competition/inscriptions.py:308
+#: routes/admin/competition/inscriptions.py:319
 msgid "Errore: utente non iscritto a questa gara."
 msgstr "Error: this user is not registered for this competition."
 
-#: routes/admin/competition/inscriptions.py:311
+#: routes/admin/competition/inscriptions.py:322
 #, python-format
 msgid "Errore durante la disiscrizione: %(errore)s"
 msgstr "Error while removing the registration: %(errore)s"
 
-#: routes/admin/competition/inscriptions.py:347
+#: routes/admin/competition/inscriptions.py:358
 #, python-format
 msgid "Ritiro di %(username)s registrato: gli è arrivata una notifica."
 msgstr "%(username)s has been withdrawn and has been notified."
+
+#: routes/admin/competition/inscriptions.py:386
+msgid "Direttore aggiunto con successo."
+msgstr "Director added successfully."
+
+#: routes/admin/competition/inscriptions.py:388
+msgid "Utente già presente come direttore."
+msgstr "User is already a director."
+
+#: routes/admin/competition/inscriptions.py:394
+#, python-format
+msgid "Errore durante l'aggiunta del direttore: %(errore)s"
+msgstr "Error while adding the director: %(errore)s"
+
+#: routes/admin/competition/inscriptions.py:411
+msgid "Direttore rimosso con successo."
+msgstr "Director removed successfully."
+
+#: routes/admin/competition/inscriptions.py:413
+msgid "Errore: direttore non trovato."
+msgstr "Error: director not found."
+
+#: routes/admin/competition/matches.py:99
+msgid "Giocatore non indicato."
+msgstr "Player not specified."
+
+#: routes/admin/competition/matches.py:121
+msgid "Trio resettato con successo"
+msgstr "Trio reset successfully"
 
 #: routes/admin/competition/matches.py:152
 #: routes/admin/competition/matches.py:212
@@ -6512,30 +6684,13 @@ msgstr "Competition started! All rounds have been created."
 msgid "Primo turno avviato!"
 msgstr "First round started!"
 
-#: routes/admin/competition/rounds.py:228
-#: routes/admin/competition/rounds.py:236
-#, python-format
-msgid ""
-"Ci sono parimerito nelle prime %(n)s posizioni. Usa «Avvia SSR» per "
-"inserire i punteggi."
-msgstr ""
-"There are ties in the top %(n)s places. Use «Start SSR» to enter the "
-"scores."
-
-#: routes/admin/competition/rounds.py:376
-msgid "La gara non è in fase di spareggio!"
-msgstr "The competition is not in the tiebreaker phase!"
-
-#: routes/admin/competition/rounds.py:385
-msgid ""
-"Spareggio annullato: i punteggi SSR sono stati azzerati e puoi modificare"
-" di nuovo i risultati."
-msgstr ""
-"Tiebreaker cancelled: SSR scores have been cleared and you can edit the "
-"results again."
-
-#: routes/admin/competition/rounds.py:403 routes/individual_match/matches.py:42
-#: routes/individual_match/matches.py:83
+#: routes/admin/competition/rounds.py:89 routes/admin/competition/rounds.py:267
+#: routes/admin/competition/rounds.py:358
+#: routes/admin/competition/rounds.py:408
+#: routes/admin/competition/rounds.py:950
+#: routes/admin/competition/rounds.py:979
+#: routes/admin/competition/rounds.py:1021
+#: routes/individual_match/matches.py:42 routes/individual_match/matches.py:83
 #: routes/individual_match/proposals.py:42
 #: routes/individual_match/proposals.py:70
 #: routes/individual_match/proposals.py:426 routes/individual_match/tpa.py:175
@@ -6547,47 +6702,191 @@ msgstr ""
 msgid "Errore interno del server"
 msgstr "Internal server error"
 
-#: routes/admin/competition/rounds.py:821
+#: routes/admin/competition/rounds.py:191
+#: routes/admin/competition/rounds.py:194
+#: routes/admin/competition/rounds.py:291
+#: routes/admin/competition/rounds.py:294
+#: routes/admin/competition/rounds.py:428
+#: routes/admin/competition/rounds.py:507
+msgid "La gara non è in corso!"
+msgstr "The competition is not in progress!"
+
+#: routes/admin/competition/rounds.py:206
+#: routes/admin/competition/rounds.py:211
+#: routes/admin/competition/rounds.py:305
+#: routes/admin/competition/rounds.py:310
+#: routes/admin/competition/rounds.py:517
+msgid "Non tutti i turni sono ancora completati!"
+msgstr "Not all rounds are completed yet!"
+
+#: routes/admin/competition/rounds.py:231
+#: routes/admin/competition/rounds.py:239
+#, python-format
+msgid ""
+"Ci sono parimerito nelle prime %(n)s posizioni. Usa «Avvia SSR» per "
+"inserire i punteggi."
+msgstr ""
+"There are ties in the top %(n)s places. Use «Start SSR» to enter the "
+"scores."
+
+#: routes/admin/competition/rounds.py:253
+#: routes/admin/competition/rounds.py:567
+msgid "Gara terminata con successo!"
+msgstr "Competition ended successfully!"
+
+#: routes/admin/competition/rounds.py:260
+msgid "Gara terminata con successo! I risultati sono ora definitivi."
+msgstr "Competition ended successfully! The results are now final."
+
+#: routes/admin/competition/rounds.py:325
+#: routes/admin/competition/rounds.py:330
+msgid "Non ci sono parimerito da risolvere!"
+msgstr "There are no ties to resolve!"
+
+#: routes/admin/competition/rounds.py:345
+#: routes/admin/competition/rounds.py:353
+msgid "Fase SSR avviata. Inserire i punteggi per i parimerito."
+msgstr "SSR phase started. Enter the scores for the tied players."
+
+#: routes/admin/competition/rounds.py:381
+msgid "La gara non è in fase di spareggio!"
+msgstr "The competition is not in the tiebreaker phase!"
+
+#: routes/admin/competition/rounds.py:390
+msgid ""
+"Spareggio annullato: i punteggi SSR sono stati azzerati e puoi modificare"
+" di nuovo i risultati."
+msgstr ""
+"Tiebreaker cancelled: SSR scores have been cleared and you can edit the "
+"results again."
+
+#: routes/admin/competition/rounds.py:433
+#: routes/admin/competition/rounds.py:526
+msgid "Dati non validi"
+msgstr "Invalid data"
+
+#: routes/admin/competition/rounds.py:441
+msgid "Posizione gruppo e punteggi richiesti"
+msgstr "Group position and scores are required"
+
+#: routes/admin/competition/rounds.py:453
+#: routes/admin/competition/rounds.py:534
+msgid "I punteggi devono essere numeri interi"
+msgstr "Scores must be whole numbers"
+
+#: routes/admin/competition/rounds.py:481
+#, python-format
+msgid "Punteggi SSR per posizione %(posizione)s salvati"
+msgstr "SSR scores for position %(posizione)s saved"
+
+#: routes/admin/competition/rounds.py:557
+msgid "Alcuni spareggi non sono ancora risolti."
+msgstr "Some tiebreakers are not resolved yet."
+
+#: routes/admin/competition/rounds.py:588
+#, python-format
+msgid "Turno %(turno)s non valido per questa gara!"
+msgstr "Round %(turno)s is not valid for this competition!"
+
+#: routes/admin/competition/rounds.py:600
+#, python-format
+msgid "Il turno %(turno)s non è ancora iniziato!"
+msgstr "Round %(turno)s has not started yet!"
+
+#: routes/admin/competition/rounds.py:621
+#, python-format
+msgid "Il turno %(turno)s non è ancora completato! Manca %(num)d partita."
+msgid_plural "Il turno %(turno)s non è ancora completato! Mancano %(num)d partite."
+msgstr[0] "Round %(turno)s is not completed yet! %(num)d match is missing."
+msgstr[1] "Round %(turno)s is not completed yet! %(num)d matches are missing."
+
+#: routes/admin/competition/rounds.py:678
+#: routes/admin/competition/rounds.py:788
+#, python-format
+msgid "Turno %(turno)s non valido!"
+msgstr "Invalid round %(turno)s!"
+
+#: routes/admin/competition/rounds.py:691
+#: routes/admin/competition/rounds.py:801
+#, python-format
+msgid "Il turno %(turno)s è già stato avviato!"
+msgstr "Round %(turno)s has already been started!"
+
+#: routes/admin/competition/rounds.py:701
+#: routes/admin/competition/rounds.py:811
+#, python-format
+msgid "Devi avviare prima il turno %(turno)s!"
+msgstr "You must start round %(turno)s first!"
+
+#: routes/admin/competition/rounds.py:715
+#, python-format
+msgid "Errore Amalfi: %(errori)s"
+msgstr "Amalfi error: %(errori)s"
+
+#: routes/admin/competition/rounds.py:734
+#: routes/admin/competition/rounds.py:846
+#, python-format
+msgid "Completa prima tutte le partite del turno %(turno)s!"
+msgstr "First complete all matches of round %(turno)s!"
+
+#: routes/admin/competition/rounds.py:826
+#, python-format
+msgid "Errore configurazione: %(errori)s"
+msgstr "Configuration error: %(errori)s"
+
+#: routes/admin/competition/rounds.py:869
 #, python-format
 msgid "Turno %(n)s avviato con la formula %(formula)s!"
 msgstr "Round %(n)s started with the %(formula)s format!"
 
-#: routes/admin/competition/rounds.py:825
+#: routes/admin/competition/rounds.py:873
 #, python-format
 msgid "Partite totali: %(n)s"
 msgstr "Total matches: %(n)s"
 
-#: routes/admin/competition/rounds.py:830
+#: routes/admin/competition/rounds.py:878
 #, python-format
 msgid "Disciplina: %(d)s"
 msgstr "Discipline: %(d)s"
 
-#: routes/admin/competition/rounds.py:835
+#: routes/admin/competition/rounds.py:883
 #, python-format
 msgid "Disciplina: %(d)s (quella della gara)"
 msgstr "Discipline: %(d)s (the event's own)"
 
-#: routes/admin/competition/rounds.py:841
+#: routes/admin/competition/rounds.py:889
 #, python-format
 msgid "Partite normali: %(n)s"
 msgstr "Regular matches: %(n)s"
 
-#: routes/admin/competition/rounds.py:843
+#: routes/admin/competition/rounds.py:891
 #, python-format
 msgid "Partite contro la X: %(n)s"
 msgstr "Matches against the X: %(n)s"
 
-#: routes/admin/competition/rounds.py:845
+#: routes/admin/competition/rounds.py:893
 #, python-format
 msgid "Partite a tre: %(n)s"
 msgstr "Three-player matches: %(n)s"
 
-#: routes/admin/competition/rounds.py:847
+#: routes/admin/competition/rounds.py:895
 #, python-format
 msgid "Tavoli assegnati: %(n)s"
 msgstr "Tables assigned: %(n)s"
 
-#: routes/admin/competition/rounds.py:1096
+#: routes/admin/competition/rounds.py:1001
+#, python-format
+msgid "%(messaggio)s. %(num)d partita azzerata."
+msgid_plural "%(messaggio)s. %(num)d partite azzerate."
+msgstr[0] "%(messaggio)s. %(num)d match reset."
+msgstr[1] "%(messaggio)s. %(num)d matches reset."
+
+#: routes/admin/competition/rounds.py:1011
+#, python-format
+msgid "%(messaggio)s. Partite azzerate: %(azzerate)s, errori: %(errori)s."
+msgstr "%(messaggio)s. Matches reset: %(azzerate)s, errors: %(errori)s."
+
+#: routes/admin/competition/rounds.py:1157
 #, python-format
 msgid ""
 "Il limite di tempo del turno è un numero intero di minuti, da 0 a "
@@ -6596,15 +6895,28 @@ msgstr ""
 "The round time limit is a whole number of minutes, from 0 to %(max)s: 0 "
 "means no limit, empty means as the competition."
 
-#: routes/admin/competition/rounds.py:1276
+#: routes/admin/competition/rounds.py:1223
+#, python-format
+msgid "Turno %(turno)s non valido per questa gara."
+msgstr "Round %(turno)s is not valid for this competition."
+
+#: routes/admin/competition/rounds.py:1250
+msgid ""
+"Sul tabellone si gioca sempre a chi arriva prima: il numero esatto di "
+"triangoli non è ammesso, nemmeno per un singolo turno."
+msgstr ""
+"Bracket matches are always race-to: an exact number of racks is not "
+"allowed, not even for a single round."
+
+#: routes/admin/competition/rounds.py:1342
 msgid "Il punteggio deve essere un numero."
 msgstr "The score must be a number."
 
-#: routes/admin/competition/rounds.py:1302
+#: routes/admin/competition/rounds.py:1368
 msgid "Prova convalidata: il punteggio è in classifica."
 msgstr "Drill validated: the score is in the standings."
 
-#: routes/admin/competition/rounds.py:1349
+#: routes/admin/competition/rounds.py:1415
 msgid "Prova azzerata: il turno torna a valere zero."
 msgstr "Drill cleared: the round goes back to counting zero."
 
