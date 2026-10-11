@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.69.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.68.0...v1.69.0) (2026-10-11)
+
+
+### Funzioni nuove
+
+* il tabellone dopo i gironi nei moduli e nel foglio di avvio ([#662](https://github.com/coppolapaolo/tornei-biliardo/issues/662)) ([d527bfa](https://github.com/coppolapaolo/tornei-biliardo/commit/d527bfa2851a72e2fbce1a212dded989e6a4a1fc))
+
 ## [1.68.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.67.4...v1.68.0) (2026-10-11)
 
 
