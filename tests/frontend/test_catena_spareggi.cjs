@@ -31,6 +31,7 @@ const NOMI = {
   punti: "Punti",
   differenza_rack: "Differenza triangoli",
   scontri_diretti: "Scontri diretti",
+  piazzamenti: "Migliori piazzamenti",
   ssr: "Spareggio SSR",
   posizione_precedente: "Posizione precedente",
   sorteggio: "Sorteggio",
@@ -41,6 +42,7 @@ const FRASI = {
   punti: "i punti",
   differenza_rack: "la differenza triangoli",
   scontri_diretti: "lo scontro diretto",
+  piazzamenti: "chi ha più primi posti, poi più secondi e così via",
   ssr: "lo spareggio SSR",
   ssr_n: "lo spareggio SSR fino al {n}° posto",
   posizione_precedente: "la posizione al turno precedente",
@@ -64,6 +66,7 @@ const TESTI = {
 
 function config(livello, voci) {
   const gara = livello === "gara";
+  if (livello === "campionato") return configGenerale(voci);
   const ammessi = (principale) =>
     ["scontri_diretti", "differenza_rack", "rack_vinti", "vittorie", "ssr",
       "posizione_precedente", "sorteggio"].filter(
@@ -105,9 +108,48 @@ function config(livello, voci) {
   };
 }
 
+/* La classifica generale conosce anche POSITION, il campionato a
+ * piazzamenti (ADR-080, emendamento del 2026-10-11). */
+function configGenerale(voci) {
+  const ammessi = (principale) =>
+    ["scontri_diretti", "differenza_rack", "rack_vinti", "vittorie", "ssr",
+      "posizione_precedente", "sorteggio"].filter((c) => c !== principale);
+  return {
+    livello: "campionato",
+    sistema: "WINS",
+    voci,
+    completa: true,
+    ssrConPosto: false,
+    ssrDefault: 3,
+    ssrMassimo: 99,
+    ammessi: {
+      WINS: ammessi("vittorie"),
+      RACK: ammessi("rack_vinti"),
+      POINTS: ammessi("punti"),
+      POSITION: ["scontri_diretti", "piazzamenti", "posizione_precedente", "sorteggio"],
+    },
+    principale: { WINS: "Vittorie", RACK: "Triangoli vinti", POINTS: "Punti", POSITION: "Punti" },
+    default: {
+      WINS: ["differenza_rack", "ssr", "posizione_precedente", "sorteggio"],
+      RACK: ["ssr", "posizione_precedente", "sorteggio"],
+      POINTS: ["differenza_rack", "ssr", "posizione_precedente", "sorteggio"],
+      POSITION: ["piazzamenti", "sorteggio"],
+    },
+    nomi: NOMI,
+    frasi: FRASI,
+    aPari: {
+      WINS: "A pari vittorie",
+      RACK: "A pari triangoli vinti",
+      POINTS: "A pari punti",
+      POSITION: "A pari punti",
+    },
+    testi: TESTI,
+  };
+}
+
 function editor(livello, voci) {
   const html = `<!doctype html><body>
-    <select id="sistema"><option value="WINS" selected>W</option><option value="RACK">R</option><option value="POINTS">P</option></select>
+    <select id="sistema"><option value="WINS" selected>W</option><option value="RACK">R</option><option value="POINTS">P</option><option value="POSITION">Pos</option></select>
     <div data-catena data-sistema-da="#sistema">
       <input type="hidden" name="catena" data-catena-valore>
       <ol data-catena-voci></ol><div data-catena-aggiungi></div><p data-catena-frase></p>
@@ -216,6 +258,26 @@ check("cambio di sistema: a punti la catena di default è quella a vittorie", ()
   assert.strictEqual(e.valore(), "differenza_rack,ssr:3");
   assert.ok(e.frase().startsWith("A pari punti"));
   assert.ok(e.c('[data-aggiungi="vittorie"]'), "a punti le vittorie si aggiungono");
+});
+
+check("generale a piazzamenti: la catena di default diventa «più primi posti»", () => {
+  const e = editor("campionato", ["differenza_rack", "ssr", "posizione_precedente", "sorteggio"]);
+  e.sistema("POSITION");
+  assert.strictEqual(e.valore(), "piazzamenti,sorteggio");
+  assert.strictEqual(
+    e.frase(),
+    "A pari punti conta chi ha più primi posti, poi più secondi e così via, poi il sorteggio."
+  );
+  assert.strictEqual(e.c('[data-aggiungi="vittorie"]'), null, "le vittorie non si offrono");
+  assert.ok(e.c('[data-aggiungi="scontri_diretti"]'));
+  e.sistema("WINS");
+  assert.strictEqual(e.valore(), "differenza_rack,ssr,posizione_precedente,sorteggio");
+});
+
+check("l'editor di una gara non conosce POSITION: ripiega su vittorie", () => {
+  const e = editor("gara", ["differenza_rack", "ssr:3"]);
+  e.sistema("POSITION");
+  assert.strictEqual(e.valore(), "differenza_rack,ssr:3");
 });
 
 console.log(`${controlli} controlli superati`);

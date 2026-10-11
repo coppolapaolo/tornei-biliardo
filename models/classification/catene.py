@@ -56,6 +56,21 @@ def ordina_con_la_catena(sistema: ClassificationSystem) -> bool:
     )
 
 
+def sistema_della_catena(
+    sistema: ClassificationSystem, livello: Livello
+) -> ClassificationSystem:
+    """Il sistema con cui si legge una catena di quel livello.
+
+    POSITION ha una catena solo nella classifica generale (il campionato a
+    piazzamenti, ADR-080); altrove ripiega su WINS, come prima.
+    """
+    if ordina_con_la_catena(sistema):
+        return sistema
+    if sistema is ClassificationSystem.POSITION and livello is Livello.CAMPIONATO:
+        return sistema
+    return ClassificationSystem.WINS
+
+
 #: Le colonne delle catene, per livello: sulla gara, e quella che il
 #: campionato propone alle sue gare (ADR-075). La catena della classifica
 #: generale sta solo sul campionato (`Campionato.catena_generale`).
@@ -174,8 +189,30 @@ def ssr_fino_al_della_gara(gara: Any) -> Optional[int]:
 
 
 def catena_generale(campionato: Any, sistema: ClassificationSystem) -> Catena:
-    """La catena della classifica generale del campionato, o il default."""
+    """La catena della classifica generale del campionato, o il default.
+
+    A piazzamenti (POSITION) una catena salvata che è il default di un altro
+    sistema non è una scelta: è rimasta da quando il campionato sommava i
+    totali, e vale il default dei piazzamenti (stessa regola di
+    `adegua_al_sistema`).
+    """
+    sistema = sistema_della_catena(sistema, Livello.CAMPIONATO)
     salvata = catena_dal_testo(getattr(campionato, "catena_generale", None))
+    if salvata is not None and sistema is ClassificationSystem.POSITION:
+        if any(
+            normalizza_catena(salvata, Livello.CAMPIONATO, altro)
+            == normalizza_catena(
+                catena_di_default(Livello.CAMPIONATO, altro),
+                Livello.CAMPIONATO,
+                altro,
+            )
+            for altro in (
+                ClassificationSystem.WINS,
+                ClassificationSystem.RACK,
+                ClassificationSystem.POINTS,
+            )
+        ):
+            salvata = None
     if salvata is None:
         salvata = catena_di_default(Livello.CAMPIONATO, sistema)
     return normalizza_catena(salvata, Livello.CAMPIONATO, sistema)
@@ -192,8 +229,7 @@ def testo_dal_modulo(
     le offre, quindi arrivano solo da un invio costruito a mano o da un cambio
     di sistema, e la regola è la stessa che vale in lettura.
     """
-    if not ordina_con_la_catena(sistema):
-        sistema = ClassificationSystem.WINS
+    sistema = sistema_della_catena(sistema, livello)
     testo = grezzo if isinstance(grezzo, str) else ""
     catena = catena_dal_testo(testo) or ()
     return testo_della_catena(normalizza_catena(catena, livello, sistema))
@@ -213,10 +249,8 @@ def adegua_al_sistema(
     resta com'è (in lettura se ne toglie solo il nuovo criterio principale).
     Restituisce None se non c'è niente da cambiare.
     """
-    if not ordina_con_la_catena(vecchio):
-        vecchio = ClassificationSystem.WINS
-    if not ordina_con_la_catena(nuovo):
-        nuovo = ClassificationSystem.WINS
+    vecchio = sistema_della_catena(vecchio, livello)
+    nuovo = sistema_della_catena(nuovo, livello)
     catena = catena_dal_testo(testo)
     if catena is None or vecchio is nuovo:
         return None

@@ -374,5 +374,9 @@ class TestPuntiDiCampionato:
         assert rows[0].user_id == ruoli["campione"][0]
         assert rows[0].position == 1
         assert rows[1].user_id == ruoli["finalista"][0]
-        # I pari merito restano tali anche in classifica generale.
-        assert sorted(row.position for row in rows) == [1, 2, 3, 3, 5, 5, 5, 5]
+        # A pari punti decide la catena della classifica generale, di norma
+        # «migliori piazzamenti → sorteggio»: l'ordine è completo (dal
+        # 2026-10-11; prima i pari merito condividevano il posto). Le fasce
+        # del tabellone restano: i semifinalisti occupano il 3º e il 4º.
+        assert sorted(row.position for row in rows) == list(range(1, 9))
+        assert {r.user_id for r in rows[2:4]} == set(ruoli["semifinalisti"])

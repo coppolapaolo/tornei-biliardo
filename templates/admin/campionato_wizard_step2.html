@@ -218,32 +218,31 @@
     {% endif %}
 
     {# Le catene degli spareggi (ADR-078): due proposte alle gare, una per la
-       classifica generale. Sui campionati a tabellone non si usano (ADR-040). #}
-    {# A piazzamenti le due catene proposte seguono il sistema delle serate, e
-       la classifica generale non ne ha: chi resta pari condivide il posto
-       (ADR-040, ADR-080). Chi propone il tabellone non ne ha nessuna. #}
-    {% if wizard_data.campionato_type not in bracket_minimum_players %}
+       classifica generale. A piazzamenti le due proposte seguono il sistema
+       delle serate; chi propone il tabellone non le ha (ADR-040). La catena
+       della classifica generale c'è sempre: a piazzamenti decide a pari punti,
+       con criteri suoi (ADR-080, emendamento del 2026-10-11). #}
+    {% set _a_tabellone = wizard_data.campionato_type in bracket_minimum_players %}
     <div class="c7-card">
       <h3 class="mb-1" data-help="campionato-spareggi">{{ _("Pari merito") }}</h3>
-      {% if classification_system == 'POSITION' %}
-      <p class="c7-nota mb-3">{{ _("Come si ordinano i giocatori a pari merito nelle gare. Le due catene sono proposte a ogni gara, che può cambiarle. Nella classifica generale chi ha gli stessi punti condivide il posto.") }}</p>
+      {% if _a_tabellone %}
+      <p class="c7-nota mb-3">{{ _("Come si ordinano i giocatori a pari punti nella classifica generale.") }}</p>
       {% else %}
       <p class="c7-nota mb-3">{{ _("Come si ordinano i giocatori a pari merito. Le prime due catene sono proposte a ogni gara, che può cambiarle; la terza vale per la classifica generale.") }}</p>
       {% endif %}
       {% import "components/_catena_spareggi.html" as catena with context %}
+      {% if not _a_tabellone %}
       {{ catena.editor('default_catena_turno', editor_catena_campionato('turno', sistema=sistema_gare),
                        _('Classifica di turno'),
                        _("Da lì nascono gli abbinamenti: l'ordine è sempre completo, lo chiude il sorteggio.")) }}
       {{ catena.editor('default_catena_gara', editor_catena_campionato('gara', sistema=sistema_gare),
                        _('Classifica finale di ogni gara'),
                        _('Chi resta pari condivide la posizione. Lo spareggio SSR si gioca a gara finita, fino al posto che scegli.')) }}
-      {% if classification_system != 'POSITION' %}
+      {% endif %}
       {{ catena.editor('catena_generale', editor_catena_campionato('campionato', sistema=classification_system),
                        _('Classifica generale'),
                        _("Somma le classifiche delle gare. L'ordine è sempre completo: da lì partono gli inviti ai playoff.")) }}
-      {% endif %}
     </div>
-    {% endif %}
 
     {# Punti per posizione: solo sui campionati a piazzamenti, di qualunque
        formato (ADR-080). Il sistema è già stato scelto al passo 1, quindi la

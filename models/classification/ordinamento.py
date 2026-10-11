@@ -23,8 +23,10 @@ Le classifiche sono tre, e ognuna ha la sua catena (decisione del 2026-10-07):
 - **campionato** (classifica generale, ADR-073): l'ordine è sempre completo,
   perché da quella posizione discendono gli inviti ai playoff.
 
-Il sistema POSITION non passa di qui: le sue bande di pari merito sono l'esito
-voluto (ADR-040).
+Il sistema POSITION non passa di qui nelle gare: le bande di pari merito del
+tabellone sono l'esito voluto (ADR-040). Passa di qui la classifica generale
+di un campionato **a piazzamenti**: il principale sono i punti dei posti, e la
+catena guarda i piazzamenti (ADR-080, emendamento del 2026-10-11).
 
 Il modulo è **puro**: niente database. Chi lo chiama aggrega i numeri
 (`Concorrente`) e, se la catena contiene lo scontro diretto, gli passa le
@@ -39,6 +41,7 @@ from dataclasses import dataclass
 from enum import Enum
 from fractions import Fraction
 from typing import (
+    Any,
     Callable,
     Dict,
     Iterable,
@@ -64,6 +67,9 @@ class Criterio(str, Enum):
     PUNTI = "punti"
     DIFFERENZA_RACK = "differenza_rack"
     SCONTRI_DIRETTI = "scontri_diretti"
+    #: I migliori piazzamenti nelle gare: più primi posti, poi più secondi…
+    #: Solo nella classifica generale di un campionato a piazzamenti.
+    PIAZZAMENTI = "piazzamenti"
     SPAREGGIO_SSR = "ssr"
     POSIZIONE_PRECEDENTE = "posizione_precedente"
     SORTEGGIO = "sorteggio"
@@ -195,8 +201,16 @@ _PRINCIPALE: Dict[ClassificationSystem, Criterio] = {
 }
 
 
-def criterio_principale(sistema: ClassificationSystem) -> Criterio:
-    """Il criterio principale di un sistema. POSITION non ne ha (ADR-040)."""
+def criterio_principale(
+    sistema: ClassificationSystem, livello: Optional[Livello] = None
+) -> Criterio:
+    """Il criterio principale di un sistema.
+
+    POSITION ne ha uno solo nella classifica generale (``livello`` campionato):
+    i punti dei piazzamenti. Nelle gare no (ADR-040).
+    """
+    if sistema is ClassificationSystem.POSITION and livello is Livello.CAMPIONATO:
+        return Criterio.PUNTI
     try:
         return _PRINCIPALE[sistema]
     except KeyError:
@@ -216,7 +230,20 @@ def criteri_ammessi(
     - lo **spareggio SSR** non nel turno: si gioca a gara finita, quindi nei
       turni intermedi non c'è, e la classifica dell'ultimo turno la riscrive
       comunque la classifica di gara.
+
+    La classifica generale di un campionato **a piazzamenti** (POSITION) ha
+    i suoi: scontri diretti, migliori piazzamenti, posizione dopo la gara
+    precedente, sorteggio. Vittorie e triangoli no: con gironi di taglia
+    diversa chi sta nel girone più numeroso gioca una partita in più
+    (decisione del 2026-10-11, ADR-080).
     """
+    if sistema is ClassificationSystem.POSITION and livello is Livello.CAMPIONATO:
+        return (
+            Criterio.SCONTRI_DIRETTI,
+            Criterio.PIAZZAMENTI,
+            Criterio.POSIZIONE_PRECEDENTE,
+            Criterio.SORTEGGIO,
+        )
     principale = criterio_principale(sistema)
     candidati = [
         Criterio.SCONTRI_DIRETTI,
@@ -287,7 +314,12 @@ def catena_di_default(
 
     A punti (POINTS) le catene sono quelle a vittorie, criterio per criterio:
     la differenza triangoli subito dopo il principale (deciso il 2026-10-07).
+
+    La classifica generale a piazzamenti: migliori piazzamenti, poi sorteggio
+    (deciso il 2026-10-11).
     """
+    if sistema is ClassificationSystem.POSITION and livello is Livello.CAMPIONATO:
+        return (Voce(Criterio.PIAZZAMENTI), Voce(Criterio.SORTEGGIO))
     d = Voce(Criterio.DIFFERENZA_RACK)
     prec = Voce(Criterio.POSIZIONE_PRECEDENTE)
     sort = Voce(Criterio.SORTEGGIO)
@@ -334,6 +366,11 @@ def prima_dello_ssr(catena: Iterable[Voce]) -> Catena:
 #: giocatori di gironi diversi «per partita giocata» (`classification/gironi.py`).
 Numero = Union[int, Fraction]
 
+#: I piazzamenti di un giocatore per il confronto «più primi posti, poi più
+#: secondi…»: quante volte è arrivato 1º, 2º, 3º… — tutti della stessa
+#: lunghezza dentro una classifica, così il confronto è lessicografico.
+Piazzamenti = Tuple[int, ...]
+
 
 @dataclass(frozen=True)
 class Concorrente:
@@ -348,6 +385,7 @@ class Concorrente:
     rack_vinti: Numero = 0
     differenza_rack: Numero = 0
     punti: Numero = 0
+    piazzamenti: Piazzamenti = ()
     ssr: Optional[int] = None
     posizione_precedente: Optional[int] = None
     sorteggio: int = 0
@@ -404,7 +442,7 @@ def seme_del_campionato(campionato: object) -> str:
 _Gruppo = List[Concorrente]
 
 
-def _valore(c: Concorrente, criterio: Criterio) -> Numero:
+def _valore(c: Concorrente, criterio: Criterio) -> Union[Numero, Piazzamenti]:
     """Il valore di un criterio semplice: più alto viene prima."""
     if criterio is Criterio.VITTORIE:
         return c.vittorie
@@ -414,6 +452,8 @@ def _valore(c: Concorrente, criterio: Criterio) -> Numero:
         return c.punti
     if criterio is Criterio.DIFFERENZA_RACK:
         return c.differenza_rack
+    if criterio is Criterio.PIAZZAMENTI:
+        return c.piazzamenti
     if criterio is Criterio.SPAREGGIO_SSR:
         # -1 a chi non ha tirato: viene dopo chi ha fatto zero.
         return -1 if c.ssr is None else c.ssr
@@ -426,10 +466,10 @@ def _valore(c: Concorrente, criterio: Criterio) -> Numero:
 
 
 def _per_valore(
-    gruppo: _Gruppo, valore: Callable[[Concorrente], Numero]
+    gruppo: _Gruppo, valore: Callable[[Concorrente], Union[Numero, Piazzamenti]]
 ) -> List[_Gruppo]:
     """Il gruppo spezzato per valore decrescente, ordine stabile."""
-    per: Dict[Numero, _Gruppo] = {}
+    per: Dict[Any, _Gruppo] = {}
     for c in gruppo:
         per.setdefault(valore(c), []).append(c)
     return [per[v] for v in sorted(per, reverse=True)]
@@ -607,6 +647,7 @@ NOMI: Dict[Criterio, object] = {
     Criterio.PUNTI: _l("Punti"),
     Criterio.DIFFERENZA_RACK: _l("Differenza triangoli"),
     Criterio.SCONTRI_DIRETTI: _l("Scontri diretti"),
+    Criterio.PIAZZAMENTI: _l("Migliori piazzamenti"),
     Criterio.SPAREGGIO_SSR: _l("Spareggio SSR"),
     Criterio.POSIZIONE_PRECEDENTE: _l("Posizione precedente"),
     Criterio.SORTEGGIO: _l("Sorteggio"),
@@ -617,6 +658,8 @@ def _nella_frase(voce: Voce, livello: Optional[Livello] = None) -> str:
     c = voce.criterio
     if c is Criterio.SCONTRI_DIRETTI:
         return _("lo scontro diretto")
+    if c is Criterio.PIAZZAMENTI:
+        return _("chi ha più primi posti, poi più secondi e così via")
     if c is Criterio.DIFFERENZA_RACK:
         return _("la differenza triangoli")
     if c is Criterio.RACK_VINTI:
@@ -639,7 +682,8 @@ def _nella_frase(voce: Voce, livello: Optional[Livello] = None) -> str:
 def _a_pari(sistema: ClassificationSystem) -> str:
     if sistema is ClassificationSystem.RACK:
         return _("A pari triangoli vinti")
-    if sistema is ClassificationSystem.POINTS:
+    # A piazzamenti si ordina sui punti dei posti (ADR-080).
+    if sistema in (ClassificationSystem.POINTS, ClassificationSystem.POSITION):
         return _("A pari punti")
     return _("A pari vittorie")
 
@@ -692,6 +736,7 @@ __all__ = [
     "Livello",
     "NOMI",
     "Numero",
+    "Piazzamenti",
     "SSR_FINO_AL_DEFAULT",
     "Scontro",
     "Voce",

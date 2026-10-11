@@ -105,12 +105,15 @@
             {% endwith %}
 
             {# Le catene degli spareggi (ADR-078): le due proposte alle gare e
-               quella della classifica generale. Seguono il sistema qui sopra;
-               sui campionati a tabellone non si usano (ADR-040). #}
-            <div class="mb-4 js-bracket-inert">
+               quella della classifica generale. Le due proposte seguono il
+               sistema delle gare e sui tabelloni non si usano (ADR-040); quella
+               generale segue il sistema del campionato e c'è sempre, anche a
+               piazzamenti: a pari punti decide lei (ADR-080, 2026-10-11). #}
+            <div class="mb-4">
                 <h6 class="mb-1" data-help="campionato-spareggi">{{ _("Pari merito") }}</h6>
-                <p class="c7-nota mb-3">{{ _("Come si ordinano i giocatori a pari merito. Le prime due catene sono proposte a ogni gara, che può cambiarle; la terza vale per la classifica generale.") }}</p>
                 {% import "components/_catena_spareggi.html" as catena with context %}
+                <div class="js-bracket-inert">
+                <p class="c7-nota mb-3">{{ _("Come si ordinano i giocatori a pari merito. Le prime due catene sono proposte a ogni gara, che può cambiarle; la terza vale per la classifica generale.") }}</p>
                 {{ catena.editor('default_catena_turno', editor_catena_campionato('turno', campionato),
                                  _('Classifica di turno'),
                                  _("Da lì nascono gli abbinamenti: l'ordine è sempre completo, lo chiude il sorteggio."),
@@ -119,14 +122,11 @@
                                  _('Classifica finale di ogni gara'),
                                  _('Chi resta pari condivide la posizione. Lo spareggio SSR si gioca a gara finita, fino al posto che scegli.'),
                                  '#sistema_gare_effettivo') }}
-                {# A piazzamenti la classifica generale non ha catena: chi ha gli
-                   stessi punti condivide il posto (ADR-040). #}
-                <div id="catena-generale" {% if campionato.default_classification_system == "POSITION" %}hidden{% endif %}>
+                </div>
                 {{ catena.editor('catena_generale', editor_catena_campionato('campionato', campionato),
                                  _('Classifica generale'),
                                  _("Somma le classifiche delle gare. L'ordine è sempre completo: da lì partono gli inviti ai playoff."),
                                  '#default_classification_system') }}
-                </div>
             </div>
 
             <hr class="my-4">
@@ -359,18 +359,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Sommando i totali o a piazzamenti (ADR-080): chi propone il tabellone
     // è a piazzamenti; a piazzamenti compaiono il sistema delle serate e i
-    // punti per posizione, e la classifica generale non ha catena.
+    // punti per posizione. La catena della classifica generale segue il
+    // sistema da sé (`data-sistema-da`): a piazzamenti ha criteri suoi.
     const systemSelect = document.getElementById('default_classification_system');
     const sistemaSerate = document.getElementById('sistema-serate');
     const sistemaSerateSelect = document.getElementById('default_gara_classification_system');
     const sistemaGare = document.getElementById('sistema_gare_effettivo');
-    const catenaGenerale = document.getElementById('catena-generale');
 
     function updateSistemi() {
         const aPiazzamenti = systemSelect.value === 'POSITION';
         sistemaSerate.hidden = !aPiazzamenti;
         sistemaSerateSelect.disabled = !aPiazzamenti;
-        if (catenaGenerale) catenaGenerale.hidden = aPiazzamenti;
         if (positionPoints) {
             positionPoints.style.display = aPiazzamenti ? '' : 'none';
         }

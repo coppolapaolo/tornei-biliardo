@@ -245,9 +245,14 @@ blocks:
       proposte alle gare. Quella di partenza è differenza triangoli, poi la
       somma degli spareggi SSR, poi la posizione dopo la gara precedente, poi
       il sorteggio: non lascia mai pari merito, perché da lì partono gli
-      inviti ai playoff. A piazzamenti la catena non c'è: a pari punti
-      contano le vittorie e la differenza triangoli sommate, e chi resta pari
-      condivide il posto. Cambiarla a campionato iniziato ricalcola la
+      inviti ai playoff. A piazzamenti la catena ha criteri suoi: **migliori
+      piazzamenti** (chi ha più primi posti, poi più secondi, e così via),
+      posizione dopo la gara precedente, scontri diretti e sorteggio; quella
+      di partenza è migliori piazzamenti, poi sorteggio. Le vittorie e i
+      triangoli qui non si scelgono: con gironi di taglia diversa chi sta nel
+      girone più numeroso gioca una partita in più. Due secondi a pari merito
+      in una gara contano entrambi come un secondo posto, e una gara che pesa
+      zero non conta. Cambiarla a campionato iniziato ricalcola la
       classifica, e sopra compare la riga che lo dice.
 
   - type: faq

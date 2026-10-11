@@ -75,7 +75,8 @@ def frase_della_catena(oggetto: Any, campo: str) -> Optional[str]:
     """La frase del regolamento per una catena di gara o di campionato.
 
     La catena è quella che vale davvero (gara → campionato → default), con il
-    sistema di chi la legge. None nel sistema POSITION, che non ha catena.
+    sistema di chi la legge. None per le catene di gara nel sistema POSITION,
+    che non ne ha; la classifica generale a piazzamenti invece sì.
     """
     from ..classification import catene
     from ..classification.ordinamento import Livello, descrivi_catena
@@ -92,11 +93,17 @@ def frase_della_catena(oggetto: Any, campo: str) -> Optional[str]:
             else catene.catena_di_gara(oggetto)
         )
     elif livello is Livello.CAMPIONATO:
-        sistema = ClassificationSystem.resolve(
-            getattr(oggetto, "default_classification_system", None)
+        # Anche a piazzamenti, tabelloni compresi: a pari punti decide la
+        # catena (ADR-080, emendamento del 2026-10-11).
+        from ..campionato.piazzamenti import e_a_piazzamenti
+
+        sistema = (
+            ClassificationSystem.POSITION
+            if e_a_piazzamenti(oggetto)
+            else ClassificationSystem.resolve(
+                getattr(oggetto, "default_classification_system", None)
+            )
         )
-        if not catene.ordina_con_la_catena(sistema):
-            return None
         catena = catene.catena_generale(oggetto, sistema)
     else:
         # Le catene proposte alle gare si leggono nel sistema delle gare: in

@@ -32,7 +32,7 @@ from models.matchmaking.configuration import (
 )
 from models.competition.constants import DEFAULT_DISTANCE
 from models.categoria.listino import ListinoService, leggi_dal_modulo
-from models.status_enum import ClassificationSystem, Discipline, GaraStatus
+from models.status_enum import Discipline, GaraStatus
 from utils.jinja import opzioni_dispari
 from utils import (
     campionato_manager_required,
@@ -246,7 +246,13 @@ def wizard_create():
     )
     # Le catene degli spareggi del passo 2 (ADR-078), ammesse al sistema
     # delle gare (a piazzamenti, quello delle serate: ADR-080).
-    settings.update(CampionatoFormParser.parse_catene(request.form, sistema_gare))
+    # La catena della classifica generale segue il sistema del campionato:
+    # a piazzamenti ha criteri suoi (ADR-080).
+    settings.update(
+        CampionatoFormParser.parse_catene(
+            request.form, sistema_gare, classification_system
+        )
+    )
     # I punti della classifica a punti, se le gare sono a punti.
     try:
         settings.update(CampionatoFormParser.parse_punti(request.form, sistema_gare))
@@ -608,14 +614,15 @@ def edit_campionato(campionato_id):
                 campionato_type = campionato.campionato_type
             sistemi = CampionatoFormParser.parse_sistemi(request.form, campionato_type)
             sistema_gare = CampionatoFormParser.sistema_delle_serate(sistemi)
-            catene = CampionatoFormParser.parse_catene(request.form, sistema_gare)
-            if (
-                sistemi["default_classification_system"]
-                == ClassificationSystem.POSITION.value
-            ):
-                # A piazzamenti la classifica generale non ha catena (ADR-040).
-                catene.pop("catena_generale", None)
-            settings.update(catene)
+            # La catena della classifica generale segue il sistema del
+            # campionato: a piazzamenti ha criteri suoi (ADR-080).
+            settings.update(
+                CampionatoFormParser.parse_catene(
+                    request.form,
+                    sistema_gare,
+                    sistemi["default_classification_system"],
+                )
+            )
             settings.update(
                 CampionatoFormParser.parse_punti(request.form, sistema_gare)
             )

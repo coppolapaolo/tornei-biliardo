@@ -120,7 +120,9 @@ blocks:
       diversi — una serata a gironi, una Amalfi, un tabellone — e la taglia di
       un girone non conta. Chi non gioca una gara prende zero; chi finisce a
       pari merito prende i punti del posto condiviso. I campionati a tabellone
-      sono sempre a piazzamenti.
+      sono sempre a piazzamenti. A pari punti decide la catena della
+      classifica generale: di norma chi ha più primi posti, poi più secondi,
+      e così via, e infine il sorteggio.
 
   - type: text
     text: >-
@@ -163,7 +165,8 @@ blocks:
         values: "di norma: differenza triangoli → SSR (somma) → posizione dopo la gara precedente → sorteggio"
         text: >-
           La sceglie il campionato, e non lascia pari merito: da lì partono gli
-          inviti ai playoff.
+          inviti ai playoff. In un campionato a piazzamenti, di norma: migliori
+          piazzamenti (più primi posti, poi più secondi…) → sorteggio.
 
   - type: note
     tone: info
@@ -237,6 +240,6 @@ blocks:
       - q: "Come si somma la classifica del campionato?"
         a: "Sommando: vittorie e differenza triangoli con «Vittorie», triangoli totali con «Triangoli», punti del posto in ogni gara con «Piazzamenti». Se una gara ha un peso, il suo punteggio viene prima moltiplicato per quel numero."
       - q: "Nel campionato due giocatori hanno gli stessi numeri: chi sta davanti?"
-        a: "Chi stava davanti dopo la gara precedente. Se erano pari anche lì, decide il sorteggio: è fisso, quindi la classifica non cambia a ogni lettura, e non dipende da chi si è iscritto prima."
+        a: "Decide la catena della classifica generale, scritta sotto la classifica. Di norma, nei campionati che sommano, la differenza triangoli, lo spareggio, poi chi stava davanti dopo la gara precedente; nei campionati a piazzamenti chi ha più primi posti, poi più secondi. Alla fine il sorteggio: è fisso, quindi la classifica non cambia a ogni lettura, e non dipende da chi si è iscritto prima."
       - q: "Durante la gara, a pari vittorie e pari differenza, chi sta davanti?"
         a: "Chi era davanti al turno prima, e al primo turno chi era davanti nell'ordine di partenza. Con il sistema «Triangoli» la differenza non conta: a pari triangoli vale subito il turno prima. Lo spareggio si gioca solo a fine gara."
