@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.76.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.75.0...v1.76.0) (2026-10-12)
+
+
+### Funzioni nuove
+
+* preset di campionato, pagina «I miei preset» e condivisione fra direttori ([#681](https://github.com/coppolapaolo/tornei-biliardo/issues/681)) ([be241ce](https://github.com/coppolapaolo/tornei-biliardo/commit/be241ce273c47f26eec66672750c87670fe68ddb))
+
 ## [1.75.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.74.1...v1.75.0) (2026-10-12)
 
 
