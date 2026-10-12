@@ -19,6 +19,11 @@
  * I campi che il direttore ha già toccato a mano non si sovrascrivono senza
  * chiedere: si applica il resto, poi il foglio di conferma (ADR-074) chiede se
  * usare anche lì i valori del preset.
+ *
+ * I playoff di un preset di campionato si scrivono dove il modulo li chiede,
+ * cioè al passo 1 del wizard (Elite e Academy). Nella modifica del campionato
+ * non ci sono: la pagina dice che il preset li comprende e che si cambiano
+ * dalla pagina del campionato (`nota_playoff_altrove`).
  */
 (function () {
   'use strict';
@@ -209,6 +214,10 @@
   Preset.prototype.carica = function (id) {
     var self = this;
     var url = this.radice.getAttribute('data-url-valori').replace('/0/', '/' + id + '/');
+    // Dalla modifica di un campionato: la nota sui playoff sa se lì gli inviti
+    // sono già partiti.
+    var camp = this.radice.getAttribute('data-campionato-id');
+    if (camp) url += '?campionato_id=' + encodeURIComponent(camp);
     fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (risposta) {
@@ -251,6 +260,13 @@
     }
     var persi = dati.scartati.concat(rifiutati.map(function (n) { return etichetta(form, n); }));
     if (persi.length) note.push(this.t.nonApplicati.replace('{campi}', persi.join(', ')));
+    // I playoff: al passo 1 del wizard si scrivono (e la nota dice quelli che
+    // il passo 1 non sa creare); nella modifica non si toccano, e si dice.
+    var conPlayoff = !!form.querySelector('[name="playoff_elite_enabled"]');
+    if (conPlayoff && dati.nota_playoff_wizard) note.push(dati.nota_playoff_wizard);
+    if (!conPlayoff && !this.radice.getAttribute('data-wizard') && dati.nota_playoff_altrove) {
+      note.push(dati.nota_playoff_altrove);
+    }
     this.dici([this.t.applicato.replace('{nome}', dati.nome)].concat(note).join(' '));
 
     if (!conflitti.length && !listinoInConflitto) return;

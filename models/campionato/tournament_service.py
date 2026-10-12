@@ -982,9 +982,43 @@ class TournamentService(TournamentStatisticsService):
         max_participants: int,
         positions_from: int,
         positions_to: int,
+        **configurazione: Any,
     ) -> Any:
-        """Create a playoff configuration for a campionato."""
-        from models.playoff.models import PlayoffConfiguration, PlayoffType
+        """Crea una configurazione dei playoff del campionato (wizard).
+
+        ``configurazione`` sono gli altri campi che un preset porta con sé
+        (`models.preset.payload.CAMPI_DEL_PLAYOFF`): passano dagli stessi
+        controlli della correzione (`PlayoffService.update_configuration`),
+        così un preset non fa nascere una finale che la pagina del campionato
+        rifiuterebbe. Un campo fuori dalla whitelist si ignora.
+        """
+        from flask_babel import gettext as _
+
+        from models.playoff.models import (
+            PlayoffConfiguration,
+            PlayoffRankingMode,
+            PlayoffType,
+        )
+        from models.playoff.services import PlayoffService
+        from models.preset.payload import CAMPI_DEL_PLAYOFF
+
+        extra = {
+            campo: valore
+            for campo, valore in configurazione.items()
+            if campo in CAMPI_DEL_PLAYOFF
+            and campo
+            not in ("name", "max_participants", "positions_from", "positions_to")
+        }
+        PlayoffService._verifica_valori_della_finale(extra)
+        if extra.get("final_ranking_mode") is not None:
+            extra["final_ranking_mode"] = PlayoffRankingMode.normalize(
+                extra["final_ranking_mode"]
+            ).value
+        if extra.get("playoff_weight") is not None:
+            if int(extra["playoff_weight"]) < 1:
+                raise ValueError(_("Il peso del playoff è un intero maggiore di zero."))
+        else:
+            extra.pop("playoff_weight", None)
 
         config = PlayoffConfiguration(
             campionato_id=campionato_id,
@@ -995,8 +1029,17 @@ class TournamentService(TournamentStatisticsService):
             positions_to=positions_to,
             is_active=True,
             auto_generate=True,
+            **extra,
         )
         db.session.add(config)
+        db.session.flush()
+        if extra:
+            # Una finale che si somma al campionato deve contare la stessa
+            # cosa (SPECIFICHE.md, «Playoff»): lo stesso controllo della
+            # pagina del campionato.
+            PlayoffService._verifica_finale_sommabile(
+                config, PlayoffService._sistema_della_finale(config).value
+            )
         return config
 
     @transactional(domain="campionato")

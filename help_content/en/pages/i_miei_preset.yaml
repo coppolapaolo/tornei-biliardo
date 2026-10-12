@@ -26,8 +26,11 @@ blocks:
     text: >-
       Each row shows the preset name, whether it is for a **competition** or a
       **championship**, and when you last updated it. A preset another
-      director sent you says so: «received from Paolo, 06/10». Only you can
-      see your presets.
+      director sent you says so: «received from Paolo, 06/10». A
+      championship preset also says whether it includes playoffs, and which:
+      «with 2 playoffs: Playoff Elite, Playoff Academy», or «no playoffs».
+      When you duplicate it or send it to someone, the playoffs go with it.
+      Only you can see your presets.
 
   - type: shot
     shot: i-miei-preset

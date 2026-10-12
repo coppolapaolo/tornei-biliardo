@@ -34,6 +34,7 @@ from models.matchmaking.configuration import (
 )
 from models.competition.constants import DEFAULT_DISTANCE
 from models.categoria.listino import ListinoService, leggi_dal_modulo
+from models.transaction.manager import transactional
 from models.status_enum import Discipline, GaraStatus
 from utils.jinja import opzioni_dispari
 from utils import (
@@ -164,6 +165,10 @@ def wizard_step2():
         except ValueError:
             playoff_academy_participants = 6
 
+    # Il preset scelto al passo 1 (ADR-082): i suoi playoff portano criteri,
+    # peso e regole della finale che il passo 1 non mostra.
+    preset_da_applicare = _preset_scelto_al_passo_1()
+
     # Store Step 1 data in session
     session[WIZARD_SESSION_KEY] = {
         "name": name,
@@ -178,6 +183,7 @@ def wizard_step2():
         "playoff_elite_participants": playoff_elite_participants,
         "playoff_academy_enabled": playoff_academy_enabled,
         "playoff_academy_participants": playoff_academy_participants,
+        "playoff_dal_preset": _playoff_del_preset(preset_da_applicare),
         # Competizione di prova (ADR-058): la spunta viaggia con il resto del
         # passo 1 e si applica alla creazione.
         "is_prova": CampionatoFormParser.parse_prova(request.form),
@@ -206,8 +212,23 @@ def wizard_step2():
         odd_policies=odd_policies,
         classification_system=classification_system,
         sistema_gare=sistema_gare,
-        preset_da_applicare=_preset_scelto_al_passo_1(),
+        preset_da_applicare=preset_da_applicare,
     )
+
+
+def _playoff_del_preset(preset_id):
+    """Le configurazioni dei playoff del preset scelto al passo 1, o nessuna.
+
+    Lette con la whitelist di oggi (`payload.leggi`): in sessione finisce solo
+    la configurazione, e la creazione la ricontrolla comunque.
+    """
+    if not preset_id:
+        return []
+    from models.preset import payload as formato
+    from models.preset.service import ConfigPresetService
+
+    preset = ConfigPresetService.get_mio(preset_id, current_user)
+    return formato.leggi(preset.kind, preset.dati, preset.schema_version).playoff
 
 
 def _preset_scelto_al_passo_1():
@@ -306,48 +327,9 @@ def wizard_create():
 
     # Create the campionato
     try:
-        campionato = campionato_service.create_campionato_with_director(
-            name=wizard_data["name"],
-            creator_user_id=current_user.id,
-            campionato_type=wizard_data["campionato_type"],
-            challenge_mode=wizard_data["challenge_mode"],
-            is_active=True,
-            planned_gare_count=wizard_data["planned_gare_count"],
-            default_classification_system=classification_system,
-            default_gara_classification_system=wizard_data.get(
-                "default_gara_classification_system"
-            ),
-            **settings,
+        campionato = _crea_dal_wizard(
+            wizard_data, classification_system, settings, voci_listino
         )
-        if voci_listino:
-            ListinoService.salva(
-                campionato_id=campionato.id, voci=voci_listino, nella_storia=False
-            )
-
-        # Create playoff configurations if enabled
-        if wizard_data.get("playoff_elite_enabled"):
-            _create_playoff_config(
-                campionato_id=campionato.id,
-                name=_("Playoff Elite"),
-                max_participants=wizard_data.get("playoff_elite_participants", 6),
-                positions_from=1,
-                positions_to=wizard_data.get("playoff_elite_participants", 6),
-            )
-
-        if wizard_data.get("playoff_academy_enabled"):
-            elite_size = (
-                wizard_data.get("playoff_elite_participants", 6)
-                if wizard_data.get("playoff_elite_enabled")
-                else 0
-            )
-            academy_size = wizard_data.get("playoff_academy_participants", 6)
-            _create_playoff_config(
-                campionato_id=campionato.id,
-                name=_("Playoff Academy"),
-                max_participants=academy_size,
-                positions_from=elite_size + 1,
-                positions_to=elite_size + academy_size,
-            )
 
         # Clear wizard session
         session.pop(WIZARD_SESSION_KEY, None)
@@ -380,21 +362,38 @@ def wizard_create():
         return redirect(url_for("admin.campionato.wizard_start"))
 
 
-def _create_playoff_config(
-    campionato_id: int,
-    name: str,
-    max_participants: int,
-    positions_from: int,
-    positions_to: int,
-) -> None:
-    """Helper per creare una configurazione playoff."""
-    campionato_service.create_playoff_config(
-        campionato_id=campionato_id,
-        name=name,
-        max_participants=max_participants,
-        positions_from=positions_from,
-        positions_to=positions_to,
+@transactional(domain="campionato")
+def _crea_dal_wizard(wizard_data, classification_system, settings, voci_listino):
+    """Campionato, listino e playoff del wizard, in una transazione sola.
+
+    I playoff possono arrivare da un preset con criteri e regole della finale
+    (ADR-082): se uno di questi non passa i controlli della finale, non deve
+    restare un campionato a metà, senza i suoi playoff.
+    """
+    from models.preset.payload import configurazioni_dal_wizard
+
+    campionato = campionato_service.create_campionato_with_director(
+        name=wizard_data["name"],
+        creator_user_id=current_user.id,
+        campionato_type=wizard_data["campionato_type"],
+        challenge_mode=wizard_data["challenge_mode"],
+        is_active=True,
+        planned_gare_count=wizard_data["planned_gare_count"],
+        default_classification_system=classification_system,
+        default_gara_classification_system=wizard_data.get(
+            "default_gara_classification_system"
+        ),
+        **settings,
     )
+    if voci_listino:
+        ListinoService.salva(
+            campionato_id=campionato.id, voci=voci_listino, nella_storia=False
+        )
+    # Elite dal primo posto, Academy subito dopo; dal preset, il resto della
+    # configurazione di ciascuno.
+    for config in configurazioni_dal_wizard(wizard_data):
+        campionato_service.create_playoff_config(campionato_id=campionato.id, **config)
+    return campionato
 
 
 @campionato_bp.route("/wizard/cancel", methods=["GET", "POST"])

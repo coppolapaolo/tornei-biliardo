@@ -313,3 +313,49 @@ class TestCondividi:
         ids = {d["id"] for d in dati["direttori"]}
         assert altro.id in ids and io.id not in ids
         assert all(db_session.get(User, i).role == UserRole.DIRECTOR.value for i in ids)
+
+
+class TestIPlayoffNelPreset:
+    """Emendamento del 2026-10-12 all'ADR-082: il preset porta i playoff."""
+
+    def test_wizard_preset_wizard_crea_gli_stessi_playoff(self, client, db_session):
+        from models.playoff.models import PlayoffConfiguration
+
+        direttore = _utente(db_session)
+        _login(client, direttore)
+        passo_1 = {
+            "planned_gare_count": "6",
+            "playoff_elite_enabled": "on",
+            "playoff_elite_participants": "8",
+            "playoff_academy_enabled": "on",
+            "playoff_academy_participants": "5",
+        }
+        client.post("/admin/campionato/wizard/step2", data={"name": "Primo", **passo_1})
+        risposta = client.post(
+            "/admin/preset/campionato/dal-modulo",
+            data={**PASSO_2, "preset_nome": "Con playoff", "preset_wizard": "1"},
+            headers=AJAX,
+        )
+        assert risposta.status_code == 200, risposta.get_json()
+        preset = ConfigPreset.query.filter_by(owner_id=direttore.id).one()
+
+        # Il passo 1 del secondo campionato riceve i valori del preset, come
+        # li scrive il JavaScript: caselle accese mandano «on».
+        valori = client.get(f"/admin/preset/{preset.id}/valori").get_json()["valori"]
+        modulo = {"name": "Secondo", "planned_gare_count": "6", "preset_id": preset.id}
+        for nome, valore in valori:
+            if nome.startswith("playoff_") and valore is not False:
+                modulo[nome] = "on" if valore is True else str(valore)
+        client.post("/admin/campionato/wizard/step2", data=modulo)
+        client.post("/admin/campionato/wizard/create", data=PASSO_2)
+
+        secondo = Campionato.query.filter_by(name="Secondo").one()
+        configurazioni = (
+            PlayoffConfiguration.query.filter_by(campionato_id=secondo.id)
+            .order_by(PlayoffConfiguration.positions_from)
+            .all()
+        )
+        assert [
+            (c.positions_from, c.positions_to, c.max_participants)
+            for c in configurazioni
+        ] == [(1, 8, 8), (9, 13, 5)]

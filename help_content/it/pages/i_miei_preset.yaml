@@ -27,6 +27,10 @@ blocks:
       Ogni riga dice il nome del preset, se è di **gara** o di
       **campionato**, e quando l'hai aggiornato l'ultima volta. Un preset che
       ti ha mandato un altro direttore lo dice: «ricevuto da Paolo, 06/10».
+      Un preset di campionato dice anche se comprende i playoff, e quali:
+      «con 2 playoff: Playoff Elite, Playoff Academy», oppure «senza
+      playoff». Quando lo duplichi o lo mandi a qualcuno, i playoff vanno con
+      lui.
       I tuoi preset li vedi solo tu.
 
   - type: shot

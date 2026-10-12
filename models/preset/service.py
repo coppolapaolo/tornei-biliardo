@@ -87,16 +87,29 @@ class ConfigPresetService:
         return preset
 
     @staticmethod
-    def per_il_modulo(preset_id: int, utente: Any) -> Dict[str, Any]:
-        """I valori da scrivere nel modulo, letti con la tolleranza di oggi."""
+    def per_il_modulo(
+        preset_id: int, utente: Any, campionato: Any = None
+    ) -> Dict[str, Any]:
+        """I valori da scrivere nel modulo, letti con la tolleranza di oggi.
+
+        Per un preset di campionato anche le due note sui playoff, che il
+        JavaScript mostra secondo il modulo: `nota_playoff_wizard` al passo 1
+        del wizard, se il preset ne ha più di quanti il passo 1 ne crea;
+        `nota_playoff_altrove` nella modifica di ``campionato``, che i playoff
+        non li cambia (si cambiano dalla pagina del campionato, con i loro
+        blocchi: ADR-075).
+        """
         preset = ConfigPresetService.get_mio(preset_id, utente)
         lettura = formato.leggi(preset.kind, preset.dati, preset.schema_version)
-        return {
+        dati = {
             "id": preset.id,
             "nome": preset.name,
             "kind": preset.kind,
             **formato.per_il_modulo(lettura, preset.kind),
         }
+        if preset.kind == TipoPreset.CAMPIONATO.value:
+            dati.update(_note_dei_playoff(lettura.playoff, campionato))
+        return dati
 
     @staticmethod
     def cerca_direttori(testo: Any, utente: Any, limite: int = 10) -> List[Any]:
@@ -134,19 +147,21 @@ class ConfigPresetService:
         kind: Any,
         campi: Dict[str, Any],
         listino: Optional[List[Any]] = None,
+        playoff: Optional[List[Any]] = None,
         *,
         sostituisci: bool = False,
     ) -> ConfigPreset:
         """Salva un preset col nome scelto; con lo stesso nome, solo se si sostituisce.
 
         ``campi`` può arrivare da un modulo intero: la whitelist tiene solo la
-        configurazione (`payload.componi`).
+        configurazione (`payload.componi`), e lo stesso vale per ogni
+        configurazione dei ``playoff`` di un preset di campionato.
         """
         if not _puo_avere_preset(utente):
             raise PermissionDeniedError(_("I preset sono dei direttori di gara."))
         tipo = _tipo(kind)
         pulito = _nome(nome)
-        dati = formato.componi(tipo, campi, listino)
+        dati = formato.componi(tipo, campi, listino, playoff)
 
         esistente = ConfigPreset.query.filter(
             ConfigPreset.owner_id == utente.id, ConfigPreset.name == pulito
@@ -195,6 +210,7 @@ class ConfigPresetService:
             TipoPreset.CAMPIONATO,
             formato.dal_campionato(campionato),
             formato.listino_del_campionato(campionato),
+            formato.playoff_del_campionato(campionato),
             sostituisci=sostituisci,
         )
 
@@ -307,6 +323,59 @@ class ConfigPresetService:
         )
 
 
+def _elenco(nomi: List[str]) -> str:
+    """«A», «A e B», «A, B e C»: i nomi dei playoff in una frase."""
+    citati = [f"«{n}»" for n in nomi]
+    if len(citati) <= 1:
+        return "".join(citati)
+    return _("%(primi)s e %(ultimo)s", primi=", ".join(citati[:-1]), ultimo=citati[-1])
+
+
+def _note_dei_playoff(playoff: List[Dict[str, Any]], campionato: Any) -> Dict[str, str]:
+    """Le note sui playoff del preset, per il passo 1 e per la modifica."""
+    from flask_babel import ngettext
+
+    note: Dict[str, str] = {}
+    if len(playoff) > formato.POSTI_DEL_WIZARD:
+        oltre = formato.nomi_dei_playoff(playoff)[formato.POSTI_DEL_WIZARD :]
+        note["nota_playoff_wizard"] = ngettext(
+            "Il preset ha anche il playoff %(nomi)s: qui se ne creano due, Elite "
+            "e Academy, e l'altro si aggiunge dalla pagina del campionato.",
+            "Il preset ha anche i playoff %(nomi)s: qui se ne creano due, Elite "
+            "e Academy, e gli altri si aggiungono dalla pagina del campionato.",
+            len(oltre),
+            nomi=_elenco(oltre),
+        )
+    if playoff:
+        testo = ngettext(
+            "Il preset comprende il playoff %(nomi)s: qui non si applica, perché "
+            "i playoff si cambiano dalla pagina del campionato.",
+            "Il preset comprende i playoff %(nomi)s: qui non si applicano, perché "
+            "i playoff si cambiano dalla pagina del campionato.",
+            len(playoff),
+            nomi=_elenco(formato.nomi_dei_playoff(playoff)),
+        )
+        if campionato is not None and _inviti_partiti(campionato):
+            testo += " " + _(
+                "In questo campionato gli inviti sono già partiti: chi si "
+                "qualifica non si cambia più."
+            )
+        note["nota_playoff_altrove"] = testo
+    return note
+
+
+def _inviti_partiti(campionato: Any) -> bool:
+    """True se almeno un playoff del campionato ha già mandato gli inviti."""
+    from models.playoff.models import PlayoffConfiguration
+
+    return any(
+        c.has_qualifications()
+        for c in PlayoffConfiguration.query.filter_by(
+            campionato_id=campionato.id, is_active=True
+        )
+    )
+
+
 def _nome_usato(owner_id: int, nome: str) -> bool:
     return (
         ConfigPreset.query.filter(
@@ -393,6 +462,18 @@ def _avvisa(destinatario_id: int, mittente: str, nome: str) -> None:
 #: La pagina «I miei preset»: il link della notifica. Scritto per esteso
 #: perché la notifica può nascere fuori da una richiesta.
 PAGINA_DEI_PRESET = "/admin/preset/"
+
+
+def playoff_del_preset(preset: ConfigPreset) -> Optional[List[str]]:
+    """I nomi dei playoff di un preset di campionato, per «I miei preset».
+
+    None per un preset di gara, che i playoff non li ha per natura; un elenco
+    vuoto per un campionato senza playoff.
+    """
+    if preset.kind != TipoPreset.CAMPIONATO.value:
+        return None
+    lettura = formato.leggi(preset.kind, preset.dati, preset.schema_version)
+    return formato.nomi_dei_playoff(lettura.playoff)
 
 
 def preset_dell_utente(kind: Any) -> List[ConfigPreset]:
