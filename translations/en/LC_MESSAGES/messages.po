@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-12 05:12+0200\n"
+"POT-Creation-Date: 2026-10-12 06:32+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -348,6 +348,10 @@ msgid ""
 msgstr ""
 "With the new standings system the competition «%(gara)s» would not be "
 "valid: %(errori)s"
+
+#: models/campionato/tournament_service.py:1019
+msgid "Il peso del playoff è un intero maggiore di zero."
+msgstr "The playoff weight is a whole number greater than zero."
 
 #: models/categoria/listino.py:150
 #, python-format
@@ -4785,6 +4789,16 @@ msgstr ""
 "The play-off competition has already started: the list can no longer be "
 "changed."
 
+#: models/preset/payload.py:440
+#: templates/admin/campionato_wizard_step1.html:171
+msgid "Playoff Elite"
+msgstr "Playoff Elite"
+
+#: models/preset/payload.py:440
+#: templates/admin/campionato_wizard_step1.html:190
+msgid "Playoff Academy"
+msgstr "Playoff Academy"
+
 #: models/preset/service.py:49
 #, python-format
 msgid "Tipo di preset sconosciuto: %(v)s"
@@ -4799,8 +4813,8 @@ msgstr "Give the preset a name."
 msgid "Il nome del preset è lungo al massimo %(n)s caratteri."
 msgstr "The preset name can be at most %(n)s characters long."
 
-#: models/preset/service.py:83 models/preset/service.py:112
-#: models/preset/service.py:146
+#: models/preset/service.py:83 models/preset/service.py:125
+#: models/preset/service.py:161
 msgid "I preset sono dei direttori di gara."
 msgstr "Presets belong to tournament directors."
 
@@ -4808,7 +4822,7 @@ msgstr "Presets belong to tournament directors."
 msgid "Questo preset non esiste."
 msgstr "This preset does not exist."
 
-#: models/preset/service.py:158
+#: models/preset/service.py:173
 #, python-format
 msgid ""
 "Hai già un preset che si chiama «%(nome)s»: sostituiscilo o scegli un "
@@ -4817,51 +4831,94 @@ msgstr ""
 "You already have a preset called “%(nome)s”: replace it or choose another"
 " name."
 
-#: models/preset/service.py:166
+#: models/preset/service.py:181
 #, python-format
 msgid "«%(nome)s» è un preset di un altro tipo: scegli un altro nome."
 msgstr "“%(nome)s” is a preset of another type: choose another name."
 
-#: models/preset/service.py:209
+#: models/preset/service.py:225
 #, python-format
 msgid "Hai già un preset che si chiama «%(nome)s»."
 msgstr "You already have a preset called “%(nome)s”."
 
-#: models/preset/service.py:224
+#: models/preset/service.py:240
 msgid "(copia)"
 msgstr "(copy)"
 
-#: models/preset/service.py:257
+#: models/preset/service.py:273
 msgid "Destinatario non valido."
 msgstr "Invalid recipient."
 
-#: models/preset/service.py:261
+#: models/preset/service.py:277
 msgid "Scegli almeno un direttore."
 msgstr "Choose at least one director."
 
-#: models/preset/service.py:267
+#: models/preset/service.py:283
 msgid "Il preset è già tuo: scegli un altro direttore."
 msgstr "The preset is already yours: choose another director."
 
-#: models/preset/service.py:271
+#: models/preset/service.py:287
 msgid "Questo utente non esiste."
 msgstr "This user does not exist."
 
-#: models/preset/service.py:275
+#: models/preset/service.py:291
 #, python-format
 msgid "%(nome)s non è un direttore: i preset si condividono solo fra direttori."
 msgstr "%(nome)s is not a director: presets are shared only between directors."
 
-#: models/preset/service.py:353
+#: models/preset/service.py:331
+#, python-format
+msgid "%(primi)s e %(ultimo)s"
+msgstr "%(primi)s and %(ultimo)s"
+
+#: models/preset/service.py:342
+#, python-format
+msgid ""
+"Il preset ha anche il playoff %(nomi)s: qui se ne creano due, Elite e "
+"Academy, e l'altro si aggiunge dalla pagina del campionato."
+msgid_plural ""
+"Il preset ha anche i playoff %(nomi)s: qui se ne creano due, Elite e "
+"Academy, e gli altri si aggiungono dalla pagina del campionato."
+msgstr[0] ""
+"The preset also has the playoff %(nomi)s: here two are created, Elite and"
+" Academy, and the other one is added from the championship page."
+msgstr[1] ""
+"The preset also has the playoffs %(nomi)s: here two are created, Elite "
+"and Academy, and the others are added from the championship page."
+
+#: models/preset/service.py:351
+#, python-format
+msgid ""
+"Il preset comprende il playoff %(nomi)s: qui non si applica, perché i "
+"playoff si cambiano dalla pagina del campionato."
+msgid_plural ""
+"Il preset comprende i playoff %(nomi)s: qui non si applicano, perché i "
+"playoff si cambiano dalla pagina del campionato."
+msgstr[0] ""
+"The preset includes the playoff %(nomi)s: it is not applied here, because"
+" playoffs are changed from the championship page."
+msgstr[1] ""
+"The preset includes the playoffs %(nomi)s: they are not applied here, "
+"because playoffs are changed from the championship page."
+
+#: models/preset/service.py:360
+msgid ""
+"In questo campionato gli inviti sono già partiti: chi si qualifica non si"
+" cambia più."
+msgstr ""
+"In this championship the invitations have already been sent: who "
+"qualifies can no longer change."
+
+#: models/preset/service.py:422
 #, python-format
 msgid "(da %(nome)s)"
 msgstr "(from %(nome)s)"
 
-#: models/preset/service.py:380
+#: models/preset/service.py:449
 msgid "Hai ricevuto un preset"
 msgstr "You received a preset"
 
-#: models/preset/service.py:382
+#: models/preset/service.py:451
 #, python-format
 msgid ""
 "%(mittente)s ti ha mandato il preset «%(nome)s»: è una copia tua, la "
@@ -4870,7 +4927,7 @@ msgstr ""
 "%(mittente)s sent you the preset “%(nome)s”: it is your own copy, you "
 "will find it among your presets."
 
-#: models/preset/service.py:389
+#: models/preset/service.py:458
 msgid "Apri i miei preset"
 msgstr "Open my presets"
 
@@ -6923,185 +6980,175 @@ msgstr "Role revoked."
 msgid "Ruolo concesso (debug)."
 msgstr "Role granted (debug)."
 
-#: routes/admin/campionato.py:119 routes/admin/campionato.py:428
+#: routes/admin/campionato.py:120 routes/admin/campionato.py:427
 msgid "Il nome del campionato è obbligatorio"
 msgstr "Championship name is required"
 
-#: routes/admin/campionato.py:128
+#: routes/admin/campionato.py:129
 msgid "Il numero di gare deve essere un numero positivo"
 msgstr "Number of competitions must be a positive number"
 
-#: routes/admin/campionato.py:245
+#: routes/admin/campionato.py:266
 msgid "Sessione wizard scaduta. Ricomincia la creazione."
 msgstr "Wizard session expired. Please start again."
 
-#: routes/admin/campionato.py:331
-#: templates/admin/campionato_wizard_step1.html:171
-msgid "Playoff Elite"
-msgstr "Playoff Elite"
-
-#: routes/admin/campionato.py:346
-#: templates/admin/campionato_wizard_step1.html:190
-msgid "Playoff Academy"
-msgstr "Playoff Academy"
-
-#: routes/admin/campionato.py:361 routes/admin/competition/crud.py:131
+#: routes/admin/campionato.py:343 routes/admin/competition/crud.py:131
 #, python-format
 msgid "Prova «%(name)s» creata: solo tu la vedi."
 msgstr "Trial \"%(name)s\" created: only you can see it."
 
-#: routes/admin/campionato.py:369 routes/admin/campionato.py:456
+#: routes/admin/campionato.py:351 routes/admin/campionato.py:455
 #, python-format
 msgid "Campionato \"%(name)s\" creato con successo!"
 msgstr "Championship \"%(name)s\" created successfully!"
 
-#: routes/admin/campionato.py:379
+#: routes/admin/campionato.py:361
 #, python-format
 msgid "Errore durante la creazione: %(error)s"
 msgstr "Error during creation: %(error)s"
 
-#: routes/admin/campionato.py:405
+#: routes/admin/campionato.py:404
 msgid "Creazione campionato annullata"
 msgstr "Championship creation cancelled"
 
-#: routes/admin/campionato.py:423
+#: routes/admin/campionato.py:422
 msgid "Non hai i permessi per creare un campionato."
 msgstr "You do not have permission to create a championship."
 
-#: routes/admin/campionato.py:660
+#: routes/admin/campionato.py:659
 msgid "Campionato aggiornato: la modifica resta nella sua storia."
 msgstr "Championship updated: the change stays in its history."
 
-#: routes/admin/campionato.py:781
+#: routes/admin/campionato.py:780
 #, python-format
 msgid "Valori applicati a %(num)d gara."
 msgid_plural "Valori applicati a %(num)d gare."
 msgstr[0] "Values applied to %(num)d competition."
 msgstr[1] "Values applied to %(num)d competitions."
 
-#: routes/admin/campionato.py:787
+#: routes/admin/campionato.py:786
 msgid "Nessuna gara cambiata: restano con i loro valori."
 msgstr "No competition changed: they keep their values."
 
-#: routes/admin/campionato.py:881
+#: routes/admin/campionato.py:880
 #, python-format
 msgid "Campionato \"%(name)s\" terminato con successo."
 msgstr "Championship \"%(name)s\" terminated successfully."
 
-#: routes/admin/campionato.py:887
+#: routes/admin/campionato.py:886
 msgid "Il campionato è già stato terminato."
 msgstr "The championship has already been terminated."
 
-#: routes/admin/campionato.py:905
+#: routes/admin/campionato.py:904
 msgid "Parametri non validi."
 msgstr "Invalid parameters."
 
-#: routes/admin/campionato.py:918
+#: routes/admin/campionato.py:917
 msgid "Requisito minimo gare aggiornato."
 msgstr "Minimum competition requirement updated."
 
-#: routes/admin/campionato.py:963
+#: routes/admin/campionato.py:962
 #, python-format
 msgid "Playoff avviati: %(count)s giocatori qualificati."
 msgstr "Playoffs started: %(count)s players qualified."
 
-#: routes/admin/campionato.py:990 routes/admin/campionato.py:1025
-#: routes/admin/campionato.py:1058 routes/admin/campionato.py:1371
+#: routes/admin/campionato.py:989 routes/admin/campionato.py:1024
+#: routes/admin/campionato.py:1057 routes/admin/campionato.py:1370
 msgid "Configurazione playoff non trovata."
 msgstr "Playoff configuration not found."
 
-#: routes/admin/campionato.py:1001 routes/admin/campionato.py:1349
+#: routes/admin/campionato.py:1000 routes/admin/campionato.py:1348
 msgid "Invito non trovato."
 msgstr "Invitation not found."
 
-#: routes/admin/campionato.py:1037
+#: routes/admin/campionato.py:1036
 msgid "Data e scadenza del playoff aggiornate."
 msgstr "Playoff date and deadline updated."
 
-#: routes/admin/campionato.py:1072
+#: routes/admin/campionato.py:1071
 #, python-format
 msgid "Gara playoff \"%(name)s\" creata con successo."
 msgstr "Playoff gara \"%(name)s\" created successfully."
 
-#: routes/admin/campionato.py:1097
+#: routes/admin/campionato.py:1096
 msgid "Seleziona un giocatore."
 msgstr "Select a player."
 
-#: routes/admin/campionato.py:1110
+#: routes/admin/campionato.py:1109
 msgid "Giocatore aggiunto ai playoff."
 msgstr "Player added to playoffs."
 
-#: routes/admin/campionato.py:1133
+#: routes/admin/campionato.py:1132
 msgid "Qualificazione non specificata."
 msgstr "Qualification not specified."
 
-#: routes/admin/campionato.py:1148
+#: routes/admin/campionato.py:1147
 msgid "Giocatore rimosso dai playoff."
 msgstr "Player removed from playoffs."
 
-#: routes/admin/campionato.py:1173
+#: routes/admin/campionato.py:1172
 msgid "Risposta non valida."
 msgstr "Invalid answer."
 
-#: routes/admin/campionato.py:1195
+#: routes/admin/campionato.py:1194
 msgid "Partecipazione confermata per conto del giocatore."
 msgstr "Participation confirmed on the player’s behalf."
 
-#: routes/admin/campionato.py:1199 routes/admin/campionato.py:1714
+#: routes/admin/campionato.py:1198 routes/admin/campionato.py:1713
 #, python-format
 msgid "Rifiuto registrato: l'invito passa a %(name)s."
 msgstr "Refusal recorded: the invitation passes to %(name)s."
 
-#: routes/admin/campionato.py:1206 routes/admin/campionato.py:1721
+#: routes/admin/campionato.py:1205 routes/admin/campionato.py:1720
 msgid "Rifiuto registrato. Nessun altro giocatore idoneo da invitare."
 msgstr "Refusal recorded. No other eligible player left to invite."
 
-#: routes/admin/campionato.py:1235
+#: routes/admin/campionato.py:1234
 msgid "Regole della classifica finale aggiornate."
 msgstr "Final standings rules updated."
 
-#: routes/admin/campionato.py:1301
+#: routes/admin/campionato.py:1300
 msgid "Configurazione playoff aggiornata."
 msgstr "Playoff configuration updated."
 
-#: routes/admin/campionato.py:1353
+#: routes/admin/campionato.py:1352
 msgid "Partecipazione riconfermata: resta scritto che l'hai fatto tu."
 msgstr "Participation reconfirmed: it stays on record that you did it."
 
-#: routes/admin/campionato.py:1382
+#: routes/admin/campionato.py:1381
 #, python-format
 msgid "Inviti aggiornati: %(ritirati)d ritirati, %(nuovi)d nuovi."
 msgstr "Invitations updated: %(ritirati)d withdrawn, %(nuovi)d new."
 
-#: routes/admin/campionato.py:1390
+#: routes/admin/campionato.py:1389
 msgid "Gli inviti restano come sono."
 msgstr "The invitations stay as they are."
 
-#: routes/admin/campionato.py:1392
+#: routes/admin/campionato.py:1391
 msgid "Scelta non valida."
 msgstr "Invalid choice."
 
-#: routes/admin/campionato.py:1428
+#: routes/admin/campionato.py:1427
 msgid "Finale aggiornata."
 msgstr "Final updated."
 
-#: routes/admin/campionato.py:1430
+#: routes/admin/campionato.py:1429
 msgid "La finale resta com'era."
 msgstr "The final stays as it was."
 
-#: routes/admin/campionato.py:1458
+#: routes/admin/campionato.py:1457
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr "All required fields must be filled."
 
-#: routes/admin/campionato.py:1479
+#: routes/admin/campionato.py:1478
 msgid "Configurazione playoff aggiunta."
 msgstr "Playoff configuration added."
 
-#: routes/admin/campionato.py:1504
+#: routes/admin/campionato.py:1503
 msgid "Configurazione playoff disattivata."
 msgstr "Playoff configuration deactivated."
 
-#: routes/admin/campionato.py:1604
+#: routes/admin/campionato.py:1603
 msgid ""
 "Una competizione di prova non ha vetrina né link pubblico: in un "
 "campionato vero qui trovi il link da condividere."
@@ -7109,46 +7156,46 @@ msgstr ""
 "A trial competition has no showcase or public link: in a real "
 "championship this is where you find the link to share."
 
-#: routes/admin/campionato.py:1669 routes/admin/competition/prova.py:134
+#: routes/admin/campionato.py:1668 routes/admin/competition/prova.py:134
 #, python-format
 msgid "Prova «%(nome)s» eliminata."
 msgstr "Trial \"%(nome)s\" deleted."
 
-#: routes/admin/campionato.py:1710
+#: routes/admin/campionato.py:1709
 msgid "Invito accettato."
 msgstr "Invitation accepted."
 
-#: routes/admin/campionato.py:1746
+#: routes/admin/campionato.py:1745
 msgid "Nessun invito in attesa."
 msgstr "No pending invitation."
 
-#: routes/admin/campionato.py:1748
+#: routes/admin/campionato.py:1747
 #, python-format
 msgid "%(quanti)s inviti accettati."
 msgstr "%(quanti)s invitations accepted."
 
-#: routes/admin/campionato.py:1769
+#: routes/admin/campionato.py:1768
 msgid "Vetrina del campionato aggiornata."
 msgstr "Championship showcase updated."
 
-#: routes/admin/campionato.py:1798 routes/admin/competition/vetrina.py:151
+#: routes/admin/campionato.py:1797 routes/admin/competition/vetrina.py:151
 msgid "Nessuna immagine selezionata."
 msgstr "No image selected."
 
-#: routes/admin/campionato.py:1801 routes/admin/competition/vetrina.py:155
+#: routes/admin/campionato.py:1800 routes/admin/competition/vetrina.py:155
 msgid "Formato non supportato. Usa JPG, PNG o GIF."
 msgstr "Unsupported format. Use JPG, PNG or GIF."
 
-#: routes/admin/campionato.py:1814
+#: routes/admin/campionato.py:1813
 msgid "Locandina caricata: la useranno tutte le gare senza una propria."
 msgstr "Poster uploaded: every competition without one of its own will use it."
 
-#: routes/admin/campionato.py:1819 routes/admin/competition/vetrina.py:173
+#: routes/admin/campionato.py:1818 routes/admin/competition/vetrina.py:173
 #, python-format
 msgid "Non è stato possibile caricare l'immagine: %(errore)s"
 msgstr "The image could not be uploaded: %(errore)s"
 
-#: routes/admin/campionato.py:1833
+#: routes/admin/campionato.py:1832
 msgid "Locandina rimossa."
 msgstr "Poster removed."
 
@@ -7193,7 +7240,7 @@ msgstr "Milestone reached: %(value)s competitions completed!"
 msgid "Questa gara non esiste."
 msgstr "This competition does not exist."
 
-#: routes/admin/preset.py:88 routes/admin/preset.py:204
+#: routes/admin/preset.py:88 routes/admin/preset.py:216
 msgid "Questo campionato non esiste."
 msgstr "This championship does not exist."
 
@@ -7202,28 +7249,28 @@ msgid "Scegli almeno disciplina e distanza prima di salvare il preset."
 msgstr "Choose at least discipline and race length before saving the preset."
 
 #: routes/admin/preset.py:140 routes/admin/preset.py:169
-#: routes/admin/preset.py:255 routes/admin/preset.py:278
+#: routes/admin/preset.py:274 routes/admin/preset.py:297
 #, python-format
 msgid "Preset «%(nome)s» salvato."
 msgstr "Preset “%(nome)s” saved."
 
-#: routes/admin/preset.py:327
+#: routes/admin/preset.py:349
 #, python-format
 msgid "Preset rinominato: «%(nome)s»."
 msgstr "Preset renamed: “%(nome)s”."
 
-#: routes/admin/preset.py:337
+#: routes/admin/preset.py:359
 #, python-format
 msgid "Copia creata: «%(nome)s»."
 msgstr "Copy created: “%(nome)s”."
 
-#: routes/admin/preset.py:348
+#: routes/admin/preset.py:370
 msgid "Preset cancellato. Le gare e i campionati nati da lì restano come sono."
 msgstr ""
 "Preset deleted. Competitions and championships created from it stay as "
 "they are."
 
-#: routes/admin/preset.py:364
+#: routes/admin/preset.py:386
 #, python-format
 msgid "Preset mandato a %(num)d direttore: ne riceve una copia sua."
 msgid_plural "Preset mandato a %(num)d direttori: ognuno ne riceve una copia sua."
@@ -9981,7 +10028,7 @@ msgstr ""
 msgid "Ultimo aggiornamento: agosto 2026."
 msgstr "Last updated: August 2026."
 
-#: templates/admin/preset_miei.html:75
+#: templates/admin/preset_miei.html:86
 #: templates/direttore/_fase_iscrizioni.html:107
 #: templates/direttore/_fase_preparazione.html:199
 #: templates/direttore/_fase_preparazione.html:204
@@ -12795,42 +12842,53 @@ msgstr "received on %(data)s"
 msgid "aggiornato il %(data)s"
 msgstr "updated on %(data)s"
 
-#: templates/admin/preset_miei.html:65 templates/admin/preset_miei.html:95
+#: templates/admin/preset_miei.html:67
+#, python-format
+msgid "con %(num)d playoff: %(nomi)s"
+msgid_plural "con %(num)d playoff: %(nomi)s"
+msgstr[0] "with %(num)d playoff: %(nomi)s"
+msgstr[1] "with %(num)d playoffs: %(nomi)s"
+
+#: templates/admin/preset_miei.html:69
+msgid "senza playoff"
+msgstr "no playoffs"
+
+#: templates/admin/preset_miei.html:76 templates/admin/preset_miei.html:106
 #: templates/direttore/_squadre_categorie.html:127
 msgid "Rinomina"
 msgstr "Rename"
 
-#: templates/admin/preset_miei.html:65
+#: templates/admin/preset_miei.html:76
 #, python-format
 msgid "Rinomina «%(nome)s»"
 msgstr "Rename “%(nome)s”"
 
-#: templates/admin/preset_miei.html:70
+#: templates/admin/preset_miei.html:81
 #: templates/player/challenge_detail.html:198
 msgid "Duplica"
 msgstr "Duplicate"
 
-#: templates/admin/preset_miei.html:70
+#: templates/admin/preset_miei.html:81
 #, python-format
 msgid "Duplica «%(nome)s»"
 msgstr "Duplicate “%(nome)s”"
 
-#: templates/admin/preset_miei.html:75
+#: templates/admin/preset_miei.html:86
 #, python-format
 msgid "Condividi «%(nome)s»"
 msgstr "Share “%(nome)s”"
 
-#: templates/admin/preset_miei.html:80 templates/admin/preset_miei.html:82
+#: templates/admin/preset_miei.html:91 templates/admin/preset_miei.html:93
 #: templates/individual_match/proposals.html:185
 msgid "Cancella"
 msgstr "Delete"
 
-#: templates/admin/preset_miei.html:81
+#: templates/admin/preset_miei.html:92
 #, python-format
 msgid "Cancella «%(nome)s»"
 msgstr "Delete “%(nome)s”"
 
-#: templates/admin/preset_miei.html:82
+#: templates/admin/preset_miei.html:93
 #, python-format
 msgid ""
 "Cancellare il preset «%(nome)s»? Le gare e i campionati nati da lì "
@@ -12839,19 +12897,19 @@ msgstr ""
 "Delete the preset “%(nome)s”? Competitions and championships created from"
 " it stay as they are, and copies you sent to others remain theirs."
 
-#: templates/admin/preset_miei.html:91
+#: templates/admin/preset_miei.html:102
 msgid "Nuovo nome"
 msgstr "New name"
 
-#: templates/admin/preset_miei.html:102
+#: templates/admin/preset_miei.html:113
 msgid "Manda una copia a"
 msgstr "Send a copy to"
 
-#: templates/admin/preset_miei.html:104
+#: templates/admin/preset_miei.html:115
 msgid "Cerca un direttore per nome…"
 msgstr "Search a director by name…"
 
-#: templates/admin/preset_miei.html:107
+#: templates/admin/preset_miei.html:118
 msgid ""
 "Solo direttori di gara. Ognuno riceve una copia sua, con una notifica: "
 "quello che cambi dopo non arriva a loro."
@@ -12859,7 +12917,7 @@ msgstr ""
 "Competition directors only. Each gets their own copy, with a "
 "notification: what you change later does not reach them."
 
-#: templates/admin/preset_miei.html:109
+#: templates/admin/preset_miei.html:120
 msgid "Manda la copia"
 msgstr "Send the copy"
 

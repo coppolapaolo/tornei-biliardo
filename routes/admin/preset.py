@@ -175,9 +175,21 @@ def salva_dalla_gara(gara_id: int):
 @login_required
 @director_or_admin_required
 def valori_per_il_modulo(preset_id: int):
-    """I valori di un preset, da scrivere nei campi del modulo."""
+    """I valori di un preset, da scrivere nei campi del modulo.
+
+    Dalla modifica di un campionato arriva anche ``campionato_id``: la nota
+    sui playoff dice se lì gli inviti sono già partiti. Un campionato che chi
+    guarda non gestisce si ignora, come se non ci fosse.
+    """
+    campionato = None
+    campionato_id = request.args.get("campionato_id", type=int)
+    if campionato_id:
+        try:
+            campionato = _campionato_da_gestire(campionato_id)
+        except NotFoundError:
+            campionato = None
     try:
-        dati = ConfigPresetService.per_il_modulo(preset_id, current_user)
+        dati = ConfigPresetService.per_il_modulo(preset_id, current_user, campionato)
     except (NotFoundError, PermissionDeniedError) as errore:
         return _risposta_di_errore(errore)
     return ajax_success(data=dati)
@@ -205,11 +217,13 @@ def _campionato_da_gestire(campionato_id: int) -> Campionato:
     return campionato
 
 
-def _campi_dal_modulo_del_campionato() -> dict:
-    """Il modulo del campionato letto come lo legge la sua modifica.
+def _campi_dal_modulo_del_campionato() -> tuple:
+    """Il modulo del campionato letto come lo legge la sua modifica, e i playoff.
 
     Dal passo 2 del wizard tipo, sistemi, numero di gare ed esercizi non sono
-    nel modulo: si scelgono al passo 1 e stanno nella sessione.
+    nel modulo: si scelgono al passo 1 e stanno nella sessione, playoff
+    compresi (quelli che il wizard creerebbe). Dalla modifica i playoff sono
+    quelli che il campionato ha: il modulo di modifica non li tocca.
     """
     from models.matchmaking.configuration import MatchmakingStrategy
     from routes.admin.campionato import WIZARD_SESSION_KEY
@@ -217,9 +231,12 @@ def _campi_dal_modulo_del_campionato() -> dict:
 
     modulo = request.form.copy()
     ripiego = MatchmakingStrategy.AMALFI.value
+    playoff: list = []
     campionato_id = request.form.get("preset_campionato_id", type=int)
     if campionato_id:
-        ripiego = _campionato_da_gestire(campionato_id).campionato_type
+        campionato = _campionato_da_gestire(campionato_id)
+        ripiego = campionato.campionato_type
+        playoff = formato.playoff_del_campionato(campionato)
     if request.form.get("preset_wizard") == "1":
         passo_1 = session.get(WIZARD_SESSION_KEY) or {}
         for chiave in _PASSO_1_DEL_WIZARD:
@@ -227,7 +244,8 @@ def _campi_dal_modulo_del_campionato() -> dict:
                 modulo[chiave] = str(passo_1[chiave])
         if "challenge_mode" not in modulo and passo_1.get("challenge_mode"):
             modulo["challenge_mode"] = "on"
-    return CampionatoFormParser.parse_configurazione(modulo, ripiego)
+        playoff = formato.configurazioni_dal_wizard(passo_1)
+    return CampionatoFormParser.parse_configurazione(modulo, ripiego), playoff
 
 
 @preset_bp.route("/campionato/dal-modulo", methods=["POST"])
@@ -238,13 +256,14 @@ def salva_dal_modulo_campionato():
     from models.categoria.listino import leggi_dal_modulo
 
     try:
-        campi = _campi_dal_modulo_del_campionato()
+        campi, playoff = _campi_dal_modulo_del_campionato()
         preset = ConfigPresetService.salva(
             current_user,
             request.form.get("preset_nome"),
             TipoPreset.CAMPIONATO,
             campi,
             leggi_dal_modulo(request.form),
+            playoff,
             sostituisci=request.form.get("preset_sostituisci") == "1",
         )
     except (ConflictError, NotFoundError, PermissionDeniedError) as errore:
@@ -288,10 +307,13 @@ def salva_dal_campionato(campionato_id: int):
 @director_or_admin_required
 def miei():
     """I preset di chi guarda, gara e campionato in un elenco solo."""
+    from models.preset.service import playoff_del_preset
+
     return render_template(
         "admin/preset_miei.html",
         preset=ConfigPresetService.preset_di(current_user.id),
         TipoPreset=TipoPreset,
+        playoff_del_preset=playoff_del_preset,
     )
 
 

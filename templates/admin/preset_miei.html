@@ -58,6 +58,17 @@
             {% else %}
               {{ _("aggiornato il %(data)s", data=(p.updated_at or p.created_at)|date_local) }}
             {% endif %}
+            {# I playoff entrano nel preset di campionato (ADR-082, emendamento
+               del 2026-10-12): la riga dice se ne ha. #}
+            {% set playoff_riga = playoff_del_preset(p) %}
+            {% if playoff_riga is not none %}
+            <span class="c7-sep">·</span>
+            {% if playoff_riga %}
+            {{ ngettext("con %(num)d playoff: %(nomi)s", "con %(num)d playoff: %(nomi)s", playoff_riga|length, nomi=playoff_riga|join(", ")) }}
+            {% else %}
+            {{ _("senza playoff") }}
+            {% endif %}
+            {% endif %}
           </div>
         </div>
         <div class="c7-preset-azioni">

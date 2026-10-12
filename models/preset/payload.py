@@ -13,6 +13,13 @@ campi HTML: i primi cambiano molto più di rado. Chi applica il preset traduce
 in valori del modulo (`valori_per_il_modulo`), e al salvataggio della gara il
 modulo passa dal parser di sempre: un preset non scavalca nessun controllo.
 
+**I playoff** (dal 2026-10-12, decisione dell'utente): il preset di campionato
+porta anche le configurazioni dei playoff, come elenco (zero, una o più),
+con una whitelist positiva sua (`CAMPI_DEL_PLAYOFF`): criteri di
+qualificazione, modalità di classifica finale, peso, formula e regole della
+finale. Restano fuori tutto ciò che dice *quale* finale e a che punto è:
+id, campionato, gara creata, stato, date, sala, qualificati e inviti.
+
 **Robustezza nel tempo.** Ogni preset porta lo `schema_version` con cui è
 stato scritto, e si legge con tolleranza (`leggi`): un campo che la whitelist
 di oggi non conosce più si scarta e si segnala, un campo che manca resta al
@@ -30,7 +37,12 @@ from models.preset.models import TipoPreset
 #: La forma del payload scritta oggi. Si alza quando un campo cambia
 #: significato (non quando se ne aggiunge uno: quello lo copre la lettura
 #: tollerante), e `leggi` impara a convertire dalla versione precedente.
-SCHEMA_VERSION = 1
+#:
+#: 2 (2026-10-12): il preset di campionato porta anche i playoff (``playoff``).
+#: Un preset della versione 1 non ne sapeva niente: si legge come «playoff
+#: assenti», che vuol dire **non toccarli**, ed è diverso da «nessun playoff»
+#: (l'elenco vuoto di un preset della versione 2).
+SCHEMA_VERSION = 2
 
 #: I campi del modulo della gara che non entrano mai in un preset: dicono
 #: quale serata è, non come si gioca. Il peso vale dentro *quel* campionato.
@@ -67,6 +79,53 @@ _LIVELLO_DELLA_CATENA = {
 
 #: Il listino viaggia accanto ai campi: all'uso crea le categorie della gara.
 LISTINO = "listino"
+
+#: Le configurazioni dei playoff viaggiano accanto ai campi del campionato.
+PLAYOFF = "playoff"
+
+#: I campi di `PlayoffConfiguration` che sono **configurazione**: whitelist
+#: positiva, nell'ordine in cui si leggono. Fuori, per scelta: id, campionato,
+#: gara creata, stato (`is_active`), date (`scheduled_date`,
+#: `response_deadline`), sala (`location`, come per gara e campionato), il
+#: tipo storico e i criteri JSON di una volta (`playoff_type`,
+#: `qualification_criteria`, `auto_generate`: nessun modulo li sceglie), e
+#: qualificati e inviti, che non sono colonne.
+CAMPI_DEL_PLAYOFF = (
+    "name",
+    "description",
+    # Chi si qualifica (`CRITERI_DI_QUALIFICAZIONE`).
+    "positions_from",
+    "positions_to",
+    "max_participants",
+    "min_garas_played",
+    # Come entra nella classifica finale.
+    "final_ranking_mode",
+    "playoff_weight",
+    # Come si gioca la finale.
+    "discipline",
+    "distance",
+    "rounds_count",
+    "strategy_type",
+    "odd_number_policy",
+    "classification_system",
+    "entry_fee",
+)
+
+#: I campi interi di una configurazione dei playoff.
+_INTERI_DEL_PLAYOFF = frozenset(
+    {
+        "positions_from",
+        "positions_to",
+        "max_participants",
+        "min_garas_played",
+        "playoff_weight",
+        "distance",
+        "rounds_count",
+    }
+)
+
+#: Quante configurazioni dei playoff il wizard sa esprimere: Elite e Academy.
+POSTI_DEL_WIZARD = 2
 
 #: I campi che dentro un campionato valgono «come il campionato» quando sono
 #: NULL, con la colonna del campionato da cui si leggono. Nel preset si
@@ -139,13 +198,43 @@ def _voce_di_listino(voce: Any) -> Optional[Dict[str, Any]]:
     return {"nome": nome, "quota": quota}
 
 
+def _configurazione_del_playoff(voce: Any) -> Optional[Dict[str, Any]]:
+    """Una configurazione dei playoff come la tiene il preset: solo i campi
+    della whitelist, coi numeri come numeri. None se non è leggibile."""
+    if not isinstance(voce, Mapping):
+        return None
+    esito: Dict[str, Any] = {}
+    for campo in CAMPI_DEL_PLAYOFF:
+        if campo not in voce:
+            continue
+        valore = _semplice(voce[campo])
+        if valore is not None and campo in _INTERI_DEL_PLAYOFF:
+            try:
+                valore = int(valore)
+            except (TypeError, ValueError):
+                continue
+        elif valore is not None and campo == "entry_fee":
+            try:
+                valore = round(float(valore), 2)
+            except (TypeError, ValueError):
+                continue
+        esito[campo] = valore
+    return esito
+
+
 def componi(
-    kind: str, campi: Mapping[str, Any], listino: Optional[Iterable[Any]] = None
+    kind: str,
+    campi: Mapping[str, Any],
+    listino: Optional[Iterable[Any]] = None,
+    playoff: Optional[Iterable[Any]] = None,
 ) -> Dict[str, Any]:
-    """Il payload da salvare: solo i campi della whitelist, e il listino.
+    """Il payload da salvare: solo i campi della whitelist, il listino e, per
+    il campionato, i playoff.
 
     Tutto ciò che non è ammesso resta fuori in silenzio: chi compone parte da
     un modulo intero, e nome o data in un preset non devono entrare mai.
+    Il preset di campionato scrive **sempre** l'elenco dei playoff, anche
+    vuoto: dice che il campionato non ne aveva.
     """
     ammessi = set(campi_ammessi(kind))
     dati: Dict[str, Any] = {
@@ -158,6 +247,12 @@ def componi(
     voci = [v for v in (_voce_di_listino(x) for x in (listino or [])) if v]
     if voci:
         dati[LISTINO] = voci
+    if kind == TipoPreset.CAMPIONATO.value:
+        dati[PLAYOFF] = [
+            c
+            for c in (_configurazione_del_playoff(x) for x in (playoff or []))
+            if c is not None
+        ]
     return dati
 
 
@@ -235,6 +330,32 @@ def dal_campionato(campionato: Any) -> Dict[str, Any]:
     return campi
 
 
+def playoff_del_campionato(campionato: Any) -> List[Dict[str, Any]]:
+    """Le configurazioni dei playoff attive di un campionato, come le tiene il
+    preset: nell'ordine dei posti in classifica, poi di creazione."""
+    from models.playoff.models import PlayoffConfiguration
+
+    configurazioni = (
+        PlayoffConfiguration.query.filter_by(
+            campionato_id=campionato.id, is_active=True
+        )
+        .order_by(
+            PlayoffConfiguration.positions_from.is_(None),
+            PlayoffConfiguration.positions_from,
+            PlayoffConfiguration.id,
+        )
+        .all()
+    )
+    esito = []
+    for config in configurazioni:
+        voce = _configurazione_del_playoff(
+            {campo: getattr(config, campo, None) for campo in CAMPI_DEL_PLAYOFF}
+        )
+        if voce is not None:
+            esito.append(voce)
+    return esito
+
+
 def listino_del_campionato(campionato: Any) -> List[Dict[str, Any]]:
     """Il listino di un campionato, come lo tiene il preset."""
     from models.categoria.listino import listino_di
@@ -254,6 +375,10 @@ class Lettura:
     listino: List[Dict[str, Any]] = field(default_factory=list)
     #: I campi che la whitelist di oggi non conosce più: la pagina li dice.
     scartati: List[str] = field(default_factory=list)
+    #: Le configurazioni dei playoff (solo campionato). Un elenco vuoto vuol
+    #: dire «nessun playoff»; None che il preset non ne sa niente (versione 1,
+    #: o un elenco illeggibile), e chi lo applica non li tocca.
+    playoff: Optional[List[Dict[str, Any]]] = None
 
 
 def leggi(kind: str, dati: Mapping[str, Any], schema_version: int = 1) -> Lettura:
@@ -261,8 +386,10 @@ def leggi(kind: str, dati: Mapping[str, Any], schema_version: int = 1) -> Lettur
 
     Un campo sconosciuto, o non più ammesso, si scarta e finisce in
     ``scartati``. Un campo che manca non si inventa: resta al valore che il
-    modulo propone. ``schema_version`` dice da che forma si parte; finché è
-    la 1 non c'è niente da convertire.
+    modulo propone. ``schema_version`` dice da che forma si parte: un preset
+    di campionato della versione 1 non sapeva niente dei playoff, e si legge
+    con ``playoff`` a None, «non toccarli» (lo stesso per un elenco
+    illeggibile), mentre un elenco vuoto vuol dire «nessun playoff».
     """
     ammessi = campi_ammessi(kind)
     grezzi = dati.get("campi") if isinstance(dati, Mapping) else None
@@ -276,7 +403,86 @@ def leggi(kind: str, dati: Mapping[str, Any], schema_version: int = 1) -> Lettur
     voci = dati.get(LISTINO) if isinstance(dati, Mapping) else None
     if isinstance(voci, list):
         lettura.listino = [v for v in (_voce_di_listino(x) for x in voci) if v]
+    if kind == TipoPreset.CAMPIONATO.value and schema_version >= 2:
+        grezzi_playoff = dati.get(PLAYOFF) if isinstance(dati, Mapping) else None
+        if isinstance(grezzi_playoff, list):
+            lettura.playoff = []
+            sconosciuti = set()
+            for voce in grezzi_playoff:
+                config = _configurazione_del_playoff(voce)
+                if config is None:
+                    continue
+                lettura.playoff.append(config)
+                sconosciuti.update(c for c in voce if c not in CAMPI_DEL_PLAYOFF)
+            lettura.scartati += sorted(f"{PLAYOFF}.{c}" for c in sconosciuti)
     return lettura
+
+
+def valori_dei_playoff(playoff: List[Mapping[str, Any]]) -> List[Tuple[str, Any]]:
+    """I playoff del preset nei campi del passo 1 del wizard: Elite e Academy.
+
+    Il wizard ne sa esprimere due, una dopo l'altra in classifica: la prima
+    configurazione del preset va su Elite, la seconda su Academy. Le altre il
+    passo 1 non le crea (lo dice `nota_dei_playoff`). Il numero di posti è
+    quello della configurazione; tutto il resto (criteri, peso, formula…) il
+    passo 2 lo rilegge dal preset scelto (`configurazioni_dal_wizard`).
+    """
+    coppie: List[Tuple[str, Any]] = []
+    for indice, slot in enumerate(("elite", "academy")):
+        config = playoff[indice] if indice < len(playoff) else None
+        coppie.append((f"playoff_{slot}_enabled", config is not None))
+        if config is not None and config.get("max_participants"):
+            coppie.append(
+                (f"playoff_{slot}_participants", int(config["max_participants"]))
+            )
+    return coppie
+
+
+def nome_predefinito_del_playoff(indice: int) -> str:
+    """Il nome che il wizard dà alla configurazione al posto ``indice``."""
+    from flask_babel import gettext as _
+
+    return _("Playoff Elite") if indice == 0 else _("Playoff Academy")
+
+
+def configurazioni_dal_wizard(passo_1: Mapping[str, Any]) -> List[Dict[str, Any]]:
+    """Le configurazioni dei playoff che il wizard crea, dal passo 1.
+
+    Accese e posti vengono dai campi del passo 1, come sempre: Elite dal
+    primo posto, Academy subito dopo. Se il passo 1 è partito da un preset
+    (``playoff_dal_preset``), la configurazione dello stesso posto porta con
+    sé nome, criteri, peso e regole della finale; posti e posizioni restano
+    quelli che il direttore ha lasciato nel modulo. Le configurazioni del
+    preset oltre la seconda non si creano: il wizard non le sa mostrare.
+
+    Una funzione sola per la creazione (`wizard_create`) e per «Salva come
+    preset» dal passo 2: il preset tiene ciò che il campionato riceverebbe.
+    """
+    dal_preset = [
+        c
+        for c in (
+            _configurazione_del_playoff(x)
+            for x in (passo_1.get("playoff_dal_preset") or [])
+        )
+        if c is not None
+    ]
+    esito: List[Dict[str, Any]] = []
+    prossimo = 1
+    for indice, slot in enumerate(("elite", "academy")):
+        if not passo_1.get(f"playoff_{slot}_enabled"):
+            # Academy esiste solo dopo Elite: senza Elite non c'è il posto.
+            break
+        posti = int(passo_1.get(f"playoff_{slot}_participants") or 6)
+        config: Dict[str, Any] = {}
+        if indice < len(dal_preset):
+            config.update(dal_preset[indice])
+        config["name"] = config.get("name") or nome_predefinito_del_playoff(indice)
+        config["max_participants"] = posti
+        config["positions_from"] = prossimo
+        config["positions_to"] = prossimo + posti - 1
+        prossimo += posti
+        esito.append(config)
+    return esito
 
 
 def valori_per_il_modulo(
@@ -382,14 +588,35 @@ def _catena_per_l_editor(valore: Any) -> str:
     return testo
 
 
+def nomi_dei_playoff(playoff: List[Mapping[str, Any]]) -> List[str]:
+    """I nomi delle configurazioni dei playoff, per dirle in pagina."""
+    return [
+        str(c.get("name") or nome_predefinito_del_playoff(i))
+        for i, c in enumerate(playoff)
+    ]
+
+
 def per_il_modulo(
     lettura: Lettura, kind: str = TipoPreset.GARA.value
 ) -> Dict[str, Any]:
-    """Ciò che riceve il JavaScript del modulo: valori, listino, scartati."""
-    return {
-        "valori": [
-            list(coppia) for coppia in valori_per_il_modulo(lettura.campi, kind)
-        ],
+    """Ciò che riceve il JavaScript del modulo: valori, listino, scartati.
+
+    Per il campionato anche i campi dei playoff del passo 1 (`valori`: dove il
+    modulo non li ha, il JavaScript li salta) e i loro nomi (`playoff`, None
+    se il preset non ne sa niente: allora nessun campo dei playoff).
+    """
+    valori = valori_per_il_modulo(lettura.campi, kind)
+    dati: Dict[str, Any] = {
+        "valori": [],
         "listino": lettura.listino,
         "scartati": lettura.scartati,
     }
+    if kind == TipoPreset.CAMPIONATO.value:
+        # Un preset che dei playoff non sa niente non tocca gli interruttori.
+        if lettura.playoff is not None:
+            valori = valori + valori_dei_playoff(lettura.playoff)
+            dati["playoff"] = nomi_dei_playoff(lettura.playoff)
+        else:
+            dati["playoff"] = None
+    dati["valori"] = [list(coppia) for coppia in valori]
+    return dati

@@ -39,7 +39,8 @@ gara resti appesa a qualcosa che il suo direttore può cambiare dopo.
    Per il **campionato** la base è `CampionatoFormParser.CAMPI_DEL_MODULO`
    meno nome e sala; la lista e `parse_configurazione` (che legge il modulo
    per la modifica del campionato e per il preset) sono tenute allineate da
-   un test. I playoff, configurati a parte, non entrano.
+   un test. I playoff, configurati a parte, non entravano: vedi l'emendamento
+   del 2026-10-12, in fondo.
 5. **Il payload usa i nomi delle colonne**, non quelli dei campi HTML, e
    porta uno `schema_version`. Si legge con tolleranza: un campo che l'app
    non conosce più si scarta e la pagina lo dice; un campo che manca resta al
@@ -125,6 +126,56 @@ gara resti appesa a qualcosa che il suo direttore può cambiare dopo.
 - Interfaccia: `templates/components/_preset_modulo.html` e
   `static/js/preset_modulo.js`; l'editor delle catene rilegge il campo
   nascosto quando riceve `change`.
+
+## Emendamento del 2026-10-12: i playoff entrano nel preset di campionato
+
+**Decisione dell'utente.** Il preset di campionato comprende anche le
+configurazioni dei playoff (Elite, Academy e le altre aggiunte dalla pagina
+del campionato). Il punto 4 escludeva i playoff perché si configurano a
+parte; ma chi rifà ogni anno lo stesso campionato rifà anche gli stessi
+playoff, e un preset che li dimentica è a metà.
+
+- **Whitelist positiva sua** (`payload.CAMPI_DEL_PLAYOFF`): criteri di
+  qualificazione (`positions_from`, `positions_to`, `max_participants`,
+  `min_garas_played`), modalità di classifica finale e peso, formula e regole
+  della finale (`discipline`, `distance`, `rounds_count`, `strategy_type`,
+  `odd_number_policy`, `classification_system`, `entry_fee`), nome e
+  descrizione. Fuori: id, campionato, gara creata, stato, date, scadenza,
+  sala, il tipo storico e i criteri JSON di una volta, qualificati e inviti.
+- **Il payload** porta `playoff`, un elenco (anche vuoto: il campionato non
+  ne aveva). `schema_version` sale a 2. Un preset della versione 1 dei
+  playoff non sa niente: si legge con `playoff` assente (None), che vuol
+  dire **non toccarli** — gli interruttori del passo 1 restano come sono, e
+  «I miei preset» non dice niente — distinto dall'elenco vuoto della
+  versione 2, che vuol dire «nessun playoff» e li spegne.
+- **Salvare**: dal passo 2 del wizard i playoff sono quelli che il wizard
+  creerebbe (`payload.configurazioni_dal_wizard`, la stessa funzione della
+  creazione); dalla modifica e dal dettaglio sono le configurazioni attive
+  del campionato (`payload.playoff_del_campionato`).
+- **Applicare nel wizard**: il passo 1 sa esprimere due configurazioni, Elite
+  e Academy, una dopo l'altra in classifica. La prima del preset va su Elite,
+  la seconda su Academy: il preset scrive interruttori e posti, e il passo 2
+  rilegge dal preset scelto criteri e regole della finale. I posti restano
+  quelli del modulo e le posizioni si ricalcolano come sempre. Oltre la
+  seconda non si crea niente, e la pagina lo dice. La creazione
+  (`TournamentService.create_playoff_config`) passa dagli stessi controlli
+  della correzione (valori ammessi, finale sommabile): campionato, listino e
+  playoff nascono in una transazione sola, così una finale rifiutata non
+  lascia un campionato a metà.
+- **Applicare nella modifica**: non tocca i playoff. La modifica del
+  campionato non li gestisce: si cambiano dalla pagina del campionato, dove
+  `update_configuration` blocca i criteri a inviti partiti (ADR-075).
+  Applicarli da qui scavalcherebbe la storia dei playoff e la proposta alla
+  finale già creata; la pagina dice invece che il preset li comprende, e se
+  in quel campionato gli inviti sono già partiti.
+- **«I miei preset»** dice per ogni preset di campionato se ha i playoff, e
+  quali; duplicare e condividere copiano il payload, playoff compresi.
+
+**Alternativa scartata**: applicare i playoff del preset anche nella modifica
+del campionato, configurazione per configurazione. Servirebbe un abbinamento
+fra le configurazioni del preset e quelle del campionato (per nome? per
+posizione?), e ogni cambio andrebbe proposto alla finale già creata: è il
+lavoro della pagina del campionato, che lo fa già con storia e blocchi.
 
 ## Riferimenti
 

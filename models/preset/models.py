@@ -46,8 +46,9 @@ class ConfigPreset(BaseModel):
     name = db.Column(db.String(100), nullable=False)
     #: `TipoPreset`: il modulo che il preset precompila.
     kind = db.Column(db.String(20), nullable=False)
-    #: I valori, in JSON: ``{"campi": {...}, "listino": [...]}``. Solo i campi
-    #: della whitelist (`models.preset.payload`), mai nome, date, sala, iscritti.
+    #: I valori, in JSON: ``{"campi": {...}, "listino": [...]}``, e per il
+    #: campionato ``"playoff": [...]`` (dalla versione 2). Solo i campi della
+    #: whitelist (`models.preset.payload`), mai nome, date, sala, iscritti.
     payload = db.Column(db.Text, nullable=False, default="{}")
     #: La forma del payload quando è stato scritto: chi lo legge domani sa da
     #: dove parte (`payload.leggi`).

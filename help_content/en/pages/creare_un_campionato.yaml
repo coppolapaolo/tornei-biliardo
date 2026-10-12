@@ -140,13 +140,18 @@ blocks:
       from there. A championship preset keeps format, standings system,
       number of competitions, drills and all the values proposed to the
       competitions (rounds, odd number, break, groups, final stage, points,
-      ties, time limit, fee and price list, points by position). Name and
-      venue are left out.
+      ties, time limit, fee and price list, points by position) and also
+      **the playoffs**: places, minimum competitions, how they count in the
+      final standings, weight and the rules of the final. Name and venue are
+      left out, and for the playoffs so are dates, invitation deadline and
+      qualified players.
 
   - type: list
     items:
       - "At **step 1** of the wizard pick the preset in **«Start from a preset»**: type, system and number of competitions fill themselves in. At **step 2** the app also writes the competition values: check them and change them as you like."
       - "**«Save as preset»** is at step 2 of the wizard and when editing the championship; from the **Settings** of an existing championship you can save it as it is, even once it is over."
+      - "At **step 1** the preset also switches on **Playoff Elite** and **Playoff Academy** with their places, and the championship is created with the playoff rules of the preset. You can change the places: the positions are recalculated as usual. Step 1 creates at most two: if the preset has more, the page says so and you add the others from the championship page."
+      - "When **editing** the championship the preset does not touch the playoffs, which are changed from the championship page: the page says so, and also says if the invitations have already been sent."
       - "The championship you create is not tied to the preset: if you change or delete it later, the championship does not change."
       - "You find all your presets, competition and championship, on the **[My presets](/aiuto/organizzare/i_miei_preset)** page."
 
