@@ -212,7 +212,11 @@
         <h3>{{ _('Classifiche dei gironi') }}</h3>
         <span class="c7-sechead__note">{{ _('finali') }}</span>
       </div>
+      {# I gironi affiancati: sotto il tabellone l'altezza non basta a
+         impilarli, e le righe schiacciate si accavallavano. #}
+      <div class="c7-sala__gironi{% if schermo.gironi|length > 1 %} c7-sala__gironi--affiancati{% endif %}">
       {% for g in schermo.gironi %}
+      <div class="c7-sala__girone-blocco">
       <div class="c7-kicker c7-sala__girone">{{ _('Girone %(nome)s', nome=g.nome) }}</div>
       <div class="c7-rows c7-sala__classifica" data-girone="{{ g.nome }}">
         {% for r in g.righe %}
@@ -226,7 +230,9 @@
         </div>
         {% endfor %}
       </div>
+      </div>
       {% endfor %}
+      </div>
       {% endif %}
 
       {% elif schermo.bande %}

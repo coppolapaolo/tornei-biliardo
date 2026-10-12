@@ -111,6 +111,23 @@
 {%- endif -%}
 {%- endmacro %}
 
+{# Lo stesso posto dentro un nodo del tabellone, dove la frase intera non sta
+   in una riga: «chi vince» sopra, e sotto i due nomi uno per riga, come lo
+   schermo in sala. Scritta di seguito, «chi vince Giada Ferraro – Beatrice
+   Serra» allargava il nodo oltre la colonna e si accavallava al nodo
+   accanto, o finiva coi puntini e perdeva il secondo nome. Negli altri casi
+   la frase corta di `posto`. #}
+{% macro posto_nel_nodo(p) -%}
+{%- set m = p.fonte.nodo.match if p.fonte else none -%}
+{%- if not p.giocatore and not p.vuoto and m and m.player1 and m.player2 -%}
+<span class="c7-arrivo">
+  <span class="c7-arrivo__esito">{{ _('chi vince') if p.fonte.esito == 'vincitore' else _('chi perde') }}</span>
+  <span class="c7-arrivo__nome">{{ m.player1.username }}</span>
+  <span class="c7-arrivo__nome">{{ m.player2.username }}</span>
+</span>
+{%- else -%}{{ posto(p) }}{%- endif -%}
+{%- endmacro %}
+
 {# Dove va chi vince la partita, e dove scende chi perde (la nota della card). #}
 {% macro destinazione(dest, match) -%}
 {%- if dest.tipo == 'nodo' -%}

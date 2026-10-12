@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-12 04:38+0200\n"
+"POT-Creation-Date: 2026-10-12 05:12+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -22,23 +22,23 @@ msgstr ""
 msgid "Accedi per vedere questa pagina."
 msgstr "Log in to see this page."
 
-#: app.py:1037 templates/errors/403.html:3
+#: app.py:1042 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
 
-#: app.py:1055
+#: app.py:1060
 msgid "Non è il tuo turno"
 msgstr "Not your turn yet"
 
-#: app.py:1056
+#: app.py:1061
 msgid "Colpo irregolare"
 msgstr "Illegal shot"
 
-#: app.py:1075
+#: app.py:1080
 msgid "Operazione non consentita"
 msgstr "That shot isn't allowed."
 
-#: app.py:1089
+#: app.py:1094
 msgid "Tiro non valido"
 msgstr "Foul shot"
 
@@ -129,6 +129,10 @@ msgid "%(num)s gara"
 msgid_plural "%(num)s gare"
 msgstr[0] "%(num)s competition"
 msgstr[1] "%(num)s competitions"
+
+#: models/campionato/piazzamenti.py:85
+msgid "A piazzamenti"
+msgstr "By placements"
 
 #: models/campionato/showcase_view.py:126
 #: templates/components/_campionato_gare.html:27
@@ -1115,7 +1119,8 @@ msgstr "Racks won"
 
 #: models/classification/ordinamento.py:718 models/storia/etichette.py:183
 #: templates/admin/campionato_wizard_step2.html:32
-#: templates/components/_campionato_general_classification.html:78
+#: templates/components/_campionato_general_classification.html:81
+#: templates/components/_campionato_general_classification.html:83
 #: templates/components/_classification_mobile.html:31
 #: templates/components/_classification_mobile.html:68
 #: templates/components/_classification_mobile.html:99
@@ -2118,7 +2123,7 @@ msgstr "Competition finished"
 #: models/competition/showcase_view.py:642
 #: templates/individual_match/create_proposal.html:86
 #: templates/player/playoff_invitation.html:27
-#: templates/public/campionato_detail.html:83
+#: templates/public/campionato_detail.html:84
 #: templates/public/vetrina_campionato.html:133
 msgid "Dove"
 msgstr "Where"
@@ -2400,7 +2405,7 @@ msgid "%(pos)s°"
 msgstr "#%(pos)s"
 
 #: models/dashboard/activity_feedback.py:207
-#: templates/admin/preset_miei.html:49
+#: templates/admin/preset_miei.html:50
 #: templates/components/_history_filters.html:67
 #: templates/components/_history_matches_tab.html:70
 #: templates/components/_match_info.html:16
@@ -2449,7 +2454,7 @@ msgid "invariato %(suffix)s"
 msgstr "unchanged %(suffix)s"
 
 #: models/dashboard/activity_feedback.py:618
-#: templates/components/_campionato_general_classification.html:113
+#: templates/components/_campionato_general_classification.html:118
 #: templates/direttore/_classifica.html:30
 msgid "stabile"
 msgstr "steady"
@@ -5448,8 +5453,8 @@ msgstr "Invitation deadline"
 #: templates/direttore/_classifica_bande.html:19
 #: templates/direttore/_fase_conclusa.html:47
 #: templates/direttore/_fase_conclusa.html:63
-#: templates/public/schermo_sala.html:239
-#: templates/public/schermo_sala.html:280
+#: templates/public/schermo_sala.html:245
+#: templates/public/schermo_sala.html:286
 #: templates/public/vetrina_campionato.html:54
 #: templates/public/vetrina_gara.html:103
 msgid "Classifica finale"
@@ -5781,7 +5786,7 @@ msgid "Punteggio"
 msgstr "Score"
 
 #: models/training_sheet/measure.py:132
-#: templates/components/_campionato_general_classification.html:81
+#: templates/components/_campionato_general_classification.html:86
 #: templates/direttore/_classifica.html:96
 msgid "Vinte"
 msgstr "Won"
@@ -7653,20 +7658,20 @@ msgid "Esercizi"
 msgstr "Drills"
 
 #: routes/admin/competition/preparazione.py:32
-#: templates/admin/campionato_detail.html:482
+#: templates/admin/campionato_detail.html:487
 msgid "Direttori"
 msgstr "Directors"
 
 #: routes/admin/competition/preparazione.py:33
 #: templates/admin/campionato_detail.html:31
-#: templates/admin/campionato_detail.html:487
+#: templates/admin/campionato_detail.html:492
 #: templates/admin/campionato_vetrina.html:8
 #: templates/admin/gara_vetrina.html:10 templates/admin/gara_vetrina.html:14
 #: templates/direttore/_fase_preparazione.html:133
 #: templates/direttore/_fase_preparazione.html:164
 #: templates/direttore/impostazioni.html:45
 #: templates/public/campionato_detail.html:39
-#: templates/public/campionato_detail.html:93
+#: templates/public/campionato_detail.html:94
 msgid "Vetrina"
 msgstr "Showcase"
 
@@ -9334,7 +9339,7 @@ msgid "Descrizione (opzionale)"
 msgstr "Description (optional)"
 
 #: templates/admin/_vetrina_form.html:96
-#: templates/admin/campionato_detail.html:608
+#: templates/admin/campionato_detail.html:613
 #: templates/admin/campionato_vetrina.html:100 templates/base.html:828
 #: templates/components/_playoff_config_form.html:90
 #: templates/components/_playoff_scoring_form.html:28
@@ -9398,8 +9403,8 @@ msgstr "who made the bracket"
 #: templates/direttore/_card_partita.html:226
 #: templates/direttore/_classifica.html:104
 #: templates/direttore/_partite.html:54 templates/gara_bracket.html:41
-#: templates/public/schermo_sala.html:216
-#: templates/public/schermo_sala.html:262
+#: templates/public/schermo_sala.html:220
+#: templates/public/schermo_sala.html:268
 #, python-format
 msgid "Girone %(nome)s"
 msgstr "Group %(nome)s"
@@ -9976,7 +9981,7 @@ msgstr ""
 msgid "Ultimo aggiornamento: agosto 2026."
 msgstr "Last updated: August 2026."
 
-#: templates/admin/preset_miei.html:74
+#: templates/admin/preset_miei.html:75
 #: templates/direttore/_fase_iscrizioni.html:107
 #: templates/direttore/_fase_preparazione.html:199
 #: templates/direttore/_fase_preparazione.html:204
@@ -10446,7 +10451,7 @@ msgstr "Terminate"
 #: templates/admin/campionato_detail.html:98
 #: templates/admin/campionato_wizard_step2.html:42
 #: templates/components/_campionato_gare.html:37
-#: templates/components/_campionato_general_classification.html:84
+#: templates/components/_campionato_general_classification.html:89
 #: templates/components/_gamification_labels.html:51
 #: templates/components/_history_gare_tab.html:14
 #: templates/components/_history_gare_tab.html:50
@@ -10459,7 +10464,7 @@ msgid "Gare"
 msgstr "Competitions"
 
 #: templates/admin/campionato_detail.html:98
-#: templates/admin/campionato_detail.html:479
+#: templates/admin/campionato_detail.html:484
 #: templates/components/_campionato_details_info.html:51
 #: templates/components/_history_campionati_tab.html:90
 #: templates/components/_history_campionati_tab.html:91
@@ -10473,7 +10478,7 @@ msgid "Playoff"
 msgstr "Playoffs"
 
 #: templates/admin/campionato_detail.html:98
-#: templates/admin/campionato_detail.html:477
+#: templates/admin/campionato_detail.html:482
 #: templates/components/_tessera_campionato.html:115
 #: templates/gamification/admin/dashboard.html:39
 #: templates/player/venue_detail.html:147
@@ -10593,7 +10598,7 @@ msgid "Accetta tutti i rimanenti"
 msgstr "Accept all remaining"
 
 #: templates/admin/campionato_detail.html:214
-#: templates/admin/campionato_detail.html:587
+#: templates/admin/campionato_detail.html:592
 msgid "Data e scadenza"
 msgstr "Date and deadline"
 
@@ -10895,7 +10900,7 @@ msgstr "Go to playoff competition"
 msgid "Nessuna configurazione playoff attiva."
 msgstr "No active playoff configuration."
 
-#: templates/admin/campionato_detail.html:447
+#: templates/admin/campionato_detail.html:452
 #: templates/admin/campionato_wizard_step2.html:248
 #: templates/components/_campionato_edit_form.html:130
 #: templates/components/_campionato_general_classification.html:40
@@ -10904,86 +10909,86 @@ msgstr "No active playoff configuration."
 msgid "Classifica generale"
 msgstr "Overall standings"
 
-#: templates/admin/campionato_detail.html:449
+#: templates/admin/campionato_detail.html:454
 #: templates/public/campionato_detail.html:68
 msgid "La classifica generale compare dopo la prima gara conclusa."
 msgstr "The overall standings appear after the first finished competition."
 
-#: templates/admin/campionato_detail.html:460
+#: templates/admin/campionato_detail.html:465
 #: templates/components/_playoff_scoring_form.html:11
 msgid "Classifica finale del campionato"
 msgstr "Final championship standings"
 
-#: templates/admin/campionato_detail.html:480
+#: templates/admin/campionato_detail.html:485
 msgid "nessun playoff previsto"
 msgstr "no playoff planned"
 
-#: templates/admin/campionato_detail.html:483
+#: templates/admin/campionato_detail.html:488
 #, python-format
 msgid "%(n)d direttore"
 msgid_plural "%(n)d direttori"
 msgstr[0] "%(n)d director"
 msgstr[1] "%(n)d directors"
 
-#: templates/admin/campionato_detail.html:487
+#: templates/admin/campionato_detail.html:492
 msgid "locandina e link che tutte le gare ereditano"
 msgstr "poster and link that every competition inherits"
 
-#: templates/admin/campionato_detail.html:490
+#: templates/admin/campionato_detail.html:495
 msgid "Impostazioni"
 msgstr "Settings"
 
-#: templates/admin/campionato_detail.html:491
+#: templates/admin/campionato_detail.html:496
 #, python-format
 msgid "%(n)d gara prevista"
 msgid_plural "%(n)d gare previste"
 msgstr[0] "%(n)d competition planned"
 msgstr[1] "%(n)d competitions planned"
 
-#: templates/admin/campionato_detail.html:503
-#: templates/public/campionato_detail.html:90
+#: templates/admin/campionato_detail.html:508
+#: templates/public/campionato_detail.html:91
 #: templates/public/regolamento_campionato.html:9
 #: templates/public/regolamento_campionato.html:10
 #: templates/public/vetrina_campionato.html:241
 msgid "Regolamento del campionato"
 msgstr "Championship rules"
 
-#: templates/admin/campionato_detail.html:509
+#: templates/admin/campionato_detail.html:514
 #: templates/admin/campionato_edit.html:10
 msgid "Modifica campionato"
 msgstr "Edit championship"
 
-#: templates/admin/campionato_detail.html:527
+#: templates/admin/campionato_detail.html:532
 msgid "Passa alla fase playoff"
 msgstr "Proceed to playoff phase"
 
-#: templates/admin/campionato_detail.html:531
+#: templates/admin/campionato_detail.html:536
 msgid "Termina campionato"
 msgstr "End the championship"
 
-#: templates/admin/campionato_detail.html:550
+#: templates/admin/campionato_detail.html:555
 #: templates/components/_campionato_fascia.html:96
 msgid "Avvia i playoff"
 msgstr "Start the playoffs"
 
-#: templates/admin/campionato_detail.html:555
-#: templates/admin/campionato_detail.html:593
+#: templates/admin/campionato_detail.html:560
+#: templates/admin/campionato_detail.html:598
 msgid "Quando si gioca il playoff"
 msgstr "When the playoff is played"
 
-#: templates/admin/campionato_detail.html:558
+#: templates/admin/campionato_detail.html:563
 #: templates/components/_modify_dates_modal.html:23
 #: templates/components/_open_inscriptions_modal.html:22
 msgid "Nel tuo fuso orario."
 msgstr "In your time zone."
 
-#: templates/admin/campionato_detail.html:561
-#: templates/admin/campionato_detail.html:599
+#: templates/admin/campionato_detail.html:566
+#: templates/admin/campionato_detail.html:604
 msgid "Gli invitati rispondono entro"
 msgstr "Invited players reply by"
 
-#: templates/admin/campionato_detail.html:565
-#: templates/admin/campionato_detail.html:604
+#: templates/admin/campionato_detail.html:570
+#: templates/admin/campionato_detail.html:609
 msgid ""
 "La scadenza coincide con l'orario di gioco o lo supera: chi non ha "
 "risposto risulterà scaduto quando aprirai questa pagina per avviare la "
@@ -10993,11 +10998,11 @@ msgstr ""
 " answered will expire when you open this page to start the competition. A"
 " few hours earlier is better, so you can still call whoever is missing."
 
-#: templates/admin/campionato_detail.html:569
+#: templates/admin/campionato_detail.html:574
 msgid "Avvia i playoff e invia gli inviti"
 msgstr "Start the playoffs and send the invitations"
 
-#: templates/admin/campionato_detail.html:572
+#: templates/admin/campionato_detail.html:577
 msgid ""
 "I qualificati ricevono l’invito e le configurazioni si bloccano. Data e "
 "scadenza restano modificabili fino all’avvio della gara."
@@ -11006,7 +11011,7 @@ msgstr ""
 "locked. The date and deadline can still be changed until the competition "
 "starts."
 
-#: templates/admin/campionato_detail.html:596
+#: templates/admin/campionato_detail.html:601
 msgid ""
 "Nel tuo fuso orario. Se la gara di playoff esiste già, cambia anche la "
 "sua data."
@@ -11014,11 +11019,11 @@ msgstr ""
 "In your time zone. If the playoff competition already exists, its date "
 "changes too."
 
-#: templates/admin/campionato_detail.html:602
+#: templates/admin/campionato_detail.html:607
 msgid "Vale per chi non ha ancora risposto."
 msgstr "Applies to those who have not replied yet."
 
-#: templates/admin/campionato_detail.html:639
+#: templates/admin/campionato_detail.html:644
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler eliminare la Gara {number}?\n"
@@ -11029,7 +11034,7 @@ msgstr ""
 "\n"
 "This action CANNOT BE UNDONE!"
 
-#: templates/admin/campionato_detail.html:661
+#: templates/admin/campionato_detail.html:666
 msgid ""
 "Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi "
 "avviare i playoff e invitare i qualificati."
@@ -11037,7 +11042,7 @@ msgstr ""
 "All competitions are finished. Proceed to the playoff phase? You can then"
 " start the playoffs and invite the qualified players."
 
-#: templates/admin/campionato_detail.html:663
+#: templates/admin/campionato_detail.html:668
 msgid ""
 "Sei sicuro di voler terminare il campionato? Le gare non completate "
 "verranno eliminate."
@@ -11045,7 +11050,7 @@ msgstr ""
 "Are you sure you want to terminate the championship? Non-completed "
 "competitions will be removed."
 
-#: templates/admin/campionato_detail.html:666
+#: templates/admin/campionato_detail.html:671
 msgid ""
 "Attenzione: alcuni playoff hanno un requisito minimo gare non "
 "raggiungibile. Vuoi terminare comunque?"
@@ -11053,13 +11058,13 @@ msgstr ""
 "Warning: some playoffs have a minimum competition requirement that cannot"
 " be met. Terminate anyway?"
 
-#: templates/admin/campionato_detail.html:729 templates/admin/gara_edit.html:91
+#: templates/admin/campionato_detail.html:734 templates/admin/gara_edit.html:91
 #: templates/components/_new_gara_modal.html:769
 #, python-brace-format
 msgid "Esatto numero: {distance} triangoli totali"
 msgstr "Exact number: {distance} total racks"
 
-#: templates/admin/campionato_detail.html:730 templates/admin/gara_edit.html:93
+#: templates/admin/campionato_detail.html:735 templates/admin/gara_edit.html:93
 #: templates/components/_new_gara_modal.html:770
 #, python-brace-format
 msgid "Al {distance} (si vince a {distance} triangoli)"
@@ -12762,7 +12767,7 @@ msgstr ""
 "When you set up a competition or a championship, “Save as preset” keeps "
 "the settings for next time: you will find them here."
 
-#: templates/admin/preset_miei.html:49
+#: templates/admin/preset_miei.html:50
 #: templates/components/_history_filters.html:64
 #: templates/components/_history_filters.html:154
 #: templates/components/_history_matches_tab.html:69
@@ -12775,57 +12780,57 @@ msgstr ""
 msgid "Campionato"
 msgstr "Championship"
 
-#: templates/admin/preset_miei.html:53
+#: templates/admin/preset_miei.html:54
 #, python-format
 msgid "ricevuto da %(nome)s, %(data)s"
 msgstr "received from %(nome)s, %(data)s"
 
-#: templates/admin/preset_miei.html:55
+#: templates/admin/preset_miei.html:56
 #, python-format
 msgid "ricevuto il %(data)s"
 msgstr "received on %(data)s"
 
-#: templates/admin/preset_miei.html:58
+#: templates/admin/preset_miei.html:59
 #, python-format
 msgid "aggiornato il %(data)s"
 msgstr "updated on %(data)s"
 
-#: templates/admin/preset_miei.html:64 templates/admin/preset_miei.html:94
+#: templates/admin/preset_miei.html:65 templates/admin/preset_miei.html:95
 #: templates/direttore/_squadre_categorie.html:127
 msgid "Rinomina"
 msgstr "Rename"
 
-#: templates/admin/preset_miei.html:64
+#: templates/admin/preset_miei.html:65
 #, python-format
 msgid "Rinomina «%(nome)s»"
 msgstr "Rename “%(nome)s”"
 
-#: templates/admin/preset_miei.html:69
+#: templates/admin/preset_miei.html:70
 #: templates/player/challenge_detail.html:198
 msgid "Duplica"
 msgstr "Duplicate"
 
-#: templates/admin/preset_miei.html:69
+#: templates/admin/preset_miei.html:70
 #, python-format
 msgid "Duplica «%(nome)s»"
 msgstr "Duplicate “%(nome)s”"
 
-#: templates/admin/preset_miei.html:74
+#: templates/admin/preset_miei.html:75
 #, python-format
 msgid "Condividi «%(nome)s»"
 msgstr "Share “%(nome)s”"
 
-#: templates/admin/preset_miei.html:79 templates/admin/preset_miei.html:81
+#: templates/admin/preset_miei.html:80 templates/admin/preset_miei.html:82
 #: templates/individual_match/proposals.html:185
 msgid "Cancella"
 msgstr "Delete"
 
-#: templates/admin/preset_miei.html:80
+#: templates/admin/preset_miei.html:81
 #, python-format
 msgid "Cancella «%(nome)s»"
 msgstr "Delete “%(nome)s”"
 
-#: templates/admin/preset_miei.html:81
+#: templates/admin/preset_miei.html:82
 #, python-format
 msgid ""
 "Cancellare il preset «%(nome)s»? Le gare e i campionati nati da lì "
@@ -12834,19 +12839,19 @@ msgstr ""
 "Delete the preset “%(nome)s”? Competitions and championships created from"
 " it stay as they are, and copies you sent to others remain theirs."
 
-#: templates/admin/preset_miei.html:90
+#: templates/admin/preset_miei.html:91
 msgid "Nuovo nome"
 msgstr "New name"
 
-#: templates/admin/preset_miei.html:101
+#: templates/admin/preset_miei.html:102
 msgid "Manda una copia a"
 msgstr "Send a copy to"
 
-#: templates/admin/preset_miei.html:103
+#: templates/admin/preset_miei.html:104
 msgid "Cerca un direttore per nome…"
 msgstr "Search a director by name…"
 
-#: templates/admin/preset_miei.html:106
+#: templates/admin/preset_miei.html:107
 msgid ""
 "Solo direttori di gara. Ognuno riceve una copia sua, con una notifica: "
 "quello che cambi dopo non arriva a loro."
@@ -12854,7 +12859,7 @@ msgstr ""
 "Competition directors only. Each gets their own copy, with a "
 "notification: what you change later does not reach them."
 
-#: templates/admin/preset_miei.html:108
+#: templates/admin/preset_miei.html:109
 msgid "Manda la copia"
 msgstr "Send the copy"
 
@@ -13831,7 +13836,7 @@ msgstr "How to do it"
 #: templates/challenge/_challenge_detail.html:71
 #: templates/components/_gara_matches.html:68
 #: templates/components/_gara_matches.html:102
-#: templates/public/campionato_detail.html:85
+#: templates/public/campionato_detail.html:86
 #: templates/public/vetrina_campionato.html:143
 msgid "Giocatori"
 msgstr "Players"
@@ -16431,57 +16436,61 @@ msgstr "Top %(n)s"
 msgid "Tutti (%(n)s)"
 msgstr "All (%(n)s)"
 
-#: templates/components/_campionato_general_classification.html:79
-#: templates/components/_campionato_general_classification.html:82
+#: templates/components/_campionato_general_classification.html:84
+#: templates/components/_campionato_general_classification.html:87
 #: templates/direttore/_classifica.html:97
 msgid "Diff"
 msgstr "Diff"
 
-#: templates/components/_campionato_general_classification.html:92
+#: templates/components/_campionato_general_classification.html:97
 #, python-format
 msgid "Zona playoff · primi %(n)s"
 msgstr "Playoff zone · top %(n)s"
 
-#: templates/components/_campionato_general_classification.html:93
+#: templates/components/_campionato_general_classification.html:98
 msgid "Zona playoff"
 msgstr "Playoff zone"
 
-#: templates/components/_campionato_general_classification.html:94
+#: templates/components/_campionato_general_classification.html:99
 msgid "inviti partiti"
 msgstr "invitations sent"
 
-#: templates/components/_campionato_general_classification.html:100
+#: templates/components/_campionato_general_classification.html:105
 msgid "Fuori dai playoff"
 msgstr "Out of the playoffs"
 
-#: templates/components/_campionato_general_classification.html:113
+#: templates/components/_campionato_general_classification.html:118
 #: templates/direttore/_classifica.html:30
 msgid "primo turno"
 msgstr "first round"
 
-#: templates/components/_campionato_general_classification.html:113
+#: templates/components/_campionato_general_classification.html:118
 #: templates/direttore/_classifica.html:30
 #, python-format
 msgid "sale di %(n)s"
 msgstr "up by %(n)s"
 
-#: templates/components/_campionato_general_classification.html:113
+#: templates/components/_campionato_general_classification.html:118
 #: templates/direttore/_classifica.html:30
 #, python-format
 msgid "scende di %(n)s"
 msgstr "down by %(n)s"
 
-#: templates/components/_campionato_general_classification.html:138
+#: templates/components/_campionato_general_classification.html:145
 msgid ""
 "Classifica generale: ordinata per triangoli totali, poi per punti "
 "spareggio (SSR)."
 msgstr "General standings: sorted by total racks, then by tiebreaker points (SSR)."
 
-#: templates/components/_campionato_general_classification.html:140
-msgid "Classifica generale basata sui punti ottenuti in tutte le gare completate."
-msgstr "General standings based on points earned in all completed competitions."
+#: templates/components/_campionato_general_classification.html:147
+msgid ""
+"Classifica generale: somma dei punti del piazzamento in ogni gara "
+"conclusa."
+msgstr ""
+"Overall standings: the sum of the placement points from each finished "
+"competition."
 
-#: templates/components/_campionato_general_classification.html:142
+#: templates/components/_campionato_general_classification.html:149
 #, python-format
 msgid ""
 "Classifica generale: somma dei punti delle gare (%(punti)s), moltiplicati"
@@ -16490,13 +16499,13 @@ msgstr ""
 "Overall standings: sum of the competitions' points (%(punti)s), each "
 "multiplied by the competition's weight."
 
-#: templates/components/_campionato_general_classification.html:144
+#: templates/components/_campionato_general_classification.html:151
 msgid ""
 "Classifica generale: ordinata per partite vinte, poi per differenza "
 "triangoli totale."
 msgstr "General standings: sorted by matches won, then by total rack difference."
 
-#: templates/components/_campionato_general_classification.html:146
+#: templates/components/_campionato_general_classification.html:153
 msgid ""
 "La barra segna chi va ai playoff: prima degli inviti chi verrebbe "
 "invitato adesso, dopo chi ha un invito valido."
@@ -16738,7 +16747,7 @@ msgstr "Place in the group"
 #: templates/components/_classification_mobile.html:91
 #: templates/components/_detailed_classification.html:118
 #: templates/direttore/_classifica.html:40
-#: templates/public/schermo_sala.html:293
+#: templates/public/schermo_sala.html:299
 #, python-format
 msgid "%(pos)s girone %(nome)s"
 msgstr "%(pos)s in group %(nome)s"
@@ -16811,8 +16820,8 @@ msgstr ""
 "tournaments in your area."
 
 #: templates/components/_detailed_classification.html:19
-#: templates/public/schermo_sala.html:258
-#: templates/public/schermo_sala.html:281
+#: templates/public/schermo_sala.html:264
+#: templates/public/schermo_sala.html:287
 msgid "Classifica complessiva"
 msgstr "Overall standings"
 
@@ -17685,8 +17694,8 @@ msgstr "Removes %(username)s from the waiting list"
 #: templates/direttore/_partite.html:31 templates/direttore/_partite.html:87
 #: templates/direttore/preparazione/_turni.html:46
 #: templates/direttore/preparazione/_turni.html:72
-#: templates/public/schermo_sala.html:310
-#: templates/public/schermo_sala.html:318
+#: templates/public/schermo_sala.html:316
+#: templates/public/schermo_sala.html:324
 #, python-format
 msgid "Turno %(num)s"
 msgstr "Round %(num)s"
@@ -17719,7 +17728,7 @@ msgstr "Result"
 #: templates/direttore/_partite.html:92
 #: templates/individual_match/match_detail.html:229
 #: templates/individual_match/matches.html:125
-#: templates/public/schermo_sala.html:319
+#: templates/public/schermo_sala.html:325
 msgid "Concluso"
 msgstr "Completed"
 
@@ -19391,7 +19400,7 @@ msgid "Eredita"
 msgstr "Inherit"
 
 #: templates/components/_playoff_config_form.html:49
-#: templates/public/campionato_detail.html:81
+#: templates/public/campionato_detail.html:82
 #: templates/public/vetrina_campionato.html:138
 msgid "Formula"
 msgstr "Format"
@@ -19961,7 +19970,7 @@ msgid "In attesa di punteggi"
 msgstr "Awaiting scores"
 
 #: templates/components/_ssr_section.html:27
-#: templates/public/campionato_detail.html:86
+#: templates/public/campionato_detail.html:87
 #: templates/public/schermo_sala.html:44
 #, python-format
 msgid "%(n)d giocatore"
@@ -20219,29 +20228,39 @@ msgstr "whoever wins the final"
 msgid "da definire"
 msgstr "to be decided"
 
-#: templates/components/_tabellone_macros.html:117
+#: templates/components/_tabellone_macros.html:124
+#: templates/public/schermo_sala.html:110
+msgid "chi vince"
+msgstr "winner of"
+
+#: templates/components/_tabellone_macros.html:124
+#: templates/public/schermo_sala.html:110
+msgid "chi perde"
+msgstr "loser of"
+
+#: templates/components/_tabellone_macros.html:134
 #, python-format
 msgid "Chi vince: %(round)s, senza avversario."
 msgstr "Winner: %(round)s, with no opponent."
 
-#: templates/components/_tabellone_macros.html:118
+#: templates/components/_tabellone_macros.html:135
 #, python-format
 msgid "Chi vince: %(round)s contro %(avv)s."
 msgstr "Winner: %(round)s against %(avv)s."
 
-#: templates/components/_tabellone_macros.html:119
+#: templates/components/_tabellone_macros.html:136
 msgid "Chi vince, vince la gara."
 msgstr "The winner wins the competition."
 
-#: templates/components/_tabellone_macros.html:120
+#: templates/components/_tabellone_macros.html:137
 msgid "Chi vince è terzo, chi perde quarto."
 msgstr "The winner is third, the loser fourth."
 
-#: templates/components/_tabellone_macros.html:121
+#: templates/components/_tabellone_macros.html:138
 msgid "Chi vince passa al tabellone finale."
 msgstr "The winner goes through to the final bracket."
 
-#: templates/components/_tabellone_macros.html:123
+#: templates/components/_tabellone_macros.html:140
 #, python-format
 msgid ""
 "Se vince %(p1)s la gara è finita; se vince %(p2)s, che arriva dai "
@@ -20250,25 +20269,25 @@ msgstr ""
 "If %(p1)s wins, the competition is over; if %(p2)s wins, coming from the "
 "losers bracket, a decider is played."
 
-#: templates/components/_tabellone_macros.html:125
+#: templates/components/_tabellone_macros.html:142
 #, python-format
 msgid "Chi perde: %(round)s."
 msgstr "Loser: %(round)s."
 
-#: templates/components/_tabellone_macros.html:131
+#: templates/components/_tabellone_macros.html:148
 #, python-format
 msgid "%(n)d girone da %(g)s"
 msgid_plural "%(n)d gironi da %(g)s"
 msgstr[0] "%(n)d group of %(g)s"
 msgstr[1] "%(n)d groups of %(g)s"
 
-#: templates/components/_tabellone_macros.html:131
+#: templates/components/_tabellone_macros.html:148
 #, python-format
 msgid "tabellone finale da %(s)s"
 msgstr "final bracket of %(s)s"
 
-#: templates/components/_tabellone_macros.html:131
-#: templates/components/_tabellone_macros.html:133
+#: templates/components/_tabellone_macros.html:148
+#: templates/components/_tabellone_macros.html:150
 #: templates/direttore/_fase_conclusa.html:31
 #, python-format
 msgid "%(n)d turno"
@@ -20276,93 +20295,93 @@ msgid_plural "%(n)d turni"
 msgstr[0] "%(n)d round"
 msgstr[1] "%(n)d rounds"
 
-#: templates/components/_tabellone_macros.html:133
+#: templates/components/_tabellone_macros.html:150
 #, python-format
 msgid "Tabellone da %(s)s"
 msgstr "Bracket of %(s)s"
 
-#: templates/components/_tabellone_macros.html:133
+#: templates/components/_tabellone_macros.html:150
 #, python-format
 msgid "%(n)d passa il turno"
 msgid_plural "%(n)d passano il turno"
 msgstr[0] "%(n)d goes through"
 msgstr[1] "%(n)d go through"
 
-#: templates/components/_tabellone_macros.html:133
+#: templates/components/_tabellone_macros.html:150
 msgid "nessuno passa il turno"
 msgstr "nobody goes through without playing"
 
-#: templates/components/_tabellone_macros.html:133
+#: templates/components/_tabellone_macros.html:150
 msgid "più la bella se serve"
 msgstr "plus the decider if needed"
 
-#: templates/components/_tabellone_macros.html:144
+#: templates/components/_tabellone_macros.html:161
 #, python-format
 msgid "%(pos)s diretto"
 msgstr "%(pos)s, no final"
 
-#: templates/components/_tabellone_macros.html:145
+#: templates/components/_tabellone_macros.html:162
 msgid "vince la gara"
 msgstr "wins the competition"
 
-#: templates/components/_tabellone_macros.html:146
+#: templates/components/_tabellone_macros.html:163
 #, python-format
 msgid "vince la finale %(primo)s/%(secondo)s posto"
 msgstr "wins the final for %(primo)s/%(secondo)s place"
 
-#: templates/components/_tabellone_macros.html:146
+#: templates/components/_tabellone_macros.html:163
 #, python-format
 msgid "perde la finale %(primo)s/%(secondo)s posto"
 msgstr "loses the final for %(primo)s/%(secondo)s place"
 
-#: templates/components/_tabellone_macros.html:147
+#: templates/components/_tabellone_macros.html:164
 msgid "vince la finale 3°/4°"
 msgstr "wins the third-place match"
 
-#: templates/components/_tabellone_macros.html:147
+#: templates/components/_tabellone_macros.html:164
 msgid "perde la finale 3°/4°"
 msgstr "loses the third-place match"
 
-#: templates/components/_tabellone_macros.html:148
+#: templates/components/_tabellone_macros.html:165
 msgid "perde la finale"
 msgstr "loses the final"
 
-#: templates/components/_tabellone_macros.html:149
+#: templates/components/_tabellone_macros.html:166
 msgid "perde la bella"
 msgstr "loses the decider"
 
-#: templates/components/_tabellone_macros.html:150
+#: templates/components/_tabellone_macros.html:167
 #, python-format
 msgid "esce nel girone %(g)s"
 msgstr "out in group %(g)s"
 
-#: templates/components/_tabellone_macros.html:151
+#: templates/components/_tabellone_macros.html:168
 msgid "esce in semifinale"
 msgstr "out in the semi-finals"
 
-#: templates/components/_tabellone_macros.html:152
+#: templates/components/_tabellone_macros.html:169
 msgid "esce ai quarti"
 msgstr "out in the quarter-finals"
 
-#: templates/components/_tabellone_macros.html:153
+#: templates/components/_tabellone_macros.html:170
 msgid "esce agli ottavi"
 msgstr "out in the round of 16"
 
-#: templates/components/_tabellone_macros.html:154
+#: templates/components/_tabellone_macros.html:171
 msgid "esce ai sedicesimi"
 msgstr "out in the round of 32"
 
-#: templates/components/_tabellone_macros.html:155
+#: templates/components/_tabellone_macros.html:172
 #, python-format
 msgid "esce al recupero %(num)s"
 msgstr "out in losers round %(num)s"
 
-#: templates/components/_tabellone_macros.html:156
+#: templates/components/_tabellone_macros.html:173
 #, python-format
 msgid "esce al turno %(num)s"
 msgstr "out in round %(num)s"
 
-#: templates/components/_tabellone_macros.html:167
+#: templates/components/_tabellone_macros.html:184
 #, python-format
 msgid "%(pos)s pari merito"
 msgstr "tied %(pos)s"
@@ -21775,7 +21794,7 @@ msgid "SSR segna chi è stato messo in ordine dallo spareggio."
 msgstr "SSR marks the players whose order the tiebreaker decided."
 
 #: templates/direttore/_classifica_bande.html:20
-#: templates/public/schermo_sala.html:240
+#: templates/public/schermo_sala.html:246
 msgid "dal tabellone"
 msgstr "from the bracket"
 
@@ -29200,11 +29219,11 @@ msgstr "Optional, but it helps whoever reviews the request."
 msgid "Il campionato"
 msgstr "The championship"
 
-#: templates/public/campionato_detail.html:90
+#: templates/public/campionato_detail.html:91
 msgid "regole, playoff e storia delle modifiche"
 msgstr "rules, play-offs and history of changes"
 
-#: templates/public/campionato_detail.html:93
+#: templates/public/campionato_detail.html:94
 msgid "locandina e link da condividere"
 msgstr "poster and link to share"
 
@@ -29402,14 +29421,6 @@ msgstr ""
 "As soon as the director starts the first round, the tables and their "
 "matches appear here."
 
-#: templates/public/schermo_sala.html:110
-msgid "chi vince"
-msgstr "winner of"
-
-#: templates/public/schermo_sala.html:110
-msgid "chi perde"
-msgstr "loser of"
-
 #: templates/public/schermo_sala.html:137
 msgid "Alla distanza"
 msgstr "At the distance"
@@ -29434,32 +29445,32 @@ msgstr "the round being played and the next one"
 msgid "Il tabellone compare dopo il sorteggio."
 msgstr "The bracket appears after the draw."
 
-#: templates/public/schermo_sala.html:258
-#: templates/public/schermo_sala.html:282
+#: templates/public/schermo_sala.html:264
+#: templates/public/schermo_sala.html:288
 #, python-format
 msgid "Classifica dopo il turno %(n)s"
 msgstr "Standings after round %(n)s"
 
-#: templates/public/schermo_sala.html:259
-#: templates/public/schermo_sala.html:284
+#: templates/public/schermo_sala.html:265
+#: templates/public/schermo_sala.html:290
 msgid "Vinti · persi"
 msgstr "Won · lost"
 
-#: templates/public/schermo_sala.html:259
-#: templates/public/schermo_sala.html:284
+#: templates/public/schermo_sala.html:265
+#: templates/public/schermo_sala.html:290
 msgid "Punti · diff"
 msgstr "Points · diff"
 
-#: templates/public/schermo_sala.html:259
-#: templates/public/schermo_sala.html:284
+#: templates/public/schermo_sala.html:265
+#: templates/public/schermo_sala.html:290
 msgid "Vinte · diff"
 msgstr "Won · diff"
 
-#: templates/public/schermo_sala.html:301
+#: templates/public/schermo_sala.html:307
 msgid "La classifica compare alla fine del primo turno."
 msgstr "The standings appear at the end of the first round."
 
-#: templates/public/schermo_sala.html:311
+#: templates/public/schermo_sala.html:317
 msgid "partite già concluse"
 msgstr "already finished"
 

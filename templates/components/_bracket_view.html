@@ -62,7 +62,7 @@
   {% endif %}
   {% for p in nodo.posti %}{% if not p.vuoto %}
   <div class="c7-bracket__seat{% if not p.giocatore %} is-attesa{% endif %}">
-    <span class="c7-bracket__who">{{ t.posto(p) }}</span>
+    <span class="c7-bracket__who">{{ t.posto_nel_nodo(p) }}</span>
   </div>
   {% endif %}{% endfor %}
 </article>
@@ -88,7 +88,7 @@
   <div class="c7-bracket">
     <div class="c7-bracket__rail">
       {% for column in section.columns %}
-      <div class="c7-bracket__col">
+      <div class="c7-bracket__col{% if column.nome.chiave == 'finalina' %} c7-bracket__col--finalina{% endif %}">
         <div class="c7-bracket__colhead">
           <span class="c7-kicker">{{ t.nome_round(column.nome) }}</span>
           <span class="c7-bracket__count">{{ column.size }}</span>

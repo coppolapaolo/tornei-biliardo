@@ -61,8 +61,9 @@ blocks:
           Matches not yet played. The whole bracket is drawn from the moment of
           the draw, so an empty slot shows who will get there: the name, if
           they already went through or won the previous match, otherwise
-          «whoever wins» that match. The double elimination Decider says «if
-          needed».
+          «winner of» that match — or «loser of», in the third place
+          match — with the names of the two players below. The double
+          elimination Decider says «if needed».
 
   - type: note
     tone: tip
