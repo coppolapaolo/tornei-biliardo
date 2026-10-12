@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.76.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.76.1...v1.76.2) (2026-10-12)
+
+
+### Correzioni
+
+* tabellone senza accavallamenti, campionato a piazzamenti, card a tempo scaduto e ritocchi 7c ([#686](https://github.com/coppolapaolo/tornei-biliardo/issues/686)) ([e40a62b](https://github.com/coppolapaolo/tornei-biliardo/commit/e40a62b9b57f8cf2107f7fd8e8b5bd3f133c30d4))
+
 ## [1.76.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.76.0...v1.76.1) (2026-10-12)
 
 
