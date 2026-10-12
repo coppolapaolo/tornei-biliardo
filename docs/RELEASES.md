@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.76.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.76.0...v1.76.1) (2026-10-12)
+
+
+### Correzioni
+
+* giri del trio, ordinali inglesi, orari della partita e quote in un solo formato ([#684](https://github.com/coppolapaolo/tornei-biliardo/issues/684)) ([5642538](https://github.com/coppolapaolo/tornei-biliardo/commit/564253815bb6d1b985f8b4f990c7d266cd12bc29))
+
 ## [1.76.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.75.0...v1.76.0) (2026-10-12)
 
 
