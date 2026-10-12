@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.77.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.76.2...v1.77.0) (2026-10-12)
+
+
+### Funzioni nuove
+
+* il preset di campionato comprende anche i playoff ([#688](https://github.com/coppolapaolo/tornei-biliardo/issues/688)) ([52c6b39](https://github.com/coppolapaolo/tornei-biliardo/commit/52c6b39afa08d9ac1c1a3902de69d48c72dc194a))
+
 ## [1.76.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.76.1...v1.76.2) (2026-10-12)
 
 
