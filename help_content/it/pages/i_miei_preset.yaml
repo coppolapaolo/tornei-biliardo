@@ -1,0 +1,71 @@
+title: "I miei preset"
+section: organizzare
+kind: tutorial
+audience: [direttore]
+minutes: 3
+summary: "Tutti i preset salvati, di gara e di campionato, in un elenco solo: rinominarli, duplicarli, cancellarli e mandarne una copia a un altro direttore."
+screens: [admin.preset.miei]
+related: [creare_una_gara, creare_un_campionato]
+
+blocks:
+  - type: text
+    text: >-
+      Un **preset** è un gruppo di impostazioni salvato col nome che scegli tu,
+      per esempio «Lunedì, due gironi». Lo salvi dal modulo di una gara o di
+      un campionato con **«Salva come preset»** e lo usi la volta dopo con
+      **«Parti da un preset»**. La pagina **I miei preset** li raccoglie
+      tutti: la apri dal menu col tuo nome, in alto a destra sul telefono e in
+      basso nella barra laterale sul computer, oppure dal collegamento
+      **«Gestisci i miei preset»** sotto «Parti da un preset».
+
+  - type: heading
+    id: elenco
+    title: "Cosa c'è nell'elenco"
+
+  - type: text
+    text: >-
+      Ogni riga dice il nome del preset, se è di **gara** o di
+      **campionato**, e quando l'hai aggiornato l'ultima volta. Un preset che
+      ti ha mandato un altro direttore lo dice: «ricevuto da Paolo, 06/10».
+      I tuoi preset li vedi solo tu.
+
+  - type: heading
+    id: azioni
+    title: "Rinominare, duplicare, cancellare"
+
+  - type: list
+    items:
+      - "**Rinomina** (la matita): scrivi il nuovo nome e conferma. Due preset tuoi non possono avere lo stesso nome."
+      - "**Duplica** (i due fogli): crea una copia accanto all'originale, per esempio per provare una variante senza toccare quello che funziona."
+      - "**Cancella** (il cestino): l'app chiede conferma. Le gare e i campionati nati da quel preset restano come sono, e le copie che hai mandato agli altri restano loro."
+
+  - type: heading
+    id: condividere
+    title: "Mandare un preset a un altro direttore"
+
+  - type: steps
+    items:
+      - title: "Tocca «Condividi»"
+        text: "È il simbolo dei tre punti collegati, sulla riga del preset."
+      - title: "Cerca il direttore"
+        text: "Scrivi almeno due lettere del suo nome e tocca **Aggiungi**. Puoi sceglierne più di uno."
+      - title: "Tocca «Manda la copia»"
+        text: "Ognuno riceve una notifica e trova il preset fra i suoi."
+
+  - type: note
+    tone: info
+    title: "Condividere vuol dire mandare una copia"
+    text: >-
+      Chi riceve il preset ne ha una copia **sua**: la può usare, cambiare,
+      rinominare, cancellare e mandare a sua volta. Da lì in poi le due copie
+      non si toccano più: quello che cambi dopo non arriva a lui, e viceversa.
+      Per mandargli una versione nuova, condividi di nuovo.
+
+  - type: faq
+    items:
+      - q: "Posso mandare un preset a un giocatore?"
+        a: "No: i preset si condividono solo fra direttori di gara, come la direzione delle gare."
+      - q: "Chi riceve ha già un preset con lo stesso nome: cosa succede?"
+        a: "La copia arriva col tuo nome in fondo, per esempio «Lunedì, due gironi (da Paolo)», e niente di suo viene sovrascritto."
+      - q: "Posso ritirare un preset che ho mandato?"
+        a: "No: la copia è sua. Se hai sbagliato, scriviglielo; se hai una versione migliore, mandagli quella."

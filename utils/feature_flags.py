@@ -282,6 +282,16 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.preset.salva_dal_modulo_gara": {"director"},
     "admin.preset.salva_dalla_gara": {"director"},
     "admin.preset.valori_per_il_modulo": {"director"},
+    "admin.preset.salva_dal_modulo_campionato": {"director"},
+    "admin.preset.salva_dal_campionato": {"director"},
+    # «I miei preset»: l'elenco e le sue azioni, e la ricerca dei direttori
+    # con cui condividere (una copia per ciascuno).
+    "admin.preset.miei": {"director"},
+    "admin.preset.rinomina": {"director"},
+    "admin.preset.duplica": {"director"},
+    "admin.preset.cancella": {"director"},
+    "admin.preset.condividi": {"director"},
+    "admin.preset.cerca_direttori": {"director"},
     # Vetrina social della gara (issue #235): la cura chi gestisce la gara.
     # La pagina *pubblica* che ne esce è `main.gara_invite`, già aperta agli
     # anonimi qui sopra — e deve restarci, altrimenti lo scraper del social

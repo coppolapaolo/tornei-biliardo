@@ -269,6 +269,24 @@ hints:
   - admin.competition.edit_gara
   page: creare_una_gara
   section: preset
+- id: campionato.preset
+  label: Start from a preset
+  short: "Pick a championship preset and the form fills itself in: type and system at step 1, the competition values at step 2. «Save as preset» keeps only the settings, no name or venue."
+  anchor: campionato-preset
+  screens:
+  - admin.campionato.wizard_start
+  - admin.campionato.wizard_step2
+  - admin.campionato.edit_campionato
+  page: creare_un_campionato
+  section: preset
+- id: campionato.preset_salva
+  label: Save as preset
+  short: "Saves the settings of this championship and what it proposes to its competitions, to start from there when you create another one. The championship is not tied to the preset."
+  anchor: campionato-preset-salva
+  screens:
+  - admin.campionato.campionato_detail
+  page: creare_un_campionato
+  section: preset
 - id: gara.limite_di_tempo
   label: Time limit per match
   short: 'Minutes per match, on top of the distance. It starts at the lag or with «Start match»; when it runs out nothing closes: the director decides. Empty = no limit.'

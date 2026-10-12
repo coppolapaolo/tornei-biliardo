@@ -171,6 +171,22 @@ hints:
     page: creare_una_gara
     section: preset
 
+  - id: campionato.preset
+    label: "Parti da un preset"
+    short: "Scegli un preset di campionato e il modulo si compila: al passo 1 tipo e sistema, al passo 2 i valori delle gare. «Salva come preset» ricorda solo le impostazioni, senza nome né sala."
+    anchor: campionato-preset
+    screens: [admin.campionato.wizard_start, admin.campionato.wizard_step2, admin.campionato.edit_campionato]
+    page: creare_un_campionato
+    section: preset
+
+  - id: campionato.preset_salva
+    label: "Salva come preset"
+    short: "Salva le impostazioni di questo campionato e le proposte alle sue gare, per ripartire da lì quando ne crei un altro. Il campionato non resta legato al preset."
+    anchor: campionato-preset-salva
+    screens: [admin.campionato.campionato_detail]
+    page: creare_un_campionato
+    section: preset
+
   - id: gara.limite_di_tempo
     label: "Limite di tempo per partita"
     short: "Minuti per partita, oltre alla distanza. Parte all'acchito o con «Avvia partita»; allo scadere non si chiude niente: decide il direttore. Vuoto = nessun limite."

@@ -4987,3 +4987,15 @@ button.c7-draw__outcome:active { transform: scale(var(--c7-press)); transition-d
 /* Il nome della finale sulle partite pubbliche (card e tabella). */
 .c7-match-finale { font-size: 12px; font-weight: 800; color: var(--c7-accent); }
 .c7-match-finale-tr > td { padding-bottom: 0 !important; border-bottom: 0 !important; }
+
+/* --------------------------------------------------------------------------
+   «I miei preset» (ADR-082): quattro comandi accanto al nome; a 390px
+   scendono sotto, e i pannelli di rinomina e condivisione prendono la riga
+   intera. Comandi da 44px: quattro da 48 non stanno accanto al nome.
+   -------------------------------------------------------------------------- */
+.c7-preset-azioni { display: flex; gap: 8px; margin-left: auto; }
+.c7-preset-azioni form { margin: 0; }
+.c7-preset-azioni .c7-iconbtn { width: 44px; height: 44px; font-size: 14px; background: var(--c7-card); }
+.c7-preset-azioni .c7-iconbtn[aria-expanded="true"] { background: var(--c7-accent); color: var(--c7-accent-ink); }
+.c7-preset-azioni .c7-iconbtn--err { color: var(--c7-err-ink); }
+.c7-preset-pannello { flex: 1 1 100%; padding-top: 4px; }

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{# templates/admin/preset_miei.html — Design System 7c
+
+   «I miei preset» (ADR-082): un elenco solo, preset di gara e di campionato
+   insieme, ognuno con le sue quattro azioni — rinomina, duplica, condividi,
+   cancella. Le copie ricevute dicono da chi arrivano e quando.
+
+   Rinomina e condividi si aprono sotto la riga (`data-preset-pannello`), uno
+   alla volta; condividere cerca i direttori per nome
+   (`admin.preset.cerca_direttori`) e manda una copia a ciascuno di quelli
+   scelti. La cancellazione chiede conferma col foglio dell'app (ADR-074).
+   Lo script è `static/js/preset_miei.js`. #}
+
+{% block title %}{{ _("I miei preset") }}{% endblock %}
+{% block page_title %}{{ _("I miei preset") }}{% endblock %}
+{% block page_sub %}{{ ngettext("%(num)d preset", "%(num)d preset", preset|length) }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:760px" data-preset-miei
+     data-url-cerca="{{ url_for('admin.preset.cerca_direttori') }}"
+     data-testi='{{ {
+       "corto": _("Scrivi almeno due lettere del nome."),
+       "nessuno": _("Nessun direttore con questo nome."),
+       "aggiungi": _("Aggiungi"),
+       "togli": _("Togli"),
+       "errore": _("Qualcosa non ha funzionato: riprova."),
+     }|tojson }}'>
+
+  <div class="c7-nota">
+    {{ _("Salvi un preset dai moduli della gara e del campionato con «Salva come preset», e lo usi con «Parti da un preset». Condividere manda una copia: da lì ognuno ha la sua, e cambiarla non tocca quella dell'altro.") }}
+  </div>
+
+  {% if not preset %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-bookmark"></i></div>
+    <div class="c7-empty__title">{{ _("Nessun preset salvato") }}</div>
+    <p class="c7-empty__text">{{ _("Quando prepari una gara o un campionato, «Salva come preset» tiene le impostazioni per la volta dopo: le ritrovi qui.") }}</p>
+  </div>
+  {% else %}
+  <section class="c7-card">
+    <div class="c7-rows c7-rows--sunk">
+      {% for p in preset %}
+      {% set e_campionato = p.kind == TipoPreset.CAMPIONATO.value %}
+      <div class="c7-rows__row c7-rows__row--wrap c7-preset-riga" data-preset-riga>
+        <span class="c7-avatar" aria-hidden="true"><i class="fas {{ 'fa-trophy' if e_campionato else 'fa-flag-checkered' }}"></i></span>
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ p.name }}</div>
+          <div class="c7-rows__sub">
+            {{ _("Campionato") if e_campionato else _("Gara") }}
+            <span class="c7-sep">·</span>
+            {% if p.received_at %}
+              {% if p.received_from %}
+              {{ _("ricevuto da %(nome)s, %(data)s", nome=p.received_from.username, data=p.received_at|date_local) }}
+              {% else %}
+              {{ _("ricevuto il %(data)s", data=p.received_at|date_local) }}
+              {% endif %}
+            {% else %}
+              {{ _("aggiornato il %(data)s", data=(p.updated_at or p.created_at)|date_local) }}
+            {% endif %}
+          </div>
+        </div>
+        <div class="c7-preset-azioni">
+          <button type="button" class="c7-iconbtn" data-preset-apri="rinomina"
+                  title="{{ _('Rinomina') }}" aria-label="{{ _('Rinomina «%(nome)s»', nome=p.name) }}" aria-expanded="false">
+            <i class="fas fa-pen"></i>
+          </button>
+          <form method="POST" action="{{ url_for('admin.preset.duplica', preset_id=p.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="c7-iconbtn" title="{{ _('Duplica') }}" aria-label="{{ _('Duplica «%(nome)s»', nome=p.name) }}">
+              <i class="fas fa-clone"></i>
+            </button>
+          </form>
+          <button type="button" class="c7-iconbtn" data-preset-apri="condividi"
+                  title="{{ _('Condividi') }}" aria-label="{{ _('Condividi «%(nome)s»', nome=p.name) }}" aria-expanded="false">
+            <i class="fas fa-share-nodes"></i>
+          </button>
+          <form method="POST" action="{{ url_for('admin.preset.cancella', preset_id=p.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="c7-iconbtn c7-iconbtn--err" title="{{ _('Cancella') }}"
+                    aria-label="{{ _('Cancella «%(nome)s»', nome=p.name) }}"
+                    onclick='return confirmSubmit(this.form, {{ _("Cancellare il preset «%(nome)s»? Le gare e i campionati nati da lì restano come sono, e le copie che hai mandato agli altri restano loro.", nome=p.name)|tojson }}, {confirmText: {{ _("Cancella")|tojson }}, confirmClass: "btn-danger"})'>
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.preset.rinomina', preset_id=p.id) }}"
+              class="c7-preset-pannello" data-preset-pannello="rinomina" hidden>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label class="form-label d-block mb-1" for="preset-nome-{{ p.id }}">{{ _("Nuovo nome") }}</label>
+          <div class="d-flex flex-wrap gap-2">
+            <input type="text" class="form-control flex-fill" style="min-width:200px" maxlength="100" required
+                   id="preset-nome-{{ p.id }}" name="nome" value="{{ p.name }}" autocomplete="off">
+            <button type="submit" class="btn btn-primary">{{ _("Rinomina") }}</button>
+          </div>
+        </form>
+
+        <form method="POST" action="{{ url_for('admin.preset.condividi', preset_id=p.id) }}"
+              class="c7-preset-pannello" data-preset-pannello="condividi" data-preset-condividi hidden>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label class="form-label d-block mb-1" for="preset-cerca-{{ p.id }}">{{ _("Manda una copia a") }}</label>
+          <input type="search" class="form-control" id="preset-cerca-{{ p.id }}" autocomplete="off"
+                 placeholder="{{ _('Cerca un direttore per nome…') }}" data-preset-cerca>
+          <div class="c7-rows mt-2" data-preset-trovati aria-live="polite"></div>
+          <div class="c7-rows mt-2" data-preset-scelti></div>
+          <div class="c7-nota mt-2">{{ _("Solo direttori di gara. Ognuno riceve una copia sua, con una notifica: quello che cambi dopo non arriva a loro.") }}</div>
+          <button type="submit" class="btn btn-primary mt-2" data-preset-manda disabled>
+            <i class="fas fa-share-nodes"></i> {{ _("Manda la copia") }}
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/preset_miei.js') }}?v={{ config.ASSET_VERSION }}"></script>
+{% endblock %}

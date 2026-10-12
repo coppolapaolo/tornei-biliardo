@@ -130,6 +130,27 @@ blocks:
       so the position points table appears, below.
 
   - type: heading
+    id: preset
+    title: "Starting from a preset"
+
+  - type: text
+    text: >-
+      If you often set up the same championship — the yearly club league, the
+      autumn circuit — you can save its settings as a **preset** and start
+      from there. A championship preset keeps format, standings system,
+      number of competitions, drills and all the values proposed to the
+      competitions (rounds, odd number, break, groups, final stage, points,
+      ties, time limit, fee and price list, points by position). Name and
+      venue are left out.
+
+  - type: list
+    items:
+      - "At **step 1** of the wizard pick the preset in **«Start from a preset»**: type, system and number of competitions fill themselves in. At **step 2** the app also writes the competition values: check them and change them as you like."
+      - "**«Save as preset»** is at step 2 of the wizard and when editing the championship; from the **Settings** of an existing championship you can save it as it is, even once it is over."
+      - "The championship you create is not tied to the preset: if you change or delete it later, the championship does not change."
+      - "You find all your presets, competition and championship, on the **[My presets](/aiuto/organizzare/i_miei_preset)** page."
+
+  - type: heading
     id: apertura
     title: "How play starts, and who breaks"
 

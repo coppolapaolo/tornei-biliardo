@@ -70,6 +70,9 @@ class NotificationType(Enum):
     SHEET_ANSWERED = "sheet_answered"  # L'allievo ha preso la scheda, o no
     SHEET_LEVEL_PASSED = "sheet_level_passed"  # Gradino superato (D8)
 
+    # Preset dei direttori (ADR-082)
+    PRESET_SHARED = "preset_shared"  # Un direttore ti ha mandato un preset
+
     # Segnalazioni degli utenti (issue #255)
     FEEDBACK_UPDATE = "feedback_update"  # La tua segnalazione è cambiata di stato
 

@@ -28,7 +28,7 @@ from models.match.break_rules import (
     BreakRule,
     StartRule,
 )
-from models.matchmaking.configuration import OddNumberPolicy
+from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
 
 _VALID_ODD_POLICIES = {
     OddNumberPolicy.NO.value,
@@ -71,6 +71,89 @@ def parse_position_points(form: MultiDict) -> Optional[str]:
 
 class CampionatoFormParser:
     """Extract and normalise the shared 'default gare settings' form block."""
+
+    #: Le colonne del campionato che i suoi moduli scrivono (wizard e
+    #: modifica), nell'ordine in cui il modulo le presenta: prima tipo e
+    #: sistema, poi i valori proposti alle gare. È la base della whitelist dei
+    #: preset di campionato (`models.preset.payload`), accanto a quella della
+    #: gara: un campo nuovo letto da `parse_configurazione` va aggiunto qui, e
+    #: il presidio `test_preset_campionato_e_condivisione` lo pretende.
+    CAMPI_DEL_MODULO = (
+        "name",
+        "campionato_type",
+        "planned_gare_count",
+        "challenge_mode",
+        "default_classification_system",
+        "default_gara_classification_system",
+        "default_venue_id",
+        "default_entry_fee",
+        "default_rounds_count",
+        "default_odd_policy",
+        "default_anti_rematch",
+        "default_start_rule",
+        "default_break_rule",
+        "has_handicap",
+        "default_time_limit_minutes",
+        "position_points",
+        "default_points_win",
+        "default_points_draw",
+        "default_points_loss",
+        "default_max_groups",
+        "default_group_seeding",
+        "default_final_phase_mode",
+        "default_qualifiers_per_group",
+        "default_third_place_match",
+        "default_final_phase_time_limit_minutes",
+        "default_final_phase_distance",
+        "default_final_time_limit_minutes",
+        "default_final_distance",
+        "default_catena_turno",
+        "default_catena_gara",
+        "catena_generale",
+    )
+
+    @staticmethod
+    def parse_configurazione(form: MultiDict, tipo_di_ripiego: str) -> Dict[str, Any]:
+        """Tutto ciò che il modulo di modifica del campionato configura.
+
+        Tipo, numero di gare, esercizi, i due sistemi e i valori proposti alle
+        gare (catene e punti compresi), letti come li legge la modifica del
+        campionato. Il nome resta fuori: è della route. ``tipo_di_ripiego`` è
+        il tipo da tenere se il modulo ne manda uno sconosciuto.
+
+        Lo usano la modifica del campionato e «Salva come preset» (ADR-082):
+        un modo solo di leggere il modulo.
+        """
+        from routes.admin.campionato import CAMPIONATO_TYPE_VALUES
+
+        campionato_type = form.get("campionato_type", MatchmakingStrategy.AMALFI.value)
+        if campionato_type not in CAMPIONATO_TYPE_VALUES:
+            campionato_type = tipo_di_ripiego
+        planned_gare_count = form.get("planned_gare_count")
+
+        settings = CampionatoFormParser.parse_default_settings(form)
+        settings.update(CampionatoFormParser.parse_gironi(form))
+        # Sommando i totali o a piazzamenti, e il sistema delle serate
+        # (ADR-080): catene e punti proposti seguono quello delle gare.
+        sistemi = CampionatoFormParser.parse_sistemi(form, campionato_type)
+        sistema_gare = CampionatoFormParser.sistema_delle_serate(sistemi)
+        # La catena della classifica generale segue il sistema del
+        # campionato: a piazzamenti ha criteri suoi (ADR-080).
+        settings.update(
+            CampionatoFormParser.parse_catene(
+                form, sistema_gare, sistemi["default_classification_system"]
+            )
+        )
+        settings.update(CampionatoFormParser.parse_punti(form, sistema_gare))
+        return {
+            "campionato_type": campionato_type,
+            "planned_gare_count": (
+                int(planned_gare_count) if planned_gare_count else None
+            ),
+            "challenge_mode": "challenge_mode" in form,
+            **sistemi,
+            **settings,
+        }
 
     @staticmethod
     def parse_prova(form: MultiDict) -> bool:

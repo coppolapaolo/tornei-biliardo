@@ -13,6 +13,9 @@
  * seconda riempie i campi che la prima ha appena acceso (la strategia viene
  * dopo la distanza nel modulo, i gironi dopo la strategia…).
  *
+ * Lo stesso script serve i moduli della gara e quelli del campionato (wizard
+ * e modifica): cambiano solo i campi che il server manda.
+ *
  * I campi che il direttore ha già toccato a mano non si sovrascrivono senza
  * chiedere: si applica il resto, poi il foglio di conferma (ADR-074) chiede se
  * usare anche lì i valori del preset.
@@ -145,6 +148,10 @@
     this.esito = radice.querySelector('[data-preset-esito]');
     this.toccati = {};
     this.ascolta();
+    // Il preset scelto al passo 1 del wizard: il passo 2 lo applica appena si
+    // apre, per i valori proposti alle gare che al passo 1 non c'erano.
+    var auto = radice.getAttribute('data-preset-auto');
+    if (auto && this.form) this.carica(auto);
   }
 
   Preset.prototype.dici = function (messaggio, errore) {
@@ -156,20 +163,24 @@
   Preset.prototype.ascolta = function () {
     var self = this;
     var r = this.radice;
-    r.querySelector('[data-preset-apri]').addEventListener('click', function () {
-      self.foglio.hidden = !self.foglio.hidden;
-      self.sostituisci.hidden = true;
-      if (!self.foglio.hidden) self.nome.focus();
-    });
-    r.querySelector('[data-preset-annulla]').addEventListener('click', function () {
-      self.foglio.hidden = true;
-    });
-    r.querySelector('[data-preset-conferma]').addEventListener('click', function () { self.salva(false); });
-    this.sostituisci.addEventListener('click', function () { self.salva(true); });
-    // Invio nel nome salva il preset, non il modulo della gara che lo contiene.
-    this.nome.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); self.salva(false); }
-    });
+    // Al passo 1 del wizard del campionato c'è solo «Parti da un preset».
+    var apri = r.querySelector('[data-preset-apri]');
+    if (apri && this.foglio) {
+      apri.addEventListener('click', function () {
+        self.foglio.hidden = !self.foglio.hidden;
+        self.sostituisci.hidden = true;
+        if (!self.foglio.hidden) self.nome.focus();
+      });
+      r.querySelector('[data-preset-annulla]').addEventListener('click', function () {
+        self.foglio.hidden = true;
+      });
+      r.querySelector('[data-preset-conferma]').addEventListener('click', function () { self.salva(false); });
+      this.sostituisci.addEventListener('click', function () { self.salva(true); });
+      // Invio nel nome salva il preset, non il modulo che lo contiene.
+      this.nome.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); self.salva(false); }
+      });
+    }
     if (this.scelta) {
       this.scelta.addEventListener('change', function () {
         if (self.scelta.value) self.carica(self.scelta.value);
@@ -203,6 +214,9 @@
       .then(function (risposta) {
         if (!risposta.ok || !risposta.d.success) throw new Error(risposta.d.error || self.t.errore);
         self.applica(risposta.d);
+        // Il wizard porta la scelta al passo successivo (`preset_id`).
+        var scelto = self.form && self.form.querySelector('[data-preset-scelto]');
+        if (scelto) scelto.value = String(risposta.d.id);
       })
       .catch(function (e) { self.dici(e.message || self.t.errore, true); })
       .finally(function () { if (self.scelta) self.scelta.value = ''; });
@@ -268,6 +282,7 @@
     var gara = this.radice.getAttribute('data-gara-id');
     if (camp) dati.set('preset_campionato_id', camp);
     if (gara) dati.set('preset_gara_id', gara);
+    if (this.radice.getAttribute('data-wizard')) dati.set('preset_wizard', '1');
     var headers = { 'X-Requested-With': 'XMLHttpRequest' };
     if (typeof window.csrfToken === 'function') headers['X-CSRFToken'] = window.csrfToken();
     fetch(this.radice.getAttribute('data-url-salva'), {
@@ -302,6 +317,8 @@
       opzione.textContent = preset.nome;
       this.scelta.appendChild(opzione);
     }
+    // Il primo preset salvato: il menu non è più «Nessun preset salvato».
+    if (this.scelta.disabled && this.t.scegli) this.scelta.options[0].textContent = this.t.scegli;
     this.scelta.disabled = false;
   };
 
