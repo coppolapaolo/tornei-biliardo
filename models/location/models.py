@@ -103,20 +103,27 @@ class BilliardHall(BaseModel):
         If table_names is not set, generates default names ["1", "2", ...]
         based on number_of_tables.
         """
-        if self.table_names:
-            try:
-                return json.loads(self.table_names)
-            except (json.JSONDecodeError, TypeError):
-                pass
+        from models.shared.utils import tavoli_da_json
+
+        # Un dato scritto due volte si legge; uno illeggibile ripiega sul numero.
+        nomi = tavoli_da_json(self.table_names)
+        if nomi:
+            return nomi
 
         # Generate default table names if not set
         if self.number_of_tables:
             return [str(i) for i in range(1, self.number_of_tables + 1)]
         return []
 
-    def set_table_names(self, names: List[str]) -> None:
-        """Set table names as JSON."""
-        self.table_names = json.dumps(names) if names else None
+    def set_table_names(self, names: Any) -> None:
+        """Salva i nomi dei tavoli; vuoto o None li azzera.
+
+        Stesso contratto di `Gara.set_available_tables`: lista di nomi o stringa
+        che è una lista JSON, altrimenti `TypeError` (`tavoli_in_json`).
+        """
+        from models.shared.utils import tavoli_in_json
+
+        self.table_names = tavoli_in_json(names)
 
     def get_amenities(self) -> List[str]:
         """Get amenities as list."""

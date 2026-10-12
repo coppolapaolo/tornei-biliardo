@@ -134,6 +134,65 @@ def parse_tables_input(input_str: str) -> List[str]:
     return [t for t in tables if t]
 
 
+def tavoli_in_json(tavoli: Any) -> Optional[str]:
+    """La lista dei tavoli come la salva la colonna di testo, o None se vuota.
+
+    Lo scrittore normalizza: accetta una lista (o tupla) di nomi, `None`/vuoto,
+    oppure una stringa che *è* una lista JSON — la decodifica invece di
+    ricodificarla. Ricodificarla era il difetto: `'["1", "2"]'` diventava una
+    stringa JSON e chi la leggeva vedeva i tavoli «[», «"», «,». Tutto il
+    resto, compresa una stringa come «1, 2» (che è input dell'utente e passa da
+    `parse_tables_input`), è un errore di chi chiama: `TypeError`.
+    """
+    import json
+
+    if tavoli is None:
+        return None
+    if isinstance(tavoli, str):
+        if not tavoli.strip():
+            return None
+        try:
+            tavoli = json.loads(tavoli)
+        except ValueError:
+            raise TypeError(
+                "Tavoli: serve una lista di nomi, non il testo %r "
+                "(l'input dell'utente passa da parse_tables_input)" % tavoli
+            )
+    if not isinstance(tavoli, (list, tuple)):
+        raise TypeError(
+            "Tavoli: serve una lista di nomi, non %s" % type(tavoli).__name__
+        )
+    nomi: List[str] = []
+    for tavolo in tavoli:
+        if isinstance(tavolo, bool) or not isinstance(tavolo, (str, int)):
+            raise TypeError("Tavoli: nome di tavolo non valido: %r" % (tavolo,))
+        nomi.append(str(tavolo))
+    return json.dumps(nomi) if nomi else None
+
+
+def tavoli_da_json(grezzo: Optional[str]) -> Optional[List[str]]:
+    """La lista dei tavoli salvata come testo, o None se non c'è o è illeggibile.
+
+    Il lettore tollera i dati storici: se dopo la prima decodifica trova ancora
+    una stringa che è una lista JSON — un dato scritto due volte, prima che
+    `tavoli_in_json` normalizzasse — la decodifica di nuovo. Qualunque altra
+    cosa che non sia una lista vale «nessun tavolo», mai i suoi caratteri.
+    """
+    import json
+
+    if not grezzo:
+        return None
+    try:
+        valore = json.loads(grezzo)
+        if isinstance(valore, str):
+            valore = json.loads(valore)
+    except (ValueError, TypeError):
+        return None
+    if not isinstance(valore, list):
+        return None
+    return [str(tavolo) for tavolo in valore]
+
+
 def merge_dicts(dict1: Dict, dict2: Dict) -> Dict:
     """Merge two dictionaries, with dict2 values overriding dict1 values.
 
