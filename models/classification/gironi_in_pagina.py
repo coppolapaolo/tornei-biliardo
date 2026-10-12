@@ -52,6 +52,115 @@ class RigaDelGirone:
     taglio: Optional[bool] = None
     #: La riga del taglio sta sopra questa: è il primo dei «fuori».
     primo_fuori: bool = False
+    #: Con le finali per piazzamento, quando si sa chi gioca contro chi: la
+    #: finale di questo giocatore, o il posto diretto (ADR-081). None prima.
+    finale: Optional["FinaleInPagina"] = None
+
+
+@dataclass(frozen=True)
+class FinaleInPagina:
+    """La finale per piazzamento di un giocatore, come la dice una pagina.
+
+    «→ finale 3°/4° posto con Andrea Ferri (2° girone B)» finché non si
+    gioca, poi «vince la finale 3°/4° posto»; chi avanza nel girone più
+    numeroso non ha finale: «9° diretto». Ha la forma che la macro `uscita`
+    legge (`uscita`, `vinta`, `position`, `gruppo`), così le parole sono le
+    stesse della classifica finale.
+    """
+
+    #: La coppia, da 1: 1 la finale per il 1°/2° posto. None per il diretto.
+    coppia: Optional[int] = None
+    avversario_id: Optional[int] = None
+    #: Il girone dell'avversario: indice (0 = A).
+    girone_avversario: Optional[int] = None
+    #: Il posto di chi si classifica senza finale: 9 col 5 + 4.
+    posto_diretto: Optional[int] = None
+    #: True vinta, False persa, None da giocare (o senza partita).
+    vinta: Optional[bool] = None
+    #: La riga di classifica dell'avversario, se la pagina ce l'ha: la mette
+    #: `segna_le_finali`, per il nome.
+    avversario: Any = None
+
+    @property
+    def nome_girone_avversario(self) -> Optional[str]:
+        if self.girone_avversario is None:
+            return None
+        return nome_del_girone(self.girone_avversario)
+
+    @property
+    def uscita(self) -> Any:
+        """Il nome della finale (`NomeRound("piazzamento", coppia)`), o None."""
+        if self.coppia is None:
+            return None
+        from models.competition.tabellone_view import NomeRound
+
+        return NomeRound("piazzamento", self.coppia)
+
+    @property
+    def position(self) -> Optional[int]:
+        """1 per chi vince la finale per il 1°/2° posto: ha vinto la gara."""
+        return 1 if self.coppia == 1 and self.vinta else None
+
+    @property
+    def gruppo(self) -> None:
+        """Per la macro `uscita`: le finali non sono un girone del doppio KO."""
+        return None
+
+
+def finali_dei_giocatori(
+    coppie: Sequence[Tuple[int, int]],
+    diretti: Sequence[int],
+    girone_di: Mapping[int, int],
+    vincitori: Optional[Mapping[int, Optional[int]]] = None,
+) -> Dict[int, FinaleInPagina]:
+    """La finale di ognuno dagli incroci (`incroci_per_piazzamento`).
+
+    Args:
+        coppie: le coppie, dalla finale per il 1°/2° posto.
+        diretti: chi si classifica senza finale, in ordine.
+        girone_di: giocatore → girone (indice).
+        vincitori: coppia (da 0) → vincitore, quando la finale è decisa.
+    """
+    vincitori = vincitori or {}
+    finali: Dict[int, FinaleInPagina] = {}
+    for indice, (a, b) in enumerate(coppie):
+        vince = vincitori.get(indice)
+        for io, lui in ((a, b), (b, a)):
+            if io is None:
+                continue
+            finali[io] = FinaleInPagina(
+                coppia=indice + 1,
+                avversario_id=lui,
+                girone_avversario=girone_di.get(lui) if lui is not None else None,
+                vinta=(vince == io) if vince in (a, b) else None,
+            )
+    for i, pid in enumerate(diretti):
+        finali[pid] = FinaleInPagina(posto_diretto=2 * len(coppie) + 1 + i)
+    return finali
+
+
+def segna_le_finali(
+    gironi: Sequence["GironeInPagina"],
+    finali: Optional[Mapping[int, FinaleInPagina]],
+) -> List["GironeInPagina"]:
+    """Accanto a ogni riga la finale che giocherà (ADR-081).
+
+    Finché non si sa chi gioca contro chi (`finali` None) le righe restano
+    come sono. L'avversario si cerca fra le righe di tutti i gironi.
+    """
+    if finali is None:
+        return list(gironi)
+    righe = {v.riga.user_id: v.riga for g in gironi for v in g.righe}
+    segnati = []
+    for g in gironi:
+        nuove = []
+        for v in g.righe:
+            f = finali.get(v.riga.user_id)
+            if f is not None and f.avversario_id is not None:
+                f = replace(f, avversario=righe.get(f.avversario_id))
+            nuove.append(replace(v, finale=f))
+        segnati.append(replace(g, righe=tuple(nuove)))
+    return segnati
 
 
 @dataclass(frozen=True)
@@ -180,6 +289,15 @@ def _chi_va_al_tabellone(gara: Any) -> Optional[Collection[int]]:
     return chi_va_al_tabellone(gara)
 
 
+def _finali_dei_giocatori(gara: Any) -> Optional[Mapping[int, FinaleInPagina]]:
+    """Le finali per piazzamento di ognuno, se la gara ne ha e si sanno."""
+    if getattr(gara, "ha_finali_per_piazzamento", False) is not True:
+        return None
+    from models.competition.fase_finale_service import finali_dei_giocatori as finali
+
+    return finali(gara)
+
+
 def gironi_in_pagina(gara: Any, righe: Optional[Iterable[Any]]) -> List[GironeInPagina]:
     """Le classifiche per girone da mostrare, o vuota se va mostrata la gara.
 
@@ -193,9 +311,12 @@ def gironi_in_pagina(gara: Any, righe: Optional[Iterable[Any]]) -> List[GironeIn
     gironi = dividi_per_girone(tutte)
     if not gironi:
         return []
-    return segna_il_taglio(
-        dividi_per_girone(tutte, _posizioni_nel_girone_prima(tutte)),
-        _chi_va_al_tabellone(gara),
+    return segna_le_finali(
+        segna_il_taglio(
+            dividi_per_girone(tutte, _posizioni_nel_girone_prima(tutte)),
+            _chi_va_al_tabellone(gara),
+        ),
+        _finali_dei_giocatori(gara),
     )
 
 
@@ -212,10 +333,13 @@ def girone_della_riga(riga: Any) -> Optional[Tuple[str, int]]:
 
 
 __all__ = [
+    "FinaleInPagina",
     "GironeInPagina",
     "RigaDelGirone",
     "dividi_per_girone",
     "girone_della_riga",
     "gironi_in_pagina",
+    "finali_dei_giocatori",
     "segna_il_taglio",
+    "segna_le_finali",
 ]

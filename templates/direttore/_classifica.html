@@ -70,6 +70,9 @@
 {% set _ssr = ssr_scores_map if ssr_scores_map is defined else none %}
 {% set _pari = pari_ids if pari_ids is defined else none %}
 {% set _gironi = gironi_in_pagina(gara, classification) %}
+{# Che fase finale si gioca dopo i gironi (ADR-081): una domanda sola per le
+   note e le righe, tabellone o finali per piazzamento. #}
+{% set _fase_finale = fase_finale_della_gara(gara) %}
 {% set _oltre = namespace(n=0) %}
 {% for g in _gironi %}{% if g.righe|length > _prime %}{% set _oltre.n = _oltre.n + 1 %}{% endif %}{% endfor %}
 <section class="c7-stack c7-classifica" style="gap:10px" id="classificaDirettore">
@@ -110,6 +113,7 @@
   </div>
   {% endfor %}
   {% else %}
+  {% set _finali = finali_della_gara(gara) if _fase_finale == FaseFinale.PIAZZAMENTO and girone_della_riga(classification[0]) else none %}
   <div class="c7-rows">
     {{ _testa }}
     {% for riga in classification %}
@@ -118,8 +122,12 @@
        2026-10-11). La freccia confronta posizioni mostrate. #}
     {% set _pos = posizione_mostrata(riga) %}
     {% set _prima = posizione_mostrata_prima(riga) %}
+    {# Con le finali per piazzamento, sotto il nome com'è andata la finale
+       (ADR-081): «vince la finale 3°/4° posto», «9° diretto». #}
+    {% set _f = _finali.get(riga.user_id) if _finali else none %}
     {% call _riga(riga, _pos, (_prima - _pos) if _prima else none,
-                  loop.index > _prime, medaglie is defined and medaglie, girone_della_riga(riga)) %}{{ _colonne(riga, _rack, _punti, _ssr, _pari) }}{% endcall %}
+                  loop.index > _prime, medaglie is defined and medaglie, girone_della_riga(riga),
+                  taglio.sotto({'finale': _f}) if _f else none) %}{{ _colonne(riga, _rack, _punti, _ssr, _pari) }}{% endcall %}
     {% endfor %}
   </div>
   {% endif %}
@@ -133,10 +141,14 @@
     {% elif _punti %}{{ _('Ordinata per punti: %(punti)s. A pari punti decidono i criteri dei pari merito. La X a tavolino vale una vittoria.', punti=descrivi_punti(punti_della_gara(gara))) }}
     {% elif _girone %}{{ _('Ordinata per vittorie, poi differenza triangoli. Il riposo non vale niente: né vittorie né triangoli.') }}
     {% else %}{{ _('Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una vittoria e zero differenza.') }}{% endif %}
-    {# Col tabellone dopo i gironi il podio lo decide il tabellone (ADR-081). #}
-    {% set _col_tabellone = gara.ha_tabellone_finale %}
+    {# Col tabellone dopo i gironi il podio lo decide il tabellone, con le
+       finali per piazzamento ogni posto lo decide una finale (ADR-081). #}
+    {% set _col_tabellone = _fase_finale == FaseFinale.TABELLONE %}
+    {% set _con_finali = _fase_finale == FaseFinale.PIAZZAMENTO %}
     {% if _gironi and _col_tabellone %}{{ ngettext('Ogni girone ha la sua classifica: il primo di ogni girone va al tabellone, che decide il podio.', 'Ogni girone ha la sua classifica: i primi %(num)d di ogni girone vanno al tabellone, che decide il podio.', gara.effective_qualifiers_per_group) }}
+    {% elif _gironi and _con_finali %}{{ _('Ogni girone ha la sua classifica: poi il 1° di un girone gioca contro il 1° dell’altro per il 1° posto, il 2° contro il 2° per il 3°, e così via.') }}
     {% elif _gironi %}{{ _('Ogni girone ha la sua classifica: a gara finita vengono prima i primi di ogni girone, poi i secondi, confrontati per partita giocata.') }}
+    {% elif girone_della_riga(classification[0]) and _con_finali %}{{ _('L’ordine lo danno le finali per piazzamento: chi vince la finale per il 1° posto è primo, chi la perde secondo, e così via. Sotto il nome com’è andata la finale, accanto la posizione nel girone.') }}
     {% elif girone_della_riga(classification[0]) and _col_tabellone %}{{ _('In cima chi ha giocato il tabellone, nell’ordine in cui ne è uscito; poi gli altri, prima i primi di ogni girone e poi i secondi. Accanto al nome, la posizione nel girone.') }}
     {% elif girone_della_riga(classification[0]) %}{{ _('Prima i primi di ogni girone, poi i secondi, e così via, confrontati per partita giocata; accanto al nome, la posizione nel girone.') }}{% endif %}
     {% if medaglie is defined and medaglie and round_number and round_number > 1 %}{{ _('La freccia confronta con la classifica dopo il turno %(n)s.', n=round_number - 1) }}

@@ -155,6 +155,13 @@ blocks:
         place final**, planned at creation.
       - "**Outside the positions you specified**: level finishes stand, two players share the position and the next one is skipped."
       - "**If the chain has no SSR tiebreaker**: the standings keep the level finishes the other criteria do not settle."
+      - >-
+        **Group competitions with a final phase**: after the groups the SSR
+        tiebreaker is not played, even if the chain includes it. With the
+        bracket the podium is decided by the bracket; with the placement
+        finals every place is decided by a final. The **Ties** box on
+        the competition page says so. If the competition starts with a single
+        group, the final phase is not played and the tiebreaker applies again.
 
   - type: faq
     items:

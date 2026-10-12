@@ -31,6 +31,12 @@
       {% if match.is_trio and match.trio_match %}
       <span class="c7-state c7-state--muted">{{ _('Trio') }}</span>
       {% endif %}
+      {# Le finali per piazzamento (ADR-081): quale finale è. #}
+      {% set _nome_finale = nomi_partite_finali.get(match.id) if nomi_partite_finali is defined and nomi_partite_finali else none %}
+      {% if _nome_finale %}
+      {% import "components/_tabellone_macros.html" as _tbc with context %}
+      <span class="c7-match-finale">{{ _tbc.nome_partita(_nome_finale, match.round_number) }}</span>
+      {% endif %}
     </div>
 
     <div style="display: flex; align-items: center; gap: 6px;">

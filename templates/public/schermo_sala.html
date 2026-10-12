@@ -220,7 +220,7 @@
         <div class="c7-rows__row c7-sala__riga">
           <span class="c7-pos c7-pos--lg{% if r.posizione <= 3 %} c7-pos--{{ r.posizione }}{% endif %}">{{ r.posizione }}</span>
           <span class="c7-sala__riga-nome">{{ r.nome }}</span>
-          {{ taglio.segno(r) }}
+          {{ taglio.segno(r, true) }}
           <span class="c7-num c7-sala__riga-val">{{ r.valore }}</span>
           <span class="c7-num c7-sala__riga-sec">{{ r.secondo }}</span>
         </div>
@@ -266,7 +266,7 @@
         <div class="c7-rows__row c7-sala__riga">
           <span class="c7-pos c7-pos--lg{% if r.posizione <= 3 %} c7-pos--{{ r.posizione }}{% endif %}">{{ r.posizione }}</span>
           <span class="c7-sala__riga-nome">{{ r.nome }}</span>
-          {{ taglio.segno(r) }}
+          {{ taglio.segno(r, true) }}
           <span class="c7-num c7-sala__riga-val">{{ r.valore }}</span>
           <span class="c7-num c7-sala__riga-sec">{{ r.secondo }}</span>
         </div>
@@ -288,6 +288,8 @@
         <div class="c7-rows__row c7-sala__riga">
           <span class="c7-pos c7-pos--lg{% if r.posizione <= 3 %} c7-pos--{{ r.posizione }}{% endif %}">{{ r.posizione }}</span>
           <span class="c7-sala__riga-nome">{{ r.nome }}</span>
+          {# Le finali per piazzamento (ADR-081): com'è andata la finale di ognuno. #}
+          {% if r.finale %}<span class="c7-sala__riga-uscita">{{ taglio.finale(r.finale) }}</span>{% endif %}
           {% if r.girone %}<span class="c7-state c7-sala__riga-girone">{{ _('%(pos)sº girone %(nome)s', pos=r.girone[1], nome=r.girone[0]) }}</span>{% endif %}
           <span class="c7-num c7-sala__riga-val">{{ r.valore }}</span>
           <span class="c7-num c7-sala__riga-sec">{{ r.secondo }}</span>

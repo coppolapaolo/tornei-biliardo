@@ -20,6 +20,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
+from flask_babel import gettext as _
+
 from .models import SettingsChange
 from .service import StoriaModificheService, serializza
 
@@ -71,6 +73,35 @@ _CATENE = {
 }
 
 
+def frase_della_fase_finale(gara: Any, catena: Any, sistema: Any) -> Optional[str]:
+    """La frase dei pari merito della classifica finale con una fase finale.
+
+    Dopo i gironi lo spareggio SSR non si gioca (`tiebreakers_apply_to`):
+    il podio lo dà il tabellone, ogni posto lo dà una finale per piazzamento
+    (ADR-081). Col tabellone la catena ordina chi non ci arriva, senza la
+    voce dello spareggio (`prima_dello_ssr`, come `ordine_dei_gironi`); con
+    le finali non resta niente da ordinare. None senza fase finale, o se la
+    gara è partita con un girone solo: allora vale la catena intera.
+    """
+    from ..classification.ordinamento import descrivi_catena, prima_dello_ssr
+    from ..competition.fase_finale_service import fase_finale_della_gara
+    from ..matchmaking.fase_finale import FaseFinale
+
+    fase = fase_finale_della_gara(gara)
+    if fase is FaseFinale.PIAZZAMENTO:
+        return _(
+            "Ogni posto lo assegna una finale per piazzamento: niente spareggio SSR."
+        )
+    if fase is FaseFinale.TABELLONE:
+        resto = descrivi_catena(prima_dello_ssr(catena), sistema)
+        return _(
+            "Il podio lo decide il tabellone, senza spareggio SSR. Fra chi non "
+            "ci arriva: %(catena)s",
+            catena=resto[:1].lower() + resto[1:],
+        )
+    return None
+
+
 def frase_della_catena(oggetto: Any, campo: str) -> Optional[str]:
     """La frase del regolamento per una catena di gara o di campionato.
 
@@ -92,6 +123,10 @@ def frase_della_catena(oggetto: Any, campo: str) -> Optional[str]:
             if livello is Livello.TURNO
             else catene.catena_di_gara(oggetto)
         )
+        if livello is Livello.GARA:
+            fase = frase_della_fase_finale(oggetto, catena, sistema)
+            if fase is not None:
+                return fase
     elif livello is Livello.CAMPIONATO:
         # Anche a piazzamenti, tabelloni compresi: a pari punti decide la
         # catena (ADR-080, emendamento del 2026-10-11).

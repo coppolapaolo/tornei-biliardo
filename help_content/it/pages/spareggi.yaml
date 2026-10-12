@@ -154,6 +154,13 @@ blocks:
         posto**, da prevedere alla creazione.
       - "**Fuori dalle posizioni indicate**: i pari merito restano, due giocatori condividono la posizione e la successiva viene saltata."
       - "**Se la catena non ha lo spareggio SSR**: la classifica resta con i pari merito che gli altri criteri non sciolgono."
+      - >-
+        **Gare a gironi con una fase finale**: dopo i gironi lo spareggio SSR
+        non si gioca, anche se la catena lo prevede. Col tabellone il podio
+        lo decide il tabellone; con le finali per piazzamento ogni posto lo
+        assegna una finale. Il riquadro **Pari merito** della pagina della
+        gara lo dice. Se la gara parte con un girone solo, la fase finale non
+        si gioca e lo spareggio torna a valere.
 
   - type: faq
     items:

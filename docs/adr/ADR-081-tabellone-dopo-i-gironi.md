@@ -336,9 +336,34 @@ Presidi: `test_finali_per_piazzamento_regole.py`,
   finisce col girone» (`Anteprima.girone_unico_senza_fase_finale`).
 - **Frase**: `descrivi_finali_per_piazzamento`, in coda a quella dei gironi;
   nel regolamento del campionato qualificati e finalina tacciono.
-- **Restano** (PR successiva): nelle classifiche per girone la finale che
-  ognuno giocherà, la vista del turno delle finali nelle pagine pubbliche e
-  la classifica della serata a gara conclusa.
+- **Pagine** (2026-10-12, ultima parte della PR 6):
+  - **Una domanda sola** per «che fase finale ha la gara?»:
+    `fase_finale_service.fase_finale_della_gara` — quella scelta finché i
+    gironi non sono composti, poi quella che si gioca davvero (`NESSUNA` se
+    la gara è partita con un girone solo). La usano le note sotto le
+    classifiche (`direttore/_classifica.html`, prima guardava solo
+    `ha_tabellone_finale`) e la frase dei pari merito.
+  - **La finale accanto alle righe dei gironi**: quando gli incroci si sanno
+    (a gironi finiti, come il taglio), `fase_finale_service.finali_dei_giocatori`
+    e `gironi_in_pagina.segna_le_finali` mettono su ogni riga la sua
+    `FinaleInPagina`: «→ finale 3°/4° posto con Andrea Ferri (2° girone B)»,
+    poi com'è andata; l'ultimo del girone più numeroso «9° diretto». Le parole
+    stanno nella macro `finale` di `components/_taglio.html`, chiamata da
+    `sotto`/`segno` come il taglio: direttore, pagina pubblica (telefono e
+    desktop), schermo in sala (forma breve, senza l'avversario).
+  - **Il turno delle finali**: «Finali per piazzamento» nella lista pubblica
+    delle partite e su ogni partita il suo nome, sulle card e sulle righe del
+    direttore (`tabellone_della_gara.nomi_delle_finali`, puro).
+  - **La classifica della serata** a gara conclusa: sotto il nome com'è
+    andata la finale, con la macro `uscita` (ora sa dire «vince la finale
+    3°/4° posto» e «9° diretto»); la nota dice che l'ordine lo danno le
+    finali.
+  - **Pari merito**: con una fase finale lo spareggio SSR non si gioca
+    (`tiebreakers_apply_to`), e il riquadro della pagina gara non lo promette
+    più (`regolamento.frase_della_fase_finale`): col tabellone «Il podio lo
+    decide il tabellone, senza spareggio SSR. Fra chi non ci arriva: …» con
+    la catena fino allo spareggio escluso; con le finali «Ogni posto lo
+    assegna una finale per piazzamento: niente spareggio SSR.»
 
 ## Riferimenti
 

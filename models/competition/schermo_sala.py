@@ -33,7 +33,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
 from enum import Enum
-from typing import Any, Collection, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import (
+    Any,
+    Collection,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 from models.competition.direttore_view import (
     StatoPartita,
@@ -59,6 +69,7 @@ from models.classification.gironi_in_pagina import (
     dividi_per_girone,
     girone_della_riga,
     segna_il_taglio,
+    segna_le_finali,
 )
 from models.classification.models import posizione_mostrata
 from models.matchmaking.configuration import MatchmakingStrategy
@@ -121,6 +132,9 @@ class RigaSala:
     taglio: Optional[bool] = None
     #: La riga del taglio sta sopra questa.
     primo_fuori: bool = False
+    #: Con le finali per piazzamento (ADR-081): la finale di questo
+    #: giocatore, o il suo posto diretto (`gironi_in_pagina.FinaleInPagina`).
+    finale: Optional[Any] = None
 
 
 @dataclass(frozen=True)
@@ -407,11 +421,13 @@ def _gironi_sala(
     rows: List,
     rack: bool,
     al_tabellone: Optional[Collection[int]] = None,
+    finali: Optional[Mapping[int, Any]] = None,
 ) -> Tuple[GironeSala, ...]:
     """Una classifica per girone mentre si gioca, o niente (ADR-076).
 
     Con `al_tabellone` (chi gioca il tabellone dopo i gironi, ADR-081) ogni
     riga dice se passa, e la riga del taglio separa chi passa da chi no.
+    Con `finali` (le finali per piazzamento) ogni riga dice la sua finale.
     """
     if gara.status != GaraStatus.PLAYING.value:
         return ()
@@ -423,11 +439,14 @@ def _gironi_sala(
                     _riga_sala(v.riga, rack, v.posizione, False),
                     taglio=v.taglio,
                     primo_fuori=v.primo_fuori,
+                    finale=v.finale,
                 )
                 for v in g.righe
             ),
         )
-        for g in segna_il_taglio(dividi_per_girone(rows), al_tabellone)
+        for g in segna_le_finali(
+            segna_il_taglio(dividi_per_girone(rows), al_tabellone), finali
+        )
     )
 
 
@@ -630,12 +649,15 @@ def schermo_sala(
     *,
     posizioni: Optional[Dict[int, int]] = None,
     al_tabellone: Optional[Collection[int]] = None,
+    finali: Optional[Mapping[int, Any]] = None,
 ) -> SchermoSala:
     """Tutto quello che lo schermo in sala mostra, per questa gara.
 
     `posizioni` e' `bracket_positions(gara)` per le gare a tabellone
     concluse: la lettura sta nel chiamante, perche' qui non si interroga il
-    database.
+    database. Così `finali`, le finali per piazzamento di ognuno
+    (`fase_finale_service.finali_dei_giocatori`): accanto alle righe dei
+    gironi, e a gara finita alla classifica della serata.
     """
     partite = list(matches)
     fase = fase_schermo(gara, partite)
@@ -643,6 +665,11 @@ def schermo_sala(
     turno = gara.display_round or 0
     turni = gara.rounds_count or turno
     righe, rack = _righe(righe_classifica)
+    if finali:
+        righe = [
+            replace(riga, finale=finali.get(r.user_id))
+            for riga, r in zip(righe, righe_classifica)
+        ]
 
     turno_classifica = 0
     if (
@@ -714,7 +741,7 @@ def schermo_sala(
         turno_concluso=concluso,
         tabellone=tabellone,
         bande=bande,
-        gironi=_gironi_sala(gara, righe_classifica, rack, al_tabellone),
+        gironi=_gironi_sala(gara, righe_classifica, rack, al_tabellone, finali),
         nomi_turno=nomi_finali,
     )
 

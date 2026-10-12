@@ -7,7 +7,22 @@
    merito possono stare uno sopra e uno sotto. Le righe vengono da
    `gironi_in_pagina.segna_il_taglio` (`taglio`, `primo_fuori`); finché non
    si sa chi passa (`taglio` None) non compare niente. Classi in fondo a
-   theme-7c.css. #}
+   theme-7c.css.
+
+   Con le finali per piazzamento (ADR-081) al posto del taglio la finale che
+   ognuno giocherà, quando gli incroci si sanno (`segna_le_finali`,
+   `finale`): «→ finale 3°/4° posto con Andrea Ferri (2° girone B)», poi
+   com'è andata, con le parole della classifica finale (`uscita`); l'ultimo
+   del girone più numeroso «9° diretto». #}
+{% import "components/_tabellone_macros.html" as _tb with context %}
+
+{# La finale di una riga, in parole: da giocare, giocata, o il posto diretto. #}
+{# `breve`: senza l'avversario, dove la riga è corta (lo schermo in sala). #}
+{% macro finale(f, breve=false) -%}
+{%- if f.coppia and f.vinta is none -%}
+<span aria-hidden="true">→ </span>{% if f.avversario and not breve %}{{ _('finale %(primo)s°/%(secondo)s° posto con %(nome)s (%(pos)s° girone %(girone)s)', primo=2 * f.coppia - 1, secondo=2 * f.coppia, nome=f.avversario.user.username, pos=f.coppia, girone=f.nome_girone_avversario) }}{% else %}{{ _('finale %(primo)s°/%(secondo)s° posto', primo=2 * f.coppia - 1, secondo=2 * f.coppia) }}{% endif %}
+{%- else -%}{{ _tb.uscita(f) }}{%- endif -%}
+{%- endmacro %}
 
 {% macro riga_del_taglio(v) -%}
 {% if v.primo_fuori %}<div class="c7-taglio" role="separator"><span class="c7-taglio__testo">{{ _('sopra il taglio: al tabellone') }}</span></div>{% endif %}
@@ -15,11 +30,13 @@
 
 {# Sotto il nome, dove la riga è stretta (telefono, colonna del direttore). #}
 {% macro sotto(v) -%}
-{% if v.taglio %}<span class="c7-taglio__sotto c7-taglio__sotto--dentro" data-taglio="dentro">{{ _('al tabellone') }}</span>
+{% if v.finale %}<span class="c7-taglio__sotto c7-finale" data-finale="{{ v.finale.coppia or 'diretto' }}">{{ finale(v.finale) }}</span>
+{%- elif v.taglio %}<span class="c7-taglio__sotto c7-taglio__sotto--dentro" data-taglio="dentro">{{ _('al tabellone') }}</span>
 {%- elif v.taglio is sameas false %}<span class="c7-taglio__sotto" data-taglio="fuori">{{ _('fuori') }}</span>{% endif %}
 {%- endmacro %}
 
-{% macro segno(v) -%}
-{% if v.taglio %}<span class="c7-state c7-state--ok c7-taglio__segno" data-taglio="dentro">{{ _('al tabellone') }}</span>
+{% macro segno(v, breve=false) -%}
+{% if v.finale %}<span class="c7-finale c7-finale__segno" data-finale="{{ v.finale.coppia or 'diretto' }}">{{ finale(v.finale, breve) }}</span>
+{%- elif v.taglio %}<span class="c7-state c7-state--ok c7-taglio__segno" data-taglio="dentro">{{ _('al tabellone') }}</span>
 {%- elif v.taglio is sameas false %}<span class="c7-state c7-state--muted c7-taglio__segno" data-taglio="fuori">{{ _('fuori') }}</span>{% endif %}
 {%- endmacro %}

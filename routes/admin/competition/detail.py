@@ -949,6 +949,17 @@ def gara_detail(gara_id):
 
     prova_iscrizioni = contesto.get("prova_iscrizioni")
 
+    # Le finali per piazzamento (ADR-081): il nome del loro turno e di ogni
+    # partita, per la lista delle partite di chi guarda e le card di chi
+    # dirige. Dalle partite, senza query: vuoti nelle altre gare.
+    from models.competition.tabellone_della_gara import (
+        nomi_del_turno_delle_finali,
+        nomi_delle_finali,
+    )
+
+    nomi_turno_finali = nomi_del_turno_delle_finali(gara, all_matches or [])
+    nomi_partite_finali = nomi_delle_finali(all_matches or [])
+
     # La pagina del direttore e' un template a se' (canvas «Pagina gara del
     # direttore»): la striscia di fase al posto delle linguette, la fascia
     # con l'unica cosa da fare, il resto della gestione in «Impostazioni».
@@ -1034,6 +1045,8 @@ def gara_detail(gara_id):
         ssr_needs_input=ssr_needs_input,
         ssr_ready_to_terminate=ssr_ready_to_terminate,
         round_action_ready=round_action_ready,
+        nomi_turno_finali=nomi_turno_finali,
+        nomi_partite_finali=nomi_partite_finali,
     )
     # Due chiamate letterali, non un nome in variabile: l'analisi di
     # raggiungibilita' dei template (`test_no_orphan_templates`) legge il

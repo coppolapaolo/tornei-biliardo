@@ -220,6 +220,20 @@ blocks:
       - "Con gironi di taglia diversa (5 e 4) l'ultimo del girone più numeroso non ha avversario: è 9º direttamente."
       - "Il pareggio non esiste: si gioca **a chi arriva prima**, e «Esattamente N triangoli» non si può scegliere."
       - "Finiti i gironi il comando del direttore diventa **Avvia le finali**. Ogni partita ha il suo nome — «Finale 1°/2° posto», «Finale 3°/4° posto» — sulla tessera di chi la gioca e sullo schermo in sala."
+      - "Lo spareggio SSR non si gioca: ogni posto lo assegna una finale. Il riquadro **Pari merito** della pagina della gara lo dice."
+
+  - type: text
+    text: >-
+      **Cosa si vede durante la gara.** Finiti i gironi, accanto a ogni nome
+      delle classifiche per girone compare la finale che giocherà: «→ finale
+      3°/4° posto con Andrea Ferri (2° girone B)»; con gironi di taglia
+      diversa l'ultimo del girone più numeroso ha scritto **9° diretto**. Lo
+      vedono il direttore, chi segue la gara dalla pagina pubblica e lo
+      schermo in sala. Durante le finali il turno si chiama **Finali per
+      piazzamento** e ogni partita porta il suo nome, sulle card del
+      direttore e nell'elenco delle partite. A gara conclusa la classifica
+      della serata dice, sotto ogni nome, com'è andata la sua finale: «vince
+      la finale 3°/4° posto», «perde la finale 1°/2° posto».
 
   - type: heading
     id: eliminazione

@@ -289,6 +289,73 @@ def chi_va_al_tabellone(
     return frozenset(semina(gara)[0])
 
 
+def fase_finale_della_gara(gara: Any) -> Any:
+    """Che fase finale ha la gara, per le pagine: la domanda unica (ADR-081).
+
+    Quella scelta finché i gironi non sono composti; poi quella che si gioca
+    davvero: `FaseFinale.NESSUNA` se la gara è partita con un girone solo,
+    perché allora la gara finisce col girone. Le pagine la chiedono per le
+    note sotto le classifiche e per la frase dei pari merito, al posto di
+    guardare il solo tabellone.
+    """
+    from models.matchmaking.fase_finale import FaseFinale
+
+    scelta = getattr(gara, "effective_final_phase_mode", FaseFinale.NESSUNA)
+    if not isinstance(scelta, FaseFinale) or scelta is FaseFinale.NESSUNA:
+        return FaseFinale.NESSUNA
+    if not getattr(gara, "id", None):
+        return scelta
+    from models.competition.campi_modificabili import e_avviata
+    from models.competition.gironi_service import GironiService
+
+    if GironiService.girone_dei_giocatori(gara):
+        return scelta
+    return FaseFinale.NESSUNA if e_avviata(gara) else scelta
+
+
+def finali_dei_giocatori(gara: Any, partite: Optional[Sequence[Any]] = None) -> Any:
+    """La finale per piazzamento di ognuno, o None se non si sa ancora.
+
+    Le coppie si sanno a gironi finiti (`incroci`, la stessa classifica che
+    userà la generazione); nate le finali, le coppie e i vincitori sono
+    quelli delle partite, come in `_bande_delle_finali`. Mentre si giocano i
+    gironi, col girone unico o senza finali: None.
+    """
+    from models.classification.gironi_in_pagina import (
+        finali_dei_giocatori as finali_dagli_incroci,
+    )
+    from models.competition.gironi_service import GironiService
+    from models.match.models import Match
+    from models.matchmaking.bracket import BRACKET_PLACEMENT
+    from models.status_enum import MatchStatus
+
+    if not getattr(gara, "id", None) or not ha_finali_per_piazzamento(gara):
+        return None
+    girone_di = GironiService.girone_dei_giocatori(gara)
+    if len(set(girone_di.values())) != 2:
+        return None
+    if partite is None:
+        partite = Match.query.filter_by(gara_id=gara.id).all()
+    nate = {m.bracket_slot: m for m in partite if m.bracket_type == BRACKET_PLACEMENT}
+    if not nate:
+        g = turni_dei_gironi(gara)
+        dei_gironi = [m for m in partite if (m.round_number or 0) <= g]
+        if (gara.current_round or 0) < g or any(
+            not MatchStatus.is_finished(m.status) for m in dei_gironi
+        ):
+            return None
+    coppie, diretti = incroci(gara)
+    vincitori: Dict[int, Optional[int]] = {}
+    for indice in range(len(coppie)):
+        m = nate.get(indice)
+        if m is None:
+            continue
+        coppie[indice] = (m.player1_id, m.player2_id)
+        if MatchStatus.is_finished(m.status):
+            vincitori[indice] = m.winner_id
+    return finali_dagli_incroci(coppie, diretti, girone_di, vincitori)
+
+
 def bande(gara: Any, fino_al_turno: int) -> Tuple[List[List[int]], FrozenSet[int]]:
     """Le bande della fase finale, e chi resta a pari merito.
 
@@ -413,6 +480,8 @@ __all__ = [
     "distanza_della_fase",
     "distanza_della_finale",
     "e_della_fase_finale",
+    "fase_finale_della_gara",
+    "finali_dei_giocatori",
     "ha_fase_finale",
     "ha_finali_per_piazzamento",
     "ha_tabellone_finale",

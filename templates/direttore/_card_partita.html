@@ -219,6 +219,9 @@
       <span class="c7-partita__forma">{{ _('Set %(num)s', num=_set.numero) if _set.in_corso else _('A set') }}</span>
       {% endif %}
       {% if finita and match.closed_on_time %}<span class="c7-partita__forma">{{ _('a tempo') }}</span>{% endif %}
+      {# Le finali per piazzamento (ADR-081): quale finale è. #}
+      {% set _nome_finale = nomi_partite_finali.get(match.id) if nomi_partite_finali is defined and nomi_partite_finali else none %}
+      {% if _nome_finale %}<span class="c7-partita__forma c7-partita__finale">{{ t.nome_partita(_nome_finale, match.round_number) }}</span>{% endif %}
       {# Gironi multipli (ADR-076): di che girone è la partita. #}
       {% if match.bracket_group is not none and gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value %}<span class="c7-partita__forma">{{ _('Girone %(nome)s', nome=nome_del_girone(match.bracket_group)) }}</span>{% endif %}
       {% if _timer %}

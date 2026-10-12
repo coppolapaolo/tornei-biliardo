@@ -13,6 +13,7 @@
 {% set _gironi = gironi_in_pagina(gara, classification) %}
 {% import "components/_taglio.html" as taglio with context %}
 {% set _con_girone = classification and not _gironi and girone_della_riga(classification[0]) %}
+{% set _finali = finali_della_gara(gara) if _con_girone and fase_finale_della_gara(gara) == FaseFinale.PIAZZAMENTO else none %}
 <section class="c7-stack">
     <h3 style="margin: 0;">
         {% if is_random_strategy %}{{ _('Classifica complessiva') }}{% else %}{{ _('Classifica dopo il turno %(num)s', num=round_number) }}{% endif %}
@@ -115,6 +116,9 @@
                            non entrerebbe (issue #152). #}
                         {% set _gr = girone_della_riga(player_class) if _con_girone else none %}
                         {% if _gr %}<div style="font-size: 12px; color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)sº girone %(nome)s', pos=_gr[1], nome=_gr[0]) }}</div>{% endif %}
+                        {# Le finali per piazzamento (ADR-081): com'è andata la finale. #}
+                        {% set _f = _finali.get(player_class.user_id) if _finali else none %}
+                        {% if _f %}{{ taglio.segno({'finale': _f}) }}{% endif %}
                     </td>
                     {% if is_points %}
                     <td><span class="c7-num">{{ player_class.points or 0 }}</span></td>

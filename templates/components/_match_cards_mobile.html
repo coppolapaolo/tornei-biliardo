@@ -3,6 +3,11 @@
 {# Usa le stesse variabili di _gara_matches.html #}
 
 {% set display_matches = all_matches if all_matches else matches %}
+{# Il turno delle finali per piazzamento ha un nome (ADR-081): «Finali per
+   piazzamento», e ogni partita il suo, «Finale 3°/4° posto». #}
+{% import "components/_tabellone_macros.html" as _tb with context %}
+{% set _nomi_finali = nomi_turno_finali if nomi_turno_finali is defined and nomi_turno_finali else {} %}
+{% set _finali_per_id = nomi_partite_finali if nomi_partite_finali is defined and nomi_partite_finali else {} %}
 {% if display_matches %}
 <section class="c7-stack">
   <div class="c7-kicker">{{ _('Partite') }}</div>
@@ -40,7 +45,7 @@
     {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
     <div class="c7-stack">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <h3 style="margin: 0;">{{ _('Turno %(num)s', num=round_num) }}</h3>
+        <h3 style="margin: 0;">{% if _nomi_finali.get(round_num) %}{{ _tb.nome_turno(_nomi_finali.get(round_num)) }}{% else %}{{ _('Turno %(num)s', num=round_num) }}{% endif %}</h3>
         <span class="c7-state c7-state--accent" style="margin-left: auto;">{{ _('In corso') }}</span>
         {# Il menu del turno (canvas, 2S): solo per chi dirige, sul turno che
            si puo' ancora annullare. #}
@@ -61,7 +66,7 @@
     {% set round_matches = display_matches | selectattr("round_number", "equalto", round_num) | list %}
     <div class="c7-stack">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <h3 style="margin: 0; color: var(--c7-ink-muted);">{{ _('Turno %(num)s', num=round_num) }}</h3>
+        <h3 style="margin: 0; color: var(--c7-ink-muted);">{% if _nomi_finali.get(round_num) %}{{ _tb.nome_turno(_nomi_finali.get(round_num)) }}{% else %}{{ _('Turno %(num)s', num=round_num) }}{% endif %}</h3>
         <span class="c7-state c7-state--muted" style="margin-left: auto;">{{ _('Concluso') }}</span>
       </div>
       {% for match in round_matches %}
