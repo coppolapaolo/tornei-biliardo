@@ -6,8 +6,9 @@ Cosa difendono questi test:
   modalità di classifica finale, peso, formula e regole della finale — mai
   id, campionato, gara creata, stato, date, sala, qualificati e inviti: la
   whitelist è positiva e sta in `payload.CAMPI_DEL_PLAYOFF`;
-* un preset salvato prima (``schema_version`` 1) si legge ancora: senza
-  playoff vuol dire **nessuna configurazione**, non un errore;
+* un preset salvato prima (``schema_version`` 1) si legge ancora: dei
+  playoff non sa niente, quindi **non li tocca** — diverso da un preset
+  della versione 2 senza playoff, che li spegne;
 * wizard → preset → wizard è un'andata e ritorno senza perdite: i playoff del
   passo 1 tornano negli stessi interruttori, e il campionato creato dal
   preset ha le configurazioni attese, criteri e regole della finale compresi;
@@ -190,9 +191,9 @@ class TestLaWhitelistDeiPlayoff:
 
 @pytest.mark.unit
 class TestLetturaTollerante:
-    def test_un_preset_della_versione_1_si_legge_senza_playoff(self):
+    def test_un_preset_della_versione_1_non_sa_niente_dei_playoff(self):
         lettura = formato.leggi(CAMPIONATO, {"campi": {"default_rounds_count": 4}}, 1)
-        assert lettura.playoff == []
+        assert lettura.playoff is None
         assert lettura.scartati == []
         assert lettura.campi == {"default_rounds_count": 4}
 
@@ -206,9 +207,16 @@ class TestLetturaTollerante:
         assert lettura.playoff == [ACADEMY]
         assert lettura.scartati == ["playoff.colore"]
 
-    def test_un_elenco_illeggibile_vale_nessuna_configurazione(self):
+    def test_un_elenco_illeggibile_non_tocca_i_playoff(self):
         lettura = formato.leggi(CAMPIONATO, {"campi": {}, "playoff": "boh"}, 2)
+        assert lettura.playoff is None
+
+    def test_la_versione_2_senza_playoff_li_spegne(self):
+        lettura = formato.leggi(CAMPIONATO, formato.componi(CAMPIONATO, {}), 2)
         assert lettura.playoff == []
+        valori = dict(formato.per_il_modulo(lettura, CAMPIONATO)["valori"])
+        assert valori["playoff_elite_enabled"] is False
+        assert valori["playoff_academy_enabled"] is False
 
     def test_un_preset_vecchio_salvato_si_usa_ancora(self, db_session):
         io = _utente()
@@ -221,10 +229,12 @@ class TestLetturaTollerante:
         dati = ConfigPresetService.per_il_modulo(vecchio.id, io)
         valori = dict(map(tuple, dati["valori"]))
         assert valori["default_rounds_count"] == 4
-        assert valori["playoff_elite_enabled"] is False
-        assert valori["playoff_academy_enabled"] is False
-        assert dati["playoff"] == []
-        assert playoff_del_preset(vecchio) == []
+        # Non sa niente dei playoff: gli interruttori restano come sono.
+        assert not any(nome.startswith("playoff_") for nome in valori)
+        assert dati["playoff"] is None
+        assert "nota_playoff_altrove" not in dati
+        # «I miei preset» non dice «senza playoff»: non lo sa.
+        assert playoff_del_preset(vecchio) is None
 
 
 @pytest.mark.unit
@@ -655,3 +665,49 @@ class TestAttraversoLeRoute:
         pagina = client.get("/admin/preset/").get_data(as_text=True)
         assert "con 2 playoff: Playoff Elite, Playoff Academy" in pagina
         assert "senza playoff" in pagina
+
+
+@pytest.mark.unit
+class TestUnPresetVecchioNonToccaIPlayoff:
+    def test_il_passo_1_tiene_gli_interruttori_del_modulo(self, client, db_session):
+        io = _utente()
+        vecchio = ConfigPreset(
+            owner_id=io.id, name="Del 2025", kind=CAMPIONATO, schema_version=1
+        )
+        vecchio.dati = {"campi": {"default_rounds_count": 4}}
+        db.session.add(vecchio)
+        db.session.commit()
+        _login(client, io)
+        client.post(
+            "/admin/campionato/wizard/step2",
+            data={
+                "name": "Dal vecchio",
+                "planned_gare_count": "6",
+                "preset_id": vecchio.id,
+                "playoff_elite_enabled": "on",
+                "playoff_elite_participants": "6",
+            },
+        )
+        with client.session_transaction() as sessione:
+            passo_1 = sessione["campionato_wizard_data"]
+        assert passo_1["playoff_dal_preset"] == []
+        assert passo_1["playoff_elite_enabled"] is True
+        client.post("/admin/campionato/wizard/create", data=PASSO_2)
+        campionato = Campionato.query.filter_by(name="Dal vecchio").one()
+        (elite,) = PlayoffConfiguration.query.filter_by(
+            campionato_id=campionato.id
+        ).all()
+        assert elite.max_participants == 6 and elite.final_ranking_mode
+
+    def test_i_miei_preset_non_dicono_senza_playoff(self, client, db_session):
+        io = _utente()
+        vecchio = ConfigPreset(
+            owner_id=io.id, name="Del 2025", kind=CAMPIONATO, schema_version=1
+        )
+        vecchio.dati = {"campi": {}}
+        db.session.add(vecchio)
+        db.session.commit()
+        _login(client, io)
+        pagina = client.get("/admin/preset/").get_data(as_text=True)
+        assert "Del 2025" in pagina
+        assert "senza playoff" not in pagina

@@ -39,8 +39,9 @@ from models.preset.models import TipoPreset
 #: tollerante), e `leggi` impara a convertire dalla versione precedente.
 #:
 #: 2 (2026-10-12): il preset di campionato porta anche i playoff (``playoff``).
-#: Un preset della versione 1 non li aveva: si legge come «nessuna
-#: configurazione», non come un errore.
+#: Un preset della versione 1 non ne sapeva niente: si legge come «playoff
+#: assenti», che vuol dire **non toccarli**, ed è diverso da «nessun playoff»
+#: (l'elenco vuoto di un preset della versione 2).
 SCHEMA_VERSION = 2
 
 #: I campi del modulo della gara che non entrano mai in un preset: dicono
@@ -374,8 +375,10 @@ class Lettura:
     listino: List[Dict[str, Any]] = field(default_factory=list)
     #: I campi che la whitelist di oggi non conosce più: la pagina li dice.
     scartati: List[str] = field(default_factory=list)
-    #: Le configurazioni dei playoff (solo campionato): vuoto = nessuna.
-    playoff: List[Dict[str, Any]] = field(default_factory=list)
+    #: Le configurazioni dei playoff (solo campionato). Un elenco vuoto vuol
+    #: dire «nessun playoff»; None che il preset non ne sa niente (versione 1,
+    #: o un elenco illeggibile), e chi lo applica non li tocca.
+    playoff: Optional[List[Dict[str, Any]]] = None
 
 
 def leggi(kind: str, dati: Mapping[str, Any], schema_version: int = 1) -> Lettura:
@@ -384,8 +387,9 @@ def leggi(kind: str, dati: Mapping[str, Any], schema_version: int = 1) -> Lettur
     Un campo sconosciuto, o non più ammesso, si scarta e finisce in
     ``scartati``. Un campo che manca non si inventa: resta al valore che il
     modulo propone. ``schema_version`` dice da che forma si parte: un preset
-    di campionato della versione 1 non aveva i playoff, e si legge come
-    «nessuna configurazione» (lo stesso vale per un elenco illeggibile).
+    di campionato della versione 1 non sapeva niente dei playoff, e si legge
+    con ``playoff`` a None, «non toccarli» (lo stesso per un elenco
+    illeggibile), mentre un elenco vuoto vuol dire «nessun playoff».
     """
     ammessi = campi_ammessi(kind)
     grezzi = dati.get("campi") if isinstance(dati, Mapping) else None
@@ -402,6 +406,7 @@ def leggi(kind: str, dati: Mapping[str, Any], schema_version: int = 1) -> Lettur
     if kind == TipoPreset.CAMPIONATO.value and schema_version >= 2:
         grezzi_playoff = dati.get(PLAYOFF) if isinstance(dati, Mapping) else None
         if isinstance(grezzi_playoff, list):
+            lettura.playoff = []
             sconosciuti = set()
             for voce in grezzi_playoff:
                 config = _configurazione_del_playoff(voce)
@@ -597,7 +602,8 @@ def per_il_modulo(
     """Ciò che riceve il JavaScript del modulo: valori, listino, scartati.
 
     Per il campionato anche i campi dei playoff del passo 1 (`valori`: dove il
-    modulo non li ha, il JavaScript li salta) e i loro nomi (`playoff`).
+    modulo non li ha, il JavaScript li salta) e i loro nomi (`playoff`, None
+    se il preset non ne sa niente: allora nessun campo dei playoff).
     """
     valori = valori_per_il_modulo(lettura.campi, kind)
     dati: Dict[str, Any] = {
@@ -606,7 +612,11 @@ def per_il_modulo(
         "scartati": lettura.scartati,
     }
     if kind == TipoPreset.CAMPIONATO.value:
-        valori = valori + valori_dei_playoff(lettura.playoff)
-        dati["playoff"] = nomi_dei_playoff(lettura.playoff)
+        # Un preset che dei playoff non sa niente non tocca gli interruttori.
+        if lettura.playoff is not None:
+            valori = valori + valori_dei_playoff(lettura.playoff)
+            dati["playoff"] = nomi_dei_playoff(lettura.playoff)
+        else:
+            dati["playoff"] = None
     dati["valori"] = [list(coppia) for coppia in valori]
     return dati

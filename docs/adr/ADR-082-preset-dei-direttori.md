@@ -143,8 +143,11 @@ playoff, e un preset che li dimentica è a metà.
   descrizione. Fuori: id, campionato, gara creata, stato, date, scadenza,
   sala, il tipo storico e i criteri JSON di una volta, qualificati e inviti.
 - **Il payload** porta `playoff`, un elenco (anche vuoto: il campionato non
-  ne aveva). `schema_version` sale a 2; un preset della versione 1 si legge
-  come «nessuna configurazione», non come un errore.
+  ne aveva). `schema_version` sale a 2. Un preset della versione 1 dei
+  playoff non sa niente: si legge con `playoff` assente (None), che vuol
+  dire **non toccarli** — gli interruttori del passo 1 restano come sono, e
+  «I miei preset» non dice niente — distinto dall'elenco vuoto della
+  versione 2, che vuol dire «nessun playoff» e li spegne.
 - **Salvare**: dal passo 2 del wizard i playoff sono quelli che il wizard
   creerebbe (`payload.configurazioni_dal_wizard`, la stessa funzione della
   creazione); dalla modifica e dal dettaglio sono le configurazioni attive

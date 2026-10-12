@@ -220,7 +220,9 @@ def _playoff_del_preset(preset_id):
     """Le configurazioni dei playoff del preset scelto al passo 1, o nessuna.
 
     Lette con la whitelist di oggi (`payload.leggi`): in sessione finisce solo
-    la configurazione, e la creazione la ricontrolla comunque.
+    la configurazione, e la creazione la ricontrolla comunque. Un preset che
+    dei playoff non sa niente (versione 1) non porta niente: valgono gli
+    interruttori del passo 1 così come il direttore li ha lasciati.
     """
     if not preset_id:
         return []
@@ -228,7 +230,7 @@ def _playoff_del_preset(preset_id):
     from models.preset.service import ConfigPresetService
 
     preset = ConfigPresetService.get_mio(preset_id, current_user)
-    return formato.leggi(preset.kind, preset.dati, preset.schema_version).playoff
+    return formato.leggi(preset.kind, preset.dati, preset.schema_version).playoff or []
 
 
 def _preset_scelto_al_passo_1():

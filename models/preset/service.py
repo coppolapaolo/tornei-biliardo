@@ -108,7 +108,7 @@ class ConfigPresetService:
             **formato.per_il_modulo(lettura, preset.kind),
         }
         if preset.kind == TipoPreset.CAMPIONATO.value:
-            dati.update(_note_dei_playoff(lettura.playoff, campionato))
+            dati.update(_note_dei_playoff(lettura.playoff or [], campionato))
         return dati
 
     @staticmethod
@@ -467,12 +467,16 @@ PAGINA_DEI_PRESET = "/admin/preset/"
 def playoff_del_preset(preset: ConfigPreset) -> Optional[List[str]]:
     """I nomi dei playoff di un preset di campionato, per «I miei preset».
 
-    None per un preset di gara, che i playoff non li ha per natura; un elenco
-    vuoto per un campionato senza playoff.
+    Un elenco vuoto per un campionato senza playoff. None quando la riga non
+    deve dire niente: un preset di gara, che i playoff non li ha per natura,
+    o un preset di campionato salvato prima che i playoff entrassero nei
+    preset, che non sa se ce n'erano.
     """
     if preset.kind != TipoPreset.CAMPIONATO.value:
         return None
     lettura = formato.leggi(preset.kind, preset.dati, preset.schema_version)
+    if lettura.playoff is None:
+        return None
     return formato.nomi_dei_playoff(lettura.playoff)
 
 
