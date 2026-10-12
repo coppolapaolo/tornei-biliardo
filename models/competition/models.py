@@ -25,8 +25,7 @@ from models.competition.constants import (
     DEFAULT_ENTRY_FEE,
     DEFAULT_WITHDRAW_POLICY,
 )
-from typing import TYPE_CHECKING, Optional, List, Tuple
-import json
+from typing import TYPE_CHECKING, Any, Optional, List, Tuple
 import secrets
 
 if TYPE_CHECKING:
@@ -465,12 +464,12 @@ class Gara(SoftDeleteMixin, db.Model):
         2. venue.get_table_names() if venue exists
         3. Empty list
         """
-        # Priority 1: gara-specific tables
+        from models.shared.utils import tavoli_da_json
+
+        # Priority 1: gara-specific tables (un dato illeggibile vale «nessun
+        # tavolo», non i tavoli della sala; uno scritto due volte si legge)
         if self.available_tables:
-            try:
-                return json.loads(self.available_tables)
-            except (json.JSONDecodeError, TypeError):
-                return []
+            return tavoli_da_json(self.available_tables) or []
 
         # Priority 2: venue tables
         venue = self.venue
@@ -480,16 +479,16 @@ class Gara(SoftDeleteMixin, db.Model):
         # Priority 3: no tables
         return []
 
-    def set_available_tables(self, tables: List[str]) -> None:
-        """Set available tables from a list.
+    def set_available_tables(self, tables: Any) -> None:
+        """Salva i tavoli della gara; vuoto o None li azzera.
 
-        Args:
-            tables: List of table names, or empty list for None
+        Accetta una lista di nomi o una stringa che è una lista JSON, che viene
+        decodificata e non ricodificata; altro solleva `TypeError`
+        (`models.shared.utils.tavoli_in_json`).
         """
-        if tables:
-            self.available_tables = json.dumps(tables)
-        else:
-            self.available_tables = None
+        from models.shared.utils import tavoli_in_json
+
+        self.available_tables = tavoli_in_json(tables)
 
     # Property per identificare se è standalone
     # RESOLVED: ADR-002 (docs/_archive/2025-12-architectural-decisions-pre-adr.md)
