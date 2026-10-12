@@ -95,6 +95,7 @@ Crea un ADR quando:
 | ADR-079 | [Il listino delle quote: categorie anche senza handicap, solo informazione](ADR-079-listino-quote-categorie-senza-handicap.md) | Accepted | 2026-10-06 |
 | ADR-080 | [Il campionato a piazzamenti ammette gare di ogni formato](ADR-080-campionato-a-piazzamenti-con-gare-di-ogni-formato.md) | Accepted | 2026-10-11 |
 | ADR-081 | [Il tabellone dopo i gironi](ADR-081-tabellone-dopo-i-gironi.md) | Accepted | 2026-10-11 |
+| ADR-082 | [I preset dei direttori](ADR-082-preset-dei-direttori.md) | Accepted | 2026-10-12 |
 
 ## Come Creare un Nuovo ADR
 

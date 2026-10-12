@@ -68,6 +68,27 @@ blocks:
           iscriversi. Fino a qui puoi cambiare qualunque cosa.
 
   - type: heading
+    id: preset
+    title: "Ripartire da un preset"
+
+  - type: text
+    text: >-
+      Se organizzi spesso la stessa serata, non riscrivere ogni volta le
+      stesse impostazioni. In cima al modulo della gara trovi **«Salva come
+      preset»**: dai un nome, per esempio «Lunedì, due gironi», e l'app
+      ricorda formato, distanza, gironi, fase finale, punti, pari merito,
+      limite di tempo, quote e listino. Nome, data, sala, tavoli, note e
+      iscritti restano fuori.
+
+  - type: list
+    items:
+      - "La volta dopo scegli il preset in **«Parti da un preset»**: il modulo si compila da solo, e ogni campo resta da controllare e cambiare come vuoi."
+      - "Se hai già cambiato qualche campo, l'app non lo sovrascrive senza chiedertelo."
+      - "Se un'opzione del preset non c'è più, il campo resta com'era e la pagina te lo dice."
+      - "Lo trovi anche nella nuova gara di un campionato e nella modifica di una gara; dalle **Impostazioni** di una gara già creata puoi salvarla come preset."
+      - "La gara creata non resta legata al preset: se dopo lo cambi o lo sostituisci, la gara non cambia."
+
+  - type: heading
     id: prima_di_aprire
     title: "Prima di aprire le iscrizioni"
 

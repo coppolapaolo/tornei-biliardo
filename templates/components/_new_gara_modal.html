@@ -34,6 +34,10 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="campionato_id" value="{{ campionato.id }}">
                 <div class="modal-body">
+                    {# Parti da un preset / Salva come preset (ADR-082): dentro un
+                       campionato i valori del preset diventano quelli della gara. #}
+                    {% import "components/_preset_modulo.html" as preset with context %}
+                    <div class="mb-3">{{ preset.barra('#newGaraForm', campionato_id=campionato.id) }}</div>
                     <!-- Step Indicator -->
                     <div class="wizard-steps mb-4">
                         <div class="d-flex justify-content-between position-relative">
@@ -871,3 +875,4 @@
 <script src="{{ url_for('static', filename='js/bracket_options.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/strategia_gara.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/campo_punti.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/preset_modulo.js') }}?v={{ config.ASSET_VERSION }}"></script>

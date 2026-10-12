@@ -801,6 +801,11 @@ def create_app(config_name=None, *, da_script: bool = False):
     app.jinja_env.globals["listino_voci"] = listino_di
     app.jinja_env.globals["formatta_quota"] = formatta_quota
 
+    # I preset del direttore (ADR-082): il selettore «Parti da un preset».
+    from models.preset.service import preset_dell_utente
+
+    app.jinja_env.globals["preset_dell_utente"] = preset_dell_utente
+
     # Le correzioni a gare finite: il peso di prima barrato e la riga di
     # ricalcolo sopra la classifica (ADR-075).
     from models.storia.ricalcolo import ricalcoli_del_campionato

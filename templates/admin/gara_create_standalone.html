@@ -98,6 +98,10 @@
                 </div>
             </div>
 
+            {# Parti da un preset / Salva come preset (ADR-082). #}
+            {% import "components/_preset_modulo.html" as preset with context %}
+            <div class="mb-4">{{ preset.barra('#gara-form') }}</div>
+
             <!-- Wizard Progress -->
             <div class="wizard-progress">
                 <div class="progress-line" id="progress-line"></div>
@@ -531,6 +535,7 @@
 <script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/campo_punti.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/strategia_gara.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/preset_modulo.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // ANTIGRAVITY FIX: Ensuring clean script scope and syntax

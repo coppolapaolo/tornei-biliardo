@@ -1,0 +1,91 @@
+{# templates/components/_preset_modulo.html — Design System 7c
+
+   «Parti da un preset» e «Salva come preset» (ADR-082), in cima ai moduli
+   della gara: singola, nuova gara del campionato, modifica. E, con il solo
+   «Salva come preset», nelle impostazioni di una gara che esiste già.
+
+   * `barra(modulo, campionato_id, gara_id)` — `modulo` è il selettore CSS del
+     <form> da precompilare e da cui si salva; `campionato_id` e `gara_id`
+     dicono al server come leggere il modulo (dentro un campionato i valori
+     ereditati diventano espliciti).
+   * `barra_della_gara(gara)` — solo «Salva come preset», dalla gara salvata.
+
+   Il selettore e il nome non hanno `name`: non partono col modulo della gara.
+   Lo script è `static/js/preset_modulo.js`, che la pagina carica. Solo
+   direttori e admin vedono la barra. #}
+
+{% macro _testi() -%}
+{{ {
+  'applicato': _('Preset «{nome}» applicato: controlla i campi e salva.'),
+  'nonApplicati': _('Non applicati, perché qui non ci sono più: {campi}.'),
+  'conflittoTitolo': _('Campi già cambiati'),
+  'conflitto': _('Il preset ha valori diversi per campi che hai già cambiato: {campi}. Usare quelli del preset?'),
+  'conflittoOk': _('Usa il preset'),
+  'listinoNo': _('Il listino del preset non si applica qui: vale quello del campionato.'),
+  'nomeVuoto': _('Dai un nome al preset.'),
+  'errore': _('Qualcosa non ha funzionato: riprova.'),
+  'listino': _('Listino quote per categoria'),
+}|tojson }}
+{%- endmacro %}
+
+{% macro _foglio() -%}
+<div class="c7-preset__foglio mt-3" data-preset-foglio hidden>
+  <label class="form-label d-block mb-1">
+    {{ _('Nome del preset') }}
+    <input type="text" class="form-control mt-1" maxlength="100" data-preset-nome
+           placeholder="{{ _('es. Lunedì al 74, due gironi') }}" autocomplete="off">
+  </label>
+  <div class="form-text mt-0">{{ _('Il preset tiene solo le impostazioni: nome, date, sala e iscritti restano fuori. Le gare che crei non restano legate al preset.') }}</div>
+  <div class="d-flex flex-wrap gap-2 mt-2">
+    <button type="button" class="btn btn-primary" data-preset-conferma><i class="fas fa-bookmark"></i> {{ _('Salva') }}</button>
+    <button type="button" class="btn btn-secondary" data-preset-sostituisci hidden>{{ _('Sostituisci quello che c’è') }}</button>
+    <button type="button" class="btn btn-link" data-preset-annulla>{{ _('Annulla') }}</button>
+  </div>
+</div>
+<div class="c7-nota mt-2" data-preset-esito aria-live="polite" hidden></div>
+{%- endmacro %}
+
+{% macro barra(modulo, campionato_id=none, gara_id=none) -%}
+{% if current_user.is_authenticated and (current_user.is_director or current_user.is_admin) %}
+{% set _miei = preset_dell_utente('gara') %}
+<div class="c7-card c7-preset" data-preset data-modulo="{{ modulo }}"
+     data-url-valori="{{ url_for('admin.preset.valori_per_il_modulo', preset_id=0) }}"
+     data-url-salva="{{ url_for('admin.preset.salva_dal_modulo_gara') }}"
+     {% if campionato_id %}data-campionato-id="{{ campionato_id }}"{% endif %}
+     {% if gara_id %}data-gara-id="{{ gara_id }}"{% endif %}
+     data-testi='{{ _testi() }}'>
+  <div class="d-flex flex-wrap gap-2 align-items-end">
+    <label class="flex-fill mb-0" style="min-width:200px">
+      <span class="form-label d-block" data-help="gara-preset">{{ _('Parti da un preset') }}</span>
+      <select class="form-select" data-preset-scelta {% if not _miei %}disabled{% endif %}>
+        <option value="">{{ _('Scegli un preset…') if _miei else _('Nessun preset salvato') }}</option>
+        {% for preset in _miei %}
+        <option value="{{ preset.id }}">{{ preset.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="button" class="btn btn-secondary" data-preset-apri>
+      <i class="fas fa-bookmark"></i> {{ _('Salva come preset') }}
+    </button>
+  </div>
+  {{ _foglio() }}
+</div>
+{% endif %}
+{%- endmacro %}
+
+{% macro barra_della_gara(gara) -%}
+<div class="c7-card c7-preset" data-preset
+     data-url-salva="{{ url_for('admin.preset.salva_dalla_gara', gara_id=gara.id) }}"
+     data-testi='{{ _testi() }}'>
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <span class="flex-fill" style="min-width:200px">
+      <span class="c7-rows__title d-block">{{ _('Salva come preset') }}</span>
+      <span class="c7-rows__sub d-block">{{ _('Le impostazioni di questa gara, pronte per la prossima: le ritrovi in «Parti da un preset» quando crei una gara.') }}</span>
+    </span>
+    <button type="button" class="btn btn-secondary" data-preset-apri>
+      <i class="fas fa-bookmark"></i> {{ _('Salva come preset') }}
+    </button>
+  </div>
+  {{ _foglio() }}
+</div>
+{%- endmacro %}

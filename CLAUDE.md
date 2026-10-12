@@ -646,6 +646,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [079](docs/adr/ADR-079-listino-quote-categorie-senza-handicap.md) | listino quote per categoria, **solo informazione**: `Categoria.entry_fee`; le categorie esistono anche senza handicap (`Gara.usa_categorie`) e lì non toccano l'ELO |
 | [080](docs/adr/ADR-080-campionato-a-piazzamenti-con-gare-di-ogni-formato.md) | il sistema del campionato dice **come le gare entrano**: sommando i totali (stesso sistema, girone unico) o **a piazzamenti** (gare di ogni formato, punti per posto); il sistema delle serate lo propone `default_gara_classification_system`, letto da `models/campionato/piazzamenti.py`; a pari punti decide la catena generale con criteri sui piazzamenti (più primi posti, poi secondi…), mai vittorie e triangoli |
 | [081](docs/adr/ADR-081-tabellone-dopo-i-gironi.md) | il **tabellone dopo i gironi** (primi `K` di ogni girone) lo genera la strategia del girone all'italiana con `_TabelloneFinale`; teste di serie per colonne, separazione per girone; la classifica finale è il tabellone e poi i gironi (`classification/fase_finale.py`), senza spareggio SSR; limite di tempo della fase finale: turno → fase finale → gara (`tempo.limite_del_turno`) |
+| [082](docs/adr/ADR-082-preset-dei-direttori.md) | i **preset** dei direttori sono personali, condividerli crea una **copia**; precompilano soltanto (il modulo passa dal parser di sempre) e nessuna gara resta legata al preset; whitelist positiva in `models/preset/payload.py`, `schema_version` e lettura tollerante |
 
 ---
 

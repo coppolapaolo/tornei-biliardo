@@ -608,6 +608,15 @@ Un direttore può creare una gara singola o un campionato **di prova** (ADR-058,
 - Una prova si può eliminare in qualunque stato; l'eliminazione è **fisica** e include partite, iscrizioni, qualificazioni e giocatori fittizi.
 - Una prova non eliminata sparisce da sola **14 giorni** dopo la creazione; il direttore riceve un avviso in app **3 giorni** prima.
 
+#### Preset
+
+Un direttore può salvare le impostazioni di una gara come **preset** e ripartire da lì la volta dopo (ADR-082, piano UC8).
+
+- «**Salva come preset**» dai moduli della gara (gara singola, nuova gara di un campionato, modifica) o dalle impostazioni di una gara che esiste già. Il preset contiene **solo la configurazione**: restano fuori nome, data, ora, sala, tavoli, note, peso nel campionato e iscritti. Il nome è unico fra i preset dello stesso direttore; con un nome già usato si può sostituire il preset che c'è.
+- «**Parti da un preset**» **precompila** il modulo: ogni campo resta modificabile, i campi che il direttore ha già cambiato non si sovrascrivono senza chiedere, e al salvataggio valgono le validazioni di sempre. Un valore che il modulo non offre più resta al default, e la pagina lo dice. Dentro un campionato i valori del preset diventano valori espliciti della gara; il listino del preset vale solo per la gara singola, perché nel campionato il listino è del campionato.
+- La gara creata **non resta legata** al preset: cambiarlo o cancellarlo dopo non la tocca.
+- Ogni preset ha **un solo proprietario**, l'unico che lo vede e lo usa. Condividerlo con un altro direttore gli crea **una copia sua**, indipendente dall'originale.
+
 ## Internazionalizzazione
 
 La piattaforma supporta più lingue:

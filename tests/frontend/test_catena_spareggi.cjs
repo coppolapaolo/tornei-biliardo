@@ -168,6 +168,11 @@ function editor(livello, voci) {
     frase: () => q("[data-catena-frase]").textContent,
     clic: (s) => q(s).dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true })),
     c: (s) => q(s),
+    scrivi: (v) => {
+      const campo = q("[data-catena-valore]");
+      campo.value = v;
+      campo.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+    },
     sistema: (v) => {
       const sel = doc.getElementById("sistema");
       sel.value = v;
@@ -278,6 +283,14 @@ check("l'editor di una gara non conosce POSITION: ripiega su vittorie", () => {
   const e = editor("gara", ["differenza_rack", "ssr:3"]);
   e.sistema("POSITION");
   assert.strictEqual(e.valore(), "differenza_rack,ssr:3");
+});
+
+check("un preset scrive la catena nel campo: l'editor la rilegge e la normalizza", () => {
+  const e = editor("gara", ["differenza_rack", "ssr:3"]);
+  e.scrivi("scontri_diretti,vittorie,sorteggio");
+  // `vittorie` è il criterio principale a vittorie: non è una voce della catena.
+  assert.strictEqual(e.valore(), "scontri_diretti,sorteggio");
+  assert.ok(e.frase().includes("lo scontro diretto"));
 });
 
 console.log(`${controlli} controlli superati`);

@@ -259,6 +259,16 @@ hints:
   - admin.competition.gara_detail
   page: condurre_la_gara
   section: primo_turno
+- id: gara.preset
+  label: Start from a preset
+  short: Pick a saved preset and the form fills itself in; fields you have already changed are not touched without asking. «Save as preset» keeps only the settings.
+  anchor: gara-preset
+  screens:
+  - admin.competition.create_gara_standalone
+  - admin.campionato.campionato_detail
+  - admin.competition.edit_gara
+  page: creare_una_gara
+  section: preset
 - id: gara.limite_di_tempo
   label: Time limit per match
   short: 'Minutes per match, on top of the distance. It starts at the lag or with «Start match»; when it runs out nothing closes: the director decides. Empty = no limit.'

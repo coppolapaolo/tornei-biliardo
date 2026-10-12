@@ -47,6 +47,12 @@
   </div>
   {% endif %}
 
+  {# Le impostazioni di questa gara come preset per la prossima (ADR-082). #}
+  {% if feature_visible('admin.preset.salva_dalla_gara') %}
+  {% import "components/_preset_modulo.html" as preset with context %}
+  {{ preset.barra_della_gara(gara) }}
+  {% endif %}
+
   <div id="sezioneTavoli">
     {% include "components/_gara_tables_config.html" %}
   </div>
@@ -96,4 +102,9 @@
 </div>
 
 {{ sc.fogli() }}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/preset_modulo.js') }}?v={{ config.ASSET_VERSION }}"></script>
 {% endblock %}

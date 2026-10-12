@@ -14,6 +14,9 @@
 
 {% block content %}
 <div style="max-width:860px">
+  {# Parti da un preset / Salva come preset (ADR-082). #}
+  {% import "components/_preset_modulo.html" as preset with context %}
+  <div class="mb-3">{{ preset.barra('#gara-edit-form', gara_id=gara.id) }}</div>
   {% include "components/_gara_edit_form.html" %}
 </div>
 {% endblock %}
@@ -24,6 +27,7 @@
 <script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/campo_punti.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/strategia_gara.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/preset_modulo.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // I vincoli della strategia (primo abbinamento, dispari,

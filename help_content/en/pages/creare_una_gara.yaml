@@ -70,6 +70,27 @@ blocks:
           but nobody can register yet. Up to this point you can change anything.
 
   - type: heading
+    id: preset
+    title: "Starting from a preset"
+
+  - type: text
+    text: >-
+      If you often run the same evening, don't retype the same settings
+      every time. At the top of the competition form you'll find **«Save as
+      preset»**: give it a name, for example «Monday, two groups», and the app
+      remembers format, distance, groups, final stage, points, ties, time
+      limit, fees and price list. Name, date, venue, tables, notes and
+      entrants are left out.
+
+  - type: list
+    items:
+      - "Next time pick the preset in **«Start from a preset»**: the form fills itself in, and every field stays yours to check and change."
+      - "If you have already changed some fields, the app does not overwrite them without asking."
+      - "If an option of the preset no longer exists, the field stays as it was and the page tells you."
+      - "You'll also find it in a new competition of a championship and when editing a competition; from the **Settings** of an existing competition you can save it as a preset."
+      - "The competition you create is not tied to the preset: if you change or replace it later, the competition does not change."
+
+  - type: heading
     id: prima_di_aprire
     title: "Before opening registrations"
 
