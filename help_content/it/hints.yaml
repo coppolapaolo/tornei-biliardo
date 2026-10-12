@@ -163,6 +163,14 @@ hints:
     page: formati_di_gioco
     section: handicap
 
+  - id: gara.preset
+    label: "Parti da un preset"
+    short: "Scegli un preset salvato e il modulo si compila da solo; i campi che hai già cambiato non si toccano senza chiedere. «Salva come preset» ricorda solo le impostazioni."
+    anchor: gara-preset
+    screens: [admin.competition.create_gara_standalone, admin.campionato.campionato_detail, admin.competition.edit_gara]
+    page: creare_una_gara
+    section: preset
+
   - id: gara.limite_di_tempo
     label: "Limite di tempo per partita"
     short: "Minuti per partita, oltre alla distanza. Parte all'acchito o con «Avvia partita»; allo scadere non si chiude niente: decide il direttore. Vuoto = nessun limite."

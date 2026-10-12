@@ -3,7 +3,7 @@
    admin/gara_edit.html continua a trovare matchmaking_strategy,
    first_round_policy, odd_number_policy, anti_rematch_enabled,
    classification_system, trio_warning, strategy_description. #}
-<form action="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" method="POST" class="c7-stack" style="gap:16px">
+<form action="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" method="POST" class="c7-stack" style="gap:16px" id="gara-edit-form">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   {# Lo stato che il modulo mostra adesso (ADR-075): al salvataggio dice quali
      campi sono stati cambiati, e se qualcun altro li ha toccati nel frattempo. #}

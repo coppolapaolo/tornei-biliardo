@@ -273,6 +273,16 @@
       if (riga && !riga.disabled) riga.focus();
     });
 
+    // Un preset (ADR-082) scrive la catena nel campo nascosto e lo annuncia
+    // con `change`: l'editor la rilegge, con le regole del sistema di adesso.
+    this.valore.addEventListener('change', function () {
+      var voci = self.valore.value ? self.valore.value.split(',') : [];
+      if (voci.join(',') === self.voci.join(',')) return;
+      self.voci = voci;
+      self.normalizza();
+      self.disegna();
+    });
+
     var sorgente = this.radice.getAttribute('data-sistema-da');
     if (sorgente) {
       var select = document.querySelector(sorgente);

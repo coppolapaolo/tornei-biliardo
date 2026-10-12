@@ -278,6 +278,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.create_gara_standalone": {"director"},
     "admin.competition.create_gara": {"director"},
     "admin.competition.edit_gara": {"director"},
+    # I preset dei direttori (ADR-082): ognuno vede e usa solo i suoi.
+    "admin.preset.salva_dal_modulo_gara": {"director"},
+    "admin.preset.salva_dalla_gara": {"director"},
+    "admin.preset.valori_per_il_modulo": {"director"},
     # Vetrina social della gara (issue #235): la cura chi gestisce la gara.
     # La pagina *pubblica* che ne esce è `main.gara_invite`, già aperta agli
     # anonimi qui sopra — e deve restarci, altrimenti lo scraper del social

@@ -10,6 +10,7 @@ from .match import match_bp
 from .user import user_bp
 from .venue import venue_bp
 from .kpi import kpi_bp
+from .preset import preset_bp
 
 # from .dashboard import dashboard_bp  # Removed - admin dashboard deprecated, using
 # unified dashboard
@@ -35,6 +36,9 @@ admin_bp.register_blueprint(venue_bp)
 
 # KPI domain: /admin/kpi
 admin_bp.register_blueprint(kpi_bp, url_prefix="/kpi")
+
+# Preset dei direttori (ADR-082): /admin/preset/*
+admin_bp.register_blueprint(preset_bp, url_prefix="/preset")
 
 # Dashboard domain: /admin/ (root) - REMOVED
 # admin_bp.register_blueprint(dashboard_bp)  # Deprecated - using unified dashboard
