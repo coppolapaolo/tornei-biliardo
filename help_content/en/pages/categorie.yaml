@@ -148,6 +148,12 @@ blocks:
       not handle payments, and every change to the fee list stays in the
       history of the competition or championship.
 
+  - type: shot
+    shot: gara-listino
+
+  - type: shot
+    shot: vetrina-listino
+
   - type: heading
     id: giocatore
     title: "What the player sees"

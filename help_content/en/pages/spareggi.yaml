@@ -71,6 +71,9 @@ blocks:
       every criterion share the place. In both, players separated **only** by
       the draw are shown as tied, in the higher place.
 
+  - type: shot
+    shot: catena-spareggi
+
   - type: heading
     id: come
     title: "The criteria"

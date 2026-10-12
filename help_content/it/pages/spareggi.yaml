@@ -71,6 +71,9 @@ blocks:
       condivide la posizione. In tutte e due, chi è separato **solo** dal
       sorteggio si vede a pari merito, alla posizione più alta.
 
+  - type: shot
+    shot: catena-spareggi
+
   - type: heading
     id: come
     title: "I criteri"

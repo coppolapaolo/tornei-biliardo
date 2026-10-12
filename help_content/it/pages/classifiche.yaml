@@ -133,6 +133,10 @@ blocks:
       vedi [Creare un campionato](/aiuto/organizzare/creare_un_campionato).
       Tutti quelli appaiati in una banda prendono lo stesso punteggio.
 
+  - type: shot
+    shot: campionato-piazzamenti
+    variant: desktop
+
   - type: heading
     id: pari_merito
     title: "I pari merito"

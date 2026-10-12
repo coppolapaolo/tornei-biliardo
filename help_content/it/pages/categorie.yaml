@@ -148,6 +148,12 @@ blocks:
       quota più alta alla più bassa. L'app non gestisce pagamenti, e ogni
       modifica del listino resta nella storia della gara o del campionato.
 
+  - type: shot
+    shot: gara-listino
+
+  - type: shot
+    shot: vetrina-listino
+
   - type: heading
     id: giocatore
     title: "Cosa vede il giocatore"

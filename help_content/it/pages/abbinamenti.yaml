@@ -148,6 +148,9 @@ blocks:
       su 6 nel girone B»). A gara conclusa compare la classifica della gara,
       con accanto a ogni nome la posizione nel girone («1º girone A»).
 
+  - type: shot
+    shot: gara-gironi-classifica
+
   - type: heading
     id: fase_finale
     title: "Dopo i gironi: il tabellone"
@@ -197,6 +200,13 @@ blocks:
       schermo in sala mostrano il tabellone, con sotto le classifiche dei
       gironi; a gara conclusa resta la classifica finale della serata.
 
+  - type: shot
+    shot: gara-gironi-taglio
+
+  - type: shot
+    shot: tabellone-dopo-i-gironi
+    variant: desktop
+
   - type: heading
     id: finali_piazzamento
     title: "Dopo i gironi: le finali per piazzamento"
@@ -234,6 +244,9 @@ blocks:
       direttore e nell'elenco delle partite. A gara conclusa la classifica
       della serata dice, sotto ogni nome, com'è andata la sua finale: «vince
       la finale 3°/4° posto», «perde la finale 1°/2° posto».
+
+  - type: shot
+    shot: gara-finali-piazzamento
 
   - type: heading
     id: eliminazione

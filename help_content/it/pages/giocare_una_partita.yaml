@@ -256,6 +256,9 @@ blocks:
       se la interrompe, vale il punteggio di quel momento, e nei risultati la
       partita compare con il segno **a tempo**.
 
+  - type: shot
+    shot: partita-timer
+
   - type: heading
     id: sbagli
     title: "Se sbagli"

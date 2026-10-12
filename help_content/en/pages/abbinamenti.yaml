@@ -150,6 +150,9 @@ blocks:
       overall standings appear, with each player's place in their group next
       to the name («#1 in group A»).
 
+  - type: shot
+    shot: gara-gironi-classifica
+
   - type: heading
     id: fase_finale
     title: "After the groups: the bracket"
@@ -201,6 +204,13 @@ blocks:
       standings below it; when the competition is over, the final standings
       of the evening remain.
 
+  - type: shot
+    shot: gara-gironi-taglio
+
+  - type: shot
+    shot: tabellone-dopo-i-gironi
+    variant: desktop
+
   - type: heading
     id: finali_piazzamento
     title: "After the groups: the placement finals"
@@ -238,6 +248,9 @@ blocks:
       director's cards and in the list of matches. When the competition is
       over, the night's standings say under each name how their final went:
       «wins the final for 3/4 place», «loses the final for 1/2 place».
+
+  - type: shot
+    shot: gara-finali-piazzamento
 
   - type: heading
     id: eliminazione
