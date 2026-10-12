@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.74.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.74.0...v1.74.1) (2026-10-12)
+
+
+### Correzioni
+
+* tavoli passati come stringa JSON non diventano caratteri singoli ([#677](https://github.com/coppolapaolo/tornei-biliardo/issues/677)) ([7cc5fbe](https://github.com/coppolapaolo/tornei-biliardo/commit/7cc5fbe6e2268b908eb23c450c6ac8a87b30a21e))
+
 ## [1.74.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.73.0...v1.74.0) (2026-10-12)
 
 
