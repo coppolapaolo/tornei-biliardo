@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.74.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.73.0...v1.74.0) (2026-10-12)
+
+
+### Funzioni nuove
+
+* pagine delle finali per piazzamento, finale accanto ai gironi e classifica della serata ([#675](https://github.com/coppolapaolo/tornei-biliardo/issues/675)) ([439f84e](https://github.com/coppolapaolo/tornei-biliardo/commit/439f84eb33c5f1d395ff2d9fa426e935a5f16d3a))
+
 ## [1.73.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.72.0...v1.73.0) (2026-10-11)
 
 
