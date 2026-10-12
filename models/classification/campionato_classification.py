@@ -16,13 +16,8 @@ from sqlalchemy.orm import joinedload
 from models.base import db
 
 from ..caching import cache_invalidate, cache_manager, cached
-from ..status_enum import ClassificationSystem
 from ..transaction import transactional
 from .models import Classification, GaraClassification
-
-# Tipi di campionato in cui le gare sono a tabellone e la classifica generale
-# somma punti per posizione invece di vittorie (US-17).
-POSITION_CAMPIONATO_TYPES = frozenset({"direct_elimination", "double_knockout"})
 
 
 class ClassificationService:
@@ -32,21 +27,13 @@ class ClassificationService:
     def uses_position_points(campionato) -> bool:
         """Se la classifica generale di questo campionato somma punti-posizione.
 
-        Il criterio primario è il **tipo di campionato**, perché è quello che
-        determina il formato delle gare. Il sistema di classifica è un secondo
-        indizio, utile per i campionati configurati prima che i due formati a
-        tabellone fossero selezionabili come tipo.
+        È la domanda «il campionato è a piazzamenti?», e ha una risposta sola:
+        `piazzamenti.e_a_piazzamenti` (ADR-080). Qui ce n'era una copia, con i
+        tipi a tabellone scritti come stringhe.
         """
-        if campionato is None:
-            return False
-        if getattr(campionato, "campionato_type", None) in POSITION_CAMPIONATO_TYPES:
-            return True
-        return (
-            ClassificationSystem.normalize(
-                getattr(campionato, "default_classification_system", None)
-            )
-            == ClassificationSystem.POSITION
-        )
+        from models.campionato.piazzamenti import e_a_piazzamenti
+
+        return e_a_piazzamenti(campionato)
 
     @staticmethod
     def playoff_final_blocks(campionato) -> List[List[int]]:

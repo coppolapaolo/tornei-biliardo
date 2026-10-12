@@ -12,7 +12,7 @@
 {% endblock %}
 {% block page_title %}{{ campionato.name }}{% endblock %}
 {% block page_sub %}
-{{ campionato.campionato_type|nome_formula }} <span class="c7-sep">·</span> {{ campionato | status_text }}
+{{ campionato|formato_campionato }} <span class="c7-sep">·</span> {{ campionato | status_text }}
 {% endblock %}
 {% block page_actions %}
 <div class="d-none d-lg-flex align-items-center gap-2">
@@ -443,6 +443,11 @@
     <section data-c7-tab="classifica">
       {% if general_classification %}
       {% with classifica_finale=concluso %}{% include "components/_campionato_general_classification.html" %}{% endwith %}
+      {# Come si ordinano i pari merito (ADR-078), come nella pagina pubblica:
+         a piazzamenti è l'unico posto che dice cosa separa due giocatori a
+         pari punti, ora che la colonna della differenza non c'è. #}
+      {% set _pari_generale = frase_spareggi(campionato, 'catena_generale') %}
+      {% if _pari_generale %}<p class="c7-nota" style="margin:10px 4px 0">{{ _pari_generale }}</p>{% endif %}
       {% else %}
       {{ d.sezione(_('Classifica generale')) }}
       <div class="c7-card" style="margin-top:10px">

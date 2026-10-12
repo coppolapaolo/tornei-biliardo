@@ -74,7 +74,12 @@
       {% if classification_sys == ClassificationSystem.RACK %}
       <span class="c7-classifica__col c7-label">{{ _('Triangoli') }}</span>
       <span class="c7-classifica__col c7-classifica__col--sec c7-label">SSR</span>
-      {% elif classification_sys in (ClassificationSystem.POSITION, ClassificationSystem.POINTS) %}
+      {% elif classification_sys == ClassificationSystem.POSITION %}
+      {# A piazzamenti vittorie e triangoli non decidono niente (ADR-080):
+         la differenza triangoli in colonna sembrava lo spareggio. I pari li
+         decidono i piazzamenti, e la nota sotto dice come. #}
+      <span class="c7-classifica__col c7-label">{{ _('Punti') }}</span>
+      {% elif classification_sys == ClassificationSystem.POINTS %}
       <span class="c7-classifica__col c7-label">{{ _('Punti') }}</span>
       <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Diff') }}</span>
       {% else %}
@@ -121,7 +126,9 @@
       {% if classification_sys == ClassificationSystem.RACK %}
       <span class="c7-classifica__col c7-num">{{ dati.total_racks_won }}</span>
       <span class="c7-classifica__col c7-classifica__col--sec c7-num">{{ dati.total_spot_shot_wins or '–' }}</span>
-      {% elif classification_sys in (ClassificationSystem.POSITION, ClassificationSystem.POINTS) %}
+      {% elif classification_sys == ClassificationSystem.POSITION %}
+      <span class="c7-classifica__col c7-num">{{ dati.total_points or 0 }}</span>
+      {% elif classification_sys == ClassificationSystem.POINTS %}
       <span class="c7-classifica__col c7-num">{{ dati.total_points or 0 }}</span>
       <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if dati.total_rack_difference > 0 %}+{% endif %}{{ dati.total_rack_difference }}</span>
       {% else %}
@@ -137,7 +144,7 @@
     {% if classification_sys == ClassificationSystem.RACK %}
     {{ _("Classifica generale: ordinata per triangoli totali, poi per punti spareggio (SSR).") }}
     {% elif classification_sys == ClassificationSystem.POSITION %}
-    {{ _("Classifica generale basata sui punti ottenuti in tutte le gare completate.") }}
+    {{ _("Classifica generale: somma dei punti del piazzamento in ogni gara conclusa.") }}
     {% elif classification_sys == ClassificationSystem.POINTS %}
     {{ _("Classifica generale: somma dei punti delle gare (%(punti)s), moltiplicati per il peso di ciascuna gara.", punti=descrivi_punti(punti_proposti(campionato))) }}
     {% else %}

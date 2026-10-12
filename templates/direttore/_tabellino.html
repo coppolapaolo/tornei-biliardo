@@ -33,7 +33,7 @@
     {% endfor %}
   {% else %}
     {% for p in n.posti %}{% if not p.vuoto %}
-    <div class="c7-tabellino__posto{% if not p.giocatore %} is-attesa{% endif %}"><span class="c7-tabellino__chi">{{ t.posto(p) }}</span></div>
+    <div class="c7-tabellino__posto{% if not p.giocatore %} is-attesa{% endif %}"><span class="c7-tabellino__chi">{{ t.posto_nel_nodo(p) }}</span></div>
     {% endif %}{% endfor %}
     {% if n.is_x %}<div class="c7-tabellino__posto is-attesa"><span class="c7-tabellino__chi">{{ _('X a tavolino') }}</span></div>{% endif %}
   {% endif %}

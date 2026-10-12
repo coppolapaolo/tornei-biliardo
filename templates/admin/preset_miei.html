@@ -37,8 +37,9 @@
     <p class="c7-empty__text">{{ _("Quando prepari una gara o un campionato, «Salva come preset» tiene le impostazioni per la volta dopo: le ritrovi qui.") }}</p>
   </div>
   {% else %}
-  <section class="c7-card">
-    <div class="c7-rows c7-rows--sunk">
+  {# L'elenco è le righe stesse, come nel prototipo: non una card con dentro
+     un'altra lista affossata (card nella card). #}
+  <div class="c7-rows">
       {% for p in preset %}
       {% set e_campionato = p.kind == TipoPreset.CAMPIONATO.value %}
       <div class="c7-rows__row c7-rows__row--wrap c7-preset-riga" data-preset-riga>
@@ -110,8 +111,7 @@
         </form>
       </div>
       {% endfor %}
-    </div>
-  </section>
+  </div>
   {% endif %}
 </div>
 {% endblock %}

@@ -68,6 +68,24 @@ def e_a_piazzamenti(campionato: Any) -> bool:
     )
 
 
+def nome_del_formato(campionato: Any) -> str:
+    """Come le pagine chiamano il formato del campionato.
+
+    A piazzamenti ogni serata può avere il suo formato, quindi il campionato
+    non ne nomina nessuno: «A piazzamenti». Il `campionato_type` è solo
+    quello che propone alle gare nuove, e scriverlo in testata («Amalfi ·
+    In corso») diceva un formato che le serate a gironi non hanno. Sommando
+    i totali resta il nome della formula proposta.
+    """
+    from flask_babel import gettext as _
+
+    from models.matchmaking.configuration import etichetta_strategia
+
+    if e_a_piazzamenti(campionato):
+        return _("A piazzamenti")
+    return etichetta_strategia(getattr(campionato, "campionato_type", None))
+
+
 def somma_i_totali(campionato: Any) -> bool:
     """Se il campionato somma i totali delle gare (vittorie, triangoli, punti)."""
     return campionato is not None and not e_a_piazzamenti(campionato)
@@ -161,6 +179,7 @@ __all__ = [
     "TIPI_A_TABELLONE",
     "e_a_piazzamenti",
     "gironi_ammessi",
+    "nome_del_formato",
     "sistema_del_campionato",
     "sistema_della_serata",
     "sistema_delle_gare",

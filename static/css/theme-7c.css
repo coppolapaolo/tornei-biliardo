@@ -1756,6 +1756,18 @@ a.c7-choice.is-selected { color: var(--c7-accent-ink); }
      spicchio e' cio' che dice che si scorre. */
   .c7-bracket__col { width: 208px; }
   .c7-bracket__rail { gap: 12px; }
+  /* Il tabellone arriva al bordo dello schermo: lo spicchio della colonna
+     dopo si taglia li', dove si capisce che si scorre, e non contro il
+     margine della pagina, dove sembrava una colonna tagliata. In fondo la
+     rotaia si ferma al margine, quindi l'ultima colonna si legge intera, e
+     ogni colonna si ferma allineata al margine sinistro. */
+  .c7-bracket {
+    margin-inline: calc(-1 * var(--c7-gutter));
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: var(--c7-gutter);
+  }
+  .c7-bracket__rail { padding-inline: var(--c7-gutter); width: max-content; }
+  .c7-bracket__col { scroll-snap-align: start; }
 }
 .c7-bracket__colhead {
   display: flex;
@@ -1794,7 +1806,11 @@ a.c7-choice.is-selected { color: var(--c7-accent-ink); }
   align-items: center;
   padding: 4px 0;
 }
-.c7-bracket__cell > * { width: 100%; }
+.c7-bracket__cell > * { width: 100%; min-width: 0; }
+/* `min-width: 0` sul nodo: da elemento flex non scenderebbe sotto la sua
+   larghezza minima, che con `white-space: nowrap` e' la riga piu' lunga —
+   e un nodo futuro piu' largo della colonna si accavallava a quello accanto
+   (Finale e Finale 3°/4° dopo i gironi). */
 
 /* Il nodo e' la card partita di 8a, stretta: nome a sinistra, punteggio a
    destra, una riga per giocatore. */
@@ -3915,6 +3931,22 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 }
 .c7-bracket__seat.is-attesa .c7-bracket__who { color: var(--c7-ink-faint); font-weight: 600; }
 
+/* Chi arrivera' da una partita ancora da giocare: «chi vince» sopra, i due
+   nomi sotto, uno per riga e ciascuno coi suoi puntini (pagina del
+   tabellone e tabellone del direttore, come lo schermo in sala). */
+.c7-arrivo { display: flex; flex-direction: column; min-width: 0; }
+.c7-arrivo__esito {
+  font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--c7-ink-faint); margin-bottom: 1px;
+}
+.c7-arrivo__nome { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* La finalina non discende dalla finale: niente moncherino fra le due. */
+@media (min-width: 992px) {
+  .c7-bracket__col--finalina:not(:first-child) .c7-bracket__node::before,
+  .c7-bracket__col:not(:last-child):has(+ .c7-bracket__col--finalina) .c7-bracket__node::after { content: none; }
+}
+
 /* La nota della card: dove va chi vince. */
 .c7-partita__dove .fas { font-size: 10px; margin-right: 2px; }
 
@@ -4010,6 +4042,12 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-sala-tab__ramo-nome .c7-label { margin: 0; font-size: 12px; }
 .c7-sala-tab__ramo-nome::after { content: ""; flex: 1; border-top: 1px solid var(--c7-line-soft); }
 .c7-sala-tab__colonne { flex: 1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; min-height: 0; }
+/* Sul telefono tre colonne in una card non lasciano posto a un nome, che
+   andava a capo a meta' parola («Simon/e»): ogni colonna tiene almeno un
+   nome, e il tabellone scorre di lato. */
+@media (max-width: 991.98px) {
+  .c7-sala-tab__colonne { grid-auto-columns: minmax(150px, 1fr); overflow-x: auto; }
+}
 .c7-sala-tab__col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 .c7-sala-tab__testa {
   font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
@@ -4077,6 +4115,16 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
      (ADR-081): il tabellone prende l'altezza che gli serve, non tutta. */
   .c7-sala-tab--con-gironi, .c7-sala-tab--con-gironi .c7-sala-tab__card,
   .c7-sala-tab--con-gironi .c7-sala-tab__ramo { flex: none; }
+  /* E sotto, i gironi affiancati: impilati non ci stavano, e le righe
+     schiacciate a zero si accavallavano. Il segno «al tabellone» lo dice
+     gia' la riga del taglio, e affiancati non c'e' posto per tutti e due. */
+  .c7-sala__gironi { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+  .c7-sala__gironi--affiancati { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); }
+  .c7-sala__girone-blocco { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+  .c7-sala__gironi .c7-sala__riga { min-height: 26px; }
+  .c7-sala__gironi--affiancati .c7-taglio__segno { display: none; }
+  .c7-sala__gironi--affiancati .c7-sala__riga { padding-left: 12px; padding-right: 12px; gap: 8px; }
+  .c7-sala__gironi--affiancati .c7-sala__riga-sec { width: 32px; }
   .c7-sala__corpo--solo .c7-sala__destra--conclusa { max-width: 1040px; }
   .c7-sala__bande { flex: 1; min-height: 0; display: grid; grid-auto-rows: minmax(0, 1fr); overflow: hidden; }
   .c7-sala__bande .c7-sala__riga { min-height: 0; max-height: 64px; padding-top: 0; padding-bottom: 0; }
@@ -4091,7 +4139,13 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
    -------------------------------------------------------------------------- */
 
 /* Nella testata, accanto allo stato, la forma: «Trio · 2 gironi», «Set 2». */
-.c7-partita__sinistra { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+/* `flex: 1 1 0`: quando stato, forma, girone e cronometro non stanno in una
+   riga vanno a capo **dentro** la sinistra, e il tavolo resta in alto a
+   destra. Con la base automatica la sinistra si prendeva la riga intera e
+   mandava a capo il tavolo — «In corso · Girone B · Tempo scaduto +12'» lo
+   spingeva sotto, da solo. Il minimo resta il pezzo piu' largo, quindi se
+   neanche quello sta accanto al tavolo la testata va a capo come prima. */
+.c7-partita__sinistra { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; min-width: 0; flex: 1 1 0; }
 .c7-partita__forma { font-size: 11px; font-weight: 800; color: var(--c7-ink-muted); white-space: nowrap; }
 .c7-partita--mia .c7-partita__forma { color: var(--c7-accent-dim); }
 .c7-partita__etichetta { margin-top: 6px; font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); }
@@ -4930,8 +4984,10 @@ button.c7-draw__outcome:active { transform: scale(var(--c7-press)); transition-d
 .c7-catena__comandi { margin-left: auto; }
 .c7-catena .c7-iconbtn { width: var(--c7-touch); height: var(--c7-touch); border-radius: var(--c7-r-chip); font-size: 13px; }
 .c7-catena .c7-iconbtn:disabled { background: transparent; color: var(--c7-ink-faint); }
+/* «fino al 3°» è una frase, non una cifra di servizio: il carattere del
+   resto dell'editor, con le cifre tabellari perché non balli al «+». */
 .c7-catena__postovalore {
-  font-family: var(--c7-font-mono); font-size: 12px; font-weight: 700; color: var(--c7-ink-soft);
+  font-size: 13px; font-weight: 700; color: var(--c7-ink-soft);
   min-width: 64px; text-align: center; font-variant-numeric: tabular-nums;
 }
 .c7-catena__aggiungi { display: flex; flex-wrap: wrap; gap: 8px; }

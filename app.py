@@ -671,6 +671,11 @@ def create_app(config_name=None, *, da_script: bool = False):
     from models.matchmaking.configuration import etichetta_strategia
 
     app.jinja_env.filters["nome_formula"] = etichetta_strategia
+    # Il formato di un **campionato**: «A piazzamenti» quando ogni serata può
+    # avere il suo (ADR-080), altrimenti la formula proposta alle gare.
+    from models.campionato.piazzamenti import nome_del_formato
+
+    app.jinja_env.filters["formato_campionato"] = nome_del_formato
     # Le voci dei menu «giocatori dispari»: stessi nomi del filtro qui sopra.
     app.jinja_env.globals["opzioni_dispari"] = opzioni_dispari
     # La formula che una gara di quella strategia tiene davvero: col girone la
