@@ -220,9 +220,19 @@ inosservata.
 
 Il seed crea sempre gli stessi dati: un campionato con tre gare (una conclusa,
 una in corso con una partita viva, una con le iscrizioni aperte), un direttore
-(`Luca Bianchi`) e otto giocatori (il primo è `Marco Rossi`). Se una figura
+(`Luca Bianchi`) e otto giocatori (il primo è `Marco Rossi`). Gironi, fase
+finale, limite di tempo e campionato a piazzamenti stanno nel campionato **di
+prova** «Serate del lunedì» (campionato 2, gare 12–18, diretto da `Franco
+Galli`): una serata per stato, vedi `_create_serate_a_gironi`. Le estensioni
+nuove vanno in fondo e, se possono, in una prova: una gara vera comparirebbe
+in home e nelle dashboard e cambierebbe figure che non c'entrano. Se una figura
 richiede uno stato che il dataset non produce, **estendi il seed** — non
 truccare l'immagine.
+
+L'integrità del manifest — ogni vista dichiarata ha il suo PNG in ogni lingua,
+nessun PNG orfano, ogni voce ha la didascalia in ogni lingua — la presidia
+`tests/new/unit/test_help_schermate_integrita.py`: dopo una ricattura con
+`--only` è il test che dice se manca qualcosa.
 
 Se hai cambiato una schermata senza aggiungere figure nuove, basta rilanciare
 la cattura: i file esistenti vengono riscritti e il diff mostra esattamente

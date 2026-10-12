@@ -95,6 +95,9 @@ blocks:
       present: until this moment the competition card showed it as an
       **estimate**. See [The bracket](/aiuto/giocare/tabellone).
 
+  - type: shot
+    shot: gara-gironi-avvio
+
   - type: heading
     id: durante
     title: "While play is under way"
@@ -224,6 +227,9 @@ blocks:
           Puts the score back to zero keeping the same pair, who replay. This
           is the correction to use when a result was entered wrongly.
         hint: gara.reset_partita
+
+  - type: shot
+    shot: gara-tempo-scaduto
 
   - type: shot
     shot: gara-ritiro

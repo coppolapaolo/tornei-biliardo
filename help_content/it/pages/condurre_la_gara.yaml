@@ -97,6 +97,9 @@ blocks:
       della gara lo mostrava come **stima**. Vedi [Il
       tabellone](/aiuto/giocare/tabellone).
 
+  - type: shot
+    shot: gara-gironi-avvio
+
   - type: heading
     id: durante
     title: "Mentre si gioca"
@@ -225,6 +228,9 @@ blocks:
           Riporta il punteggio a zero mantenendo la stessa coppia, che rigioca.
           È la correzione da usare quando il risultato è stato inserito male.
         hint: gara.reset_partita
+
+  - type: shot
+    shot: gara-tempo-scaduto
 
   - type: shot
     shot: gara-ritiro

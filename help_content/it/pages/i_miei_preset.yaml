@@ -29,6 +29,9 @@ blocks:
       ti ha mandato un altro direttore lo dice: «ricevuto da Paolo, 06/10».
       I tuoi preset li vedi solo tu.
 
+  - type: shot
+    shot: i-miei-preset
+
   - type: heading
     id: azioni
     title: "Rinominare, duplicare, cancellare"

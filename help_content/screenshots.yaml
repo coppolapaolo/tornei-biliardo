@@ -823,3 +823,87 @@ shots:
     as: Andrea Ferri
     caption: "La scheda del gruppo: quanti l'hanno presa, quanti te la fanno leggere, chi non ha risposto, chi è entrato dopo, e il modulo per mandarne una a tutto il corso."
     full_page: true
+
+  # ── Gironi, limite di tempo, listino, catene, preset (piano dell'ottobre
+  #    2026). Le serate a gironi sono le gare 12–18 del campionato di prova
+  #    «Serate del lunedì» (campionato 2), diretto da Franco Galli: vedi
+  #    `_create_serate_a_gironi` nel seed. Prove, quindi la presentazione
+  #    della prima visita si chiude con `skip`, come per le altre prove.
+  - id: gara-gironi-avvio
+    route: /admin/gara/18
+    as: Franco Galli
+    caption: "Il foglio di avvio di una gara con undici iscritti e «Gironi: fino a 2»: la proposta è due gironi, da 6 e da 5, con i turni scritti su ogni voce; sotto si sceglie la composizione dei gironi."
+    click: ['[data-help-action="skip"]', '[onclick^="startFirstRound"]']
+    clip: "#avviaGaraModal .modal-content"
+
+  - id: gara-gironi-classifica
+    route: /admin/gara/17
+    as: Franco Galli
+    caption: "Mentre si giocano i gironi la pagina della gara mostra una classifica per girone, «Girone A» e «Girone B», ognuna ordinata con il sistema della gara."
+    click: ['[data-help-action="skip"]']
+    clip: "#classificaDirettore"
+
+  - id: gara-tempo-scaduto
+    route: /admin/gara/17
+    as: Franco Galli
+    caption: "La card di una partita oltre il limite di tempo: il cronometro dice «Tempo scaduto» e conta i minuti in più, la card è gialla e in cima, e il direttore può toccare «Interrompi partita»."
+    click: ['[data-help-action="skip"]']
+    clip: ".c7-partita.c7-card--warn"
+
+  # La partita 109 è quella della serata 6 col cronometro ancora nel tempo:
+  #  l'id dipende dall'ordine del seed, ricontrollalo se lo cambi.
+  - id: partita-timer
+    route: /admin/match/109
+    as: Franco Galli
+    caption: "Il punteggio di una partita con il limite di tempo: sotto il risultato il cronometro con i minuti che restano."
+    clip: ".c7-score"
+
+  - id: gara-gironi-taglio
+    route: /admin/gara/16
+    as: Franco Galli
+    caption: "Finiti i gironi, accanto a ogni nome compare «al tabellone» o «fuori», con la riga tratteggiata del taglio fra chi passa e chi no."
+    click: ['[data-help-action="skip"]']
+    clip: "#classificaDirettore"
+
+  - id: tabellone-dopo-i-gironi
+    route: /admin/gara/15/tabellone
+    as: Franco Galli
+    caption: "Il tabellone finale dopo i gironi: le semifinali fra i qualificati, la finale, e sotto le classifiche dei gironi con chi è passato."
+    viewports: [mobile, desktop]
+
+  - id: gara-finali-piazzamento
+    route: /admin/gara/14
+    as: Franco Galli
+    caption: "Con le finali per piazzamento, a gironi finiti ogni nome dice la finale che giocherà: «→ finale 3°/4° posto con…», il 1° di un girone contro il 1° dell'altro, il 2° contro il 2°."
+    click: ['[data-help-action="skip"]']
+    clip: "#classificaDirettore"
+
+  - id: campionato-piazzamenti
+    route: /admin/campionato/2
+    as: Franco Galli
+    caption: "La classifica generale di un campionato a piazzamenti: ogni serata dà i punti del posto in cui si è finiti, qualunque sia stato il formato."
+    viewports: [mobile, desktop]
+    click: ['[data-help-action="skip"]']
+    clip: "#classificaGenerale"
+
+  - id: vetrina-listino
+    route: /g/torneo-di-primavera
+    as: anonimo
+    caption: "La vetrina di una gara con il listino delle quote: al posto della quota unica, «Serie A 30 € · Serie B, Serie C 20 € · Amatori 15 €»."
+
+  - id: gara-listino
+    route: /admin/gara/5/edit
+    as: Luca Bianchi
+    caption: "Il listino quote per categoria nel modulo della gara: una riga per categoria, con la sua quota, «Aggiungi categoria» e la × per togliere una riga."
+    clip: ".mb-3:has([data-listino])"
+
+  - id: catena-spareggi
+    route: /admin/gara/3/edit
+    as: Luca Bianchi
+    caption: "L'editor della catena dei pari merito della gara: i criteri in ordine, le frecce per spostarli, la × per toglierli, i criteri da aggiungere e sotto la frase che dice come si ordina."
+    clip: '[data-catena][data-livello="gara"]'
+
+  - id: i-miei-preset
+    route: /admin/preset/
+    as: Luca Bianchi
+    caption: "«I miei preset»: i preset della gara e del campionato in un elenco solo, con quando sono stati aggiornati o da chi sono arrivati, e i comandi per rinominare, duplicare, condividere e cancellare."

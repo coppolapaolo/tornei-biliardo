@@ -135,6 +135,10 @@ blocks:
       championship](/aiuto/organizzare/creare_un_campionato). Everybody level
       inside a band takes the same score.
 
+  - type: shot
+    shot: campionato-piazzamenti
+    variant: desktop
+
   - type: heading
     id: pari_merito
     title: "Level finishes"

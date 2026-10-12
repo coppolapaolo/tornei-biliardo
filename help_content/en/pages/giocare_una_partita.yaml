@@ -258,6 +258,9 @@ blocks:
       the score at that moment stands, and the match shows in the results
       marked **on time**.
 
+  - type: shot
+    shot: partita-timer
+
   - type: heading
     id: sbagli
     title: "If you make a mistake"

@@ -29,6 +29,9 @@ blocks:
       director sent you says so: «received from Paolo, 06/10». Only you can
       see your presets.
 
+  - type: shot
+    shot: i-miei-preset
+
   - type: heading
     id: azioni
     title: "Rename, duplicate, delete"

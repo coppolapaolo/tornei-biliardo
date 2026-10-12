@@ -2087,6 +2087,301 @@ def _create_prove_forme(db, venue, challenges):
     return gare
 
 
+#: I nomi dei giocatori delle serate a gironi. Sono fittizi di una prova, ma
+#: con i nomi di `models/prova/nomi.py` le classifiche direbbero «Maria Rossi
+#: (6)» su ogni riga: quei nomi li hanno già presi le prove nate prima, e
+#: `_username_libero` aggiunge un numero. Undici nomi, quanti ne servono alla
+#: serata più numerosa, diversi da tutti gli altri del dataset.
+NOMI_SERATE = (
+    ("Tommaso", "Marchetti"),
+    ("Federica", "Leone"),
+    ("Simone", "Gentile"),
+    ("Irene", "Martinelli"),
+    ("Matteo", "Caruso"),
+    ("Giada", "Ferraro"),
+    ("Lorenzo", "Pellegrini"),
+    ("Beatrice", "Serra"),
+    ("Riccardo", "Mancini"),
+    ("Alice", "Vitale"),
+    ("Nicola", "Barbieri"),
+)
+
+
+def _create_serate_a_gironi(db, venue):
+    """Un campionato a piazzamenti di prova, con le serate a gironi.
+
+    La guida racconta i gironi multipli, il tabellone e le finali per
+    piazzamento dopo i gironi, il limite di tempo e il campionato a
+    piazzamenti (ADR-076, 077, 080, 081): nessuna gara del resto del dataset
+    li ha, e le figure non si potevano generare. Una gara per stato, perché
+    ognuna mostra una cosa diversa:
+
+    - serate 1 e 2 concluse (Amalfi; gironi e tabellone): la classifica
+      generale a piazzamenti, che somma i punti dei due posti;
+    - serata 3, gironi finiti con le finali per piazzamento: accanto a ogni
+      nome la finale che giocherà;
+    - serata 4, semifinali in corso: il tabellone con sotto i gironi;
+    - serata 5, gironi finiti col tabellone: «al tabellone» e «fuori», con la
+      riga del taglio;
+    - serata 6, gironi in corso con il limite di tempo: le classifiche per
+      girone e due partite col cronometro, una ancora nel tempo e una scaduta;
+    - serata 7, undici iscritti e iscrizioni aperte: il foglio di avvio che
+      propone due gironi, da 6 e da 5.
+
+    È una **prova** (ADR-058) per la stessa ragione delle altre: una gara vera
+    in corso comparirebbe nella home e nelle dashboard e cambierebbe figure
+    che non c'entrano. Ed è un campionato perché i fittizi sono della radice:
+    le sette serate condividono gli stessi undici giocatori, che si possono
+    quindi rinominare una volta sola (`NOMI_SERATE`). Nasce per ultimo, come
+    le altre prove, perché gli id delle gare precedenti stanno nel manifest.
+    """
+    from models import User
+    from models.base import utc_now
+    from models.campionato.tournament_service import TournamentService
+    from models.competition.inscription_service import InscriptionService
+    from models.competition.round_service import RoundService
+    from models.competition.services import GaraService
+    from models.match.models import Match
+    from models.match.tempo import avvia_conto_alla_rovescia
+    from models.prova.service import ProvaService
+    from models.prova.visibility import prova_visibili
+    from models.status_enum import Discipline, MatchStatus
+
+    director = User.query.filter_by(username=DEMO_DIRECTOR_PROVE[0]).first()
+    if director is None:
+        log("serate a gironi non create: manca il secondo direttore")
+        return None
+
+    today = date.today()
+    with prova_visibili():
+        campionato = TournamentService().create_campionato_with_director(
+            name="Serate del lunedì",
+            creator_user_id=director.id,
+            campionato_type="amalfi",
+            planned_gare_count=7,
+            default_venue_id=venue.id,
+            default_rounds_count=3,
+            default_classification_system="POSITION",
+            **ProvaService.campi_di_creazione(),
+        )
+        db.session.commit()
+        campionato.slug = "serate-del-lunedi"
+        db.session.commit()
+
+        def serata(numero: int, iscritti: int, **opzioni):
+            valori = dict(
+                number=numero,
+                name=f"Serata {numero}",
+                date=today + timedelta(days=numero),
+                discipline=Discipline.EIGHT_BALL.value,
+                distance=3,
+                campionato_id=campionato.id,
+                director_id=director.id,
+                creator_id=director.id,
+                time=time(20, 30),
+                rounds_count=3,
+                min_participants=iscritti,
+                max_participants=16,
+                billiard_hall_id=venue.id,
+                location=venue.name,
+                is_race_to=True,
+                classification_system="WINS",
+                matchmaking_strategy="round_robin",
+                max_groups=2,
+                final_phase_mode="tabellone",
+                qualifiers_per_group=2,
+                third_place_match=True,
+            )
+            valori.update(opzioni)
+            gara = GaraService.create_gara(**valori)
+            db.session.commit()
+            InscriptionService.open_inscriptions(
+                gara_id=gara.id,
+                inscription_start=utc_now() - timedelta(days=1),
+                inscription_end=datetime.combine(gara.date, time(17, 0)),
+            )
+            db.session.commit()
+            ProvaService.iscrivi_fittizi(gara.id, "minimo")
+            db.session.commit()
+            return gara
+
+        def turno(gara, numero: int, aperte: int = 0) -> list:
+            """Gioca il turno: tutte chiuse tranne le ultime `aperte`."""
+            partite = [
+                m
+                for m in Match.query.filter_by(gara_id=gara.id, round_number=numero)
+                .order_by(Match.id)
+                .all()
+                if not m.is_bye and not MatchStatus.is_finished(m.status)
+            ]
+            chiuse = partite[: len(partite) - aperte] if aperte else partite
+            for match in partite:
+                _score_match(db, match, partial=match not in chiuse)
+            db.session.commit()
+            RoundService.update_round_progression(gara.id)
+            db.session.commit()
+            return [m for m in partite if m not in chiuse]
+
+        def fino_al_turno(gara, ultimo: int) -> None:
+            _avvia_primo_turno(db, gara)
+            for numero in range(1, ultimo + 1):
+                if numero > 1:
+                    RoundService.start_next_round(gara.id, numero)
+                    db.session.commit()
+                turno(gara, numero)
+
+        # Serata 1: Amalfi, conclusa.
+        prima = serata(
+            1,
+            8,
+            matchmaking_strategy="amalfi",
+            max_groups=None,
+            final_phase_mode=None,
+            qualifiers_per_group=None,
+            third_place_match=False,
+        )
+        _play_rounds(db, prima, rounds=3)
+        GaraService.complete(prima.id)
+        db.session.commit()
+
+        # Serata 2: gironi e tabellone, conclusa con la finale.
+        seconda = serata(2, 8)
+        fino_al_turno(seconda, 5)
+        GaraService.complete(seconda.id)
+        db.session.commit()
+
+        # Serata 3: gironi finiti, le finali per piazzamento da avviare.
+        terza = serata(
+            3,
+            8,
+            final_phase_mode="piazzamento",
+            qualifiers_per_group=None,
+            third_place_match=False,
+        )
+        fino_al_turno(terza, 3)
+
+        # Serata 4: semifinali in corso, la prima già giocata.
+        quarta = serata(4, 8)
+        fino_al_turno(quarta, 3)
+        RoundService.start_next_round(quarta.id, 4)
+        db.session.commit()
+        turno(quarta, 4, aperte=1)
+
+        # Serata 5: gironi finiti, il taglio del tabellone.
+        quinta = serata(5, 8)
+        fino_al_turno(quinta, 3)
+
+        # Serata 6: gironi in corso, con il limite di tempo. Il primo turno è
+        # chiuso — la classifica per girone nasce a turno finito — e del
+        # secondo restano aperte due partite: una con il cronometro ancora nel
+        # tempo, una scaduta.
+        sesta = serata(6, 8, time_limit_minutes=30)
+        fino_al_turno(sesta, 1)
+        RoundService.start_next_round(sesta.id, 2)
+        db.session.commit()
+        nel_tempo, scaduta = turno(sesta, 2, aperte=2)
+        adesso = utc_now()
+        avvia_conto_alla_rovescia(nel_tempo, adesso - timedelta(minutes=8))
+        avvia_conto_alla_rovescia(scaduta, adesso - timedelta(minutes=34))
+        db.session.commit()
+
+        # Serata 7: undici iscritti, iscrizioni aperte.
+        serata(7, 11)
+
+        # Le serate giocate stanno nel passato, nell'ordine dei numeri.
+        for gara, giorni in ((prima, -14), (seconda, -7)):
+            scarto = today + timedelta(days=giorni) - gara.date
+            gara.date += scarto
+            if gara.inscription_start:
+                gara.inscription_start += scarto
+            if gara.inscription_end:
+                gara.inscription_end += scarto
+        db.session.commit()
+
+        for fittizio, (nome, cognome) in zip(
+            ProvaService.fittizi_della_radice(campionato_id=campionato.id),
+            NOMI_SERATE,
+        ):
+            fittizio.username = f"{nome} {cognome}"
+            fittizio.first_name = nome
+            fittizio.last_name = cognome
+        db.session.commit()
+
+        gare = [prima, seconda, terza, quarta, quinta, sesta]
+        log(
+            f"«{campionato.name}» (campionato {campionato.id}, a piazzamenti): "
+            + ", ".join(f"«{g.name}» gara {g.id}" for g in gare)
+            + f", «Serata 7» gara {sesta.id + 1}"
+        )
+    return campionato
+
+
+def _create_listino(db, gara) -> None:
+    """Un listino delle quote sul tabellone di primavera (ADR-079).
+
+    Sulla gara singola, non sul campionato: il listino del campionato
+    comparirebbe su tutte le sue gare, e cambierebbe figure che non
+    c'entrano. Lo slug fisso serve alla vetrina, che la guida mostra.
+    """
+    from models.categoria.listino import ListinoService, VoceListino
+
+    ListinoService.salva(
+        voci=[
+            VoceListino("Serie A", 30.0),
+            VoceListino("Serie B", 20.0),
+            VoceListino("Serie C", 20.0),
+            VoceListino("Amatori", 15.0),
+        ],
+        gara_id=gara.id,
+        nella_storia=False,
+    )
+    gara.slug = "torneo-di-primavera"
+    db.session.commit()
+    log(f"«{gara.name}»: listino delle quote in quattro voci")
+
+
+def _create_preset(db, director, gara, campionato, serata_campionato) -> None:
+    """I preset di Luca Bianchi, per la pagina «I miei preset».
+
+    Due suoi, uno per tipo, e uno ricevuto dal secondo direttore: la pagina
+    dice da chi arriva, ed è la condivisione che la guida spiega. La notifica
+    che accompagna la copia si segna letta, altrimenti il contatore nella
+    testata cambierebbe tutte le figure catturate come Luca.
+    """
+    from models import User
+    from models.notification.models import Notification
+    from models.preset.service import ConfigPresetService
+    from models.prova.visibility import prova_visibili
+
+    ConfigPresetService.salva_dalla_gara(director, "Serata Amalfi palla 8", gara)
+    ConfigPresetService.salva_dal_campionato(director, "Campionato sociale", campionato)
+    db.session.commit()
+
+    franco = User.query.filter_by(username=DEMO_DIRECTOR_PROVE[0]).first()
+    if franco is not None and serata_campionato is not None:
+        with prova_visibili():
+            from models.competition.models import Gara
+
+            serata = Gara.query.filter_by(
+                campionato_id=serata_campionato.id, number=5
+            ).first()
+            if serata is not None:
+                preset = ConfigPresetService.salva_dalla_gara(
+                    franco, "Lunedì a gironi", serata
+                )
+                db.session.commit()
+                ConfigPresetService.condividi(preset.id, franco, [director.id])
+                db.session.commit()
+        from models.notification.models import NotificationType
+
+        for notifica in Notification.query.filter_by(
+            user_id=director.id, notification_type=NotificationType.PRESET_SHARED
+        ).all():
+            notifica.mark_as_read()
+        db.session.commit()
+    log("preset: due di Luca Bianchi e uno ricevuto da Franco Galli")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -2153,12 +2448,15 @@ def main() -> int:
         _andamento_e_obiettivo(db, players[0], challenges)
         _create_squadre(db, gara_iscrizioni, players[:5])
         _create_gara_bozza(db, campionato, director, venue)
-        _create_gara_tabellone(db, director, venue, players)
+        gara_tabellone = _create_gara_tabellone(db, director, venue, players)
         _create_individual_match(db, players)
         _create_esami(db, director, players, challenges, venue)
         _create_tpa_referto(db, players)
         _create_prove(db, director, venue)
         _create_prove_forme(db, venue, challenges)
+        serate = _create_serate_a_gironi(db, venue)
+        _create_listino(db, gara_tabellone)
+        _create_preset(db, director, gara_conclusa, campionato, serate)
 
         print("\nFatto. Credenziali dimostrative:")
         print(f"  direttore: {DEMO_DIRECTOR[0]} / {DEMO_PASSWORD}")
