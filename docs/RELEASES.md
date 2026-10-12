@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.75.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.74.1...v1.75.0) (2026-10-12)
+
+
+### Funzioni nuove
+
+* preset dei direttori, salvare e ripartire nei moduli della gara ([#679](https://github.com/coppolapaolo/tornei-biliardo/issues/679)) ([0212933](https://github.com/coppolapaolo/tornei-biliardo/commit/02129339a0a5977f694faf3abfef9cdf7f41877a))
+
 ## [1.74.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.74.0...v1.74.1) (2026-10-12)
 
 
