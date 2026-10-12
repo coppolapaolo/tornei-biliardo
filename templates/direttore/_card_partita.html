@@ -21,7 +21,7 @@
 
    - due        → due lati, gli stepper segnano i triangoli;
    - trio       → tre lati, triangoli vinti da ciascuno; quali + sono accesi
-                  lo dice il server, perche' dipende dall'ordine del girone.
+                  lo dice il server, perche' dipende dall'ordine delle sfide.
                   Chiuso, si corregge dal foglio come la partita a due, con
                   tre numeri;
    - set        → sopra i set vinti in sola lettura, sotto gli stepper del set
@@ -214,7 +214,7 @@
       {% elif finita %}<span class="c7-state c7-state--muted">{{ _('Conclusa') }}</span>
       {% else %}<span class="c7-state c7-state--warn">{{ _('Da giocare') }}</span>{% endif %}
       {% if _trio %}
-      <span class="c7-partita__forma">{{ _('Trio · un girone') if _trio.gironi == 1 else _('Trio · %(num)s gironi', num=_trio.gironi) }}</span>
+      <span class="c7-partita__forma">{{ _('Trio · un giro') if _trio.giri == 1 else _('Trio · %(num)s giri', num=_trio.giri) }}</span>
       {% elif _set %}
       <span class="c7-partita__forma">{{ _('Set %(num)s', num=_set.numero) if _set.in_corso else _('A set') }}</span>
       {% endif %}
@@ -357,7 +357,7 @@
   <div class="c7-partita__hint">
     {% if _trio %}
     {{ _('%(n)s triangoli, ognuno ne gioca %(m)s', n=_trio.totale, m=_trio.massimo) }}
-    · {{ _("l'ordine del girone decide quali + sono accesi") }}
+    · {{ _("l'ordine delle sfide decide quali + sono accesi") }}
     {% elif _set %}
     {{ _('si vince a %(n)s set', n=_set.set_da_vincere) if _set.race_to_set else _('esattamente %(n)s set', n=_set.set_da_vincere) }}
     {% if _set.chiusi %}· {% for num, a, b in _set.chiusi %}{{ a }}–{{ b }}{% if not loop.last %} <span class="c7-sep">·</span> {% endif %}{% endfor %}{% endif %}

@@ -60,7 +60,7 @@ Parametri:
         </div>
     </div>
     <div class="c7-score__foot">
-        {% if config.num_rounds == 1 %}{{ _('1 girone all\'italiana') }}{% else %}{{ _('%(n)s gironi all\'italiana', n=config.num_rounds) }}{% endif %}
+        {% if config.num_rounds == 1 %}{{ _('un giro') }}{% else %}{{ _('%(n)s giri', n=config.num_rounds) }}{% endif %}
         {% if config.bonus_racks > 0 %}+ {{ config.bonus_racks }} bonus{% endif %}
         <span class="c7-sep">·</span> {{ _('vince chi fa più triangoli') }}
     </div>

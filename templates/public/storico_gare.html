@@ -87,7 +87,7 @@
       </span>
       {% if riga.hai_diretto %}<span class="c7-state c7-state--info">{{ _('Hai diretto') }}</span>{% endif %}
       {% if riga.hai_giocato %}
-        <span class="c7-state c7-state--accent">{{ _('Hai giocato') }}{% if riga.piazzamento %} · {{ riga.piazzamento }}°{% endif %}</span>
+        <span class="c7-state c7-state--accent">{{ _('Hai giocato') }}{% if riga.piazzamento %} · {{ riga.piazzamento|ordinale }}{% endif %}</span>
       {% endif %}
       <i class="fas fa-chevron-right c7-rows__chev"></i>
     </a>

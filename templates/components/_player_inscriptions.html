@@ -29,7 +29,7 @@
                     {% elif pos == 3 %}
                         <span class="c7-state c7-state--warn"><i class="fas fa-medal"></i> 3°</span>
                     {% else %}
-                        <span class="c7-state c7-state--muted">{{ pos }}°</span>
+                        <span class="c7-state c7-state--muted">{{ pos|ordinale }}</span>
                     {% endif %}
                 {% endif %}
             {% endif %}

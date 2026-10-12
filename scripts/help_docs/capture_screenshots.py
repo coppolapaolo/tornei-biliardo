@@ -321,6 +321,10 @@ def output_path(shot_id: str, viewport: str, locale: str) -> Path:
     return OUTPUT_DIR / locale / f"{shot_id}{suffix}.png"
 
 
+#: La lingua di avvio del browser: decide il formato dei campi di ora e data.
+_ARGOMENTI_DEL_BROWSER = ["--lang=en-GB"]
+
+
 def _launch_chromium(playwright):
     """Avvia Chromium, tollerando le installazioni fuori standard.
 
@@ -338,6 +342,12 @@ def _launch_chromium(playwright):
     che i `.pak` li ha, non arriva mai a `networkidle` sulle pagine con lo
     script di Analytics — le catture vanno in timeout. Restano tre parole
     inglesi in una figura: e' il male minore.
+
+    Le *stringhe* no, ma i *formati* si': ore e date dei campi li formatta ICU,
+    che `--lang` lo legge anche nello headless shell. Senza, il campo
+    `<input type=time>` usciva in formato 12 ore («01:51 AM») in entrambe le
+    guide, come se l'app lo scegliesse. `en-GB` scrive 24 ore e giorno/mese,
+    cioe' la convenzione di tutte e due le lingue della guida.
     """
     override = os.environ.get("CHROMIUM_PATH")
     candidates = [override] if override else []
@@ -350,8 +360,10 @@ def _launch_chromium(playwright):
             continue
         try:
             if candidate:
-                return playwright.chromium.launch(executable_path=candidate)
-            return playwright.chromium.launch()
+                return playwright.chromium.launch(
+                    executable_path=candidate, args=_ARGOMENTI_DEL_BROWSER
+                )
+            return playwright.chromium.launch(args=_ARGOMENTI_DEL_BROWSER)
         except Exception as exc:
             last_error = exc
     raise CaptureError(

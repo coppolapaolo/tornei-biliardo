@@ -20,7 +20,7 @@
 {# `breve`: senza l'avversario, dove la riga è corta (lo schermo in sala). #}
 {% macro finale(f, breve=false) -%}
 {%- if f.coppia and f.vinta is none -%}
-<span aria-hidden="true">→ </span>{% if f.avversario and not breve %}{{ _('finale %(primo)s°/%(secondo)s° posto con %(nome)s (%(pos)s° girone %(girone)s)', primo=2 * f.coppia - 1, secondo=2 * f.coppia, nome=f.avversario.user.username, pos=f.coppia, girone=f.nome_girone_avversario) }}{% else %}{{ _('finale %(primo)s°/%(secondo)s° posto', primo=2 * f.coppia - 1, secondo=2 * f.coppia) }}{% endif %}
+<span aria-hidden="true">→ </span>{% if f.avversario and not breve %}{{ _('finale %(primo)s/%(secondo)s posto con %(nome)s (%(pos)s girone %(girone)s)', primo=(2 * f.coppia - 1)|ordinale, secondo=(2 * f.coppia)|ordinale, nome=f.avversario.user.username, pos=f.coppia|ordinale, girone=f.nome_girone_avversario) }}{% else %}{{ _('finale %(primo)s/%(secondo)s posto', primo=(2 * f.coppia - 1)|ordinale, secondo=(2 * f.coppia)|ordinale) }}{% endif %}
 {%- else -%}{{ _tb.uscita(f) }}{%- endif -%}
 {%- endmacro %}
 

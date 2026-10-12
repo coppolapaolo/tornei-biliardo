@@ -146,9 +146,9 @@ blocks:
       show **one standings table per group** («Group A», «Group B»), each with
       the competition's system and tiebreak criteria; every match says its
       group, and the competition card tells you where you are in yours
-      («You are 2 of 6 in group B»). Once the competition is completed the
+      («You are 2nd of 6 in group B»). Once the competition is completed the
       overall standings appear, with each player's place in their group next
-      to the name («#1 in group A»).
+      to the name («1st in group A»).
 
   - type: shot
     shot: gara-gironi-classifica
@@ -240,8 +240,8 @@ blocks:
     text: >-
       **What you see during the competition.** Once the groups are over,
       next to each name in the group standings appears the final they will
-      play: «→ final for 3/4 place against Andrea Ferri (2 in group B)»; with
-      groups of different sizes the last of the larger group shows **9, no
+      play: «→ final for 3rd/4th place against Andrea Ferri (2nd in group B)»; with
+      groups of different sizes the last of the larger group shows **9th, no
       final**. The director, whoever follows the competition on the public
       page and the venue screen all see it. During the finals the round is
       called **Placement finals** and each match carries its name, on the

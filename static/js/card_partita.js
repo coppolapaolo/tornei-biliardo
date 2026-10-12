@@ -9,7 +9,7 @@
  * - `set`  — gli stepper del set in corso di una partita a set: stessa regola
  *            di `due`, con la distanza del set. Salva a ogni tocco.
  * - `trio` — tre lati; quali + sono accesi lo dice il server (`data-piu`),
- *            perché dipende dall'ordine del girone e non solo dai numeri.
+ *            perché dipende dall'ordine delle sfide e non solo dai numeri.
  *            Salva a ogni tocco.
  * - `x`    — un lato, da 0 a `data-max`. Non salva: il punteggio parte con
  *            «Convalida».
@@ -68,7 +68,7 @@
       piu = p.map(function (_, i) { return accesi[i] === 1; });
     } else if (tipo === 'trio') {
       // Il foglio della correzione: il trio e' gia' giocato per intero, quindi
-      // l'ordine del girone non spegne niente. Restano i due limiti: i
+      // l'ordine delle sfide non spegne niente. Restano i due limiti: i
       // triangoli che ognuno gioca e quelli del trio.
       const massimo = parseInt(el.dataset.massimo || '0', 10);
       const totale = parseInt(el.dataset.totale || '0', 10);

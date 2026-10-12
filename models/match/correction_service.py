@@ -495,7 +495,7 @@ class MatchCorrectionService:
         vincitori = assegna_vincitori(config, punti, esistenti)
         if vincitori is None:
             raise ValueError(
-                str(_("Questo punteggio non torna con l'ordine del girone."))
+                str(_("Questo punteggio non torna con l'ordine delle sfide."))
             )
         return vincitori
 

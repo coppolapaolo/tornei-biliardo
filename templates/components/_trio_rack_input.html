@@ -416,9 +416,9 @@
             <small class="text-muted">
                 <i class="fas fa-info-circle"></i>
                 {% if config.num_rounds == 1 %}
-                    {{ _('1 girone all\'italiana (3 triangoli)') }}
+                    {{ _('un giro (3 triangoli)') }}
                 {% else %}
-                    {{ _('%(n)s gironi all\'italiana (%(racks)s triangoli)', n=config.num_rounds, racks=config.total_played_racks) }}
+                    {{ _('%(n)s giri (%(racks)s triangoli)', n=config.num_rounds, racks=config.total_played_racks) }}
                 {% endif %}
                 {% if config.bonus_racks > 0 %}
                     + {{ config.bonus_racks }} {{ _('bonus') }}

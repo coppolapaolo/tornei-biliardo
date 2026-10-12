@@ -349,7 +349,7 @@ class TrioScoringService:
 
         Raises:
             ConflictError: il trio e' gia' chiuso.
-            ValidationError: nessuna sequenza del girone da' quei totali.
+            ValidationError: nessuna sequenza delle sfide da' quei totali.
         """
         from models.exceptions import ConflictError, ValidationError
 
@@ -379,7 +379,7 @@ class TrioScoringService:
                 )
             raise ValidationError(
                 _(
-                    "Questo punteggio non torna con l'ordine del girone: "
+                    "Questo punteggio non torna con l'ordine delle sfide: "
                     "il primo triangolo è fra il primo e il secondo giocatore, "
                     "il secondo fra il primo e il terzo."
                 )

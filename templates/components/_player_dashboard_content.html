@@ -41,7 +41,7 @@
         <dd style="margin: 0; text-align: right;">{{ _('Al') if proposal.is_race_to else _('Esatto numero') }} <span class="c7-num">{{ proposal.distance }}</span></dd>
         {% if proposal.entry_fee %}
         <dt class="text-muted" style="font-weight: 700;">{{ _('Quota') }}</dt>
-        <dd class="c7-num" style="margin: 0; text-align: right;">€{{ proposal.entry_fee }}</dd>
+        <dd class="c7-num" style="margin: 0; text-align: right;">{{ proposal.entry_fee|quota }}</dd>
         {% endif %}
       </dl>
 

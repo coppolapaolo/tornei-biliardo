@@ -115,7 +115,7 @@
                            nome, non in una colonna che nella colonna laterale
                            non entrerebbe (issue #152). #}
                         {% set _gr = girone_della_riga(player_class) if _con_girone else none %}
-                        {% if _gr %}<div style="font-size: 12px; color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)sº girone %(nome)s', pos=_gr[1], nome=_gr[0]) }}</div>{% endif %}
+                        {% if _gr %}<div style="font-size: 12px; color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)s girone %(nome)s', pos=_gr[1]|ordinale, nome=_gr[0]) }}</div>{% endif %}
                         {# Le finali per piazzamento (ADR-081): com'è andata la finale. #}
                         {% set _f = _finali.get(player_class.user_id) if _finali else none %}
                         {% if _f %}{{ taglio.segno({'finale': _f}) }}{% endif %}

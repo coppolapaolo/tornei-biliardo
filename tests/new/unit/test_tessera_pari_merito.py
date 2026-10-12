@@ -53,13 +53,13 @@ class TestIlTesto:
 
     def test_la_tessera_dice_pari_merito_in_classifica(self):
         testo = self._template()
-        assert "Sei %(pos)s° pari merito su %(tot)s'" in testo
-        assert "Sei %(pos)s° pari merito su %(tot)s nel girone %(nome)s" in testo
+        assert "Sei %(pos)s pari merito su %(tot)s'" in testo
+        assert "Sei %(pos)s pari merito su %(tot)s nel girone %(nome)s" in testo
         assert "card.classifica.pari_merito" in testo
 
     def test_la_tessera_dice_pari_merito_a_gara_finita(self):
         testo = self._template()
-        assert "Sei arrivato %(pos)s° pari merito su %(tot)s" in testo
+        assert "Sei arrivato %(pos)s pari merito su %(tot)s" in testo
         assert "card.piazzamento.pari_merito" in testo
 
     def test_i_view_model_portano_il_pari_merito(self):

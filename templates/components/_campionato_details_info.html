@@ -108,7 +108,7 @@
             {% elif campionato.default_entry_fee %}
             <div class="col-md-2">
                 <small class="text-muted">{{ _("Quota") }}:</small><br>
-                <span>€{{ "%.2f"|format(campionato.default_entry_fee) }}</span>
+                <span>{{ campionato.default_entry_fee|quota }}</span>
             </div>
             {% endif %}
             {% if campionato.default_rounds_count %}

@@ -146,7 +146,7 @@ blocks:
       sistema e i criteri dei pari merito della gara; ogni partita dice il
       suo girone, e la tessera della gara ti dice dove sei nel tuo («Sei 2°
       su 6 nel girone B»). A gara conclusa compare la classifica della gara,
-      con accanto a ogni nome la posizione nel girone («1º girone A»).
+      con accanto a ogni nome la posizione nel girone («1° girone A»).
 
   - type: shot
     shot: gara-gironi-classifica

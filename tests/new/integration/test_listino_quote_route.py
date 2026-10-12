@@ -107,7 +107,7 @@ class TestGaraSingola:
             as_text=True
         )
         assert "Serie B, Serie C" in pagina
-        assert "€30.00" in pagina
+        assert "30 €" in pagina
 
     def test_senza_listino_resta_la_quota_unica(self, client, db_session, direttore):
         _login(client, direttore)

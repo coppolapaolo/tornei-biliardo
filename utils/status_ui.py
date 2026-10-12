@@ -423,3 +423,8 @@ def register_status_filters(app) -> None:
     app.jinja_env.filters["tpa_display"] = format_tpa
     # Payload JSON dei flash "di trasporto" (vedi utils/page_modal.py)
     app.jinja_env.filters["fromjson"] = parse_json
+    # «1°» in italiano, «1st» in inglese: il segno della posizione lo mette il
+    # filtro, perché il testo tradotto non può sceglierlo al posto del numero.
+    from utils.ordinale import ordinale
+
+    app.jinja_env.filters["ordinale"] = ordinale

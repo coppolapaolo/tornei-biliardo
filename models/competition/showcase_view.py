@@ -545,7 +545,7 @@ def costruisci_vetrina(gara: Gara) -> Vetrina:
     # Con un listino per categoria (ADR-079) la riga è il listino: «Serie A
     # 30 € · Serie B, Serie C 20 €». Il giocatore non vede «la sua» quota,
     # perché la categoria la assegna il direttore.
-    from models.categoria.listino import formatta_quota, gruppi_di
+    from models.categoria.listino import gruppi_di, importo_quota
 
     listino = gruppi_di(gara)
     if listino:
@@ -554,11 +554,7 @@ def costruisci_vetrina(gara: Gara) -> Vetrina:
                 icona="fa-euro-sign",
                 etichetta=_("Quote"),
                 valore=" · ".join(
-                    _(
-                        "%(categorie)s %(fee)s €",
-                        categorie=", ".join(gruppo.nomi),
-                        fee=formatta_quota(gruppo.quota),
-                    )
+                    f"{', '.join(gruppo.nomi)} {importo_quota(gruppo.quota)}"
                     for gruppo in listino
                 ),
             )
@@ -571,7 +567,7 @@ def costruisci_vetrina(gara: Gara) -> Vetrina:
                 valore=(
                     _("Gratuito")
                     if not gara.entry_fee
-                    else _("%(fee)s €", fee=f"{gara.entry_fee:g}")
+                    else importo_quota(gara.entry_fee)
                 ),
             )
         )

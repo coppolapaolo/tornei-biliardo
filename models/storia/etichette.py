@@ -323,7 +323,12 @@ def valore(campo: str, grezzo: str | None) -> str:
     if grezzo in noti:
         return str(noti[grezzo])
     if campo == "entry_fee":
-        return f"{grezzo} €"
+        from models.categoria.listino import importo_quota
+
+        try:
+            return importo_quota(float(grezzo))
+        except ValueError:
+            return f"{grezzo} €"
     if campo in ("weight", "playoff_weight"):
         return f"×{grezzo}"
     return grezzo

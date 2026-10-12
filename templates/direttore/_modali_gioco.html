@@ -59,7 +59,7 @@
               <div>
                 <strong>{{ _('Trio (tutti contro tutti):') }}</strong>
                 {% if trio_config %}
-                {{ _('%(gironi)s gironi, max %(max_racks)s triangoli per giocatore', gironi=trio_config.num_rounds,
+                {{ _('%(giri)s giri, max %(max_racks)s triangoli per giocatore', giri=trio_config.num_rounds,
                 max_racks=trio_config.max_racks_per_player) }}
                 {% if trio_config.bonus_racks > 0 %}
                 <br>{{ _('Bonus: +%(bonus)s triangoli equamente distribuiti', bonus=trio_config.bonus_racks) }}

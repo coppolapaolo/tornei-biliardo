@@ -168,7 +168,7 @@ class TestAGaraConclusa:
         _come(client, director)
         html = _pagina(client, gara)
         assert 'data-girone="A"' not in html
-        assert "1º girone A" in html and "1º girone B" in html
+        assert "1° girone A" in html and "1° girone B" in html
 
 
 class TestGironeUnico:
