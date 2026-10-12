@@ -720,6 +720,15 @@ def create_app(config_name=None, *, da_script: bool = False):
 
     app.jinja_env.globals["gironi_in_pagina"] = gironi_in_pagina
     app.jinja_env.globals["girone_della_riga"] = girone_della_riga
+    # La fase finale dopo i gironi, per le note e le righe (ADR-081): quella
+    # che si gioca davvero, e la finale per piazzamento di ognuno.
+    from models.competition.fase_finale_service import (
+        fase_finale_della_gara,
+        finali_dei_giocatori,
+    )
+
+    app.jinja_env.globals["fase_finale_della_gara"] = fase_finale_della_gara
+    app.jinja_env.globals["finali_della_gara"] = finali_dei_giocatori
     # La posizione da mostrare: il pari merito sta sulla più alta, anche
     # quando a separare due giocatori è solo il sorteggio (2026-10-11).
     from models.classification.models import (

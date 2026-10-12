@@ -163,19 +163,29 @@ def nomi_delle_partite(gara: Any, partite: Iterable[Any]) -> Dict[int, Any]:
     coppia (`bracket_slot`), «Finale 1°/2° posto» per la 0, «Finale 3°/4°
     posto» per la 1 — `NomeRound("piazzamento", coppia + 1)`.
     """
+    tutte = list(partite)
+    nomi = nomi_dei_nodi(albero_della_gara(gara, tutte))
+    nomi.update(nomi_delle_finali(tutte))
+    return nomi
+
+
+def nomi_delle_finali(partite: Iterable[Any]) -> Dict[int, Any]:
+    """Il nome di ogni finale per piazzamento, per id: «Finale 3°/4° posto».
+
+    Le pagine della gara le nominano una per una, sulla card del direttore e
+    nella lista pubblica del turno delle finali (ADR-081): senza albero da
+    costruire, dalla sola coppia (`bracket_slot`, da 0).
+    """
     from models.competition.tabellone_view import NomeRound
     from models.matchmaking.bracket import BRACKET_PLACEMENT
 
-    tutte = list(partite)
-    nomi = nomi_dei_nodi(albero_della_gara(gara, tutte))
-    for m in tutte:
-        if (
-            getattr(m, "bracket_type", None) == BRACKET_PLACEMENT
-            and m.id is not None
-            and m.bracket_slot is not None
-        ):
-            nomi[m.id] = NomeRound("piazzamento", m.bracket_slot + 1)
-    return nomi
+    return {
+        m.id: NomeRound("piazzamento", m.bracket_slot + 1)
+        for m in partite
+        if getattr(m, "bracket_type", None) == BRACKET_PLACEMENT
+        and m.id is not None
+        and m.bracket_slot is not None
+    }
 
 
 def turno_delle_finali(gara: Any, partite: Iterable[Any]) -> Optional[int]:
@@ -239,6 +249,7 @@ __all__ = [
     "albero_della_gara",
     "nomi_dei_nodi",
     "nomi_del_turno_delle_finali",
+    "nomi_delle_finali",
     "nomi_delle_partite",
     "tabellone_della_gara",
     "turno_delle_finali",

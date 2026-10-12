@@ -47,10 +47,13 @@
       {% endif %}
     </div>
     {% set _girone_partita = match.bracket_group is not none and gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value %}
-    {% if _girone_partita or (_finita and match.corrections) %}
+    {# Le finali per piazzamento (ADR-081): quale finale è. #}
+    {% set _nome_finale = nomi_partite_finali.get(match.id) if nomi_partite_finali is defined and nomi_partite_finali else none %}
+    {% if _girone_partita or _nome_finale or (_finita and match.corrections) %}
     <div class="c7-rows__sub">
       {% if _girone_partita %}{{ _('Girone %(nome)s', nome=nome_del_girone(match.bracket_group)) }}{% endif %}
-      {% if _girone_partita and _finita and match.corrections %} · {% endif %}
+      {% if _nome_finale %}{{ t.nome_partita(_nome_finale, match.round_number) }}{% endif %}
+      {% if (_girone_partita or _nome_finale) and _finita and match.corrections %} · {% endif %}
       {% if _finita and match.corrections %}<i class="fas fa-pen" style="font-size:9px"></i> {{ _('corretto') }}{% endif %}
     </div>
     {% endif %}

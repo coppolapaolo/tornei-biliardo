@@ -668,7 +668,10 @@ def schermo_sala(token):
     )
     from models.competition.showcase_view import costruisci_vetrina, descrizione_social
     from models.match.models import Match
-    from models.competition.fase_finale_service import chi_va_al_tabellone
+    from models.competition.fase_finale_service import (
+        chi_va_al_tabellone,
+        finali_dei_giocatori,
+    )
     from models.competition.tabellone_della_gara import tabellone_della_gara
     from models.status_enum import GaraStatus
 
@@ -698,6 +701,7 @@ def schermo_sala(token):
         vetrina.iscritti,
         posizioni=posizioni,
         al_tabellone=chi_va_al_tabellone(gara, partite),
+        finali=finali_dei_giocatori(gara, partite),
     )
     return render_template(
         "public/schermo_sala.html",

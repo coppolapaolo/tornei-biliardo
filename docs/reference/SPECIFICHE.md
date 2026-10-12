@@ -139,6 +139,7 @@ Una possibile **strategia di abbinamento** è **_amalfi_**. Un'altra possibile s
 - **Tutte le finali sono un turno solo**, giocato in parallelo: due gironi da 4 fanno 3 + 1 turni, 5 + 4 ne fanno 5 + 1. Le partite si chiamano «Finale 1°/2° posto», «Finale 3°/4° posto», e così via.
 - **Il pareggio non esiste**: le partite si giocano «al N» (con «esattamente N» la gara viene rifiutata), come nel tabellone. Le regole della fase finale valgono anche qui — limite di tempo, distanza — e la **finale**, per le regole della sola finale, è la partita per il 1°/2° posto; le altre seguono la fase finale.
 - **Chi si ritira** perde la sua finale a tavolino, come nel tabellone; se si sono ritirati tutti e due, la finale non si gioca e i due restano a pari merito sui loro posti.
+- **Nelle pagine** (2026-10-12): finiti i gironi, accanto a ogni riga delle classifiche per girone la finale che giocherà — «→ finale 3°/4° posto con Andrea Ferri (2° girone B)» — e, con gironi di taglia diversa, «9° diretto»; giocate le finali, com'è andata. Il turno delle finali si chiama «Finali per piazzamento» e ogni partita ha il suo nome. Con una fase finale, tabellone o finali, **lo spareggio SSR non si gioca**: il regolamento della gara non lo promette.
 
 Una volta che tutti i match del turno sono terminati, è possibile modificare la classifica della gara. Quindi un turno prende la classifica precedente al turno, i risultati dei match e restituisce la classifica aggiornata.
 

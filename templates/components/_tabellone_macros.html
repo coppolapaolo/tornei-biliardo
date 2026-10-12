@@ -134,11 +134,16 @@
 {%- endif -%}
 {%- endmacro %}
 
-{# Perche' uno e' in quella banda della classifica finale: dove e' uscito. #}
+{# Perche' uno e' in quella banda della classifica finale: dove e' uscito.
+   Le finali per piazzamento (ADR-081) passano di qui con
+   `gironi_in_pagina.FinaleInPagina`: «vince la finale 3°/4° posto», e chi
+   non ha finale «9° diretto» (`posto_diretto`). Una finale senza esito
+   (ritirati tutti e due) non dice niente. #}
 {% macro uscita(riga) -%}
 {%- set n = riga.uscita -%}
-{%- if not n -%}
+{%- if not n -%}{% if riga.posto_diretto %}{{ _('%(pos)s° diretto', pos=riga.posto_diretto) }}{% endif %}
 {%- elif riga.position == 1 -%}{{ _('vince la gara') }}
+{%- elif n.chiave == 'piazzamento' -%}{{ _('vince la finale %(primo)s°/%(secondo)s° posto', primo=2 * n.numero - 1, secondo=2 * n.numero) if riga.vinta else _('perde la finale %(primo)s°/%(secondo)s° posto', primo=2 * n.numero - 1, secondo=2 * n.numero) }}
 {%- elif n.chiave == 'finalina' -%}{{ _('vince la finale 3°/4°') if riga.vinta else _('perde la finale 3°/4°') }}
 {%- elif n.chiave == 'finale' -%}{{ _('perde la finale') }}
 {%- elif n.chiave == 'bella' -%}{{ _('perde la bella') }}

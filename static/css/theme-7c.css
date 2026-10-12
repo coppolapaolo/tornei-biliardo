@@ -4977,3 +4977,13 @@ button.c7-draw__outcome:active { transform: scale(var(--c7-press)); transition-d
 }
 .c7-taglio__sotto--dentro { color: var(--c7-ok); }
 .c7-taglio-tr > td { border-top: 2px dashed var(--c7-accent) !important; }
+/* Le finali per piazzamento (ADR-081): accanto a ogni riga del girone la
+   finale che giocherà, «→ finale 3°/4° posto con …», poi com'è andata. Nella
+   tabella larga sta sotto il nome; sullo schermo in sala accanto, come il
+   turno d'uscita delle bande. */
+.c7-finale { color: var(--c7-ink-muted); white-space: normal; }
+.c7-finale__segno { display: block; font-size: 12px; font-weight: 700; line-height: 1.3; }
+.c7-sala__riga .c7-finale__segno { flex-shrink: 1; min-width: 0; max-width: 45%; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Il nome della finale sulle partite pubbliche (card e tabella). */
+.c7-match-finale { font-size: 12px; font-weight: 800; color: var(--c7-accent); }
+.c7-match-finale-tr > td { padding-bottom: 0 !important; border-bottom: 0 !important; }
