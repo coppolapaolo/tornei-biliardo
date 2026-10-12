@@ -12,12 +12,77 @@ from datetime import datetime
 from flask_babel import gettext as _
 
 if TYPE_CHECKING:
+    from datetime import date, time
+    from zoneinfo import ZoneInfo
+
     from models.shared.operation_result import OperationResult
 
 from models.base import db, utc_now
 from models.status_enum import MatchStatus
 from .models import Match, Rack, TrioMatch
 from models.transaction.manager import transactional
+
+
+def _orario(testo: str) -> "time":
+    from datetime import time
+
+    try:
+        ore, minuti = testo.split(":")[:2]
+        return time(int(ore), int(minuti))
+    except (ValueError, IndexError):
+        raise ValueError(f"Formato ora non valido: {testo}")
+
+
+def orari_della_partita(
+    data_gara: "date",
+    ora_gara: Optional["time"],
+    inizio: Optional[str],
+    fine: Optional[str],
+    inizio_attuale: Optional[datetime],
+    tz: "ZoneInfo",
+) -> "tuple[Optional[datetime], Optional[datetime]]":
+    """Inizio e fine in UTC da due orari «HH:MM» digitati nel fuso `tz`.
+
+    Il giorno si deduce, **nell'ora di chi scrive**:
+
+    - l'inizio è il giorno della gara, o quello dopo se l'orario viene prima
+      dell'ora d'inizio della gara (la serata passa la mezzanotte);
+    - la fine è il giorno dell'inizio, o quello dopo se non viene dopo
+      l'inizio. Senza un inizio nuovo vale quello già salvato, riportato
+      nell'ora locale prima del confronto: un inizio in UTC confrontato con
+      una fine locale sbaglierebbe giorno attorno alla mezzanotte.
+
+    Torna `None` per ciò che non è stato dato.
+    """
+    from datetime import time, timedelta
+
+    from utils.local_time import to_local_naive, to_utc_naive
+
+    ora_gara = ora_gara or time(0, 0)
+    inizio_locale = None
+    if inizio:
+        ora_inizio = _orario(inizio)
+        giorno = data_gara + timedelta(days=1) if ora_inizio < ora_gara else data_gara
+        inizio_locale = datetime.combine(giorno, ora_inizio)
+
+    fine_locale = None
+    if fine:
+        ora_fine = _orario(fine)
+        riferimento = inizio_locale
+        if riferimento is None and inizio_attuale is not None:
+            riferimento = to_local_naive(inizio_attuale, tz)
+        if riferimento is not None:
+            giorno, confronto = riferimento.date(), riferimento.time()
+        else:
+            giorno, confronto = data_gara, ora_gara
+        if ora_fine <= confronto:
+            giorno += timedelta(days=1)
+        fine_locale = datetime.combine(giorno, ora_fine)
+
+    return (
+        to_utc_naive(inizio_locale, tz) if inizio_locale else None,
+        to_utc_naive(fine_locale, tz) if fine_locale else None,
+    )
 
 
 class MatchService:
@@ -97,28 +162,19 @@ class MatchService:
         match_id: int,
         start_time_str: Optional[str] = None,
         end_time_str: Optional[str] = None,
+        tz: Optional["ZoneInfo"] = None,
     ) -> Match:
-        """Update match start and end times.
+        """Aggiorna inizio e fine della partita da due orari «HH:MM».
 
-        Times are provided as HH:MM strings. The method infers the correct date
-        based on the gara's date and time, handling midnight crossings.
-
-        Date inference logic:
-        - started_at: If start_time < gara.time → next day
-        - ended_at: If end_time <= start_time → next day from started_at
-
-        Args:
-            match_id: ID of the match to update
-            start_time_str: Start time in "HH:MM" format (optional)
-            end_time_str: End time in "HH:MM" format (optional)
-
-        Returns:
-            The updated Match object
+        Gli orari sono quelli che il direttore legge e digita, cioè nel **suo**
+        fuso (ADR-043): il giorno si deduce dalla gara (`orari_della_partita`)
+        e sul DB vanno in UTC, come li scrive `utc_now()` quando la partita
+        parte.
 
         Raises:
-            ValueError: If match not found or times are invalid
+            ValueError: partita assente, senza gara, o orario malformato.
         """
-        from datetime import time as datetime_time, timedelta
+        from utils.local_time import resolve_timezone
 
         match = db.session.get(Match, match_id)
         if not match:
@@ -130,49 +186,18 @@ class MatchService:
                 "Match senza gara associata non supportato per update_times"
             )
 
-        gara_date = gara.date
-        gara_time = gara.time or datetime_time(0, 0)
-
-        # Parse start_time and calculate started_at
-        if start_time_str:
-            try:
-                parts = start_time_str.split(":")
-                start_time = datetime_time(int(parts[0]), int(parts[1]))
-            except (ValueError, IndexError):
-                raise ValueError(f"Formato ora non valido: {start_time_str}")
-
-            # If start_time < gara.time → next day
-            if start_time < gara_time:
-                start_date = gara_date + timedelta(days=1)
-            else:
-                start_date = gara_date
-
-            match.started_at = datetime.combine(start_date, start_time)
-
-        # Parse end_time and calculate ended_at
-        if end_time_str:
-            try:
-                parts = end_time_str.split(":")
-                end_time = datetime_time(int(parts[0]), int(parts[1]))
-            except (ValueError, IndexError):
-                raise ValueError(f"Formato ora non valido: {end_time_str}")
-
-            # Base date is started_at.date() if available, else gara.date
-            if match.started_at:
-                base_date = match.started_at.date()
-                # Get start_time for comparison
-                start_time_for_cmp = match.started_at.time()
-            else:
-                base_date = gara_date
-                start_time_for_cmp = gara_time
-
-            # If end_time <= start_time → next day
-            if end_time <= start_time_for_cmp:
-                end_date = base_date + timedelta(days=1)
-            else:
-                end_date = base_date
-
-            match.ended_at = datetime.combine(end_date, end_time)
+        inizio, fine = orari_della_partita(
+            data_gara=gara.date,
+            ora_gara=gara.time,
+            inizio=start_time_str,
+            fine=end_time_str,
+            inizio_attuale=match.started_at,
+            tz=tz or resolve_timezone(),
+        )
+        if inizio is not None:
+            match.started_at = inizio
+        if fine is not None:
+            match.ended_at = fine
 
         db.session.add(match)
         return match

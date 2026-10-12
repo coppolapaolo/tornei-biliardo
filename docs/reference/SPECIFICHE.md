@@ -196,7 +196,9 @@ Se il numero di giocatori è dispari, si può gestire con diverse opzioni:
 
 Il **trio** è possibile solo per le distanze da 2 a 7. I giocatori nel trio giocano uno o più mini gironi all'italiana (round robin) in cui tutti giocano con gli altri un solo rack:
 
-| Distanza | mini gironi | rack giocati da ogni giocatore | rack totali | punteggio (RACK) |
+_Nota del 2026-10-12: nell'interfaccia e nella guida ogni mini girone del trio si chiama **giro** («Trio · 2 giri», in inglese «laps»). «Girone» resta la fase a gironi della gara: la card del trio diceva «Trio · 2 gironi», in inglese «2 groups», con la stessa parola dei gironi multipli._
+
+| Distanza | giri (mini gironi) | rack giocati da ogni giocatore | rack totali | punteggio (RACK) |
 | --- | --- | ---| ---| --- |
 | 2 | 1 | 2 | 3 | rack vinti |
 | 3 | 1 | 2 | 3 | 1 + rack vinti |

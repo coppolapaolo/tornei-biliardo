@@ -69,7 +69,7 @@
 {# Il nome della voce, quanti iscritti ha qui, se e' disattivata. #}
 {% macro _sotto(iscritti, attiva, quota=none) -%}
 {%- if iscritti %}{{ ngettext('%(num)s iscritto in questa gara', '%(num)s iscritti in questa gara', iscritti) }}{% else %}{{ _('Nessun iscritto in questa gara') }}{% endif -%}
-{%- if quota is not none %} · {{ _('quota %(fee)s €', fee=formatta_quota(quota)) }}{% endif -%}
+{%- if quota is not none %} · {{ _('quota %(fee)s', fee=quota|quota) }}{% endif -%}
 {%- if not attiva %} · {{ _('Disattivata') }}{% endif -%}
 {%- endmacro %}
 

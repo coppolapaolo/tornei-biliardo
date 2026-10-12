@@ -14,7 +14,7 @@
    1°/2° posto» per la 1, «Finale 3°/4° posto» per la 2 (ADR-081,
    emendamento «le finali per piazzamento»). #}
 {% macro finale_per_il_posto(coppia) -%}
-{{ _('Finale %(primo)s°/%(secondo)s° posto', primo=2 * coppia - 1, secondo=2 * coppia) }}
+{{ _('Finale %(primo)s/%(secondo)s posto', primo=(2 * coppia - 1)|ordinale, secondo=(2 * coppia)|ordinale) }}
 {%- endmacro %}
 
 {# Il nome di un round o di una colonna: «Semifinali», «Recupero 2». #}
@@ -141,9 +141,9 @@
    (ritirati tutti e due) non dice niente. #}
 {% macro uscita(riga) -%}
 {%- set n = riga.uscita -%}
-{%- if not n -%}{% if riga.posto_diretto %}{{ _('%(pos)s° diretto', pos=riga.posto_diretto) }}{% endif %}
+{%- if not n -%}{% if riga.posto_diretto %}{{ _('%(pos)s diretto', pos=riga.posto_diretto|ordinale) }}{% endif %}
 {%- elif riga.position == 1 -%}{{ _('vince la gara') }}
-{%- elif n.chiave == 'piazzamento' -%}{{ _('vince la finale %(primo)s°/%(secondo)s° posto', primo=2 * n.numero - 1, secondo=2 * n.numero) if riga.vinta else _('perde la finale %(primo)s°/%(secondo)s° posto', primo=2 * n.numero - 1, secondo=2 * n.numero) }}
+{%- elif n.chiave == 'piazzamento' -%}{{ _('vince la finale %(primo)s/%(secondo)s posto', primo=(2 * n.numero - 1)|ordinale, secondo=(2 * n.numero)|ordinale) if riga.vinta else _('perde la finale %(primo)s/%(secondo)s posto', primo=(2 * n.numero - 1)|ordinale, secondo=(2 * n.numero)|ordinale) }}
 {%- elif n.chiave == 'finalina' -%}{{ _('vince la finale 3°/4°') if riga.vinta else _('perde la finale 3°/4°') }}
 {%- elif n.chiave == 'finale' -%}{{ _('perde la finale') }}
 {%- elif n.chiave == 'bella' -%}{{ _('perde la bella') }}
@@ -164,7 +164,7 @@
    merito»); fino a quella data qui si mostrava l'intervallo «5°–8°». Una sola
    definizione per classifica finale, schermo in sala e podio. #}
 {% macro posto_della_banda(posizione, condivisa) -%}
-{%- if condivisa -%}{{ _('%(pos)s° pari merito', pos=posizione) }}{%- else -%}{{ posizione }}°{%- endif -%}
+{%- if condivisa -%}{{ _('%(pos)s pari merito', pos=posizione|ordinale) }}{%- else -%}{{ posizione|ordinale }}{%- endif -%}
 {%- endmacro %}
 
 {# Il nome della formula di gara, al posto del valore grezzo in colonna: lo dà

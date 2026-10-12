@@ -130,8 +130,24 @@ def gruppi_di(entita: Any) -> List[GruppoListino]:
 
 
 def formatta_quota(quota: float) -> str:
-    """«30», «12.5»: la quota senza decimali inutili."""
-    return f"{quota:g}"
+    """«30», «12.5»: la quota senza decimali inutili.
+
+    È il numero da rimettere in un campo del modulo; per mostrarla a chi legge
+    c'è `importo_quota`, che ci aggiunge la valuta.
+    """
+    return f"{float(quota):g}"
+
+
+def importo_quota(quota: float) -> str:
+    """«30 €» in italiano, «€30» in inglese: l'unica forma di una quota in pagina.
+
+    Fino all'ottobre 2026 ne giravano due: «€30.00» nelle informazioni della
+    gara e nelle tessere, «30 €» nella vetrina e nel listino. Lo stesso prezzo
+    scritto in due modi a due righe di distanza sembra due prezzi.
+    """
+    from flask_babel import gettext as _
+
+    return _("%(fee)s €", fee=formatta_quota(quota))
 
 
 # ── La forma nella storia ────────────────────────────────────────────────
@@ -156,9 +172,7 @@ def in_parole(grezzo: str) -> str:
         righe = json.loads(grezzo)
     except (TypeError, ValueError):
         return grezzo
-    return " · ".join(
-        f"{nome} {formatta_quota(float(quota))} €" for nome, quota in righe
-    )
+    return " · ".join(f"{nome} {importo_quota(float(quota))}" for nome, quota in righe)
 
 
 # ── Lettura del modulo ───────────────────────────────────────────────────

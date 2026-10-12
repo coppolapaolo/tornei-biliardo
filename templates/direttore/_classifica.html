@@ -37,7 +37,7 @@
       <span class="c7-classifica__gioc c7-rows__title">{{ riga.user.username }}{% if sotto %}{{ sotto }}{% endif %}</span>
       {# A gara finita, da dove viene ognuno: «1º girone A» (ADR-076). #}
       {% if girone %}
-      <span class="c7-state c7-classifica__pill c7-classifica__girone-pill" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)sº girone %(nome)s', pos=girone[1], nome=girone[0]) }}</span>
+      <span class="c7-state c7-classifica__pill c7-classifica__girone-pill" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)s girone %(nome)s', pos=girone[1]|ordinale, nome=girone[0]) }}</span>
       {% endif %}
       {{ caller() }}
     </div>

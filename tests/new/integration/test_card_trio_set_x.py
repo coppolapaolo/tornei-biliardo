@@ -245,7 +245,7 @@ def test_la_card_del_trio_ha_tre_stepper(client, admin, db_session, isolated_pla
     assert 'data-tipo="trio"' in card
     assert card.count("passoPunteggio(this, 1)") == 3
     assert 'data-piu="1,1,0"' in card
-    assert "Trio · 2 gironi" in card
+    assert "Trio · 2 giri" in card
     assert f"/admin/gara/trio/{trio.id}/punteggio" in card
     assert 'data-correggibile="1"' in card
     assert "Inserisci risultato" not in html

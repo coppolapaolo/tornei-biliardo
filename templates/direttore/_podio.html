@@ -38,7 +38,7 @@
          emendamento del 2026-10-11); fuori dal tabellone la posizione
          mostrata (SPECIFICHE.md, «Come si mostra il pari merito»). #}
       {% if gradino|length > 1 %}{{ tb_podio.posto_della_banda(riga.position, true) }}
-      {% else %}{{ posizione_mostrata(riga) }}°{% endif %}
+      {% else %}{{ posizione_mostrata(riga)|ordinale }}{% endif %}
       {%- if ssr_scores_map is defined and ssr_scores_map and ssr_scores_map.get(riga.user_id) is not none %} · SSR {{ ssr_scores_map.get(riga.user_id) }}{% endif %}
     </div>
   </div>

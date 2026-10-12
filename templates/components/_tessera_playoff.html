@@ -68,7 +68,7 @@
     <div class="d-flex align-items-center gap-2 mt-2" style="font-size:12px;font-weight:700">
       <span class="flex-fill c7-tessera__muted">
         {% if card.quota %}
-          {{ _('Quota') }} <span class="c7-num">€{{ "%.2f"|format(card.quota) }}</span>
+          {{ _('Quota') }} <span class="c7-num">{{ card.quota|quota }}</span>
         {% else %}
           {{ _('Gratuita') }}
         {% endif %}

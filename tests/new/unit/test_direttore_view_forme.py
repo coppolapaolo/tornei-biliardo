@@ -99,7 +99,7 @@ def test_la_scheda_del_trio_dice_limiti_e_piu_ammessi():
     scheda = scheda_trio(partita)
     assert scheda is not None
     assert scheda.nomi == ("Anna", "Bruno", "Carla")
-    assert (scheda.gironi, scheda.massimo, scheda.totale) == (2, 4, 6)
+    assert (scheda.giri, scheda.massimo, scheda.totale) == (2, 4, 6)
     # Il primo triangolo e' fra il primo e il secondo: il terzo aspetta.
     assert scheda.piu == (True, True, False)
 

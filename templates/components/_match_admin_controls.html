@@ -237,12 +237,12 @@
             <div>
                 <label class="c7-label" for="matchStartTime">{{ _('Inizio') }}</label>
                 <input type="time" class="form-control" id="matchStartTime"
-                    value="{{ match.started_at.strftime('%H:%M') if match.started_at else '' }}">
+                    value="{{ match.started_at|time_local if match.started_at else '' }}">
             </div>
             <div>
                 <label class="c7-label" for="matchEndTime">{{ _('Fine') }}</label>
                 <input type="time" class="form-control" id="matchEndTime"
-                    value="{{ match.ended_at.strftime('%H:%M') if match.ended_at else '' }}">
+                    value="{{ match.ended_at|time_local if match.ended_at else '' }}">
             </div>
         </div>
         <button class="btn btn-secondary w-100" onclick="updateMatchTimes({{ match.id }})">

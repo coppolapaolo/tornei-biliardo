@@ -795,11 +795,18 @@ def create_app(config_name=None, *, da_script: bool = False):
 
     # Il listino delle quote per categoria (ADR-079): voci e gruppi per quota
     # di una gara o di un campionato, e la quota senza decimali inutili.
-    from models.categoria.listino import formatta_quota, gruppi_di, listino_di
+    from models.categoria.listino import (
+        formatta_quota,
+        gruppi_di,
+        importo_quota,
+        listino_di,
+    )
 
     app.jinja_env.globals["listino_quote"] = gruppi_di
     app.jinja_env.globals["listino_voci"] = listino_di
     app.jinja_env.globals["formatta_quota"] = formatta_quota
+    # «30 €» / «€30»: l'unica forma di una quota mostrata in pagina.
+    app.jinja_env.filters["quota"] = importo_quota
 
     # I preset del direttore (ADR-082): il selettore «Parti da un preset».
     from models.preset.service import preset_dell_utente

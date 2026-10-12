@@ -419,7 +419,7 @@ class SchedaTrio:
     ids: tuple
     nomi: tuple
     punti: tuple
-    gironi: int
+    giri: int
     massimo: int
     totale: int
     piu: tuple
@@ -440,7 +440,7 @@ def scheda_trio(match) -> Optional[SchedaTrio]:
         ids=tuple(trio.player_ids),
         nomi=tuple(p.username if p else "" for p in giocatori),
         punti=punti,
-        gironi=config.num_rounds,
+        giri=config.num_rounds,
         massimo=massimo_per_giocatore(config),
         totale=config.total_played_racks,
         piu=tuple(piu_ammessi(config, punti)),

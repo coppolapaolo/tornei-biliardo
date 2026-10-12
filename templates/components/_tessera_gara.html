@@ -159,8 +159,8 @@
       {% if card.piazzamento %}
       <div class="c7-tessera__meta mt-2">
         {# Il pari merito si dice, sulla posizione più alta (2026-10-11). #}
-        {% if card.piazzamento.pari_merito %}{{ _('Sei arrivato %(pos)s° pari merito su %(tot)s', pos=card.piazzamento.posizione, tot=card.piazzamento.su) }}
-        {% else %}{{ _('Sei arrivato %(pos)s° su %(tot)s', pos=card.piazzamento.posizione, tot=card.piazzamento.su) }}{% endif %}
+        {% if card.piazzamento.pari_merito %}{{ _('Sei arrivato %(pos)s pari merito su %(tot)s', pos=card.piazzamento.posizione|ordinale, tot=card.piazzamento.su) }}
+        {% else %}{{ _('Sei arrivato %(pos)s su %(tot)s', pos=card.piazzamento.posizione|ordinale, tot=card.piazzamento.su) }}{% endif %}
         <span class="c7-sep">·</span>
         {{ _('%(vinte)s vittorie su %(giocate)s', vinte=card.piazzamento.vinte, giocate=card.piazzamento.giocate) }}
       </div>
@@ -237,10 +237,10 @@
         {# Chi è pari merito lo legge: «Sei 1° pari merito», mai «Sei 2°»
            perché il sorteggio l'ha messo sotto (SPECIFICHE.md, «Classifica»,
            nota del 2026-10-11). #}
-        {% if card.classifica.girone and card.classifica.pari_merito %}{{ _('Sei %(pos)s° pari merito su %(tot)s nel girone %(nome)s', pos=card.classifica.posizione, tot=card.classifica.su, nome=card.classifica.girone) }}
-        {% elif card.classifica.girone %}{{ _('Sei %(pos)s° su %(tot)s nel girone %(nome)s', pos=card.classifica.posizione, tot=card.classifica.su, nome=card.classifica.girone) }}
-        {% elif card.classifica.pari_merito %}{{ _('Sei %(pos)s° pari merito su %(tot)s', pos=card.classifica.posizione, tot=card.classifica.su) }}
-        {% else %}{{ _('Sei %(pos)s° su %(tot)s', pos=card.classifica.posizione, tot=card.classifica.su) }}{% endif %}
+        {% if card.classifica.girone and card.classifica.pari_merito %}{{ _('Sei %(pos)s pari merito su %(tot)s nel girone %(nome)s', pos=card.classifica.posizione|ordinale, tot=card.classifica.su, nome=card.classifica.girone) }}
+        {% elif card.classifica.girone %}{{ _('Sei %(pos)s su %(tot)s nel girone %(nome)s', pos=card.classifica.posizione|ordinale, tot=card.classifica.su, nome=card.classifica.girone) }}
+        {% elif card.classifica.pari_merito %}{{ _('Sei %(pos)s pari merito su %(tot)s', pos=card.classifica.posizione|ordinale, tot=card.classifica.su) }}
+        {% else %}{{ _('Sei %(pos)s su %(tot)s', pos=card.classifica.posizione|ordinale, tot=card.classifica.su) }}{% endif %}
       </div>
       {% endif %}
       {% if card.altre_partite %}
@@ -279,7 +279,7 @@
             {% import "components/_listino.html" as listino with context %}
             {{ _('Quote') }} {{ listino.testo(_listino) }}
           {% elif gara.entry_fee and gara.entry_fee > 0 %}
-            {{ _('Quota') }} <span class="c7-num">€{{ "%.2f"|format(gara.entry_fee) }}</span>
+            {{ _('Quota') }} <span class="c7-num">{{ gara.entry_fee|quota }}</span>
           {% else %}
             {{ _('Gratuita') }}
           {% endif %}

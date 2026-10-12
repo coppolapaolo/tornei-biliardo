@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-12 03:28+0200\n"
+"POT-Creation-Date: 2026-10-12 04:38+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -22,23 +22,23 @@ msgstr ""
 msgid "Accedi per vedere questa pagina."
 msgstr ""
 
-#: app.py:1030 templates/errors/403.html:3
+#: app.py:1037 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
-#: app.py:1048
+#: app.py:1055
 msgid "Non è il tuo turno"
 msgstr ""
 
-#: app.py:1049
+#: app.py:1056
 msgid "Colpo irregolare"
 msgstr ""
 
-#: app.py:1068
+#: app.py:1075
 msgid "Operazione non consentita"
 msgstr ""
 
-#: app.py:1082
+#: app.py:1089
 msgid "Tiro non valido"
 msgstr ""
 
@@ -264,7 +264,7 @@ msgstr ""
 
 #: models/campionato/showcase_view.py:280
 #: models/competition/showcase_view.py:449
-#: models/competition/showcase_view.py:656
+#: models/competition/showcase_view.py:652
 #: templates/components/_nearby_gare.html:40
 #: templates/components/_separated_dashboard_content.html:90
 #: templates/components/_tessera_gara.html:48
@@ -292,7 +292,7 @@ msgid "Non ancora iniziato"
 msgstr ""
 
 #: models/campionato/showcase_view.py:363
-#: models/competition/showcase_view.py:617
+#: models/competition/showcase_view.py:613
 msgid "Regolamento e informazioni"
 msgstr ""
 
@@ -331,6 +331,11 @@ msgstr ""
 msgid ""
 "Con il nuovo sistema di classifica la gara «%(gara)s» non sarebbe valida:"
 " %(errori)s"
+msgstr ""
+
+#: models/categoria/listino.py:150
+#, python-format
+msgid "%(fee)s €"
 msgstr ""
 
 #: models/categoria/service.py:126
@@ -1995,14 +2000,14 @@ msgid "%(campionato)s · gara %(n)s"
 msgstr ""
 
 #: models/competition/showcase_view.py:445
-#: models/competition/showcase_view.py:650 routes/main.py:566
+#: models/competition/showcase_view.py:646 routes/main.py:566
 #: templates/direttore/_fase_conclusa.html:26
 #: templates/direttore/_fase_conclusa.html:74
 msgid "Gara conclusa"
 msgstr ""
 
 #: models/competition/showcase_view.py:526
-#: models/competition/showcase_view.py:646
+#: models/competition/showcase_view.py:642
 #: templates/individual_match/create_proposal.html:86
 #: templates/player/playoff_invitation.html:27
 #: templates/public/campionato_detail.html:83
@@ -2011,7 +2016,7 @@ msgid "Dove"
 msgstr ""
 
 #: models/competition/showcase_view.py:536
-#: models/competition/showcase_view.py:646
+#: models/competition/showcase_view.py:642
 #: templates/individual_match/create_proposal.html:119
 #: templates/individual_match/edit_match.html:71
 #: templates/individual_match/match_detail.html:199
@@ -2025,12 +2030,7 @@ msgstr ""
 msgid "Quote"
 msgstr ""
 
-#: models/competition/showcase_view.py:558
-#, python-format
-msgid "%(categorie)s %(fee)s €"
-msgstr ""
-
-#: models/competition/showcase_view.py:570
+#: models/competition/showcase_view.py:566
 #: templates/admin/gara_create_standalone.html:484
 #: templates/components/_campionato_details_info.html:110
 #: templates/components/_gara_info.html:55
@@ -2040,21 +2040,16 @@ msgstr ""
 msgid "Quota"
 msgstr ""
 
-#: models/competition/showcase_view.py:572
+#: models/competition/showcase_view.py:568
 msgid "Gratuito"
 msgstr ""
 
-#: models/competition/showcase_view.py:574
-#, python-format
-msgid "%(fee)s €"
-msgstr ""
-
-#: models/competition/showcase_view.py:585
+#: models/competition/showcase_view.py:581
 #: templates/direttore/_fase_iscrizioni.html:136
 msgid "Chiusura iscrizioni"
 msgstr ""
 
-#: models/competition/showcase_view.py:654
+#: models/competition/showcase_view.py:650
 #, python-format
 msgid "Iscrizioni aperte — %(n)s posti liberi"
 msgstr ""
@@ -3421,7 +3416,7 @@ msgstr ""
 
 #: models/individual_match/individual_rack_service.py:200
 #: models/individual_match/individual_rack_service.py:211
-#: models/match/match_service.py:504 models/match/match_service.py:555
+#: models/match/match_service.py:529 models/match/match_service.py:580
 #: models/match/scoring_service.py:171 models/match/scoring_service.py:189
 msgid "Partita non trovata."
 msgstr ""
@@ -3917,7 +3912,7 @@ msgstr ""
 msgid "Apre chi ha perso il triangolo prima."
 msgstr ""
 
-#: models/match/chiusura.py:68 models/match/match_service.py:515
+#: models/match/chiusura.py:68 models/match/match_service.py:540
 msgid "La partita è già chiusa."
 msgstr ""
 
@@ -3925,11 +3920,11 @@ msgstr ""
 msgid "Le partite a set, a tre e la X non si interrompono a tempo."
 msgstr ""
 
-#: models/match/chiusura.py:72 models/match/match_service.py:517
+#: models/match/chiusura.py:72 models/match/match_service.py:542
 msgid "Questa partita non ha un limite di tempo."
 msgstr ""
 
-#: models/match/chiusura.py:74 models/match/match_service.py:520
+#: models/match/chiusura.py:74 models/match/match_service.py:545
 msgid "La partita non è ancora cominciata: aspetta il tavolo."
 msgstr ""
 
@@ -4009,7 +4004,7 @@ msgid "Nel trio ognuno gioca %(n)s triangoli: non se ne vincono di più."
 msgstr ""
 
 #: models/match/correction_service.py:498
-msgid "Questo punteggio non torna con l'ordine del girone."
+msgid "Questo punteggio non torna con l'ordine delle sfide."
 msgstr ""
 
 #: models/match/correction_service.py:524
@@ -4070,33 +4065,33 @@ msgstr ""
 msgid "ogni set esattamente %(n)s triangoli"
 msgstr ""
 
-#: models/match/match_service.py:512
+#: models/match/match_service.py:537
 msgid "Possono avviarla i due giocatori o chi dirige la gara."
 msgstr ""
 
-#: models/match/match_service.py:561
+#: models/match/match_service.py:586
 msgid "Interrompe la partita solo chi dirige la gara."
 msgstr ""
 
-#: models/match/match_service.py:576
+#: models/match/match_service.py:601
 msgid "È pari: scegli chi passa il turno."
 msgstr ""
 
-#: models/match/match_service.py:801 routes/admin/match/multi_set.py:204
+#: models/match/match_service.py:826 routes/admin/match/multi_set.py:204
 msgid "Questa non è una partita a set."
 msgstr ""
 
-#: models/match/match_service.py:804
+#: models/match/match_service.py:829
 msgid "Il set non è in corso: inizia il prossimo."
 msgstr ""
 
-#: models/match/match_service.py:808 routes/admin/competition/matches.py:207
+#: models/match/match_service.py:833 routes/admin/competition/matches.py:207
 #: routes/admin/match/multi_set.py:211 routes/admin/match/scoring.py:117
 #: routes/admin/match/scoring.py:477
 msgid "Punteggio non valido."
 msgstr ""
 
-#: models/match/match_service.py:816
+#: models/match/match_service.py:841
 #, python-format
 msgid "Il set si gioca al %(n)s: il punteggio va oltre."
 msgstr ""
@@ -4191,8 +4186,8 @@ msgstr ""
 
 #: models/match/trio_scoring_service.py:382
 msgid ""
-"Questo punteggio non torna con l'ordine del girone: il primo triangolo è "
-"fra il primo e il secondo giocatore, il secondo fra il primo e il terzo."
+"Questo punteggio non torna con l'ordine delle sfide: il primo triangolo è"
+" fra il primo e il secondo giocatore, il secondo fra il primo e il terzo."
 msgstr ""
 
 #: models/matchmaking/configuration.py:46 models/storia/etichette.py:166
@@ -8892,7 +8887,7 @@ msgstr ""
 #: templates/components/_campionato_edit_form.html:329
 #: templates/components/_gara_edit_form.html:472
 #: templates/components/_new_gara_modal.html:518
-#: templates/components/_preset_modulo.html:48
+#: templates/components/_preset_modulo.html:49
 #: templates/components/_soft_delete_modal.html:48
 #: templates/direttore/_modali_gioco.html:117
 #: templates/direttore/_scripts.html:65 templates/exam/compose.html:130
@@ -9028,7 +9023,7 @@ msgstr ""
 #: templates/admin/campionato_vetrina.html:100 templates/base.html:828
 #: templates/components/_playoff_config_form.html:90
 #: templates/components/_playoff_scoring_form.html:28
-#: templates/components/_preset_modulo.html:46
+#: templates/components/_preset_modulo.html:47
 #: templates/direttore/_squadre_categorie.html:242
 #: templates/gamification/admin/level_config.html:42
 #: templates/gamification/admin/level_config.html:174
@@ -11648,7 +11643,7 @@ msgstr ""
 
 #: templates/admin/gara_create_standalone.html:554
 #, python-brace-format
-msgid "Quota: €{value}"
+msgid "Quota: {value} €"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:555
@@ -12217,7 +12212,7 @@ msgid ""
 msgstr ""
 
 #: templates/admin/preset_miei.html:36
-#: templates/components/_preset_modulo.html:77
+#: templates/components/_preset_modulo.html:78
 msgid "Nessun preset salvato"
 msgstr ""
 
@@ -16051,7 +16046,7 @@ msgstr ""
 #: templates/direttore/_classifica.html:40
 #: templates/public/schermo_sala.html:293
 #, python-format
-msgid "%(pos)sº girone %(nome)s"
+msgid "%(pos)s girone %(nome)s"
 msgstr ""
 
 #: templates/components/_classification_mobile.html:64
@@ -18713,52 +18708,53 @@ msgstr ""
 msgid "Il listino del preset non si applica qui: vale quello del campionato."
 msgstr ""
 
-#: templates/components/_preset_modulo.html:40
+#: templates/components/_preset_modulo.html:34
+#: templates/components/_preset_modulo.html:78
+msgid "Scegli un preset…"
+msgstr ""
+
+#: templates/components/_preset_modulo.html:41
 msgid "Nome del preset"
 msgstr ""
 
-#: templates/components/_preset_modulo.html:42
+#: templates/components/_preset_modulo.html:43
 msgid "es. Lunedì al 74, due gironi"
 msgstr ""
 
-#: templates/components/_preset_modulo.html:44
+#: templates/components/_preset_modulo.html:45
 msgid ""
 "Il preset tiene solo le impostazioni: nome, date, sala e iscritti restano"
 " fuori. Le gare che crei non restano legate al preset."
 msgstr ""
 
-#: templates/components/_preset_modulo.html:47
+#: templates/components/_preset_modulo.html:48
 msgid "Sostituisci quello che c’è"
 msgstr ""
 
-#: templates/components/_preset_modulo.html:72
-#: templates/components/_preset_modulo.html:74
+#: templates/components/_preset_modulo.html:73
+#: templates/components/_preset_modulo.html:75
 msgid "Parti da un preset"
 msgstr ""
 
-#: templates/components/_preset_modulo.html:77
-msgid "Scegli un preset…"
-msgstr ""
-
-#: templates/components/_preset_modulo.html:85
-#: templates/components/_preset_modulo.html:104
-#: templates/components/_preset_modulo.html:108
-#: templates/components/_preset_modulo.html:122
-#: templates/components/_preset_modulo.html:126
+#: templates/components/_preset_modulo.html:86
+#: templates/components/_preset_modulo.html:105
+#: templates/components/_preset_modulo.html:109
+#: templates/components/_preset_modulo.html:123
+#: templates/components/_preset_modulo.html:127
 msgid "Salva come preset"
 msgstr ""
 
-#: templates/components/_preset_modulo.html:92
+#: templates/components/_preset_modulo.html:93
 msgid "Gestisci i miei preset"
 msgstr ""
 
-#: templates/components/_preset_modulo.html:105
+#: templates/components/_preset_modulo.html:106
 msgid ""
 "Le impostazioni di questa gara, pronte per la prossima: le ritrovi in "
 "«Parti da un preset» quando crei una gara."
 msgstr ""
 
-#: templates/components/_preset_modulo.html:123
+#: templates/components/_preset_modulo.html:124
 msgid ""
 "Le impostazioni di questo campionato e le proposte alle sue gare, pronte "
 "per il prossimo: le ritrovi in «Parti da un preset» quando crei un "
@@ -19224,7 +19220,7 @@ msgstr ""
 
 #: templates/components/_tabellone_macros.html:17
 #, python-format
-msgid "Finale %(primo)s°/%(secondo)s° posto"
+msgid "Finale %(primo)s/%(secondo)s posto"
 msgstr ""
 
 #: templates/components/_tabellone_macros.html:22
@@ -19463,7 +19459,7 @@ msgstr ""
 
 #: templates/components/_tabellone_macros.html:144
 #, python-format
-msgid "%(pos)s° diretto"
+msgid "%(pos)s diretto"
 msgstr ""
 
 #: templates/components/_tabellone_macros.html:145
@@ -19472,12 +19468,12 @@ msgstr ""
 
 #: templates/components/_tabellone_macros.html:146
 #, python-format
-msgid "vince la finale %(primo)s°/%(secondo)s° posto"
+msgid "vince la finale %(primo)s/%(secondo)s posto"
 msgstr ""
 
 #: templates/components/_tabellone_macros.html:146
 #, python-format
-msgid "perde la finale %(primo)s°/%(secondo)s° posto"
+msgid "perde la finale %(primo)s/%(secondo)s posto"
 msgstr ""
 
 #: templates/components/_tabellone_macros.html:147
@@ -19529,19 +19525,19 @@ msgstr ""
 
 #: templates/components/_tabellone_macros.html:167
 #, python-format
-msgid "%(pos)s° pari merito"
+msgid "%(pos)s pari merito"
 msgstr ""
 
 #: templates/components/_taglio.html:23
 #, python-format
 msgid ""
-"finale %(primo)s°/%(secondo)s° posto con %(nome)s (%(pos)s° girone "
+"finale %(primo)s/%(secondo)s posto con %(nome)s (%(pos)s girone "
 "%(girone)s)"
 msgstr ""
 
 #: templates/components/_taglio.html:23
 #, python-format
-msgid "finale %(primo)s°/%(secondo)s° posto"
+msgid "finale %(primo)s/%(secondo)s posto"
 msgstr ""
 
 #: templates/components/_taglio.html:28
@@ -19671,12 +19667,12 @@ msgstr ""
 
 #: templates/components/_tessera_gara.html:162
 #, python-format
-msgid "Sei arrivato %(pos)s° pari merito su %(tot)s"
+msgid "Sei arrivato %(pos)s pari merito su %(tot)s"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:163
 #, python-format
-msgid "Sei arrivato %(pos)s° su %(tot)s"
+msgid "Sei arrivato %(pos)s su %(tot)s"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:165
@@ -19701,22 +19697,22 @@ msgstr ""
 
 #: templates/components/_tessera_gara.html:240
 #, python-format
-msgid "Sei %(pos)s° pari merito su %(tot)s nel girone %(nome)s"
+msgid "Sei %(pos)s pari merito su %(tot)s nel girone %(nome)s"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:241
 #, python-format
-msgid "Sei %(pos)s° su %(tot)s nel girone %(nome)s"
+msgid "Sei %(pos)s su %(tot)s nel girone %(nome)s"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:242
 #, python-format
-msgid "Sei %(pos)s° pari merito su %(tot)s"
+msgid "Sei %(pos)s pari merito su %(tot)s"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:243
 #, python-format
-msgid "Sei %(pos)s° su %(tot)s"
+msgid "Sei %(pos)s su %(tot)s"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:248
@@ -19995,12 +19991,12 @@ msgid "Storico triangoli"
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:419
-msgid "1 girone all'italiana (3 triangoli)"
+msgid "un giro (3 triangoli)"
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:421
 #, python-format
-msgid "%(n)s gironi all'italiana (%(racks)s triangoli)"
+msgid "%(n)s giri (%(racks)s triangoli)"
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:426
@@ -20057,12 +20053,12 @@ msgid "Crea sfida"
 msgstr ""
 
 #: templates/components/_unified_match_score.html:63
-msgid "1 girone all'italiana"
+msgid "un giro"
 msgstr ""
 
 #: templates/components/_unified_match_score.html:63
 #, python-format
-msgid "%(n)s gironi all'italiana"
+msgid "%(n)s giri"
 msgstr ""
 
 #: templates/components/_unified_match_score.html:65
@@ -20643,12 +20639,12 @@ msgid "Da validare"
 msgstr ""
 
 #: templates/direttore/_card_partita.html:217
-msgid "Trio · un girone"
+msgid "Trio · un giro"
 msgstr ""
 
 #: templates/direttore/_card_partita.html:217
 #, python-format
-msgid "Trio · %(num)s gironi"
+msgid "Trio · %(num)s giri"
 msgstr ""
 
 #: templates/direttore/_card_partita.html:219
@@ -20724,7 +20720,7 @@ msgid "%(n)s triangoli, ognuno ne gioca %(m)s"
 msgstr ""
 
 #: templates/direttore/_card_partita.html:360
-msgid "l'ordine del girone decide quali + sono accesi"
+msgid "l'ordine delle sfide decide quali + sono accesi"
 msgstr ""
 
 #: templates/direttore/_card_partita.html:362
@@ -21860,7 +21856,7 @@ msgstr ""
 
 #: templates/direttore/_modali_gioco.html:62
 #, python-format
-msgid "%(gironi)s gironi, max %(max_racks)s triangoli per giocatore"
+msgid "%(giri)s giri, max %(max_racks)s triangoli per giocatore"
 msgstr ""
 
 #: templates/direttore/_modali_gioco.html:65
@@ -22402,7 +22398,7 @@ msgstr ""
 
 #: templates/direttore/_squadre_categorie.html:72
 #, python-format
-msgid "quota %(fee)s €"
+msgid "quota %(fee)s"
 msgstr ""
 
 #: templates/direttore/_squadre_categorie.html:98

@@ -3,7 +3,7 @@
    Il listino delle quote per categoria (ADR-079). Solo informazione: la
    categoria la assegna il direttore, il giocatore vede il listino.
 
-   * `testo(gruppi)` — «Serie A €30.00 · Serie B, Serie C €20.00», in linea,
+   * `testo(gruppi)` — «Serie A 30 € · Serie B, Serie C 20 €», in linea,
      dove oggi sta la quota unica. `gruppi` viene da `listino_quote(entita)`.
    * `editor(voci, nota)` — le righe nome + quota del modulo di configurazione,
      con «Aggiungi categoria» e la × per togliere una riga. `voci` viene da
@@ -17,7 +17,7 @@
 {% macro testo(gruppi) -%}
 {%- for gruppo in gruppi -%}
 {%- if not loop.first %} <span class="c7-sep">·</span> {% endif -%}
-<span class="c7-listino__voce">{{ gruppo.nomi|join(', ') }} <span class="c7-num">€{{ "%.2f"|format(gruppo.quota) }}</span></span>
+<span class="c7-listino__voce">{{ gruppo.nomi|join(', ') }} <span class="c7-num">{{ gruppo.quota|quota }}</span></span>
 {%- endfor -%}
 {%- endmacro %}
 
