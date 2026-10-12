@@ -16,6 +16,15 @@
         </a>
     </li>
     {% endif %}
+    {# I preset del direttore (ADR-082): li salva e li usa nei moduli, li
+       gestisce e li condivide qui. #}
+    {% if (current_user.is_director or current_user.is_admin) and feature_visible('admin.preset.miei') %}
+    <li>
+        <a class="dropdown-item" href="{{ url_for('admin.preset.miei') }}">
+            <i class="fas fa-bookmark"></i>{{ _('I miei preset') }}
+        </a>
+    </li>
+    {% endif %}
     {% if not current_user.is_admin and feature_visible('player.my_venue_requests') %}
     <li>
         <a class="dropdown-item" href="{{ url_for('player.my_venue_requests') }}">

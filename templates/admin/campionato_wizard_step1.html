@@ -18,8 +18,15 @@
     <div style="flex:1;height:5px;border-radius:999px;background:var(--c7-line)"></div>
   </div>
 
-  <form action="{{ url_for('admin.campionato.wizard_step2') }}" method="POST" class="c7-stack" style="gap:16px">
+  {# Parti da un preset (ADR-082): qui scrive tipo e sistemi; il resto lo
+     scrive il passo 2, che riceve la scelta in `preset_id`. Si salva al
+     passo 2, quando il modulo è completo. #}
+  {% import "components/_preset_modulo.html" as preset with context %}
+  <div class="mb-3">{{ preset.barra('#campionato-passo-1', tipo='campionato', salva=false) }}</div>
+
+  <form id="campionato-passo-1" action="{{ url_for('admin.campionato.wizard_step2') }}" method="POST" class="c7-stack" style="gap:16px">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="preset_id" value="" data-preset-scelto>
 
     <div class="c7-card">
       <div class="mb-3">
@@ -205,6 +212,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/preset_modulo.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const classificationSelect = document.getElementById('default_classification_system');

@@ -89,6 +89,7 @@ blocks:
       - "If an option of the preset no longer exists, the field stays as it was and the page tells you."
       - "You'll also find it in a new competition of a championship and when editing a competition; from the **Settings** of an existing competition you can save it as a preset."
       - "The competition you create is not tied to the preset: if you change or replace it later, the competition does not change."
+      - "To rename, duplicate or delete a preset, or send a copy to another competition director, use the **[My presets](/aiuto/organizzare/i_miei_preset)** page."
 
   - type: heading
     id: prima_di_aprire

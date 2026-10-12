@@ -610,12 +610,14 @@ Un direttore può creare una gara singola o un campionato **di prova** (ADR-058,
 
 #### Preset
 
-Un direttore può salvare le impostazioni di una gara come **preset** e ripartire da lì la volta dopo (ADR-082, piano UC8).
+Un direttore può salvare le impostazioni di una gara o di un campionato come **preset** e ripartire da lì la volta dopo (ADR-082, piano UC8).
 
 - «**Salva come preset**» dai moduli della gara (gara singola, nuova gara di un campionato, modifica) o dalle impostazioni di una gara che esiste già. Il preset contiene **solo la configurazione**: restano fuori nome, data, ora, sala, tavoli, note, peso nel campionato e iscritti. Il nome è unico fra i preset dello stesso direttore; con un nome già usato si può sostituire il preset che c'è.
 - «**Parti da un preset**» **precompila** il modulo: ogni campo resta modificabile, i campi che il direttore ha già cambiato non si sovrascrivono senza chiedere, e al salvataggio valgono le validazioni di sempre. Un valore che il modulo non offre più resta al default, e la pagina lo dice. Dentro un campionato i valori del preset diventano valori espliciti della gara; il listino del preset vale solo per la gara singola, perché nel campionato il listino è del campionato.
 - La gara creata **non resta legata** al preset: cambiarlo o cancellarlo dopo non la tocca.
-- Ogni preset ha **un solo proprietario**, l'unico che lo vede e lo usa. Condividerlo con un altro direttore gli crea **una copia sua**, indipendente dall'originale.
+- **Preset di campionato**: tiene tipo, sistema di classifica (e quello delle serate), numero di gare previste, esercizi e tutti i valori proposti alle gare — turni, numero dispari, evita reincontri, apertura, handicap, limite di tempo, gironi e fase finale, punti, le tre catene degli spareggi, punti per posizione, quota e listino. Restano fuori nome e sala; i playoff si configurano a parte e non entrano. Si salva al passo 2 del wizard (insieme al passo 1, che l'app ricorda), dalla modifica del campionato e dalle impostazioni di un campionato che esiste già, anche concluso. «Parti da un preset» al passo 1 scrive tipo e sistemi, e il passo 2 si apre già con i valori proposti alle gare del preset scelto. Il campionato creato non resta legato al preset.
+- Ogni preset ha **un solo proprietario**, l'unico che lo vede, lo usa, lo rinomina, lo duplica, lo cancella e lo condivide. Per chiunque altro non esiste (404); un giocatore non ha preset (403). La pagina «**I miei preset**» li elenca tutti, di gara e di campionato.
+- **Condividere crea una copia** per ogni destinatario, e solo verso direttori di gara (o admin), mai verso sé stessi. La copia è del destinatario a tutti gli effetti, ricorda da chi arriva e quando («ricevuto da Paolo, 06/10») e da lì le due copie sono indipendenti: cambiare o cancellare l'una non tocca l'altra. Non esiste «togliere la condivisione»: per aggiornare qualcuno si condivide di nuovo. Se il destinatario ha già un preset con quel nome, la copia prende il suffisso «(da Paolo)», e un numero se anche quello è preso. Il destinatario riceve una notifica nella propria lingua. Se l'autore viene cancellato, la copia resta e perde solo la provenienza.
 
 ## Internazionalizzazione
 

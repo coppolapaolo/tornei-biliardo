@@ -36,6 +36,10 @@ gara resti appesa a qualcosa che il suo direttore può cambiare dopo.
    quelli che dicono *quale* serata è — nome, data, ora, sala, tavoli, note,
    peso nel campionato. Iscritti, token e link pubblici non sono campi del
    modulo. Il listino viaggia accanto, come elenco nome/quota senza id.
+   Per il **campionato** la base è `CampionatoFormParser.CAMPI_DEL_MODULO`
+   meno nome e sala; la lista e `parse_configurazione` (che legge il modulo
+   per la modifica del campionato e per il preset) sono tenute allineate da
+   un test. I playoff, configurati a parte, non entrano.
 5. **Il payload usa i nomi delle colonne**, non quelli dei campi HTML, e
    porta uno `schema_version`. Si legge con tolleranza: un campo che l'app
    non conosce più si scarta e la pagina lo dice; un campo che manca resta al
@@ -48,6 +52,16 @@ gara resti appesa a qualcosa che il suo direttore può cambiare dopo.
 7. **I campi già toccati non si sovrascrivono senza chiedere.** Si applica il
    resto, poi il foglio di conferma (ADR-074) chiede se usare anche lì i
    valori del preset.
+8. **Il wizard del campionato è in due passi**, e il preset li attraversa: al
+   passo 1 scrive tipo e sistemi e passa la scelta (`preset_id`) al passo 2,
+   che si apre applicando i valori proposti alle gare. «Salva come preset»
+   sta al passo 2 e completa il modulo col passo 1 tenuto nella sessione.
+9. **La condivisione** (parte B, 2026-10-12): una copia per destinatario,
+   solo direttori o admin, notifica composta nella lingua di chi riceve
+   (ADR-062). Il nome già presente prende «(da X)», scritto nella lingua del
+   destinatario perché il preset è suo, e poi un numero. La ricerca dei
+   direttori è per nome utente, da due lettere in su: l'elenco intero non si
+   sfoglia.
 
 ## Alternative Considerate
 
@@ -104,7 +118,10 @@ gara resti appesa a qualcosa che il suo direttore può cambiare dopo.
   unico per proprietario (vincolo dello schema), migration
   `migrations/20261012_preset_dei_direttori.py`.
 - Servizio: `models/preset/service.py` (`ConfigPresetService`).
-- Route: `routes/admin/preset.py`, tutte `{"director"}` in `ENDPOINT_ROLES`.
+- Route: `routes/admin/preset.py`, tutte `{"director"}` in `ENDPOINT_ROLES`;
+  la pagina «I miei preset» è `admin.preset.miei` (`templates/admin/preset_miei.html`,
+  `static/js/preset_miei.js`), raggiungibile dal menu utente.
+- Notifica: `NotificationType.PRESET_SHARED`, link a «I miei preset».
 - Interfaccia: `templates/components/_preset_modulo.html` e
   `static/js/preset_modulo.js`; l'editor delle catene rilegge il campo
   nascosto quando riceve `change`.

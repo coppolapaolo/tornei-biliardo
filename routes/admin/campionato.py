@@ -206,7 +206,29 @@ def wizard_step2():
         odd_policies=odd_policies,
         classification_system=classification_system,
         sistema_gare=sistema_gare,
+        preset_da_applicare=_preset_scelto_al_passo_1(),
     )
+
+
+def _preset_scelto_al_passo_1():
+    """Il preset scelto al passo 1, da applicare anche al passo 2 (ADR-082).
+
+    Al passo 1 il preset scrive tipo e sistemi; i valori proposti alle gare
+    stanno al passo 2, e la pagina li scrive appena si apre. Un preset che
+    non è dell'utente, o non è di campionato, si ignora.
+    """
+    from models.exceptions import DomainError
+    from models.preset.models import TipoPreset
+    from models.preset.service import ConfigPresetService
+
+    preset_id = request.form.get("preset_id", type=int)
+    if not preset_id:
+        return None
+    try:
+        preset = ConfigPresetService.get_mio(preset_id, current_user)
+    except DomainError:
+        return None
+    return preset.id if preset.kind == TipoPreset.CAMPIONATO.value else None
 
 
 @campionato_bp.route("/wizard/create", methods=["POST"])
@@ -604,31 +626,10 @@ def edit_campionato(campionato_id):
     if request.method == "POST":
         # Usa il service layer invece del direct database access
         try:
-            # Parse planned_gare_count (Step 1 field)
-            planned_gare_count = request.form.get("planned_gare_count")
-            planned_gare_count = int(planned_gare_count) if planned_gare_count else None
-
-            # Default-gare settings (single source shared with wizard_create)
-            settings = CampionatoFormParser.parse_default_settings(request.form)
-            settings.update(CampionatoFormParser.parse_gironi(request.form))
-            # Sommando i totali o a piazzamenti, e il sistema delle serate
-            # (ADR-080): catene e punti proposti seguono quello delle gare.
-            campionato_type = request.form.get("campionato_type", "amalfi")
-            if campionato_type not in CAMPIONATO_TYPE_VALUES:
-                campionato_type = campionato.campionato_type
-            sistemi = CampionatoFormParser.parse_sistemi(request.form, campionato_type)
-            sistema_gare = CampionatoFormParser.sistema_delle_serate(sistemi)
-            # La catena della classifica generale segue il sistema del
-            # campionato: a piazzamenti ha criteri suoi (ADR-080).
-            settings.update(
-                CampionatoFormParser.parse_catene(
-                    request.form,
-                    sistema_gare,
-                    sistemi["default_classification_system"],
-                )
-            )
-            settings.update(
-                CampionatoFormParser.parse_punti(request.form, sistema_gare)
+            # Tipo, sistemi e valori proposti alle gare: un modo solo di
+            # leggere il modulo, lo stesso di «Salva come preset» (ADR-082).
+            configurazione = CampionatoFormParser.parse_configurazione(
+                request.form, campionato.campionato_type
             )
 
             # Il listino delle quote vale per tutte le serate (ADR-079): non è un
@@ -653,14 +654,8 @@ def edit_campionato(campionato_id):
                 campionato_id=campionato_id,
                 autore=current_user,
                 motivo=request.form.get("motivo"),
-                # Step 1 fields
                 name=request.form["name"],
-                campionato_type=campionato_type,
-                planned_gare_count=planned_gare_count,
-                challenge_mode="challenge_mode" in request.form,
-                **sistemi,
-                # Step 2 fields - Default gare settings (shared parser)
-                **settings,
+                **configurazione,
             )
             flash(_("Campionato aggiornato: la modifica resta nella sua storia."))
 

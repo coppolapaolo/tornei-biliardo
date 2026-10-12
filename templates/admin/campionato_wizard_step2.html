@@ -55,7 +55,12 @@
     {{ _("Questi valori vengono usati come default quando crei una gara. Potrai sempre cambiarli sulla singola gara.") }}
   </p>
 
-  <form action="{{ url_for('admin.campionato.wizard_create') }}" method="POST" class="c7-stack" style="gap:16px">
+  {# Parti da un preset / Salva come preset (ADR-082). Il salvataggio
+     completa il modulo col passo 1, che sta nella sessione. #}
+  {% import "components/_preset_modulo.html" as preset with context %}
+  <div class="mb-3">{{ preset.barra('#campionato-passo-2', tipo='campionato', wizard=true, auto=preset_da_applicare) }}</div>
+
+  <form id="campionato-passo-2" action="{{ url_for('admin.campionato.wizard_create') }}" method="POST" class="c7-stack" style="gap:16px">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <div class="c7-card">
@@ -266,6 +271,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/preset_modulo.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/campo_gironi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>

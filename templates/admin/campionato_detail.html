@@ -509,6 +509,13 @@
             <i class="fas fa-pencil"></i>&nbsp;{{ _("Modifica campionato") }}
           </a>
           {% endif %}
+          {# Salva come preset (ADR-082): anche a campionato concluso, è il
+             momento in cui si sa com'è andata. Lo script lo carica il modale
+             «Nuova gara». #}
+          {% if current_user.is_director or current_user.is_admin %}
+          {% import "components/_preset_modulo.html" as preset with context %}
+          {{ preset.barra_del_campionato(campionato) }}
+          {% endif %}
         </div>
       </div>
 

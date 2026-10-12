@@ -4,7 +4,10 @@
         <h5 class="mb-0"><i class="fas fa-edit"></i> {{ _("Modifica Campionato") }}</h5>
     </div>
     <div class="card-body">
-        <form action="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}" method="POST">
+        {# Parti da un preset / Salva come preset (ADR-082). #}
+        {% import "components/_preset_modulo.html" as preset with context %}
+        <div class="mb-4">{{ preset.barra('#campionato-modifica', campionato_id=campionato.id, tipo='campionato') }}</div>
+        <form id="campionato-modifica" action="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             {# SEZIONE 1: Configurazione Base (Step 1 del Wizard) #}
@@ -336,6 +339,7 @@
 <script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/campo_gironi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/campo_punti.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/preset_modulo.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle type descriptions

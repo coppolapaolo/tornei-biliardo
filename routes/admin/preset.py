@@ -1,23 +1,40 @@
 # routes/admin/preset.py
-"""I preset dei direttori: salvarli dai moduli, e rileggerli per precompilare.
+"""I preset dei direttori: salvarli, rileggerli per precompilare, gestirli.
 
-Tre route, tutte in JSON per il JavaScript del modulo (`preset_modulo.js`):
+In JSON, per il JavaScript dei moduli (`preset_modulo.js`):
 
-* «Salva come preset» da un modulo della gara, così com'è sullo schermo;
-* «Salva come preset» da una gara che esiste già;
-* i valori di un preset, da scrivere nei campi («Parti da un preset»).
+* «Salva come preset» da un modulo della gara o del campionato, così com'è
+  sullo schermo;
+* «Salva come preset» da una gara o da un campionato che esistono già;
+* i valori di un preset, da scrivere nei campi («Parti da un preset»);
+* la ricerca dei direttori con cui condividere.
 
-Il modulo passa dal parser di sempre (`GaraFormParser`): il preset conserva
-ciò che la gara riceverebbe salvando, non ciò che c'è scritto nei campi.
-Applicarlo, invece, non salva niente: scrive nei campi, e al salvataggio
-della gara valgono le validazioni di sempre (ADR-082).
+In pagina, «I miei preset»: l'elenco, e rinomina, duplica, condividi,
+cancella.
+
+Il modulo passa dal parser di sempre (`GaraFormParser`,
+`CampionatoFormParser`): il preset conserva ciò che la gara o il campionato
+riceverebbero salvando, non ciò che c'è scritto nei campi. Applicarlo,
+invece, non salva niente: scrive nei campi, e al salvataggio valgono le
+validazioni di sempre (ADR-082).
 """
 
 from __future__ import annotations
 
 from datetime import date
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import (
+    Blueprint,
+    abort,
+    current_app,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_babel import gettext as _
 from flask_login import current_user, login_required
 
@@ -164,3 +181,213 @@ def valori_per_il_modulo(preset_id: int):
     except (NotFoundError, PermissionDeniedError) as errore:
         return _risposta_di_errore(errore)
     return ajax_success(data=dati)
+
+
+# ── Campionato ─────────────────────────────────────────────────────────────
+
+#: I campi del passo 1 del wizard: al passo 2 stanno nella sessione.
+_PASSO_1_DEL_WIZARD = (
+    "campionato_type",
+    "planned_gare_count",
+    "default_classification_system",
+    "default_gara_classification_system",
+)
+
+
+def _campionato_da_gestire(campionato_id: int) -> Campionato:
+    from models.user.permissions import PermissionChecker
+
+    campionato = db.session.get(Campionato, campionato_id)
+    if campionato is None or not PermissionChecker.can_manage_campionato(
+        current_user, campionato_id
+    ):
+        raise NotFoundError(_("Questo campionato non esiste."))
+    return campionato
+
+
+def _campi_dal_modulo_del_campionato() -> dict:
+    """Il modulo del campionato letto come lo legge la sua modifica.
+
+    Dal passo 2 del wizard tipo, sistemi, numero di gare ed esercizi non sono
+    nel modulo: si scelgono al passo 1 e stanno nella sessione.
+    """
+    from models.matchmaking.configuration import MatchmakingStrategy
+    from routes.admin.campionato import WIZARD_SESSION_KEY
+    from routes.admin.campionato_form_parser import CampionatoFormParser
+
+    modulo = request.form.copy()
+    ripiego = MatchmakingStrategy.AMALFI.value
+    campionato_id = request.form.get("preset_campionato_id", type=int)
+    if campionato_id:
+        ripiego = _campionato_da_gestire(campionato_id).campionato_type
+    if request.form.get("preset_wizard") == "1":
+        passo_1 = session.get(WIZARD_SESSION_KEY) or {}
+        for chiave in _PASSO_1_DEL_WIZARD:
+            if chiave not in modulo and passo_1.get(chiave) is not None:
+                modulo[chiave] = str(passo_1[chiave])
+        if "challenge_mode" not in modulo and passo_1.get("challenge_mode"):
+            modulo["challenge_mode"] = "on"
+    return CampionatoFormParser.parse_configurazione(modulo, ripiego)
+
+
+@preset_bp.route("/campionato/dal-modulo", methods=["POST"])
+@login_required
+@director_or_admin_required
+def salva_dal_modulo_campionato():
+    """«Salva come preset» dal modulo del campionato: wizard o modifica."""
+    from models.categoria.listino import leggi_dal_modulo
+
+    try:
+        campi = _campi_dal_modulo_del_campionato()
+        preset = ConfigPresetService.salva(
+            current_user,
+            request.form.get("preset_nome"),
+            TipoPreset.CAMPIONATO,
+            campi,
+            leggi_dal_modulo(request.form),
+            sostituisci=request.form.get("preset_sostituisci") == "1",
+        )
+    except (ConflictError, NotFoundError, PermissionDeniedError) as errore:
+        return _risposta_di_errore(errore)
+    except ValueError as errore:
+        return ajax_error(str(errore), 422)
+    return ajax_success(
+        _("Preset «%(nome)s» salvato.", nome=preset.name),
+        {"preset": {"id": preset.id, "nome": preset.name}},
+    )
+
+
+@preset_bp.route("/campionato/da/<int:campionato_id>", methods=["POST"])
+@login_required
+@director_or_admin_required
+def salva_dal_campionato(campionato_id: int):
+    """«Salva come preset» dalla pagina di un campionato che esiste già."""
+    try:
+        campionato = _campionato_da_gestire(campionato_id)
+        preset = ConfigPresetService.salva_dal_campionato(
+            current_user,
+            request.form.get("preset_nome"),
+            campionato,
+            sostituisci=request.form.get("preset_sostituisci") == "1",
+        )
+    except (ConflictError, NotFoundError, PermissionDeniedError) as errore:
+        return _risposta_di_errore(errore)
+    except ValueError as errore:
+        return ajax_error(str(errore), 422)
+    return ajax_success(
+        _("Preset «%(nome)s» salvato.", nome=preset.name),
+        {"preset": {"id": preset.id, "nome": preset.name}},
+    )
+
+
+# ── «I miei preset» ────────────────────────────────────────────────────────
+
+
+@preset_bp.route("/")
+@login_required
+@director_or_admin_required
+def miei():
+    """I preset di chi guarda, gara e campionato in un elenco solo."""
+    return render_template(
+        "admin/preset_miei.html",
+        preset=ConfigPresetService.preset_di(current_user.id),
+        TipoPreset=TipoPreset,
+    )
+
+
+def _azione(funzione, messaggio):
+    """Esegue un'azione della pagina: l'esito o il rifiuto in un flash, poi
+    di nuovo l'elenco.
+
+    Un preset che non è tuo non compare nell'elenco: chiederlo arriva solo da
+    un invio costruito a mano, e la risposta è 404 (403 per un giocatore),
+    senza distinguere fra «non c'è» e «non è tuo».
+    """
+    try:
+        esito = funzione()
+    except NotFoundError:
+        abort(404)
+    except PermissionDeniedError:
+        abort(403)
+    except ValueError as errore:
+        flash(str(errore), "error")
+    else:
+        flash(messaggio(esito), "success")
+    return redirect(url_for("admin.preset.miei"))
+
+
+@preset_bp.route("/<int:preset_id>/rinomina", methods=["POST"])
+@login_required
+@director_or_admin_required
+def rinomina(preset_id: int):
+    return _azione(
+        lambda: ConfigPresetService.rinomina(
+            preset_id, current_user, request.form.get("nome")
+        ),
+        lambda p: _("Preset rinominato: «%(nome)s».", nome=p.name),
+    )
+
+
+@preset_bp.route("/<int:preset_id>/duplica", methods=["POST"])
+@login_required
+@director_or_admin_required
+def duplica(preset_id: int):
+    return _azione(
+        lambda: ConfigPresetService.duplica(preset_id, current_user),
+        lambda p: _("Copia creata: «%(nome)s».", nome=p.name),
+    )
+
+
+@preset_bp.route("/<int:preset_id>/cancella", methods=["POST"])
+@login_required
+@director_or_admin_required
+def cancella(preset_id: int):
+    return _azione(
+        lambda: ConfigPresetService.cancella(preset_id, current_user),
+        lambda _esito: _(
+            "Preset cancellato. Le gare e i campionati nati da lì restano " "come sono."
+        ),
+    )
+
+
+@preset_bp.route("/<int:preset_id>/condividi", methods=["POST"])
+@login_required
+@director_or_admin_required
+def condividi(preset_id: int):
+    from flask_babel import ngettext
+
+    return _azione(
+        lambda: ConfigPresetService.condividi(
+            preset_id, current_user, request.form.getlist("user_id")
+        ),
+        lambda copie: ngettext(
+            "Preset mandato a %(num)d direttore: ne riceve una copia sua.",
+            "Preset mandato a %(num)d direttori: ognuno ne riceve una copia sua.",
+            len(copie),
+        ),
+    )
+
+
+@preset_bp.route("/direttori")
+@login_required
+@director_or_admin_required
+def cerca_direttori():
+    """I direttori con cui condividere, cercati per nome (almeno due lettere)."""
+    try:
+        trovati = ConfigPresetService.cerca_direttori(
+            request.args.get("q"), current_user
+        )
+    except PermissionDeniedError as errore:
+        return _risposta_di_errore(errore)
+    return ajax_success(
+        data={
+            "direttori": [
+                {
+                    "id": u.id,
+                    "nome": u.username,
+                    "citta": getattr(u, "home_city", None) or "",
+                }
+                for u in trovati
+            ]
+        }
+    )

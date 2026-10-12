@@ -87,6 +87,7 @@ blocks:
       - "Se un'opzione del preset non c'è più, il campo resta com'era e la pagina te lo dice."
       - "Lo trovi anche nella nuova gara di un campionato e nella modifica di una gara; dalle **Impostazioni** di una gara già creata puoi salvarla come preset."
       - "La gara creata non resta legata al preset: se dopo lo cambi o lo sostituisci, la gara non cambia."
+      - "Per rinominare, duplicare, cancellare un preset o mandarne una copia a un altro direttore c'è la pagina **[I miei preset](/aiuto/organizzare/i_miei_preset)**."
 
   - type: heading
     id: prima_di_aprire

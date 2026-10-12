@@ -1,0 +1,71 @@
+title: "My presets"
+section: organizzare
+kind: tutorial
+audience: [direttore]
+minutes: 3
+summary: "All your saved presets, competition and championship, in a single list: rename, duplicate, delete them and send a copy to another competition director."
+screens: [admin.preset.miei]
+related: [creare_una_gara, creare_un_campionato]
+
+blocks:
+  - type: text
+    text: >-
+      A **preset** is a set of settings saved under a name you choose, for
+      example «Monday, two groups». You save it from the form of a
+      competition or a championship with **«Save as preset»** and use it next
+      time with **«Start from a preset»**. The **My presets** page collects
+      them all: open it from the menu with your name, top right on the phone
+      and at the bottom of the sidebar on a computer, or from the **«Manage
+      my presets»** link under «Start from a preset».
+
+  - type: heading
+    id: elenco
+    title: "What the list shows"
+
+  - type: text
+    text: >-
+      Each row shows the preset name, whether it is for a **competition** or a
+      **championship**, and when you last updated it. A preset another
+      director sent you says so: «received from Paolo, 06/10». Only you can
+      see your presets.
+
+  - type: heading
+    id: azioni
+    title: "Rename, duplicate, delete"
+
+  - type: list
+    items:
+      - "**Rename** (the pencil): type the new name and confirm. Two of your presets cannot share a name."
+      - "**Duplicate** (the two sheets): creates a copy next to the original, for example to try a variant without touching the one that works."
+      - "**Delete** (the bin): the app asks for confirmation. Competitions and championships created from that preset stay as they are, and copies you sent to others stay theirs."
+
+  - type: heading
+    id: condividere
+    title: "Sending a preset to another director"
+
+  - type: steps
+    items:
+      - title: "Tap «Share»"
+        text: "It is the three connected dots, on the preset row."
+      - title: "Look up the director"
+        text: "Type at least two letters of their name and tap **Add**. You can pick more than one."
+      - title: "Tap «Send the copy»"
+        text: "Each of them gets a notification and finds the preset among their own."
+
+  - type: note
+    tone: info
+    title: "Sharing means sending a copy"
+    text: >-
+      Whoever receives the preset gets a copy of **their own**: they can use,
+      change, rename, delete it and send it on. From then on the two copies
+      no longer affect each other: what you change later does not reach them,
+      and vice versa. To send them a new version, share again.
+
+  - type: faq
+    items:
+      - q: "Can I send a preset to a player?"
+        a: "No: presets are shared only between competition directors, like the running of competitions."
+      - q: "The recipient already has a preset with the same name: what happens?"
+        a: "The copy arrives with your name at the end, for example «Monday, two groups (from Paolo)», and nothing of theirs is overwritten."
+      - q: "Can I take back a preset I sent?"
+        a: "No: the copy is theirs. If you made a mistake, tell them; if you have a better version, send them that one."
