@@ -3848,6 +3848,13 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-cg__etichetta { padding: 7px 18px; background: var(--c7-bg); }
 .c7-cg__etichetta .c7-kicker { color: var(--c7-accent); }
 .c7-cg__etichetta--fuori .c7-kicker { color: var(--c7-ink-faint); }
+/* La fascia decisa dalla finale playoff: colonne della finale, il campionato
+   sotto il nome (campionato 5, 2026-10-15). */
+.c7-cg__riga--playoff,
+.c7-cg__etichetta--playoff { background: var(--c7-accent-tint); }
+.c7-cg__etichetta--playoff .c7-kicker { color: var(--c7-accent-tint-ink); }
+.c7-cg__riga--playoff .c7-classifica__gioc > span { display: block; overflow: hidden; text-overflow: ellipsis; }
+.c7-cg__riga--playoff .c7-rows__sub { color: var(--c7-accent-tint-ink); font-weight: 600; white-space: normal; }
 
 /* --------------------------------------------------------------------------
    28. La pagina del campionato per chi lo dirige (canvas 7.1–7.4)

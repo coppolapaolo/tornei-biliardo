@@ -85,13 +85,14 @@ def test_a_piazzamenti_la_classifica_generale_non_mostra_la_differenza():
         TEMPLATES / "components" / "_campionato_general_classification.html"
     ).read_text(encoding="utf-8")
     rami = re.findall(
-        r"\{% elif classification_sys == ClassificationSystem\.POSITION %\}"
+        r"\{% elif (?:classification_sys|sys) == ClassificationSystem\.POSITION %\}"
         r"(.*?)\{% elif",
         testo,
         flags=re.S,
     )
-    # Tre rami: la testata, la riga e la nota.
-    assert len(rami) == 3
+    # Quattro rami: la testata e la riga (macro comuni alla fascia della
+    # finale playoff), i numeri del campionato sotto il nome, e la nota.
+    assert len(rami) == 4
     for ramo in rami:
         assert "Diff" not in ramo
         assert "total_rack_difference" not in ramo

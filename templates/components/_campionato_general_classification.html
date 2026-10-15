@@ -19,13 +19,60 @@
    telefono senza la colonna Gare, per lasciare il posto al nome (canvas
    «campionato-concluso»).
 
+   La classifica decisa dalla finale playoff (modalità «solo playoff»,
+   ADR-053): le righe di chi l'ha giocata hanno `dati.playoff`, i numeri della
+   finale. Stanno in una fascia colorata con le **colonne della finale** nel
+   suo sistema, e i totali del campionato sotto il nome; poi «Poi l'ordine
+   del campionato» con le colonne di sempre. Senza questa fascia l'ordine dei
+   primi non si spiegava: la finale non si somma (campionato 5, 2026-10-15).
+
    Attesi: campionato, general_classification, last_completed_gara_number;
    opzionali zone_playoff e classifica_finale. Lo includono la pagina del campionato del
    direttore e quella pubblica. #}
 {% set classification_sys = campionato.classification_system %}
 {% set _finale = classifica_finale is defined and classifica_finale %}
+{% set _fasce = namespace(attive=false, prec=none) %}
+{% for position, dati in general_classification or [] %}{% if dati.get('playoff') %}{% set _fasce.attive = true %}{% endif %}{% endfor %}
 {% set _zone = zone_playoff if zone_playoff is defined and zone_playoff and not _finale else [] %}
 {% set _prime = 10 %}
+{% macro _testa(sys, conclusa, finale=false, nascosta=false) %}
+    <div class="c7-rows__row c7-classifica__testa{% if finale %} c7-cg__riga--playoff{% endif %}"{% if nascosta %} data-oltre="1" hidden{% else %} data-oltre="0"{% endif %}>
+      <span class="c7-classifica__pos"></span>
+      {% if not conclusa %}<span class="c7-classifica__trend"></span>{% endif %}
+      <span class="c7-classifica__gioc c7-label">{{ _('Giocatore') }}</span>
+      {% if sys == ClassificationSystem.RACK %}
+      <span class="c7-classifica__col c7-label">{{ _('Triangoli') }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-label">SSR</span>
+      {% elif sys == ClassificationSystem.POSITION %}
+      {# A piazzamenti vittorie e triangoli non decidono niente (ADR-080):
+         la differenza triangoli in colonna sembrava lo spareggio. I pari li
+         decidono i piazzamenti, e la nota sotto dice come. Una finale a
+         tabellone dice il posto in cui è arrivato ciascuno. #}
+      <span class="c7-classifica__col c7-label">{% if finale %}{{ _('Posto') }}{% else %}{{ _('Punti') }}{% endif %}</span>
+      {% elif sys == ClassificationSystem.POINTS %}
+      <span class="c7-classifica__col c7-label">{{ _('Punti') }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Diff') }}</span>
+      {% else %}
+      <span class="c7-classifica__col c7-label">{{ _('Vinte') }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Diff') }}</span>
+      {% endif %}
+      <span class="c7-classifica__col c7-classifica__col--sec c7-label{% if conclusa %} d-none d-lg-block{% endif %}">{{ _('Gare') }}</span>
+    </div>
+{% endmacro %}
+{% macro _valori(sys, v, finale=false) %}
+      {% if sys == ClassificationSystem.RACK %}
+      <span class="c7-classifica__col c7-num">{{ v.racks_won }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{{ v.spot_shot_wins or '–' }}</span>
+      {% elif sys == ClassificationSystem.POSITION %}
+      <span class="c7-classifica__col c7-num">{% if finale %}{{ v.position }}°{% else %}{{ v.points or 0 }}{% endif %}</span>
+      {% elif sys == ClassificationSystem.POINTS %}
+      <span class="c7-classifica__col c7-num">{{ v.points or 0 }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if v.rack_difference > 0 %}+{% endif %}{{ v.rack_difference }}</span>
+      {% else %}
+      <span class="c7-classifica__col c7-num">{{ v.matches_won }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if v.rack_difference > 0 %}+{% endif %}{{ v.rack_difference }}</span>
+      {% endif %}
+{% endmacro %}
 {% if general_classification %}
 {% set _in_zona = [] %}
 {% for z in _zone %}{% for uid in z.user_ids %}{% set _ = _in_zona.append(uid) %}{% endfor %}{% endfor %}
@@ -67,27 +114,7 @@
   </div>
   {% endif %}
   <div class="c7-rows">
-    <div class="c7-rows__row c7-classifica__testa">
-      <span class="c7-classifica__pos"></span>
-      {% if not _finale %}<span class="c7-classifica__trend"></span>{% endif %}
-      <span class="c7-classifica__gioc c7-label">{{ _('Giocatore') }}</span>
-      {% if classification_sys == ClassificationSystem.RACK %}
-      <span class="c7-classifica__col c7-label">{{ _('Triangoli') }}</span>
-      <span class="c7-classifica__col c7-classifica__col--sec c7-label">SSR</span>
-      {% elif classification_sys == ClassificationSystem.POSITION %}
-      {# A piazzamenti vittorie e triangoli non decidono niente (ADR-080):
-         la differenza triangoli in colonna sembrava lo spareggio. I pari li
-         decidono i piazzamenti, e la nota sotto dice come. #}
-      <span class="c7-classifica__col c7-label">{{ _('Punti') }}</span>
-      {% elif classification_sys == ClassificationSystem.POINTS %}
-      <span class="c7-classifica__col c7-label">{{ _('Punti') }}</span>
-      <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Diff') }}</span>
-      {% else %}
-      <span class="c7-classifica__col c7-label">{{ _('Vinte') }}</span>
-      <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Diff') }}</span>
-      {% endif %}
-      <span class="c7-classifica__col c7-classifica__col--sec c7-label{% if _finale %} d-none d-lg-block{% endif %}">{{ _('Gare') }}</span>
-    </div>
+    {% if not _fasce.attive %}{{ _testa(classification_sys, _finale) }}{% endif %}
 
     {% for position, dati in general_classification %}
     {% set _oltre = loop.index > _prime %}
@@ -105,13 +132,28 @@
       <span class="c7-kicker">{{ _('Fuori dai playoff') }}</span>
     </div>
     {% endif %}
+    {# La classifica decisa dalla finale: una fascia per finale, con le
+       sue colonne, e poi l'ordine del campionato con le colonne di sempre.
+       Ogni cambio di fascia ha la sua etichetta e la sua intestazione. #}
+    {% set _po = dati.get('playoff') %}
+    {% set _fascia = _po.blocco if _po else 'campionato' %}
+    {% if _fasce.attive and _fascia != _fasce.prec %}
+    <div class="c7-rows__row c7-cg__etichetta{% if _po %} c7-cg__etichetta--playoff{% endif %}" data-oltre="{{ '1' if _oltre else '0' }}"{% if _oltre %} hidden{% endif %}>
+      <span class="c7-kicker">
+        {% if _po %}{{ _('Decisa dalla finale') }} · {{ _po.gara_name }} · {{ _po.gara_date|date_local }}
+        {% else %}{{ _("Poi l'ordine del campionato") }}{% endif %}
+      </span>
+    </div>
+    {{ _testa(_po.sistema if _po else classification_sys, _finale, finale=_po is not none, nascosta=_oltre) }}
+    {% set _fasce.prec = _fascia %}
+    {% endif %}
     {# La posizione mostrata: chi è separato solo dal sorteggio è a pari
        merito, alla posizione più alta (SPECIFICHE.md, nota del 2026-10-11).
        L'ordine delle righe e la zona playoff restano quelli della catena. #}
     {% set _pos = dati.get('shown_position', position) %}
     {% set _prima = dati.get('shown_previous_position', dati.previous_position) %}
     {% set _mov = (_prima - _pos) if _prima else none %}
-    <div class="c7-rows__row c7-classifica__riga{% if dati.user_id in _in_zona %} c7-cg__riga--zona{% endif %}"
+    <div class="c7-rows__row c7-classifica__riga{% if dati.user_id in _in_zona %} c7-cg__riga--zona{% endif %}{% if _po %} c7-cg__riga--playoff{% endif %}"
          data-oltre="{{ '1' if _oltre else '0' }}"{% if _oltre %} hidden{% endif %}>
       <span class="c7-num c7-classifica__pos{% if _pos <= 3 %} c7-classifica__pos--podio{% endif %}">{{ _pos }}</span>
       {% if not _finale %}
@@ -122,25 +164,35 @@
       </span>
       {% endif %}
       <span class="c7-avatar c7-avatar--sm">{{ dati.username[:2]|upper }}</span>
-      <span class="c7-classifica__gioc c7-rows__title">{{ dati.username }}</span>
-      {% if classification_sys == ClassificationSystem.RACK %}
-      <span class="c7-classifica__col c7-num">{{ dati.total_racks_won }}</span>
-      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{{ dati.total_spot_shot_wins or '–' }}</span>
-      {% elif classification_sys == ClassificationSystem.POSITION %}
-      <span class="c7-classifica__col c7-num">{{ dati.total_points or 0 }}</span>
-      {% elif classification_sys == ClassificationSystem.POINTS %}
-      <span class="c7-classifica__col c7-num">{{ dati.total_points or 0 }}</span>
-      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if dati.total_rack_difference > 0 %}+{% endif %}{{ dati.total_rack_difference }}</span>
+      {% set _campionato = {'matches_won': dati.total_matches_won, 'racks_won': dati.total_racks_won, 'rack_difference': dati.total_rack_difference, 'points': dati.total_points, 'spot_shot_wins': dati.total_spot_shot_wins} %}
+      {% if _po %}
+      {# I numeri del campionato scendono sotto il nome: in questa fascia le
+         colonne sono quelle della finale. #}
+      {% set _diff = ('+' if dati.total_rack_difference > 0 else '') ~ dati.total_rack_difference %}
+      <span class="c7-classifica__gioc">
+        <span class="c7-rows__title">{{ dati.username }}</span>
+        <span class="c7-rows__sub">{{ _('Campionato:') }}
+          {% if classification_sys == ClassificationSystem.RACK %}{{ _('%(n)s triangoli', n=dati.total_racks_won) }}
+          {% elif classification_sys == ClassificationSystem.POSITION %}{{ _('%(n)s punti', n=dati.total_points or 0) }}
+          {% elif classification_sys == ClassificationSystem.POINTS %}{{ _('%(n)s punti', n=dati.total_points or 0) }} · {{ _diff }}
+          {% else %}{{ _('%(n)s vinte', n=dati.total_matches_won) }} · {{ _diff }}{% endif %}
+        </span>
+      </span>
+      {{ _valori(_po.sistema, _po, finale=true) }}
       {% else %}
-      <span class="c7-classifica__col c7-num">{{ dati.total_matches_won }}</span>
-      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if dati.total_rack_difference > 0 %}+{% endif %}{{ dati.total_rack_difference }}</span>
+      <span class="c7-classifica__gioc c7-rows__title">{{ dati.username }}</span>
+      {{ _valori(classification_sys, _campionato) }}
       {% endif %}
       <span class="c7-classifica__col c7-classifica__col--sec c7-num{% if _finale %} d-none d-lg-block{% endif %}">{{ dati.participations }}</span>
     </div>
     {% endfor %}
   </div>
-  {% if not _finale %}
+  {% if not _finale or _fasce.attive %}
   <div class="c7-nota">
+    {% if _fasce.attive %}
+    {{ _("Le righe colorate sono in ordine di arrivo nella finale playoff: le colonne sono quelle della finale, i numeri del campionato stanno sotto il nome. La finale non si somma al campionato, ma la colonna Gare la conta. Le altre righe seguono l'ordine del campionato.") }}
+    {% endif %}
+    {% if not _finale %}
     {% if classification_sys == ClassificationSystem.RACK %}
     {{ _("Classifica generale: ordinata per triangoli totali, poi per punti spareggio (SSR).") }}
     {% elif classification_sys == ClassificationSystem.POSITION %}
@@ -149,6 +201,7 @@
     {{ _("Classifica generale: somma dei punti delle gare (%(punti)s), moltiplicati per il peso di ciascuna gara.", punti=descrivi_punti(punti_proposti(campionato))) }}
     {% else %}
     {{ _("Classifica generale: ordinata per partite vinte, poi per differenza triangoli totale.") }}
+    {% endif %}
     {% endif %}
     {% if _zone %}{{ _('La barra segna chi va ai playoff: prima degli inviti chi verrebbe invitato adesso, dopo chi ha un invito valido.') }}{% endif %}
   </div>

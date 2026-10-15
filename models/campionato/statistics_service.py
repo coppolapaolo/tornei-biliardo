@@ -361,24 +361,33 @@ class TournamentStatisticsService:
     ) -> Dict[int, int]:
         """Le posizioni da mostrare quando il playoff ha riordinato la classifica.
 
-        Chi ha giocato il playoff è separato da ciò che è successo lì: nessun
-        pari merito. Fra gli altri, che restano nell'ordine che avevano, è a
-        pari merito chi lo era prima (`ordinamento.posizioni_mostrate`).
+        Chi ha giocato il playoff è a pari merito con chi lo era in finale
+        (stessa posizione mostrata nella classifica della gara), e con nessun
+        altro. Fra gli altri, che restano nell'ordine che avevano, è a pari
+        merito chi lo era prima (`ordinamento.posizioni_mostrate`). Fino al
+        2026-10-15 chi aveva giocato la finale era sempre separato: i sesti pari
+        merito del campionato 5 diventavano 6° e 7°.
         """
         from models.classification.campionato_classification import (
             ClassificationService,
         )
         from models.classification.ordinamento import posizioni_mostrate
 
-        promossi = {
-            user_id
-            for block in ClassificationService.playoff_final_blocks(campionato)
-            for user_id in block
+        in_finale = {
+            row.user_id: (blocco, row.posizione_mostrata)
+            for blocco, (_gara, rows) in enumerate(
+                ClassificationService.playoff_finali(campionato)
+            )
+            for row in rows
         }
         merito = [
             (
                 pos,
-                ("playoff", uid) if uid in promossi else ("merito", mostrate.get(uid)),
+                (
+                    ("playoff", in_finale[uid])
+                    if uid in in_finale
+                    else ("merito", mostrate.get(uid))
+                ),
             )
             for pos, uid in dopo
         ]
@@ -386,6 +395,43 @@ class TournamentStatisticsService:
             uid: mostrata
             for (_pos, uid), mostrata in zip(dopo, posizioni_mostrate(merito))
         }
+
+    @staticmethod
+    def _numeri_della_finale(campionato: Campionato) -> Dict[int, Dict[str, Any]]:
+        """I numeri della finale di chi l'ha giocata, quando è lei a decidere.
+
+        Nella modalità «solo playoff» la finale non si somma (peso 0): i totali
+        della riga sono quelli del campionato e da soli non spiegano l'ordine
+        dei primi. La pagina mette accanto i numeri della finale, letti dalla
+        sua classifica, nel sistema **della finale**, che può essere diverso da
+        quello del campionato (SPECIFICHE.md, «Classifica»).
+        """
+        from models.classification.campionato_classification import (
+            ClassificationService,
+        )
+
+        numeri: Dict[int, Dict[str, Any]] = {}
+        for blocco, (gara, rows) in enumerate(
+            ClassificationService.playoff_finali(campionato)
+        ):
+            sistema = ClassificationSystem.resolve(
+                getattr(gara, "classification_system", None)
+            )
+            for row in rows:
+                numeri[row.user_id] = {
+                    "blocco": blocco,
+                    "gara_id": gara.id,
+                    "gara_name": gara.name,
+                    "gara_date": gara.date,
+                    "sistema": sistema,
+                    "position": row.posizione_mostrata,
+                    "matches_won": row.matches_won or 0,
+                    "racks_won": row.racks_won or 0,
+                    "rack_difference": row.rack_difference or 0,
+                    "points": row.points or 0,
+                    "spot_shot_wins": row.spot_shot_wins or 0,
+                }
+        return numeri
 
     @staticmethod
     def _ordine_deciso_dal_playoff(
@@ -623,11 +669,13 @@ class TournamentStatisticsService:
         if riordinata != current_ranking:
             mostrate = self._mostrate_dopo_il_playoff(campionato, riordinata, mostrate)
         current_ranking = riordinata
+        finale_di = self._numeri_della_finale(campionato)
 
         # Costruisci risultato con posizione precedente
         result = []
         for position, user_id in current_ranking:
             data = player_totals[user_id]
+            data["playoff"] = finale_di.get(user_id)
             # previous_position solo se il giocatore era in classifica prima
             data["previous_position"] = previous_positions.get(user_id)
             data["shown_position"] = mostrate.get(user_id, position)

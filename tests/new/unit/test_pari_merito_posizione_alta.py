@@ -313,16 +313,24 @@ class TestLaClassificaGenerale:
         assert mostrate[3] == 3
 
     def test_il_playoff_che_riordina_separa_i_suoi(self, db_session, monkeypatch):
-        """Chi ha giocato il playoff è separato da lì; fra gli altri resta il merito."""
+        """Chi ha giocato il playoff ha il merito della finale; fra gli altri
+        resta quello del campionato. Qui la finale li ha separati (due
+        finali, un giocatore ciascuna); il pari merito *in* finale lo copre
+        `test_classifica_decisa_dai_playoff_in_pagina.py`."""
+        from types import SimpleNamespace
+
         from models.campionato.statistics_service import TournamentStatisticsService
         from models.classification.campionato_classification import (
             ClassificationService,
         )
 
+        def _riga(uid):
+            return SimpleNamespace(user_id=uid, posizione_mostrata=1)
+
         monkeypatch.setattr(
             ClassificationService,
-            "playoff_final_blocks",
-            staticmethod(lambda campionato: [[2], [1]]),
+            "playoff_finali",
+            staticmethod(lambda campionato: [(None, [_riga(2)]), (None, [_riga(1)])]),
         )
         # Prima del playoff: 1 e 2 pari merito al 1°, 3 e 4 pari merito al 3°.
         mostrate = {1: 1, 2: 1, 3: 3, 4: 3}
