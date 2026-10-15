@@ -9,7 +9,7 @@ copia congela la classifica al momento dell'ultimo ricalcolo, ma non può più
 dire una cosa diversa dalla pagina.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from sqlalchemy.orm import joinedload
 
@@ -36,17 +36,23 @@ class ClassificationService:
         return e_a_piazzamenti(campionato)
 
     @staticmethod
-    def playoff_final_blocks(campionato) -> List[List[int]]:
-        """I blocchi di giocatori il cui ordine lo detta una gara di playoff.
+    def playoff_finali(campionato) -> List[Tuple[Any, List[GaraClassification]]]:
+        """Le finali playoff che decidono la classifica, con le loro righe.
 
-        Un blocco per ogni configurazione playoff che *decide* la classifica
-        finale e la cui gara ha già una classifica finale. L'ordine dei blocchi
-        segue `positions_from`, così Elite (dal 1°) precede Academy (dal 7°).
+        Una coppia `(gara, righe)` per ogni configurazione playoff che *decide*
+        la classifica finale e la cui gara ha già una classifica finale.
+        L'ordine segue `positions_from`, così Elite (dal 1°) precede Academy
+        (dal 7°).
+
+        Le righe sono in ordine di posizione **mostrata**, e fra chi la
+        condivide in ordine alfabetico (decisione dell'utente, 2026-10-15):
+        chi in finale è arrivato pari merito lo resta anche nel campionato, e
+        separarli per id del giocatore era inventare un risultato. Campionato
+        5: MARCO e FLAVIO, sesti pari in finale, erano 7° e 6°.
 
         Finché la gara di playoff non è chiusa la lista è vuota, e la
         classifica generale resta quella del campionato: è il comportamento
-        giusto, non un caso da gestire a parte. La legge
-        `TournamentStatisticsService._ordine_deciso_dal_playoff`.
+        giusto, non un caso da gestire a parte.
         """
         configurations = getattr(campionato, "playoff_configurations", None) or []
         candidate = [
@@ -59,17 +65,35 @@ class ClassificationService:
 
         candidate.sort(key=lambda cfg: (cfg.positions_from or 0, cfg.id))
 
-        blocks: List[List[int]] = []
+        finali: List[Tuple[Any, List[GaraClassification]]] = []
         for cfg in candidate:
             rows = (
                 db.session.query(GaraClassification)
                 .filter_by(gara_id=cfg.gara.id)
-                .order_by(GaraClassification.position, GaraClassification.user_id)
+                .options(joinedload(GaraClassification.user))
                 .all()
             )
             if rows:
-                blocks.append([row.user_id for row in rows])
-        return blocks
+                rows.sort(
+                    key=lambda r: (
+                        r.posizione_mostrata,
+                        (r.user.username if r.user else "").casefold(),
+                    )
+                )
+                finali.append((cfg.gara, rows))
+        return finali
+
+    @staticmethod
+    def playoff_final_blocks(campionato) -> List[List[int]]:
+        """I blocchi di giocatori il cui ordine lo detta una gara di playoff.
+
+        Gli id delle righe di `playoff_finali`, nello stesso ordine. La legge
+        `TournamentStatisticsService._ordine_deciso_dal_playoff`.
+        """
+        return [
+            [row.user_id for row in rows]
+            for _gara, rows in ClassificationService.playoff_finali(campionato)
+        ]
 
     @staticmethod
     @transactional(domain="classification")

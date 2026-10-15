@@ -199,7 +199,11 @@ blocks:
           prime posizioni nell'ordine deciso lì, e sotto vengono tutti gli
           altri nell'ordine che avevano in campionato. Quello che hai fatto
           durante la stagione ti serve a entrare, non a vincere. Della finale
-          conta solo l'ordine d'arrivo, non i punti.
+          conta solo l'ordine d'arrivo, non i punti. In classifica le righe di
+          chi ha giocato la finale sono colorate e mostrano vittorie e
+          differenza **della finale**, con i numeri del campionato sotto il
+          nome; chi in finale è arrivato pari merito resta pari merito, in
+          ordine alfabetico.
 
   - type: note
     tone: warning

@@ -202,7 +202,10 @@ blocks:
           top places in the order the play-off produces, and everyone else
           follows in championship order. What you did during the season gets
           you in, not to the top. Only the finishing order of the final
-          counts, not its points.
+          counts, not its points. In the standings the rows of the players who
+          played the final are coloured and show the wins and difference **of
+          the final**, with the championship figures under the name; players
+          tied in the final stay tied, in alphabetical order.
 
   - type: note
     tone: warning
