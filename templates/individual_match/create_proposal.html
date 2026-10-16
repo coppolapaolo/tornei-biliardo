@@ -193,7 +193,7 @@
   {# Barra d'azione appiccicata in fondo, come nel prototipo. Il pulsante sta
      fuori dal form e lo invia con `form=`: dentro la pila finirebbe sopra il
      margine della card e perderebbe l'aggancio al fondo dello schermo. #}
-  <div class="c7-actionbar" style="flex-direction:column;gap:6px">
+  <div class="c7-actionbar c7-actionbar--stack">
     <button type="submit" form="proposalForm" class="btn btn-primary w-100">
       <i class="fas fa-paper-plane"></i>&nbsp;{{ _("Invia la proposta") }}
     </button>
