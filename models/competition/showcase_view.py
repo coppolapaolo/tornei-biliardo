@@ -404,11 +404,15 @@ def _quando_si_gioca(gara: Gara):
 
 
 def _chi_organizza(gara: Gara) -> Optional[str]:
-    """Il direttore, con il nome che ha scelto di mostrare."""
-    direttori = getattr(gara, "directors", None) or []
+    """Chi dirige la gara, titolare prima, col nome che ha scelto di mostrare.
+
+    Non `gara.directors`: quelli sono i soli co-direttori (`direzione`).
+    """
+    from models.competition.direzione import direzione_della_gara
+
     nomi = [
-        getattr(d, "display_name", None) or getattr(d, "username", "")
-        for d in direttori
+        getattr(d.utente, "display_name", None) or getattr(d.utente, "username", "")
+        for d in direzione_della_gara(gara)
     ]
     nomi = [n for n in nomi if n]
     return ", ".join(nomi) if nomi else None

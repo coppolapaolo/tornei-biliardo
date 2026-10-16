@@ -83,31 +83,14 @@
         </dd>
         {% endif %}
 
-        {# Direttori di gara non-admin #}
-        {% set organizers = [] %}
-        {% if gara.is_standalone %}
-            {% if gara.director and gara.director.role != 'admin' %}
-                {% set _void = organizers.append({'user': gara.director, 'primary': true}) %}
-            {% endif %}
-            {% for director in gara.directors %}
-                {% if director.role != 'admin' %}
-                    {% set _void = organizers.append({'user': director, 'primary': false}) %}
-                {% endif %}
-            {% endfor %}
-        {% else %}
-            {% if gara.campionato and gara.campionato.directors %}
-                {% for director in gara.campionato.directors %}
-                    {% if director.role != 'admin' %}
-                        {% set _void = organizers.append({'user': director, 'primary': true}) %}
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-        {% endif %}
+        {# Direttori di gara non-admin: titolari prima, poi i co-direttori
+           (`direzione_della_gara`, la stessa lista della vetrina). #}
+        {% set organizers = direzione_della_gara(gara)|rejectattr('utente.is_admin')|list %}
         {% if organizers %}
         <dt class="text-muted" style="font-weight: 700;">{{ _('Direzione di gara') }}</dt>
         <dd style="margin: 0; text-align: right; display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
             {% for org in organizers %}
-            <span class="c7-state {{ 'c7-state--accent' if org.primary else 'c7-state--muted' }}">{{ org.user.username }}</span>
+            <span class="c7-state {{ 'c7-state--accent' if org.titolare else 'c7-state--muted' }}">{{ org.utente.username }}</span>
             {% endfor %}
         </dd>
         {% endif %}
