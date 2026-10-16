@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.78.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.78.0...v1.78.1) (2026-10-16)
+
+
+### Correzioni
+
+* la vetrina della gara mostra anche il direttore, non solo il co-direttore ([#694](https://github.com/coppolapaolo/tornei-biliardo/issues/694)) ([dc5bd3d](https://github.com/coppolapaolo/tornei-biliardo/commit/dc5bd3de852ce89f9617e5a56b81a83e21effa53))
+
 ## [1.78.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.77.0...v1.78.0) (2026-10-16)
 
 
