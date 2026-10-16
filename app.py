@@ -686,6 +686,10 @@ def create_app(config_name=None, *, da_script: bool = False):
     from models.matchmaking.configuration import odd_policy_for_strategy
 
     app.jinja_env.globals["odd_policy_for_strategy"] = odd_policy_for_strategy
+    # Chi dirige una gara, titolare prima: una lista sola per tutte le pagine.
+    from models.competition.direzione import direzione_della_gara
+
+    app.jinja_env.globals["direzione_della_gara"] = direzione_della_gara
     # Lo stesso per il primo abbinamento: girone e Random sorteggiano sempre.
     from models.matchmaking.configuration import first_round_policy_for_strategy
 
