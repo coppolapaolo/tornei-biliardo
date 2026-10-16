@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.79.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.78.1...v1.79.0) (2026-10-16)
+
+
+### Funzioni nuove
+
+* chi ha firmato una sfida ne può aprire un'altra con lo stesso avversario ([#697](https://github.com/coppolapaolo/tornei-biliardo/issues/697)) ([bb444c9](https://github.com/coppolapaolo/tornei-biliardo/commit/bb444c9a825006c0ef73a2e01daf3ddb361f3a12))
+* le prestazioni dei giocatori hanno livelli di certificazione ([#698](https://github.com/coppolapaolo/tornei-biliardo/issues/698)) ([141b991](https://github.com/coppolapaolo/tornei-biliardo/commit/141b991b665633dd7e66ac92a8608fe9a2682c82))
+
+
+### Correzioni
+
+* il pulsante dell'avvio rapido ha di nuovo la sua altezza sul telefono ([#696](https://github.com/coppolapaolo/tornei-biliardo/issues/696)) ([eaadf2f](https://github.com/coppolapaolo/tornei-biliardo/commit/eaadf2ff3b163f241b607f319695b02695f32230))
+
 ## [1.78.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.78.0...v1.78.1) (2026-10-16)
 
 
