@@ -5069,3 +5069,34 @@ button.c7-draw__outcome:active { transform: scale(var(--c7-press)); transition-d
 .c7-preset-azioni .c7-iconbtn[aria-expanded="true"] { background: var(--c7-accent); color: var(--c7-accent-ink); }
 .c7-preset-azioni .c7-iconbtn--err { color: var(--c7-err-ink); }
 .c7-preset-pannello { flex: 1 1 100%; padding-top: 4px; }
+
+/* --------------------------------------------------------------------------
+   Viste di certificazione (ADR-083, UC6): il selettore Tornei · Confermate ·
+   Tutte in testa al profilo. Il server rende i numeri di tutte e tre le viste
+   in blocchi `data-vista` (anche più d'una, separate da spazi); qui si
+   nascondono quelli delle viste non scelte.
+
+   La vista scelta sta su <html data-vista-attiva>, scritta nel head da
+   `static/js/vista_certificazione.js` prima che il corpo esista: per questo
+   anche il segmento acceso si decide qui e non con una classe messa dal
+   server, che per chi ha scelto *Tornei* accenderebbe *Confermate* per un
+   attimo a ogni pagina. Senza attributo — JavaScript spento — vale
+   *Confermate*, la predefinita.
+   -------------------------------------------------------------------------- */
+html:not([data-vista-attiva]) [data-vista]:not([data-vista~="confermate"]),
+html[data-vista-attiva="confermate"] [data-vista]:not([data-vista~="confermate"]),
+html[data-vista-attiva="tornei"] [data-vista]:not([data-vista~="tornei"]),
+html[data-vista-attiva="tutte"] [data-vista]:not([data-vista~="tutte"]) { display: none !important; }
+
+html:not([data-vista-attiva]) [data-vista-scelta="confermate"],
+html[data-vista-attiva="confermate"] [data-vista-scelta="confermate"],
+html[data-vista-attiva="tornei"] [data-vista-scelta="tornei"],
+html[data-vista-attiva="tutte"] [data-vista-scelta="tutte"] { background: var(--c7-ink); color: var(--c7-on-ink); }
+
+.c7-vista-cert { margin-bottom: var(--c7-gap-lg); gap: 8px; }
+.c7-vista-cert__nota { margin: 0 4px; }
+/* Su desktop il segmento non attraversa la pagina: tre parole corte in una
+   barra larga 1200px si leggerebbero come tre schede. */
+@media (min-width: 992px) {
+  .c7-vista-cert .c7-seg { max-width: 480px; }
+}

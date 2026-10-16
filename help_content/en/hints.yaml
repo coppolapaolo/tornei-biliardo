@@ -570,6 +570,16 @@ hints:
   - player.view_profile
   page: profilo_e_statistiche
   section: rating
+- id: profilo.vista
+  label: Competitions · Confirmed · All
+  short: 'Chooses which matches count: competitions only, individual matches signed by both players too,
+    or those waiting for a signature as well. All the numbers change together.'
+  anchor: profilo-vista
+  screens:
+  - player.profile
+  - player.view_profile
+  page: profilo_e_statistiche
+  section: viste
 - id: profilo.livello
   label: Level
   short: It measures how much you use the app, not how well you play. For ability there is the rating.

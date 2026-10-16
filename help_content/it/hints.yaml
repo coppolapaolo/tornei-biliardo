@@ -498,6 +498,14 @@ hints:
     page: profilo_e_statistiche
     section: rating
 
+  - id: profilo.vista
+    label: "Tornei · Confermate · Tutte"
+    short: "Sceglie quali partite contano: solo i tornei, anche le sfide firmate da entrambi, o anche quelle in attesa di una firma. Cambia tutti i numeri insieme."
+    anchor: profilo-vista
+    screens: [player.profile, player.view_profile]
+    page: profilo_e_statistiche
+    section: viste
+
   - id: profilo.livello
     label: "Livello"
     short: "Misura quanto usi l'app, non quanto giochi bene. Per la bravura c'è il rating."

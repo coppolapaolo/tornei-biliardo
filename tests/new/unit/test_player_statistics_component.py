@@ -5,7 +5,10 @@ Il componente era in markup Bootstrap con quattro numeri colorati
 `theme-7c.css` **non sovrascrive**, quindi erano l'unico punto della pagina
 dove si vedevano colori fuori dalla palette. Qui si fissa che non tornino.
 
-Niente DB: il componente legge solo il dizionario `stats`.
+Niente DB: il componente legge il dizionario `stats` (campionati e gare) e
+le tre viste di certificazione (ADR-083), ognuna coi suoi numeri. Qui le tre
+viste portano gli stessi numeri: i test di questo file guardano la forma, e
+le differenze fra viste le prova `test_profilo_selettore_certificazione.py`.
 """
 
 from __future__ import annotations
@@ -17,23 +20,32 @@ TEMPLATE = "components/_player_statistics.html"
 COLORI_BOOTSTRAP = ("text-primary", "text-info", "text-success", "text-warning")
 
 
-def _stats(**overrides):
-    base = {
-        "tournaments_played": 6,
-        "gare_played": 23,
+def _stats(runouts=None, **overrides):
+    """I numeri come li passa la route: `stats` fuori dalle viste, il resto
+    dentro ciascuna. ``runouts`` assente vuol dire «chiave non passata»."""
+    partite = {
         "won_matches": 68,
         "win_percentage": 61.0,
         "total_matches": 111,
         "lost_matches": 43,
+        "tied_matches": 0,
     }
-    base.update(overrides)
-    return base
+    partite.update(overrides)
+    vista = {"stats": partite}
+    if runouts is not None:
+        vista["runouts"] = runouts
+    return {
+        "stats": {"tournaments_played": 6, "gare_played": 23},
+        "viste": [
+            dict(vista, valore=valore) for valore in ("tornei", "confermate", "tutte")
+        ],
+    }
 
 
-def _render(app, stats, is_own_profile=True):
+def _render(app, contesto, is_own_profile=True):
     with app.test_request_context():
         return app.jinja_env.get_template(TEMPLATE).render(
-            stats=stats, is_own_profile=is_own_profile
+            is_own_profile=is_own_profile, **contesto
         )
 
 

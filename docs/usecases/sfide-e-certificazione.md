@@ -23,7 +23,10 @@ Personaggi:
 
 Stato: UC1 è realizzato (PR #696), UC2 e UC3 con l'emendamento all'ADR-051.
 UC4, UC5, UC7, UC8 e UC9 sono realizzati lato dominio con l'ADR-083
-(PR #698). UC6, il selettore nel profilo, arriva in una PR successiva.
+(PR #698). UC6, il selettore nel profilo, è realizzato con la PR del
+selettore di certificazione (`test_profilo_selettore_certificazione.py` e
+`tests/frontend/test_vista_certificazione.cjs`); della classifica ELO che
+segue la stessa vista non c'è ancora la pagina — vedi la nota in UC6.
 
 ## Use case 1 — Avvio rapido dal telefono
 
@@ -108,6 +111,11 @@ UC4, UC5, UC7, UC8 e UC9 sono realizzati lato dominio con l'ADR-083
 - Ricarica la pagina: la vista resta *Tornei*.
 - Apre il profilo di Gianni: è anche lui in vista *Tornei*. Apre la classifica
   ELO: è ordinata sulla stessa vista.
+  _(nota del 2026-10-17: oggi l'app non ha una pagina con la classifica ELO —
+  le classifiche della community sono «La tua zona» e «Contributo», ADR-037.
+  La scelta vive in `vistaCertificazione` nel browser e qualunque pagina che
+  renda blocchi `data-vista` la segue: la classifica, quando tornerà, ne
+  riceverà una per vista.)_
 - _(variante: il profilo di un giocatore che ha solo sfide, in vista *Tornei* →
   la frase «Nessuna partita di torneo», non una fila di zeri)_
 - _(variante: Luca, da ospite, o un browser che non conserva le preferenze →

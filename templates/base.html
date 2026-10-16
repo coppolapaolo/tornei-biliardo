@@ -118,44 +118,7 @@
            riformattazione lato client produrrebbe un orario diverso da quello
            che l'utente vede altrove. Vedi ADR-043. #}
 
-        // Dual ELO: alterna competitivo <-> globale su tutta l'interfaccia.
-        window.EloToggle = {
-            KEY: 'eloMode',
-            LABELS: {
-                competitive: {{ _("competitivo")|tojson }},
-                global: {{ _("globale (tornei + casual)")|tojson }}
-            },
-            getMode: function () {
-                return localStorage.getItem(this.KEY) === 'global' ? 'global' : 'competitive';
-            },
-            apply: function (mode) {
-                mode = (mode === 'global') ? 'global' : 'competitive';
-                var attr = (mode === 'global') ? 'data-elo-global' : 'data-elo-competitive';
-                document.querySelectorAll('.elo-value').forEach(function (el) {
-                    var val = el.getAttribute(attr);
-                    if (val !== null) el.textContent = val;
-                });
-                document.querySelectorAll('.elo-mode-label').forEach(function (el) {
-                    el.textContent = '(' + window.EloToggle.LABELS[mode] + ')';
-                });
-                document.querySelectorAll('[data-elo-pool]').forEach(function (el) {
-                    el.classList.toggle('d-none', el.getAttribute('data-elo-pool') !== mode);
-                });
-            },
-            toggle: function () {
-                var next = (this.getMode() === 'global') ? 'competitive' : 'global';
-                localStorage.setItem(this.KEY, next);
-                this.apply(next);
-            }
-        };
-
         document.addEventListener('DOMContentLoaded', function () {
-            window.EloToggle.apply(window.EloToggle.getMode());
-            document.addEventListener('click', function (e) {
-                var el = e.target.closest('.elo-value');
-                if (el) { e.preventDefault(); window.EloToggle.toggle(); }
-            });
-
             {% if current_user.is_authenticated %}
             /* Il fuso di chi legge (ADR-043). Il campo nascosto del login copre
                l'accesso; questo copre il resto: la sessione ripresa da
@@ -178,6 +141,12 @@
             {% endif %}
         });
     </script>
+
+    {# La vista di certificazione scelta da chi guarda (ADR-083): nel head e
+       senza `defer`, così l'attributo su <html> c'è prima del corpo e i
+       numeri della vista ricordata compaiono subito, senza lampeggiare quelli
+       della predefinita. Ha preso il posto di `window.EloToggle`. #}
+    <script src="{{ url_for('static', filename='js/vista_certificazione.js') }}?v={{ config.ASSET_VERSION }}"></script>
 
     {# Google Analytics 4 (no-op se GA_MEASUREMENT_ID non e' configurato) #}
     {% include "components/_analytics.html" %}

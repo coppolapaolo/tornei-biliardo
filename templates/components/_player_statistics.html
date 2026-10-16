@@ -1,80 +1,114 @@
 {# templates/components/_player_statistics.html — 7c
 
-   Le statistiche generali nel profilo del giocatore.
+   Le statistiche generali nel profilo del giocatore, in ognuna delle tre viste
+   di certificazione (ADR-083): un blocco `data-vista` per vista, e il
+   selettore in testa al profilo decide quale si vede.
 
-   Era rimasto markup Bootstrap: `card` + `row/col` + `h3.text-primary`. Le
-   card le ridisegnava gia' `theme-7c.css`, ma `text-primary` / `text-info` /
-   `text-success` / `text-warning` **non li sovrascrive nessuno**, quindi quei
-   quattro numeri erano il blu, il ciano, il verde e l'ambra di Bootstrap —
-   l'unico punto della pagina dove si vedevano colori fuori dalla palette.
+   Parametri:
+   - stats: i numeri che non dipendono dalla vista (campionati e gare, che
+     sono tutti di torneo);
+   - viste: i numeri delle tre viste (`_numeri_per_vista` in
+     `routes/player/profile.py`): `stats` è un `MatchStats` della vista,
+     `runouts` il conteggio dei runout nella stessa vista.
 
-   La forma qui sotto non e' inventata: e' quella del componente che gli sta
-   **accanto** nella stessa pagina (`_player_challenge_statistics.html`) e
-   della pagina delle statistiche delle sfide — `c7-sechead`, una griglia di
-   `c7-card` con `c7-num-lg`, e `c7-rows` per le righe etichetta/valore. Due
-   componenti adiacenti che si somigliano troppo sono un problema molto minore
-   di due che si somigliano poco. #}
+   La forma e' quella del componente che gli sta **accanto** nella stessa
+   pagina (`_player_challenge_statistics.html`): `c7-sechead`, una griglia di
+   `c7-card` con `c7-num-lg`, e `c7-rows` per le righe etichetta/valore.
+
+   Una vista senza partite, quando un'altra ne ha, mostra una frase invece di
+   una fila di zeri: il profilo di chi gioca solo sfide, in vista *Tornei*,
+   non è il profilo di chi non ha mai giocato.
+
+   `data-stat` marca i numeri: lo leggono i test
+   (`test_profilo_selettore_certificazione.py`), che cercano il numero di una
+   vista precisa.
+#}
+{% set partite_in_tutte = viste[-1].stats.total_matches %}
 <section class="c7-stack">
   <div class="c7-sechead">
     <h2>{% if is_own_profile %}{{ _("Le mie Statistiche") }}{% else %}{{ _("Statistiche") }}{% endif %}</h2>
   </div>
 
-  {# Due colonne fisse, non `c7-kpis`: nel profilo questa sezione vive nella
-     colonna stretta di `c7-cols`, dove quattro numeri in fila si
-     schiaccerebbero. E' anche la scelta gia' fatta dal componente accanto. #}
-  <div class="c7-grid" style="grid-template-columns:1fr 1fr">
-    <div class="c7-card">
-      <div class="c7-num-lg">{{ stats.tournaments_played }}</div>
-      <div class="c7-rows__sub">{{ _("Campionati") }}</div>
+  {% for v in viste %}
+  {% set s = v.stats %}
+  <div class="c7-stack" data-vista="{{ v.valore }}">
+    {% if s.total_matches == 0 and partite_in_tutte > 0 %}
+    <div class="c7-empty">
+      <div class="c7-empty__ico"><i class="fas {{ 'fa-trophy' if v.valore == 'tornei' else 'fa-signature' }}"></i></div>
+      {% if v.valore == 'tornei' %}
+      <div class="c7-empty__title">{{ _("Nessuna partita di torneo") }}</div>
+      <p class="c7-empty__text">{{ _("Finora solo sfide: le trovi nelle viste Confermate e Tutte.") }}</p>
+      {% else %}
+      <div class="c7-empty__title">{{ _("Nessuna partita confermata") }}</div>
+      <p class="c7-empty__text">{{ _("Le sfide che aspettano la seconda firma sono nella vista Tutte.") }}</p>
+      {% endif %}
     </div>
-    <div class="c7-card">
-      <div class="c7-num-lg">{{ stats.gare_played|default(0) }}</div>
-      <div class="c7-rows__sub">{{ _("Gare") }}</div>
-    </div>
-    <div class="c7-card">
-      <div class="c7-num-lg">{{ stats.won_matches }}</div>
-      <div class="c7-rows__sub">{{ _("Vittorie") }}</div>
-    </div>
-    <div class="c7-card">
-      <div class="c7-num-lg">{{ stats.win_percentage }}%</div>
-      <div class="c7-rows__sub">{{ _("Win Rate") }}</div>
-    </div>
-  </div>
-
-  {% if stats.total_matches > 0 %}
-  <div class="c7-rows">
-    <div class="c7-rows__row">
-      <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Totali") }}</div></div>
-      <span class="c7-num">{{ stats.total_matches }}</span>
-    </div>
-    <div class="c7-rows__row">
-      <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Sconfitte") }}</div></div>
-      <span class="c7-num">{{ stats.lost_matches }}</span>
-    </div>
-
-    {# Runout — nello stesso stampo delle due righe qui sopra.
-
-       Il lessico resta inglese di proposito: nel regolamento FIBiS non esiste
-       un termine italiano per run-out o break and run, e «serie» e' gia'
-       occupato — indica il **gruppo** di bilie assegnato («la propria serie»).
-       Vedi ADR-056.
-
-       Qui runout e' l'insieme e break and run un suo sottoinsieme, che e' come
-       parlano i giocatori. Il numero lo compone `models/user/runout_stats.py`,
-       che unisce le due fonti — il trattino sul tabellone e il tally del
-       referto TPA — e conosce la trappola dei due contatori disgiunti del
-       motore TPA. #}
-    {% if stats.runouts and stats.runouts.total %}
-    <div class="c7-rows__row">
-      <div class="c7-rows__main">
-        <div class="c7-rows__title" data-help="profilo-runout">{{ _("Runout") }}</div>
-        {% if stats.runouts.break_and_runs %}
-        <div class="c7-rows__sub">{{ _("di cui %(n)s break and run", n=stats.runouts.break_and_runs) }}</div>
-        {% endif %}
+    {% else %}
+    {# Due colonne fisse, non `c7-kpis`: nel profilo questa sezione vive nella
+       colonna stretta di `c7-cols`, dove quattro numeri in fila si
+       schiaccerebbero. #}
+    <div class="c7-grid" style="grid-template-columns:1fr 1fr">
+      <div class="c7-card">
+        <div class="c7-num-lg">{{ stats.tournaments_played }}</div>
+        <div class="c7-rows__sub">{{ _("Campionati") }}</div>
       </div>
-      <span class="c7-num">{{ stats.runouts.total }}</span>
+      <div class="c7-card">
+        <div class="c7-num-lg">{{ stats.gare_played|default(0) }}</div>
+        <div class="c7-rows__sub">{{ _("Gare") }}</div>
+      </div>
+      <div class="c7-card">
+        <div class="c7-num-lg" data-stat="vittorie">{{ s.won_matches }}</div>
+        <div class="c7-rows__sub">{{ _("Vittorie") }}</div>
+      </div>
+      <div class="c7-card">
+        <div class="c7-num-lg">{{ s.win_percentage }}%</div>
+        <div class="c7-rows__sub">{{ _("Win Rate") }}</div>
+      </div>
+    </div>
+
+    {% if s.total_matches > 0 %}
+    <div class="c7-rows">
+      <div class="c7-rows__row">
+        <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Totali") }}</div></div>
+        <span class="c7-num" data-stat="totali">{{ s.total_matches }}</span>
+      </div>
+      <div class="c7-rows__row">
+        <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Sconfitte") }}</div></div>
+        <span class="c7-num" data-stat="sconfitte">{{ s.lost_matches }}</span>
+      </div>
+      {# I pareggi esistono: «esattamente N» con N pari può finire in parità.
+         Si contano, non si ricavano per sottrazione. #}
+      <div class="c7-rows__row">
+        <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Pareggi") }}</div></div>
+        <span class="c7-num" data-stat="pareggi">{{ s.tied_matches }}</span>
+      </div>
+
+      {# Runout — nello stesso stampo delle righe qui sopra.
+
+         Il lessico resta inglese di proposito: nel regolamento FIBiS non esiste
+         un termine italiano per run-out o break and run, e «serie» e' gia'
+         occupato — indica il **gruppo** di bilie assegnato («la propria serie»).
+         Vedi ADR-056.
+
+         Qui runout e' l'insieme e break and run un suo sottoinsieme, che e' come
+         parlano i giocatori. Il numero lo compone `models/user/runout_stats.py`,
+         che unisce le due fonti — il trattino sul tabellone e il tally del
+         referto TPA — e conosce la trappola dei due contatori disgiunti del
+         motore TPA. #}
+      {% if v.runouts and v.runouts.total %}
+      <div class="c7-rows__row">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title" data-help="profilo-runout">{{ _("Runout") }}</div>
+          {% if v.runouts.break_and_runs %}
+          <div class="c7-rows__sub">{{ _("di cui %(n)s break and run", n=v.runouts.break_and_runs) }}</div>
+          {% endif %}
+        </div>
+        <span class="c7-num" data-stat="runout">{{ v.runouts.total }}</span>
+      </div>
+      {% endif %}
     </div>
     {% endif %}
+    {% endif %}
   </div>
-  {% endif %}
+  {% endfor %}
 </section>
