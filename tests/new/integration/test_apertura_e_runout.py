@@ -379,6 +379,12 @@ class TestRunoutNelProfilo:
         ScoringService.toggle_run_out(match.id, secondo.id)  # R: rispondeva
         db_session.commit()
 
+        # A partita in corso i triangoli non contano ancora: solo una partita
+        # di torneo conclusa è certificata (ADR-083).
+        assert runout_summary(gioc[0].id) == {"total": 0, "break_and_runs": 0}
+        match.status = MatchStatus.CLOSED_UNILATERALLY.value
+        db_session.commit()
+
         dal_tabellone = runout_summary(gioc[0].id)
         assert dal_tabellone == {"total": 2, "break_and_runs": 1}
 

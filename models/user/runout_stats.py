@@ -22,6 +22,12 @@ quelli **senza** spaccata. Il totale è `run_outs + break_and_runs`: chi
 leggesse `tally.run_outs` e lo stampasse come «runout totali» mostrerebbe 17
 invece di 26.
 
+**Contano solo i triangoli delle partite certificate** nella vista che si sta
+guardando (ADR-083): quelli di una partita di torneo conclusa, e quelli di una
+sfida confermata o — nella vista *Tutte* — firmata da uno solo. Fino
+all'ADR-083 contava ogni triangolo non cancellato, anche di una sfida annullata
+o di una partita ancora in corso.
+
 I **triangoli perfetti** restano fuori di proposito: contarli vuol dire contare
 gli errori, e il tabellone gli errori non li vede. Continuano a vivere nella
 pagina del referto.
@@ -34,12 +40,20 @@ from typing import Any, Dict, Optional
 from sqlalchemy import case, func
 
 from models.base import db
+from models.certificazione import (
+    VISTA_PREDEFINITA,
+    Livello,
+    Vista,
+    sfide_della_vista,
+)
 
 __all__ = ["runout_summary"]
 
 
 def runout_summary(
-    user_id: int, tpa_stats: Optional[Dict[str, Any]] = None
+    user_id: int,
+    tpa_stats: Optional[Dict[str, Any]] = None,
+    vista: Vista = VISTA_PREDEFINITA,
 ) -> Dict[str, int]:
     """``{"total": n, "break_and_runs": m}`` per questo giocatore.
 
@@ -48,9 +62,11 @@ def runout_summary(
         tpa_stats: il riassunto TPA già calcolato dalla pagina, se c'è. Il
             profilo lo chiede comunque (`TpaStatsService.profile_summary`), e
             ricalcolarlo qui vorrebbe dire rigiocare ogni referto una seconda
-            volta. Passandolo si paga una volta sola.
+            volta. Passandolo si paga una volta sola. Va chiesto nella
+            **stessa** ``vista``.
+        vista: quanto certificate devono essere le partite (ADR-083).
     """
-    dal_tabellone = _dai_triangoli(user_id)
+    dal_tabellone = _dai_triangoli(user_id, vista)
     dal_referto = _dal_referto(tpa_stats)
 
     return {
@@ -61,7 +77,7 @@ def runout_summary(
     }
 
 
-def _dai_triangoli(user_id: int) -> Dict[str, int]:
+def _dai_triangoli(user_id: int, vista: Vista) -> Dict[str, int]:
     """I triangoli marcati col trattino, sulle due tabelle dei triangoli.
 
     Il break and run non è un secondo flag: è un runout che ha aperto chi l'ha
@@ -73,12 +89,32 @@ def _dai_triangoli(user_id: int) -> Dict[str, int]:
     risultato inserito in blocco dal direttore, chi ha aperto non lo sa
     nessuno.
     """
-    from models.individual_match.match_models import IndividualRack
-    from models.match.models import Rack
+    from models.individual_match.match_models import IndividualMatch, IndividualRack
+    from models.match.models import Match, Rack
+    from models.status_enum import MatchStatus
+
+    # La partita di ogni tabella dei triangoli, e quando la vista la comprende.
+    sorgenti = [
+        (
+            IndividualRack,
+            IndividualMatch,
+            IndividualRack.match_id == IndividualMatch.id,
+            sfide_della_vista(vista),
+        )
+    ]
+    if Livello.TORNEO in vista.livelli:
+        sorgenti.append(
+            (
+                Rack,
+                Match,
+                Rack.match_id == Match.id,
+                Match.status.in_(MatchStatus.finished_values()),
+            )
+        )
 
     totale = 0
     con_spaccata = 0
-    for modello in (Rack, IndividualRack):
+    for modello, partita, legame, certificata in sorgenti:
         riga = (
             db.session.query(
                 func.count(modello.id),
@@ -92,10 +128,12 @@ def _dai_triangoli(user_id: int) -> Dict[str, int]:
                     0,
                 ),
             )
+            .join(partita, legame)
             .filter(
                 modello.winner_id == user_id,
                 modello.is_run_out.is_(True),
                 modello.is_deleted.is_(False),
+                certificata,
             )
             .one()
         )

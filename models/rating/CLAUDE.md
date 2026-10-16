@@ -5,7 +5,7 @@
 Rating Elo dei giocatori, calcolato a **rack** e aggiornato a partita conclusa.
 
 **Core Responsibilities:**
-- Due pool di rating (dual ELO): competitivo e globale
+- Tre pool di rating, uno per vista di certificazione (ADR-083)
 - Registro dei delta applicati a ogni partita
 - Regola unica su quali partite contano (`RatingEligibility`, ADR-049)
 - Ricalcolo completo dei pool
@@ -40,14 +40,24 @@ RatingCalculationService.process_individual_match_result(individual_match)
 
 | Sistema | Partite | Uso |
 |---|---|---|
-| `ELO` | solo match di torneo | competitivo; sincronizzato su `User.elo_rating` |
-| `ELO_GLOBAL` | tornei + sfide individuali confermate da entrambi | solo display |
+| `ELO` | solo match di torneo — vista *Tornei* | competitivo; sincronizzato su `User.elo_rating` |
+| `ELO_GLOBAL` | tornei + sfide confermate da entrambi — vista *Confermate* | solo display |
+| `ELO_ALL` | anche le sfide firmate da uno solo — vista *Tutte* (ADR-083) | solo display |
 | `INTERNAL` | — | rating interno di club |
 
-Un match di torneo aggiorna entrambi i pool; una sfida individuale solo
-`ELO_GLOBAL`. Entrambi i `process_*` sono **idempotenti per pool**: se esiste
-gia' una riga di `MatchRatingHistory` per quella partita e quel sistema, non
-fanno niente (protegge da eventi ri-emessi e dai ricalcoli).
+Un match di torneo aggiorna i tre pool; una sfida individuale mai `ELO`.
+Quali sfide entrano lo decide `models/certificazione.py`
+(`sfida_conta_per_elo`: niente forfait, niente pareggi). Tutti i `process_*`
+sono **idempotenti per pool**: se esiste gia' una riga di `MatchRatingHistory`
+per quella partita e quel sistema, non fanno niente.
+
+`ELO_GLOBAL` lo muove l'evento della seconda firma. `ELO_ALL` lo segue
+l'ascoltatore di sessione `elo_tutte.py`: una sfida entra alla prima firma, ed
+esce — con un ricalcolo da zero del solo pool, perche' l'ELO dipende
+dall'ordine — quando perde le firme o finisce in forfait.
+
+Chi cambia i fatti sotto l'ELO (unione di account, riassegnazione, categorie
+corrette) chiama `recalculate_all_pools()`, mai un pool solo.
 
 ---
 
@@ -90,6 +100,8 @@ chiama deve aver gia' escluso le partite che non contano.
 - **Do not decide ELO eligibility with your own `if`** (es. `effective_has_handicap`) - Use `RatingEligibility`
 - **Do not look for categories here or on `User`** - They live on `Inscription.categoria_id` (`models/categoria/`)
 - **Do not call `db.session.commit()`** - `RatingCalculationService` does not commit: the caller owns the transaction (`@transactional`)
+- **Do not recompute a single pool after changing the facts** - `recalculate_all_pools()`: the others would stay behind
+- **Do not decide which individual matches count with your own filter** - `models/certificazione.py` (ADR-083)
 
 ---
 

@@ -25,6 +25,9 @@ class RatingSystem(Enum):
 
     ELO = "elo"  # Competitivo: SOLO match di torneo. Pilota categoria/handicap.
     ELO_GLOBAL = "elo_global"  # Tornei + casual VALIDATED. SOLO display (dual ELO).
+    #: Tornei + sfide confermate + sfide firmate da uno solo, in attesa
+    #: dell'altro (ADR-083, vista «Tutte»). SOLO display, come ELO_GLOBAL.
+    ELO_ALL = "elo_all"
     INTERNAL = "internal"  # Club internal rating
 
 

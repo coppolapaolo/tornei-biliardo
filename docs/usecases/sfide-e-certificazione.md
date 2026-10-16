@@ -22,8 +22,8 @@ Personaggi:
 - **Luca**, che guarda i profili da ospite.
 
 Stato: UC1 è realizzato (PR #696), UC2 e UC3 con l'emendamento all'ADR-051.
-I casi da UC4 a UC9 descrivono il comportamento voluto e non sono ancora
-realizzati.
+UC4, UC5, UC7, UC8 e UC9 sono realizzati lato dominio con l'ADR-083
+(PR #698). UC6, il selettore nel profilo, arriva in una PR successiva.
 
 ## Use case 1 — Avvio rapido dal telefono
 

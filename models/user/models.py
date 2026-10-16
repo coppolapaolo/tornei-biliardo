@@ -357,6 +357,19 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         return self.role == UserRole.PLAYER.value
 
     @property
+    def elo_all_rating(self):
+        """ELO della vista «Tutte»: anche le sfide in attesa (ADR-083). SOLO display.
+
+        Stessa forma di `elo_global_rating`, sul pool ELO_ALL.
+        """
+        from models.rating.models import PlayerRating, RatingSystem
+
+        obj = PlayerRating.get_user_rating(self.id, RatingSystem.ELO_ALL)
+        if obj is None:
+            return None
+        return int(round(obj.rating_value))
+
+    @property
     def elo_global_rating(self):
         """ELO globale (tornei + casual, dual ELO) — SOLO display.
 

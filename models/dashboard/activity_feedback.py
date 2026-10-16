@@ -380,7 +380,12 @@ def _tpa_window(user_id: int, user: Any = None) -> Optional[Dict[str, Any]]:
     if not TpaStatsService.is_visible_for(user_id, user=user):
         return None
 
-    stats = TpaStatsService.career_stats(user_id)
+    # La vista *Tutte* (ADR-083): questo è il riscontro della propria attività,
+    # e una sfida che hai firmato tu l'hai giocata anche se l'avversario non
+    # l'ha ancora confermata. Il profilo, che altri leggono, sceglie la sua.
+    from models.certificazione import Vista
+
+    stats = TpaStatsService.career_stats(user_id, Vista.TUTTE)
     if not stats or stats.get("tpa") is None:
         return None
 

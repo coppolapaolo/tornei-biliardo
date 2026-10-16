@@ -73,21 +73,15 @@ def recalculate_elo(commit=False):
         # the same logic is reused by the user-merge flow. The reset happens in
         # the session even in dry-run, so the replay is meaningful; the final
         # rollback undoes everything. Only --commit persists.
-        result = RatingCalculationService.recalculate_all_elo()
-
-        logger.info(
-            f"Processed {result['processed']} of {result['total']} finished "
-            f"matches ({result['skipped']} skipped: walkover/handicap)."
-        )
-
-        # Dual ELO: ricalcola anche il pool globale (tornei + casual VALIDATED),
-        # fuso cronologicamente. Non tocca l'ELO competitivo né User.elo_rating.
-        global_result = RatingCalculationService.recalculate_all_elo_global()
-        logger.info(
-            f"ELO_GLOBAL: processed {global_result['processed']} of "
-            f"{global_result['total']} match ({global_result['skipped']} "
-            f"skipped: walkover/handicap)."
-        )
+        # I tre pool: competitivo, globale (tornei + sfide confermate) e
+        # quello della vista «Tutte», che conta anche le sfide firmate da uno
+        # solo (ADR-083). I due larghi non toccano User.elo_rating.
+        esiti = RatingCalculationService.recalculate_all_pools()
+        for nome, result in esiti.items():
+            logger.info(
+                f"{nome}: processed {result['processed']} of {result['total']} "
+                f"matches ({result['skipped']} skipped: walkover/handicap)."
+            )
 
         if commit:
             db.session.commit()

@@ -5,6 +5,12 @@ stessa scelta del resto del dominio (ADR-044) — un totale su colonna diverge
 al primo annulla — e a questa scala non costa niente: qualche decina di
 referti, qualche centinaio di comandi ciascuno.
 
+**Contano solo i referti di sfide che hanno un livello di certificazione**
+(ADR-083), e nella vista che si sta guardando: *Confermate* o *Tutte*. Il TPA
+esiste solo nelle sfide, quindi nella vista *Tornei* non c'è. Fino
+all'ADR-083 si sommava ogni referto, anche quello di una sfida annullata o
+ancora in corso senza firme.
+
 **Il TPA di carriera non e' la media dei TPA delle partite.** Si sommano bilie
 ed errori di tutti i referti e si divide una volta sola: una partita da
 quaranta bilie deve pesare piu' di una da quattro, altrimenti un rack fortunato
@@ -18,6 +24,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import or_
 
 from models.base import db
+from models.certificazione import VISTA_PREDEFINITA, Vista, sfide_della_vista
 from models.individual_match.match_models import IndividualMatch
 from models.tpa.engine import PlayerTally, total_errors, tpa_score
 from models.user.models import User
@@ -29,8 +36,13 @@ class TpaStatsService:
     """Aggregati TPA per il profilo e per le statistiche personali."""
 
     @staticmethod
-    def referti_for_user(user_id: int) -> List[TpaReferto]:
-        """I referti delle partite giocate da un utente, dal piu' recente."""
+    def referti_for_user(
+        user_id: int, vista: Vista = VISTA_PREDEFINITA
+    ) -> List[TpaReferto]:
+        """I referti delle partite giocate da un utente, dal piu' recente.
+
+        Solo quelli delle sfide che la ``vista`` comprende (ADR-083).
+        """
         return (
             TpaReferto.query.join(
                 IndividualMatch, TpaReferto.individual_match_id == IndividualMatch.id
@@ -39,7 +51,8 @@ class TpaStatsService:
                 or_(
                     IndividualMatch.player1_id == user_id,
                     IndividualMatch.player2_id == user_id,
-                )
+                ),
+                sfide_della_vista(vista),
             )
             .order_by(TpaReferto.created_at.desc())
             .all()
@@ -127,13 +140,15 @@ class TpaStatsService:
         }
 
     @staticmethod
-    def career_stats(user_id: int) -> Optional[Dict[str, Any]]:
+    def career_stats(
+        user_id: int, vista: Vista = VISTA_PREDEFINITA
+    ) -> Optional[Dict[str, Any]]:
         """I numeri TPA di un giocatore, o ``None`` se non ha nessun referto.
 
         Il TPA vale ``None`` finche' non c'e' nulla da dividere: «zero su zero»
         non e' zero, e un giocatore appena sbloccato non merita un `.000`.
         """
-        referti = TpaStatsService.referti_for_user(user_id)
+        referti = TpaStatsService.referti_for_user(user_id, vista)
         if not referti:
             return None
 
@@ -184,7 +199,9 @@ class TpaStatsService:
         }
 
     @staticmethod
-    def profile_summary(user_id: int, user=None) -> Optional[Dict[str, Any]]:
+    def profile_summary(
+        user_id: int, user=None, vista: Vista = VISTA_PREDEFINITA
+    ) -> Optional[Dict[str, Any]]:
         """Cosa mostrare nel profilo, o ``None`` se il TPA li' non ci va.
 
         Restituisce un riassunto anche quando i referti non ci sono ancora, ma
@@ -193,7 +210,7 @@ class TpaStatsService:
         """
         if not TpaStatsService.is_visible_for(user_id, user=user):
             return None
-        stats = TpaStatsService.career_stats(user_id)
+        stats = TpaStatsService.career_stats(user_id, vista)
         if stats is None:
             return {"tpa": None, "referti": 0, "balls_potted": 0, "errors": 0}
         return stats

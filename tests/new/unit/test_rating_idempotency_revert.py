@@ -352,8 +352,9 @@ def test_to_playing_reopen_triggers_revert(db_session):
 
     RatingCalculationService.process_match_result(match)
     db.session.flush()
-    # Dual pool: 2 ELO + 2 ELO_GLOBAL per il match torneo.
-    assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 4
+    # Tre pool, due giocatori: ELO, ELO_GLOBAL ed ELO_ALL (ADR-083). Una
+    # partita di torneo è in tutte e tre le viste.
+    assert MatchRatingHistory.query.filter_by(match_id=match.id).count() == 6
 
     # Riapertura: completed → playing.
     MatchStateService.to_playing(match.id)

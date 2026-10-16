@@ -401,12 +401,11 @@ def main(argv=None) -> int:
                 "giocatori toccati."
             )
             if _conferma("    Ricalcolare adesso l'Elo di tutti?"):
-                esito = RatingCalculationService.recalculate_all_elo()
+                esiti = RatingCalculationService.recalculate_all_pools()
                 db.session.commit()
-                print(f"    ✓ Elo competitivo: {esito}")
-                esito_globale = RatingCalculationService.recalculate_all_elo_global()
-                db.session.commit()
-                print(f"    ✓ Elo globale: {esito_globale}")
+                print(f"    ✓ Elo competitivo: {esiti['elo']}")
+                print(f"    ✓ Elo globale: {esiti['elo_global']}")
+                print(f"    ✓ Elo della vista Tutte: {esiti['elo_all']}")
                 print(
                     "\n    Ora conviene riconciliare i traguardi:\n"
                     "        venv/bin/python scripts/reconcile_achievements.py"

@@ -164,9 +164,11 @@ def _partite_torneo() -> List[Partita]:
 def _partite_casual() -> List[Partita]:
     """Le sfide individuali confermate dai due giocatori.
 
-    Stesso filtro di `recalculate_all_elo_global`: solo `CONFIRMED_BY_BOTH`.
-    Gli altri stati non sono partite giocate e confermate, quindi non sono
-    dati. Qui non si applica `RatingEligibility`: non esiste una gara, quindi
+    Solo `CONFIRMED_BY_BOTH`: gli altri stati non sono partite giocate e
+    confermate, quindi non sono dati. I pareggi restano: qui si misurano i
+    dati, mentre l'ELO globale li salta (`sfida_conta_per_elo`, ADR-083), e
+    le sfide in attesa — che il pool della vista «Tutte» conta — non sono
+    ancora confermate. Qui non si applica `RatingEligibility`: non esiste una gara, quindi
     non esistono handicap né categorie da confrontare.
     """
     from models.individual_match.models import IndividualMatch
