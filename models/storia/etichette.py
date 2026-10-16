@@ -99,6 +99,7 @@ ETICHETTE: Dict[str, object] = {
     "default_entry_fee": _l("Quota proposta"),
     "default_rounds_count": _l("Turni proposti"),
     "default_odd_policy": _l("Dispari proposti"),
+    "default_first_round_policy": _l("Primo abbinamento proposto"),
     "default_anti_rematch": _l("Anti-reincontro proposto"),
     "default_start_rule": _l("Chi apre, proposto"),
     "default_break_rule": _l("Chi spacca, proposto"),
@@ -128,6 +129,7 @@ _COME_CAMPO_DELLA_GARA = {
     "default_gara_classification_system": "classification_system",
     "default_entry_fee": "entry_fee",
     "default_odd_policy": "odd_number_policy",
+    "default_first_round_policy": "first_round_policy",
     "default_anti_rematch": "anti_rematch_enabled",
     "default_start_rule": "start_rule",
     "default_break_rule": "break_rule",
@@ -174,6 +176,11 @@ def _valori_noti() -> Dict[str, Dict[str, object]]:
             "bye": _l("X"),
             "bye_with_challenge": _l("X con esercizio"),
             "trio": _l("Trio"),
+        },
+        "first_round_policy": {
+            "random": _l("Casuale"),
+            "rating": _l("Basato su rating"),
+            "classification": _l("Basato sulla classifica del campionato"),
         },
         "classification_system": {
             "WINS": _l("Vittorie"),

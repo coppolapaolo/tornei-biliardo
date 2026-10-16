@@ -12,6 +12,7 @@ from typing import List, Optional, Dict, Any
 from models.user.models import User
 from models.match.models import Match
 from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
+from models.matchmaking.configuration import FirstRoundPolicy
 from sqlalchemy.exc import IntegrityError
 
 from models.base import db, utc_now
@@ -53,6 +54,7 @@ class TournamentService(TournamentStatisticsService):
             "default_entry_fee",
             "default_rounds_count",
             "default_odd_policy",
+            "default_first_round_policy",
             "default_anti_rematch",
             "has_handicap",
             "default_time_limit_minutes",
@@ -125,6 +127,8 @@ class TournamentService(TournamentStatisticsService):
         default_entry_fee: Optional[float] = None,
         default_rounds_count: int = 3,
         default_odd_policy: str = "bye",
+        # Il primo abbinamento proposto alle gare: casuale, rating, classifica.
+        default_first_round_policy: str = FirstRoundPolicy.RANDOM.value,
         default_anti_rematch: bool = True,
         default_classification_system: str = "WINS",
         # Nei campionati a piazzamenti, il sistema proposto alle serate
@@ -192,6 +196,7 @@ class TournamentService(TournamentStatisticsService):
             default_entry_fee=default_entry_fee,
             default_rounds_count=default_rounds_count,
             default_odd_policy=default_odd_policy,
+            default_first_round_policy=default_first_round_policy,
             default_anti_rematch=default_anti_rematch,
             default_classification_system=default_classification_system,
             default_gara_classification_system=default_gara_classification_system,

@@ -41,6 +41,7 @@ class _CampionatoFinto:
     default_entry_fee = 0
     default_anti_rematch = True
     default_odd_policy = "bye"
+    default_first_round_policy = "random"
     default_classification_system = "WINS"
 
 

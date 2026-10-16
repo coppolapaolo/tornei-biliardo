@@ -107,7 +107,7 @@ blocks:
       The second step asks what the championship's «typical» competitions look
       like: venue, entry fee (and, if needed, the fee list by category, which
       applies to every competition), number of rounds, handling of odd numbers,
-      how the break shot is decided, and how **ties** are settled in the round
+      how the first round is paired, how the break shot is decided, and how **ties** are settled in the round
       standings and in each competition's final standings. Every new
       competition will start out like that, and you will only have to change
       the name, date and discipline.
@@ -139,7 +139,8 @@ blocks:
       autumn circuit — you can save its settings as a **preset** and start
       from there. A championship preset keeps format, standings system,
       number of competitions, drills and all the values proposed to the
-      competitions (rounds, odd number, break, groups, final stage, points,
+      competitions (rounds, odd number, first pairing, break, groups, final
+      stage, points,
       ties, time limit, fee and price list, points by position) and also
       **the playoffs**: places, minimum competitions, how they count in the
       final standings, weight and the rules of the final. Name and venue are

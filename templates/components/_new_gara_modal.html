@@ -305,10 +305,13 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="first_round_policy" class="form-label">{{ _("Primo Abbinamento") }}</label>
+                                    {# La proposta del campionato, nella forma che la
+                                       strategia ammette (girone e Random sorteggiano). #}
+                                    {% set primo_proposto = first_round_policy_for_strategy(strategia_proposta, campionato.default_first_round_policy) if campionato else FirstRoundPolicy.RANDOM.value %}
                                     <select class="form-control" name="first_round_policy" id="create_first_round_policy">
-                                        <option value="random" selected>{{ _("Casuale") }}</option>
-                                        <option value="rating">{{ _("Basato su Rating") }}</option>
-                                        <option value="classification">{{ _("Basato su Classifica") }}</option>
+                                        <option value="{{ FirstRoundPolicy.RANDOM.value }}" {% if primo_proposto == FirstRoundPolicy.RANDOM.value %}selected{% endif %}>{{ _("Casuale") }}</option>
+                                        <option value="{{ FirstRoundPolicy.RATING.value }}" {% if primo_proposto == FirstRoundPolicy.RATING.value %}selected{% endif %}>{{ _("Basato su Rating") }}</option>
+                                        <option value="{{ FirstRoundPolicy.CLASSIFICATION.value }}" {% if primo_proposto == FirstRoundPolicy.CLASSIFICATION.value %}selected{% endif %}>{{ _("Basato su Classifica") }}</option>
                                     </select>
                                 </div>
                             </div>

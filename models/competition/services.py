@@ -761,6 +761,19 @@ class GaraService:
             kwargs["time_limit_minutes"] = int(
                 campionato.default_time_limit_minutes or 0
             )
+        # Il primo abbinamento, nella forma che la strategia ammette: girone e
+        # Random sorteggiano sempre. La finale dei playoff ha valori suoi.
+        if kwargs.get("first_round_policy") is None and not kwargs.get(
+            "playoff_config_id"
+        ):
+            from models.matchmaking.configuration import (
+                first_round_policy_for_strategy,
+            )
+
+            kwargs["first_round_policy"] = first_round_policy_for_strategy(
+                kwargs.get("matchmaking_strategy") or campionato.campionato_type,
+                campionato.default_first_round_policy,
+            )
         # I gironi del girone all'italiana (ADR-076): tetto e composizione.
         if kwargs.get("max_groups") is None:
             kwargs["max_groups"] = int(campionato.default_max_groups or 1)

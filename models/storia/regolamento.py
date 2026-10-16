@@ -366,6 +366,7 @@ CAMPI_DEL_CAMPIONATO: Tuple[str, ...] = (
     "default_entry_fee",
     "default_rounds_count",
     "default_odd_policy",
+    "default_first_round_policy",
     "default_anti_rematch",
     "default_start_rule",
     "default_break_rule",

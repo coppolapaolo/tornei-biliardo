@@ -20,6 +20,7 @@ class TestParseDefaultSettings:
                 "default_entry_fee": "12.5",
                 "default_rounds_count": "4",
                 "default_odd_policy": "trio",
+                "default_first_round_policy": "classification",
                 "default_anti_rematch": "on",
             }
         )
@@ -29,6 +30,7 @@ class TestParseDefaultSettings:
             "default_entry_fee": 12.5,
             "default_rounds_count": 4,
             "default_odd_policy": "trio",
+            "default_first_round_policy": "classification",
             "default_anti_rematch": True,
             "has_handicap": False,
             # ADR-077: nessun limite di tempo, se non lo si scrive.
@@ -48,6 +50,7 @@ class TestParseDefaultSettings:
             "default_entry_fee": None,
             "default_rounds_count": 3,
             "default_odd_policy": "bye",
+            "default_first_round_policy": "random",
             "default_anti_rematch": False,
             "has_handicap": False,
             # ADR-077: nessun limite di tempo, se non lo si scrive.
@@ -59,6 +62,16 @@ class TestParseDefaultSettings:
             "default_start_rule": "lag",
             "default_break_rule": "alternate",
         }
+
+    def test_unknown_first_round_policy_falls_back_to_random(self):
+        """Un primo abbinamento sconosciuto vale il sorteggio, come per le gare."""
+        form = MultiDict({"default_first_round_policy": "bogus"})
+        assert (
+            CampionatoFormParser.parse_default_settings(form)[
+                "default_first_round_policy"
+            ]
+            == "random"
+        )
 
     def test_invalid_numeric_inputs_fall_back(self):
         form = MultiDict(

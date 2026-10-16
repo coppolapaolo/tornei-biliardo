@@ -108,6 +108,10 @@ class CampionatoDriver(GaraDriver):
         (`/admin/gara/create` invece di `/create_standalone`) e legge campi
         diversi: la strategia e il sistema di classifica li prende dal
         campionato, non dal form.
+
+        Un'opzione `None` toglie il campo dal modulo: è il modo di provare
+        che cosa vale quando il campo non arriva, cioè la proposta del
+        campionato.
         """
         dati = {
             chiave: valore
@@ -118,7 +122,11 @@ class CampionatoDriver(GaraDriver):
         dati["number"] = str(numero)
         dati.setdefault("name", f"Gara {numero}")
         dati.setdefault("date", (date.today() + timedelta(days=7)).isoformat())
-        dati.update({chiave: str(valore) for chiave, valore in opzioni.items()})
+        for chiave, valore in opzioni.items():
+            if valore is None:
+                dati.pop(chiave, None)
+            else:
+                dati[chiave] = str(valore)
 
         risposta = self.client.post("/admin/gara/create", data=dati)
         assert risposta.status_code == 302, "creazione gara: atteso un redirect"
