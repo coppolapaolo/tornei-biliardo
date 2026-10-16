@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.78.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.77.0...v1.78.0) (2026-10-16)
+
+
+### Funzioni nuove
+
+* il campionato propone il primo abbinamento delle gare ([#692](https://github.com/coppolapaolo/tornei-biliardo/issues/692)) ([b865e3e](https://github.com/coppolapaolo/tornei-biliardo/commit/b865e3e8f3db2e1f415e8d6777ecf02c3f836ef3))
+
+
+### Correzioni
+
+* la classifica decisa dalla finale playoff mostra i numeri della finale ([#690](https://github.com/coppolapaolo/tornei-biliardo/issues/690)) ([58f4815](https://github.com/coppolapaolo/tornei-biliardo/commit/58f48152f56c838f8df90f921c4872b7c532cac6))
+
 ## [1.77.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.76.2...v1.77.0) (2026-10-12)
 
 
