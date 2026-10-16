@@ -238,6 +238,13 @@
                 </div>
             </div>
 
+            {# Il primo abbinamento proposto alle gare. Girone e Random lo
+               sorteggiano sempre: a quelle gare la proposta non arriva. Nei
+               tabelloni resta acceso: lì decide le teste di serie. #}
+            <div class="mb-3">
+                {% include "components/_campo_primo_abbinamento_proposto.html" %}
+            </div>
+
             {# I gironi del girone all'italiana (ADR-076), proposti alle gare:
                seguono il tipo di campionato, che qui si cambia senza ricaricare. #}
             {% with gironi_prefisso='default_', gironi_strategia_da='#campionato_type', gironi_sistema_da='#default_classification_system',

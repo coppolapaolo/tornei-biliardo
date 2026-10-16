@@ -28,7 +28,11 @@ from models.match.break_rules import (
     BreakRule,
     StartRule,
 )
-from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
+from models.matchmaking.configuration import (
+    FirstRoundPolicy,
+    MatchmakingStrategy,
+    OddNumberPolicy,
+)
 
 _VALID_ODD_POLICIES = {
     OddNumberPolicy.NO.value,
@@ -89,6 +93,7 @@ class CampionatoFormParser:
         "default_entry_fee",
         "default_rounds_count",
         "default_odd_policy",
+        "default_first_round_policy",
         "default_anti_rematch",
         "default_start_rule",
         "default_break_rule",
@@ -326,7 +331,8 @@ class CampionatoFormParser:
         Returns kwargs ready for ``TournamentService.update_campionato`` /
         ``create_campionato_with_director``:
         ``default_venue_id``, ``default_entry_fee``, ``default_rounds_count``,
-        ``default_odd_policy``, ``default_anti_rematch``.
+        ``default_odd_policy``, ``default_first_round_policy``,
+        ``default_anti_rematch``.
 
         Invalid/empty numeric inputs fall back to safe defaults rather than
         raising, so neither path can 500 on a malformed field.
@@ -356,11 +362,20 @@ class CampionatoFormParser:
         if default_odd_policy not in _VALID_ODD_POLICIES:
             default_odd_policy = OddNumberPolicy.BYE.value
 
+        # Il primo abbinamento proposto: un valore ignoto vale il sorteggio,
+        # com'è sempre stato per le gare.
+        default_first_round_policy = form.get(
+            "default_first_round_policy", FirstRoundPolicy.RANDOM.value
+        )
+        if default_first_round_policy not in {p.value for p in FirstRoundPolicy}:
+            default_first_round_policy = FirstRoundPolicy.RANDOM.value
+
         return {
             "default_venue_id": default_venue_id,
             "default_entry_fee": default_entry_fee,
             "default_rounds_count": default_rounds_count,
             "default_odd_policy": default_odd_policy,
+            "default_first_round_policy": default_first_round_policy,
             "default_anti_rematch": "default_anti_rematch" in form,
             # Come si comincia e chi apre poi (ADR-056). Radice della catena:
             # un valore ignoto ricade sul default del progetto — che è il

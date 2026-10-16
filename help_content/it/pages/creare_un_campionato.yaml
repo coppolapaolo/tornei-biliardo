@@ -105,7 +105,8 @@ blocks:
       Il secondo passaggio chiede come saranno fatte le gare «tipo» del
       campionato: sala, quota di partecipazione (e, se serve, il listino delle
       quote per categoria, che vale per tutte le gare), numero di turni, gestione del
-      numero dispari, come si decide chi esegue il tiro di apertura, e come si
+      numero dispari, come si abbina il primo turno, come si decide chi esegue
+      il tiro di apertura, e come si
       sciolgono i **pari merito** nella classifica di turno e in quella finale
       di ogni gara. Ogni gara nuova nascerà già così, e tu dovrai solo cambiare
       nome, data e disciplina.
@@ -140,7 +141,8 @@ blocks:
       circuito d'autunno — puoi salvarne le impostazioni come **preset** e
       ripartire da lì. Il preset di campionato tiene formato, sistema di
       classifica, numero di gare, esercizi e tutti i valori proposti alle gare
-      (turni, numero dispari, apertura, gironi, fase finale, punti, pari
+      (turni, numero dispari, primo abbinamento, apertura, gironi, fase
+      finale, punti, pari
       merito, limite di tempo, quota e listino, punti per posizione) e
       anche **i playoff**: posti, minimo di gare, come entrano nella
       classifica finale, peso e regole della finale. Nome e sala restano

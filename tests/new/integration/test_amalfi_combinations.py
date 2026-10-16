@@ -15,11 +15,7 @@ from models.status_enum import MatchStatus
 from models.competition.services import GaraService
 from models.competition.inscription_service import InscriptionService
 from models.competition.round_service import RoundService
-from models.classification.models import (
-    RoundClassification,
-    PlayerEncounter,
-    Classification,
-)
+from models.classification.models import RoundClassification, PlayerEncounter
 from models.campionato.models import Campionato
 from models.base import db, utc_now
 
@@ -239,33 +235,47 @@ class TestFirstRoundPolicyClassification:
         matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         assert len(matches) == 3
 
-    def test_classification_uses_campionato_standings(self, db_session):
-        """Classification policy uses existing campionato standings for seeding."""
+    @staticmethod
+    def _classifica_generale(monkeypatch, ordine):
+        """La classifica generale del campionato, in quest'ordine.
+
+        Il seeding legge la classifica **calcolata** (`classifica_generale`,
+        ADR-073), che nasce dalle gare giocate: qui la si impone, per provare
+        come il seeding la usa senza giocare una gara intera. Il percorso con
+        una gara vera è in
+        `tests/new/e2e/test_campionato_e2e_primo_turno_da_classifica.py`.
+        """
+        from models.campionato.statistics_service import TournamentStatisticsService
+
+        monkeypatch.setattr(
+            TournamentStatisticsService,
+            "classifica_generale",
+            lambda self, campionato_id: [
+                (posizione, {"user_id": user_id})
+                for posizione, user_id in enumerate(ordine, 1)
+            ],
+        )
+
+    def test_classification_uses_campionato_standings(self, db_session, monkeypatch):
+        """Classification policy uses the campionato standings for seeding."""
+        from models.classification.seeding_service import SeedingService
+
         director = _create_director(db_session)
         players = _create_players(db_session, 6)
 
-        # Create campionato
         campionato = Campionato(
             name="Test Camp",
             campionato_type="amalfi",
             planned_gare_count=5,
         )
         db_session.add(campionato)
-        db_session.flush()
-
-        # Create campionato classification (standings from previous gare)
-        for i, player in enumerate(players):
-            cls = Classification(
-                campionato_id=campionato.id,
-                user_id=player.id,
-                position=i + 1,
-                total_matches_won=6 - i,
-                total_point_difference=10 - i * 3,
-            )
-            db_session.add(cls)
         db_session.commit()
 
-        # Create gara IN the campionato with classification policy
+        # La classifica dopo le gare precedenti: l'ordine inverso di creazione,
+        # perché un ordine «per id» non provi niente.
+        ordine = [p.id for p in reversed(players)]
+        self._classifica_generale(monkeypatch, ordine)
+
         gara = _create_amalfi_gara(
             director.id,
             players,
@@ -277,20 +287,19 @@ class TestFirstRoundPolicyClassification:
         RoundService.start_first_round(gara.id)
         matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         assert len(matches) == 3
+        assert [r.user_id for r in SeedingService.get_seeding(gara.id)] == ordine
 
-        # With salto=3 for round 1 of 3, pos1 pairs with pos4
-        # Verify all 6 players are paired
-        paired = set()
-        for m in matches:
-            paired.add(m.player1_id)
-            if m.player2_id:
-                paired.add(m.player2_id)
-        assert len(paired) == 6
+    def test_classification_with_unclassified_players(self, db_session, monkeypatch):
+        """Some players have campionato standings, others don't.
 
-    def test_classification_with_unclassified_players(self, db_session):
-        """Some players have campionato standings, others don't."""
+        I classificati partono nel loro ordine, i nuovi in coda; chi è in
+        classifica ma non iscritto a questa gara non occupa posti.
+        """
+        from models.classification.seeding_service import SeedingService
+
         director = _create_director(db_session)
         players = _create_players(db_session, 6)
+        assente = _create_players(db_session, 1)[0]
 
         campionato = Campionato(
             name="Test Camp 2",
@@ -298,18 +307,10 @@ class TestFirstRoundPolicyClassification:
             planned_gare_count=5,
         )
         db_session.add(campionato)
-        db_session.flush()
-
-        # Only first 4 players have classification (2 are new)
-        for i in range(4):
-            cls = Classification(
-                campionato_id=campionato.id,
-                user_id=players[i].id,
-                position=i + 1,
-                total_matches_won=4 - i,
-            )
-            db_session.add(cls)
         db_session.commit()
+
+        classificati = [players[3].id, assente.id, players[0].id, players[2].id]
+        self._classifica_generale(monkeypatch, classificati)
 
         gara = _create_amalfi_gara(
             director.id,
@@ -322,6 +323,9 @@ class TestFirstRoundPolicyClassification:
         RoundService.start_first_round(gara.id)
         matches = Match.query.filter_by(gara_id=gara.id, round_number=1).all()
         assert len(matches) == 3
+        partenza = [r.user_id for r in SeedingService.get_seeding(gara.id)]
+        assert partenza[:3] == [players[3].id, players[0].id, players[2].id]
+        assert set(partenza[3:]) == {players[1].id, players[4].id, players[5].id}
 
     def test_classification_no_standings_falls_back_to_random(self, db_session):
         """First gara in campionato (no standings yet) falls back to random."""

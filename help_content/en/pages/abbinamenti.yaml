@@ -343,7 +343,11 @@ blocks:
         text: >-
           Uses the overall championship standings: whoever is doing well in the
           championship starts from a favourable position in this competition
-          too.
+          too. Players not yet in the standings start at the bottom. At the
+          first competition there are no standings yet and the round is drawn,
+          so you can choose it once in the championship, at step 2: it applies
+          to every competition, and from the second one the first round starts
+          from the standings.
 
   - type: faq
     items:

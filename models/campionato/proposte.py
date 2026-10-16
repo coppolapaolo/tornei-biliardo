@@ -27,6 +27,7 @@ CAMPI_PROPOSTI: Dict[str, str] = {
     "default_entry_fee": "entry_fee",
     "default_rounds_count": "rounds_count",
     "default_odd_policy": "odd_number_policy",
+    "default_first_round_policy": "first_round_policy",
     "default_anti_rematch": "anti_rematch_enabled",
     "default_start_rule": "start_rule",
     "default_break_rule": "break_rule",
@@ -148,6 +149,16 @@ def proposta(campionato: Any, cambi: Mapping[str, Iterable[Any]]) -> List[GaraPr
                 from models.matchmaking.configuration import odd_policy_for_strategy
 
                 nuovo = odd_policy_for_strategy(gara.matchmaking_strategy, nuovo)
+            if campo_gara == "first_round_policy":
+                # Girone e Random sorteggiano sempre: a loro «basato su
+                # classifica» non si propone.
+                from models.matchmaking.configuration import (
+                    first_round_policy_for_strategy,
+                )
+
+                nuovo = first_round_policy_for_strategy(
+                    gara.matchmaking_strategy, nuovo
+                )
             if serializza(attuale) == serializza(nuovo):
                 continue  # la gara ha già il valore nuovo
             voce.campi.append(

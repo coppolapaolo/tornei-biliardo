@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-10-11 20:00 UTC
+> Last updated: 2026-10-16 15:14 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -242,6 +242,7 @@
 | `default_entry_fee` | FLOAT | YES |  |  |  |
 | `default_rounds_count` | INTEGER | NO |  | 3 |  |
 | `default_odd_policy` | VARCHAR(30) | NO |  | bye |  |
+| `default_first_round_policy` | VARCHAR(50) | YES |  | random |  |
 | `default_anti_rematch` | BOOLEAN | NO |  | True |  |
 | `default_classification_system` | VARCHAR(10) | NO |  | WINS |  |
 | `default_gara_classification_system` | VARCHAR(10) | YES |  |  |  |
@@ -258,6 +259,13 @@
 | `default_time_limit_minutes` | INTEGER | NO |  | 0 |  |
 | `default_max_groups` | INTEGER | NO |  | 1 |  |
 | `default_group_seeding` | VARCHAR(20) | NO |  | sorteggio |  |
+| `default_final_phase_mode` | VARCHAR(20) | NO |  | nessuna |  |
+| `default_qualifiers_per_group` | INTEGER | NO |  | 2 |  |
+| `default_third_place_match` | BOOLEAN | NO |  | False |  |
+| `default_final_phase_time_limit_minutes` | INTEGER | YES |  |  |  |
+| `default_final_phase_distance` | INTEGER | YES |  |  |  |
+| `default_final_time_limit_minutes` | INTEGER | YES |  |  |  |
+| `default_final_distance` | INTEGER | YES |  |  |  |
 | `default_catena_turno` | TEXT | YES |  |  |  |
 | `default_catena_gara` | TEXT | YES |  |  |  |
 | `catena_generale` | TEXT | YES |  |  |  |
@@ -347,6 +355,12 @@
 | `double_ko_rounds` | INTEGER | YES |  |  |  |
 | `max_groups` | INTEGER | YES |  |  |  |
 | `group_seeding` | VARCHAR(20) | YES |  |  |  |
+| `final_phase_mode` | VARCHAR(20) | YES |  |  |  |
+| `qualifiers_per_group` | INTEGER | YES |  |  |  |
+| `final_phase_time_limit_minutes` | INTEGER | YES |  |  |  |
+| `final_phase_distance` | INTEGER | YES |  |  |  |
+| `final_time_limit_minutes` | INTEGER | YES |  |  |  |
+| `final_distance` | INTEGER | YES |  |  |  |
 | `catena_turno` | TEXT | YES |  |  |  |
 | `catena_gara` | TEXT | YES |  |  |  |
 | `tiebreaker_challenge_id` | INTEGER | YES | FK→challenge.id |  |  |
@@ -1898,6 +1912,28 @@
 **Foreign Keys:**
 - `challenge_id` → `challenge.id` (ON DELETE CASCADE)
 
+### config_preset
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `owner_id` | INTEGER | NO | FK→user.id |  |  |
+| `name` | VARCHAR(100) | NO |  |  |  |
+| `kind` | VARCHAR(20) | NO |  |  |  |
+| `payload` | TEXT | NO |  | {} |  |
+| `schema_version` | INTEGER | NO |  | 1 |  |
+| `received_from_user_id` | INTEGER | YES | FK→user.id |  |  |
+| `received_at` | DATETIME | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Constraints:**
+- UNIQUE(owner_id, name)
+
+**Foreign Keys:**
+- `owner_id` → `user.id` (ON DELETE CASCADE)
+- `received_from_user_id` → `user.id` (ON DELETE SET NULL)
+
 ### demand_signal
 
 | Column | Type | Nullable | Key | Default | Description |
@@ -2527,5 +2563,5 @@
 
 ## Summary
 
-- **Total tables**: 105
+- **Total tables**: 106
 - **Domains**: 13

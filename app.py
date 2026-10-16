@@ -489,6 +489,7 @@ def create_app(config_name=None, *, da_script: bool = False):
         )
         from models.matchmaking.configuration import (
             BRACKET_STRATEGIES,
+            FirstRoundPolicy,
             MatchmakingStrategy,
             OddNumberPolicy,
             minimum_players_for,
@@ -525,6 +526,8 @@ def create_app(config_name=None, *, da_script: bool = False):
             # Le formule dei dispari: il riposo del girone all'italiana ha un
             # nome suo nei moduli (SPECIFICHE.md, nota del 2026-10-11).
             "OddNumberPolicy": OddNumberPolicy,
+            # Il primo abbinamento delle gare, proposto anche dal campionato.
+            "FirstRoundPolicy": FirstRoundPolicy,
             # Come si registra una prova di un esercizio (ADR-066): il modulo e
             # la pagina dell'allenamento scelgono i comandi da qui.
             "RecordingMode": RecordingMode,
@@ -683,6 +686,12 @@ def create_app(config_name=None, *, da_script: bool = False):
     from models.matchmaking.configuration import odd_policy_for_strategy
 
     app.jinja_env.globals["odd_policy_for_strategy"] = odd_policy_for_strategy
+    # Lo stesso per il primo abbinamento: girone e Random sorteggiano sempre.
+    from models.matchmaking.configuration import first_round_policy_for_strategy
+
+    app.jinja_env.globals["first_round_policy_for_strategy"] = (
+        first_round_policy_for_strategy
+    )
 
     # I gironi del girone all'italiana (ADR-076): la frase della formula e le
     # voci di «Composizione dei gironi», una sola fonte per moduli e pagine.

@@ -830,3 +830,23 @@ def odd_policy_for_strategy(strategy: Any, odd_policy: Any) -> Any:
     ):
         return OddNumberPolicy.BYE.value
     return formula
+
+
+def first_round_policy_for_strategy(strategy: Any, policy: Any) -> str:
+    """Il primo abbinamento che la gara tiene davvero, data la strategia.
+
+    Il campionato propone un primo abbinamento a tutte le sue gare, ma girone
+    all'italiana e Random lo sorteggiano sempre (`STRATEGY_CONSTRAINTS`): la
+    proposta «basato su classifica» a una di quelle gare **ripiega sul
+    sorteggio** invece di far rifiutare la gara. Un valore sconosciuto vale
+    sorteggio, com'è sempre stato per le gare.
+    """
+    strategia = getattr(strategy, "value", strategy)
+    formula = getattr(policy, "value", policy) or FirstRoundPolicy.RANDOM.value
+    try:
+        vincoli = STRATEGY_CONSTRAINTS[MatchmakingStrategy(strategia)]
+    except (KeyError, ValueError):
+        return FirstRoundPolicy.RANDOM.value
+    if formula not in vincoli["first_round_policies"]:
+        return FirstRoundPolicy.RANDOM.value
+    return formula

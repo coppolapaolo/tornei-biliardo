@@ -50,6 +50,7 @@ LUNEDI = [
     ("default_entry_fee", "15"),
     ("default_rounds_count", "4"),
     ("default_odd_policy", "bye"),
+    ("default_first_round_policy", "classification"),
     ("default_anti_rematch", "on"),
     ("default_start_rule", "lag"),
     ("default_break_rule", "alternate"),
@@ -121,6 +122,7 @@ class TestLaWhitelistDelCampionato:
             "catena_generale",
             "position_points",
             "default_points_win",
+            "default_first_round_policy",
         ):
             assert campo in ammessi
 

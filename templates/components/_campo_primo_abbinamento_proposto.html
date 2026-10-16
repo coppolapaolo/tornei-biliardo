@@ -1,0 +1,11 @@
+{# Il primo abbinamento che il campionato propone alle sue gare (ADR-075).
+   Lo usano il passo 2 del wizard e la modifica del campionato; `campionato`
+   può mancare (wizard), e allora vale il sorteggio. #}
+{% set _scelto = (campionato.default_first_round_policy if campionato is defined and campionato else none) or FirstRoundPolicy.RANDOM.value %}
+<label for="default_first_round_policy" class="form-label" data-help="gara-primo-turno">{{ _("Primo abbinamento") }}</label>
+<select class="form-select" id="default_first_round_policy" name="default_first_round_policy">
+  <option value="{{ FirstRoundPolicy.RANDOM.value }}" {% if _scelto == FirstRoundPolicy.RANDOM.value %}selected{% endif %}>{{ _("Casuale") }}</option>
+  <option value="{{ FirstRoundPolicy.RATING.value }}" {% if _scelto == FirstRoundPolicy.RATING.value %}selected{% endif %}>{{ _("Basato su rating") }}</option>
+  <option value="{{ FirstRoundPolicy.CLASSIFICATION.value }}" {% if _scelto == FirstRoundPolicy.CLASSIFICATION.value %}selected{% endif %}>{{ _("Basato sulla classifica del campionato") }}</option>
+</select>
+<div class="form-text">{{ _("Come si abbina il primo turno di ogni gara. Con la classifica, la prima gara si sorteggia (la classifica non c'è ancora) e dalla seconda il primo turno parte dalla classifica generale. Nelle gare a girone o casuali il primo turno si sorteggia sempre.") }}</div>

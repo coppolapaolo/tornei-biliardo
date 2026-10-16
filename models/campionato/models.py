@@ -11,7 +11,11 @@ from models.status_enum import (
     EntityType,
     ClassificationSystem,
 )
-from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
+from models.matchmaking.configuration import (
+    FirstRoundPolicy,
+    MatchmakingStrategy,
+    OddNumberPolicy,
+)
 from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
 from models.competition.models import generate_public_token
 
@@ -47,6 +51,12 @@ class Campionato(db.Model):
     default_odd_policy = db.Column(
         db.String(30), nullable=False, default=OddNumberPolicy.BYE.value
     )  # Default odd number handling (bye, bye_with_challenge, trio)
+    # Come si abbina il turno 1 delle gare (casuale, rating, classifica del
+    # campionato), proposto alle gare come i dispari (ADR-075). NULL nei
+    # campionati nati prima del 2026-10-16: vale «casuale», com'era.
+    default_first_round_policy = db.Column(
+        db.String(50), nullable=True, default=FirstRoundPolicy.RANDOM.value
+    )
     default_anti_rematch = db.Column(
         db.Boolean, nullable=False, default=True
     )  # Default anti-rematch setting

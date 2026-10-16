@@ -341,6 +341,10 @@ blocks:
         text: >-
           Usa la classifica generale del campionato: chi va meglio nel
           campionato parte da una posizione favorevole anche in questa gara.
+          Chi non è ancora in classifica parte in coda. Alla prima gara la
+          classifica non c'è e si sorteggia, quindi lo puoi scegliere una
+          volta sola nel campionato, al passo 2: vale per tutte le gare, e dalla
+          seconda il primo turno parte dalla classifica.
 
   - type: faq
     items:

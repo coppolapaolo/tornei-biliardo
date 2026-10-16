@@ -24,6 +24,7 @@ from models.matchmaking.configuration import (
     OddNumberPolicy,
     bracket_derived_fields,
     anti_rematch_for_strategy,
+    first_round_policy_for_strategy,
     odd_policy_for_strategy,
     resolve_classification_system,
 )
@@ -385,8 +386,21 @@ class GaraFormParser:
             data["odd_number_policy"] = request.form.get(
                 "odd_number_policy", default_odd
             )
-            data["first_round_policy"] = request.form.get(
-                "first_round_policy", "random"
+            # Senza il campo vale la proposta del campionato; la finale dei
+            # playoff ha valori suoi. Sempre nella forma che la strategia
+            # ammette: a piazzamenti la serata cambia formato nel modulo, e
+            # «basato su classifica» rimasto selezionato su un girone
+            # ripiega sul sorteggio invece di far rifiutare la gara.
+            data["first_round_policy"] = first_round_policy_for_strategy(
+                data["matchmaking_strategy"],
+                request.form.get(
+                    "first_round_policy",
+                    (
+                        FirstRoundPolicy.RANDOM.value
+                        if finale
+                        else camp.default_first_round_policy
+                    ),
+                ),
             )
             data["classification_system"] = (
                 (finale.classification_system or "WINS")

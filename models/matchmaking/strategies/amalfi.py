@@ -179,7 +179,14 @@ class AmalfiStrategy(BaseStrategy):
         return players
 
     def _campionato_seeding_order(self, gara: Gara) -> List[int]:
-        """Ordine di partenza basato sulla classifica del campionato."""
+        """Ordine di partenza basato sulla classifica generale del campionato.
+
+        Si legge la classifica **calcolata** (`classifica_generale`, ADR-073),
+        non le righe `Classification`: quelle sono una copia, riscritta alla
+        chiusura di ogni gara, e se la riscrittura fallisce resta solo un
+        avviso nel log. Partire dalla copia vorrebbe dire abbinare il turno 1
+        su una classifica vecchia senza che nessuno se ne accorga.
+        """
         # Se gara standalone, fallback a random
         if not gara.campionato_id:
             return self._random_seeding_order(gara)
@@ -191,23 +198,23 @@ class AmalfiStrategy(BaseStrategy):
 
         inscribed_players = {insc.user_id for insc in inscriptions}
 
-        # Ottieni classifica del campionato
-        from models.classification.models import Classification
+        from models.campionato.statistics_service import TournamentStatisticsService
 
-        campionato_classification = (
-            Classification.query.filter_by(campionato_id=gara.campionato_id)
-            .filter(Classification.user_id.in_(inscribed_players))
-            .order_by(Classification.position)
-            .all()
+        classifica = TournamentStatisticsService().classifica_generale(
+            gara.campionato_id
         )
 
-        # Se non c'è classifica campionato (prima gara), fallback a random
-        if not campionato_classification:
-            return self._random_seeding_order(gara)
+        # Prima: giocatori classificati nel campionato, nel loro ordine e
+        # ristretti agli iscritti (le posizioni restano contigue)
+        order = [
+            dati["user_id"]
+            for _posizione, dati in classifica
+            if dati["user_id"] in inscribed_players
+        ]
 
-        # Prima: giocatori classificati nel campionato (la query filtra già
-        # sugli iscritti, quindi le posizioni restano contigue)
-        order = [camp_class.user_id for camp_class in campionato_classification]
+        # Se non c'è classifica campionato (prima gara), fallback a random
+        if not order:
+            return self._random_seeding_order(gara)
 
         # Poi: giocatori non classificati (casuali alla fine)
         unclassified_players = list(inscribed_players - set(order))

@@ -148,8 +148,17 @@
       </div>
     </div>
 
+    {# Il primo abbinamento proposto alle gare. Girone e Random sorteggiano
+       sempre: lì la domanda non c'è, salvo a piazzamenti, dove ogni serata
+       sceglie il suo formato (ADR-080). #}
+    {% if wizard_data.campionato_type not in (MatchmakingStrategy.ROUND_ROBIN.value, MatchmakingStrategy.RANDOM.value) or classification_system == 'POSITION' %}
+    <div class="c7-card">
+      {% include "components/_campo_primo_abbinamento_proposto.html" %}
+    </div>
+    {% endif %}
+
     {# I gironi del girone all'italiana (ADR-076), proposti alle gare. #}
-    {# Solo a piazzamenti: sommando i totali le gare restano a girone unico
+    {# Solo a piazzamenti:sommando i totali le gare restano a girone unico
        (ADR-080). #}
     {% if wizard_data.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value and classification_system == 'POSITION' %}
     <div class="c7-card">

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-15 09:41+0200\n"
+"POT-Creation-Date: 2026-10-16 17:14+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -22,23 +22,23 @@ msgstr ""
 msgid "Accedi per vedere questa pagina."
 msgstr "Log in to see this page."
 
-#: app.py:1042 templates/errors/403.html:3
+#: app.py:1051 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
 
-#: app.py:1060
+#: app.py:1069
 msgid "Non è il tuo turno"
 msgstr "Not your turn yet"
 
-#: app.py:1061
+#: app.py:1070
 msgid "Colpo irregolare"
 msgstr "Illegal shot"
 
-#: app.py:1080
+#: app.py:1089
 msgid "Operazione non consentita"
 msgstr "That shot isn't allowed."
 
-#: app.py:1094
+#: app.py:1103
 msgid "Tiro non valido"
 msgstr "Foul shot"
 
@@ -300,7 +300,7 @@ msgstr "Not started yet"
 msgid "Regolamento e informazioni"
 msgstr "Rules and information"
 
-#: models/campionato/tournament_service.py:405
+#: models/campionato/tournament_service.py:410
 msgid ""
 "Un campionato che somma vittorie, triangoli o punti propone gare a girone"
 " unico: chi capita nel girone più numeroso giocherebbe una partita in "
@@ -310,9 +310,9 @@ msgstr ""
 "events: whoever lands in the larger group would play one more match. For "
 "groups, choose placement standings."
 
-#: models/campionato/tournament_service.py:445
+#: models/campionato/tournament_service.py:450
 #: models/competition/services.py:685
-#: routes/admin/competition/form_parser.py:136
+#: routes/admin/competition/form_parser.py:137
 msgid ""
 "Le finali per piazzamento si giocano fra due gironi: scegli «Gironi: fino"
 " a 2», oppure un'altra fase finale."
@@ -320,7 +320,7 @@ msgstr ""
 "Placement finals are played between two groups: choose \"Groups: up to "
 "2\", or another final phase."
 
-#: models/campionato/tournament_service.py:519
+#: models/campionato/tournament_service.py:524
 #, python-format
 msgid ""
 "Il sistema di classifica non si può più cambiare: la gara «%(gara)s» è "
@@ -329,7 +329,7 @@ msgstr ""
 "The standings system can no longer be changed: the competition «%(gara)s»"
 " has already started."
 
-#: models/campionato/tournament_service.py:577
+#: models/campionato/tournament_service.py:582
 #, python-format
 msgid ""
 "La gara «%(gara)s» è a tabellone: in un campionato che somma vittorie, "
@@ -340,7 +340,7 @@ msgstr ""
 "racks or points it would have no totals to add. Change its format, or "
 "keep placement standings."
 
-#: models/campionato/tournament_service.py:627
+#: models/campionato/tournament_service.py:632
 #, python-format
 msgid ""
 "Con il nuovo sistema di classifica la gara «%(gara)s» non sarebbe valida:"
@@ -349,7 +349,7 @@ msgstr ""
 "With the new standings system the competition «%(gara)s» would not be "
 "valid: %(errori)s"
 
-#: models/campionato/tournament_service.py:1019
+#: models/campionato/tournament_service.py:1024
 msgid "Il peso del playoff è un intero maggiore di zero."
 msgstr "The playoff weight is a whole number greater than zero."
 
@@ -791,8 +791,8 @@ msgid "Colpo %(n)s di %(tot)s"
 msgstr "Shot %(n)s of %(tot)s"
 
 #: models/challenge/run_view.py:103
+#: templates/components/_campionato_general_classification.html:176
 #: templates/components/_campionato_general_classification.html:177
-#: templates/components/_campionato_general_classification.html:178
 #, python-format
 msgid "%(n)s punti"
 msgstr "%(n)s points"
@@ -1100,7 +1100,7 @@ msgstr "always last: it settles the order"
 msgid "Non restano criteri da aggiungere."
 msgstr "No criteria left to add."
 
-#: models/classification/ordinamento.py:716 models/storia/etichette.py:179
+#: models/classification/ordinamento.py:716 models/storia/etichette.py:186
 #: templates/admin/campionato_wizard_step2.html:30
 #: templates/admin/users_list.html:152 templates/admin/users_list.html:248
 #: templates/components/_classification_mobile.html:33
@@ -1123,10 +1123,10 @@ msgstr "Wins"
 msgid "Triangoli vinti"
 msgstr "Racks won"
 
-#: models/classification/ordinamento.py:718 models/storia/etichette.py:183
+#: models/classification/ordinamento.py:718 models/storia/etichette.py:190
 #: templates/admin/campionato_wizard_step2.html:32
-#: templates/components/_campionato_general_classification.html:52
-#: templates/components/_campionato_general_classification.html:54
+#: templates/components/_campionato_general_classification.html:51
+#: templates/components/_campionato_general_classification.html:53
 #: templates/components/_classification_mobile.html:31
 #: templates/components/_classification_mobile.html:68
 #: templates/components/_classification_mobile.html:99
@@ -1372,15 +1372,15 @@ msgstr ""
 "In price list order, then by ELO: the top categories are split across the"
 " groups."
 
-#: models/competition/gironi_service.py:151 models/storia/etichette.py:195
+#: models/competition/gironi_service.py:151 models/storia/etichette.py:202
 msgid "per ELO"
 msgstr "by ELO"
 
-#: models/competition/gironi_service.py:153 models/storia/etichette.py:196
+#: models/competition/gironi_service.py:153 models/storia/etichette.py:203
 msgid "per categoria"
 msgstr "by category"
 
-#: models/competition/gironi_service.py:154 models/storia/etichette.py:194
+#: models/competition/gironi_service.py:154 models/storia/etichette.py:201
 msgid "a sorteggio"
 msgstr "by draw"
 
@@ -1449,7 +1449,7 @@ msgstr "; the final for 1st place %(regole)s"
 
 #: models/competition/gironi_service.py:263
 #: models/competition/showcase_view.py:201
-#: models/competition/showcase_view.py:207 models/storia/etichette.py:252
+#: models/competition/showcase_view.py:207 models/storia/etichette.py:259
 #: templates/direttore/_card_partita.html:300
 #: templates/public/regolamento_gara.html:20
 #, python-format
@@ -1582,7 +1582,7 @@ msgstr "You've been moved up from the waiting list for %(gara)s"
 
 #: models/competition/inscription_service.py:929
 #: models/competition/inscription_service.py:990
-#: models/competition/services.py:1197
+#: models/competition/services.py:1210
 msgid "La data di inizio deve essere precedente alla data di fine!"
 msgstr "The start date must be before the end date!"
 
@@ -1595,10 +1595,10 @@ msgstr "The start date must be before the end date!"
 #: models/competition/round_creation.py:469
 #: models/competition/round_manager.py:50
 #: models/competition/round_service.py:70 models/competition/services.py:363
-#: models/competition/services.py:931 models/competition/services.py:966
-#: models/competition/services.py:982 models/competition/services.py:1192
-#: models/competition/services.py:1214 models/competition/services.py:1221
-#: models/competition/services.py:1228 models/competition/services.py:1460
+#: models/competition/services.py:944 models/competition/services.py:979
+#: models/competition/services.py:995 models/competition/services.py:1205
+#: models/competition/services.py:1227 models/competition/services.py:1234
+#: models/competition/services.py:1241 models/competition/services.py:1473
 #: models/competition/showcase_service.py:188
 #: models/competition/showcase_service.py:221
 #: models/competition/withdraw_policy_service.py:262
@@ -2002,15 +2002,15 @@ msgstr ""
 "the bracket, not from the totals. The final phase is used in standalone "
 "competitions and in placement championships."
 
-#: models/competition/services.py:970
+#: models/competition/services.py:983
 msgid "Impossibile cancellare la gara: ci sono già delle iscrizioni!"
 msgstr "The competition cannot be deleted: there are already registrations!"
 
-#: models/competition/services.py:986
+#: models/competition/services.py:999
 msgid "La gara non può essere cancellata in questo stato!"
 msgstr "The competition cannot be cancelled in this state!"
 
-#: models/competition/services.py:1021
+#: models/competition/services.py:1034
 #, python-format
 msgid ""
 "La %(gara)s del campionato '%(campionato)s' del %(data)s è stata "
@@ -2019,20 +2019,20 @@ msgstr ""
 "%(gara)s of the championship '%(campionato)s' on %(data)s has been "
 "cancelled."
 
-#: models/competition/services.py:1028
+#: models/competition/services.py:1041
 #, python-format
 msgid "La %(gara)s del %(data)s è stata cancellata."
 msgstr "%(gara)s on %(data)s has been cancelled."
 
-#: models/competition/services.py:1039
+#: models/competition/services.py:1052
 msgid "Gara Cancellata"
 msgstr "Competition cancelled"
 
-#: models/competition/services.py:1248
+#: models/competition/services.py:1261
 msgid "Gli admin non possono essere direttori di gara"
 msgstr "Admins cannot be competition directors"
 
-#: models/competition/services.py:1255
+#: models/competition/services.py:1268
 msgid "Solo gli utenti con ruolo direttore possono essere co-direttori"
 msgstr "Only users with the director role can be co-directors"
 
@@ -2460,7 +2460,7 @@ msgid "invariato %(suffix)s"
 msgstr "unchanged %(suffix)s"
 
 #: models/dashboard/activity_feedback.py:618
-#: templates/components/_campionato_general_classification.html:161
+#: templates/components/_campionato_general_classification.html:160
 #: templates/direttore/_classifica.html:30
 msgid "stabile"
 msgstr "steady"
@@ -4090,9 +4090,9 @@ msgid "Apre chi ha vinto il triangolo prima."
 msgstr "The winner of the previous rack breaks."
 
 #: models/match/break_rules.py:126
-#: templates/admin/campionato_wizard_step2.html:183
+#: templates/admin/campionato_wizard_step2.html:192
 #: templates/admin/gara_create_standalone.html:451
-#: templates/components/_campionato_edit_form.html:285
+#: templates/components/_campionato_edit_form.html:292
 msgid "Tiri di apertura alternati, la regola standard FIBiS."
 msgstr "Alternating break shots, the standard FIBiS rule."
 
@@ -4395,27 +4395,29 @@ msgstr ""
 "between the first and second player, the second between the first and "
 "third."
 
-#: models/matchmaking/configuration.py:46 models/storia/etichette.py:166
+#: models/matchmaking/configuration.py:46 models/storia/etichette.py:168
 msgid "Amalfi"
 msgstr "Amalfi"
 
-#: models/matchmaking/configuration.py:47 models/storia/etichette.py:167
+#: models/matchmaking/configuration.py:47 models/storia/etichette.py:169
+#: models/storia/etichette.py:181
 #: templates/admin/gara_create_standalone.html:339
+#: templates/components/_campo_primo_abbinamento_proposto.html:7
 #: templates/components/_gara_edit_form.html:226
-#: templates/components/_new_gara_modal.html:309
+#: templates/components/_new_gara_modal.html:312
 msgid "Casuale"
 msgstr "Random"
 
-#: models/matchmaking/configuration.py:48 models/storia/etichette.py:168
+#: models/matchmaking/configuration.py:48 models/storia/etichette.py:170
 #: templates/components/_trio_rack_input.html:55
 msgid "Girone all'italiana"
 msgstr "Round-robin"
 
-#: models/matchmaking/configuration.py:49 models/storia/etichette.py:169
+#: models/matchmaking/configuration.py:49 models/storia/etichette.py:171
 msgid "Eliminazione diretta"
 msgstr "Single elimination"
 
-#: models/matchmaking/configuration.py:50 models/storia/etichette.py:170
+#: models/matchmaking/configuration.py:50 models/storia/etichette.py:172
 msgid "Doppio KO"
 msgstr "Double knockout"
 
@@ -5225,7 +5227,7 @@ msgid "Chi apre"
 msgstr "Who opens"
 
 #: models/storia/etichette.py:42
-#: templates/admin/campionato_wizard_step2.html:177
+#: templates/admin/campionato_wizard_step2.html:186
 #: templates/admin/gara_create_standalone.html:445
 #: templates/admin/gara_edit_avviata.html:151
 #: templates/components/_gara_edit_form.html:389
@@ -5236,7 +5238,7 @@ msgstr "Who opens"
 msgid "Chi spacca"
 msgstr "Who breaks"
 
-#: models/storia/etichette.py:43 models/storia/etichette.py:111
+#: models/storia/etichette.py:43 models/storia/etichette.py:112
 #: templates/admin/campionato_wizard_step1.html:88
 #: templates/components/_gara_edit_form.html:54
 msgid "Strategia di abbinamento"
@@ -5399,7 +5401,7 @@ msgstr "Drill in place of the X"
 #: templates/admin/gara_create_standalone.html:400
 #: templates/admin/gara_edit_avviata.html:223
 #: templates/components/_gara_edit_form.html:448
-#: templates/components/_new_gara_modal.html:496
+#: templates/components/_new_gara_modal.html:499
 msgid "Pari merito nella classifica di turno"
 msgstr "Ties in the round standings"
 
@@ -5465,48 +5467,52 @@ msgid "Dispari proposti"
 msgstr "Proposed odd-number handling"
 
 #: models/storia/etichette.py:102
+msgid "Primo abbinamento proposto"
+msgstr "Proposed first pairing"
+
+#: models/storia/etichette.py:103
 msgid "Anti-reincontro proposto"
 msgstr "Proposed rematch avoidance"
 
-#: models/storia/etichette.py:103
+#: models/storia/etichette.py:104
 msgid "Chi apre, proposto"
 msgstr "Who opens, proposed"
 
-#: models/storia/etichette.py:104
+#: models/storia/etichette.py:105
 msgid "Chi spacca, proposto"
 msgstr "Who breaks, proposed"
 
-#: models/storia/etichette.py:105
+#: models/storia/etichette.py:106
 msgid "Limite di tempo proposto"
 msgstr "Proposed time limit"
 
-#: models/storia/etichette.py:106 models/storia/etichette.py:182
+#: models/storia/etichette.py:107 models/storia/etichette.py:189
 #: templates/components/_position_points.html:27
 msgid "Punti per posizione"
 msgstr "Position points"
 
-#: models/storia/etichette.py:108
+#: models/storia/etichette.py:109
 msgid "Dalla posizione"
 msgstr "From position"
 
-#: models/storia/etichette.py:109
+#: models/storia/etichette.py:110
 msgid "Alla posizione"
 msgstr "To position"
 
-#: models/storia/etichette.py:110
+#: models/storia/etichette.py:111
 msgid "Gare giocate, almeno"
 msgstr "Events played, at least"
 
-#: models/storia/etichette.py:112
+#: models/storia/etichette.py:113
 msgid "Data dei playoff"
 msgstr "Play-off date"
 
-#: models/storia/etichette.py:113
+#: models/storia/etichette.py:114
 msgid "Scadenza degli inviti"
 msgstr "Invitation deadline"
 
-#: models/storia/etichette.py:114
-#: templates/components/_campionato_general_classification.html:85
+#: models/storia/etichette.py:115
+#: templates/components/_campionato_general_classification.html:84
 #: templates/components/_gara_info.html:132
 #: templates/components/_tessera_campionato.html:69
 #: templates/direttore/_classifica_bande.html:19
@@ -5519,11 +5525,11 @@ msgstr "Invitation deadline"
 msgid "Classifica finale"
 msgstr "Final standings"
 
-#: models/storia/etichette.py:115
+#: models/storia/etichette.py:116
 msgid "Peso della finale"
 msgstr "Weight of the final"
 
-#: models/storia/etichette.py:116 templates/admin/venue_detail.html:58
+#: models/storia/etichette.py:117 templates/admin/venue_detail.html:58
 #: templates/admin/venue_form.html:243 templates/admin/venue_form.html:310
 #: templates/admin/venues_list.html:85 templates/admin/venues_list.html:135
 #: templates/components/_unified_cards.html:116
@@ -5533,12 +5539,12 @@ msgstr "Weight of the final"
 msgid "Attiva"
 msgstr "Active"
 
-#: models/storia/etichette.py:118 models/user/roles_view.py:64
+#: models/storia/etichette.py:119 models/user/roles_view.py:64
 #: routes/help.py:58 templates/admin/accessi.html:86
 #: templates/admin/accessi.html:141 templates/admin/users_list.html:117
 #: templates/admin/users_list.html:188
 #: templates/admin/venue_manager_requests.html:48
-#: templates/components/_campionato_general_classification.html:43
+#: templates/components/_campionato_general_classification.html:42
 #: templates/components/_detailed_classification.html:31
 #: templates/components/_detailed_classification.html:84
 #: templates/components/_user_info_card.html:27
@@ -5547,25 +5553,25 @@ msgstr "Active"
 msgid "Giocatore"
 msgstr "Player"
 
-#: models/storia/etichette.py:119
+#: models/storia/etichette.py:120
 msgid "Risposta"
 msgstr "Answer"
 
-#: models/storia/etichette.py:121
+#: models/storia/etichette.py:122
 msgid "Inviti ritirati"
 msgstr "Invitations withdrawn"
 
-#: models/storia/etichette.py:122
+#: models/storia/etichette.py:123
 msgid "Inviti nuovi"
 msgstr "New invitations"
 
-#: models/storia/etichette.py:159 templates/direttore/_menu_turno.html:21
+#: models/storia/etichette.py:161 templates/direttore/_menu_turno.html:21
 #: templates/public/regolamento_gara.html:55
 #, python-format
 msgid "Turno %(n)s"
 msgstr "Round %(n)s"
 
-#: models/storia/etichette.py:173
+#: models/storia/etichette.py:175
 #: templates/components/_gara_lista_attesa.html:17
 #: templates/components/_tessera_gara.html:124
 #: templates/components/_tessera_playoff.html:46
@@ -5573,114 +5579,125 @@ msgstr "Round %(n)s"
 msgid "Lista d'attesa"
 msgstr "Waitlist"
 
-#: models/storia/etichette.py:174
+#: models/storia/etichette.py:176
 #: templates/individual_match/statistics.html:206
 #: templates/individual_match/statistics.html:213
 msgid "X"
 msgstr "D"
 
-#: models/storia/etichette.py:175
+#: models/storia/etichette.py:177
 msgid "X con esercizio"
 msgstr "X with drill"
 
-#: models/storia/etichette.py:176 templates/components/_match_card.html:32
+#: models/storia/etichette.py:178 templates/components/_match_card.html:32
 #: templates/components/_match_result_row.html:21
 #: templates/components/_user_recent_matches_table.html:47
 msgid "Trio"
 msgstr "Trio"
 
-#: models/storia/etichette.py:180 models/storia/etichette.py:181
-#: templates/components/_campionato_general_classification.html:45
+#: models/storia/etichette.py:182
+#: templates/components/_campo_primo_abbinamento_proposto.html:8
+#: templates/components/_gara_edit_form.html:227
+msgid "Basato su rating"
+msgstr "Based on rating"
+
+#: models/storia/etichette.py:183
+#: templates/components/_campo_primo_abbinamento_proposto.html:9
+msgid "Basato sulla classifica del campionato"
+msgstr "Based on championship standings"
+
+#: models/storia/etichette.py:187 models/storia/etichette.py:188
+#: templates/components/_campionato_general_classification.html:44
 #: templates/components/_unified_rack_history.html:61
 #: templates/direttore/preparazione/_turni.html:91
 #: templates/individual_match/tpa_referto.html:101
 msgid "Triangoli"
 msgstr "Racks"
 
-#: models/storia/etichette.py:186
+#: models/storia/etichette.py:193
 #: templates/components/_playoff_scoring_form.html:14
 msgid "Campionato + gara di playoff"
 msgstr "Championship + playoff event"
 
-#: models/storia/etichette.py:187
+#: models/storia/etichette.py:194
 #: templates/components/_playoff_scoring_form.html:17
 msgid "Solo i playoff"
 msgstr "Playoffs only"
 
-#: models/storia/etichette.py:190
+#: models/storia/etichette.py:197
 msgid "ha accettato"
 msgstr "accepted"
 
-#: models/storia/etichette.py:191
+#: models/storia/etichette.py:198
 msgid "ha rifiutato"
 msgstr "declined"
 
-#: models/storia/etichette.py:199 templates/challenge/form.html:136
+#: models/storia/etichette.py:206 templates/challenge/form.html:136
 #: templates/challenge/form.html:187
 msgid "nessuna"
 msgstr "none"
 
-#: models/storia/etichette.py:200
+#: models/storia/etichette.py:207
 msgid "tabellone fra i primi di ogni girone"
 msgstr "bracket among the top players of each group"
 
-#: models/storia/etichette.py:201
+#: models/storia/etichette.py:208
 msgid "finali per piazzamento"
 msgstr "placement finals"
 
-#: models/storia/etichette.py:204
+#: models/storia/etichette.py:211
 msgid "Perde a tavolino le partite restanti"
 msgstr "Forfeits the remaining matches"
 
-#: models/storia/etichette.py:205 templates/direttore/_regola_ritiro.html:9
+#: models/storia/etichette.py:212 templates/direttore/_regola_ritiro.html:9
 msgid "Esce dalla gara"
 msgstr "Leaves the competition"
 
-#: models/storia/etichette.py:215
+#: models/storia/etichette.py:222
 msgid "come la gara"
 msgstr "as the competition"
 
-#: models/storia/etichette.py:220 models/storia/etichette.py:267
+#: models/storia/etichette.py:227 models/storia/etichette.py:274
 msgid "come l'app"
 msgstr "app default"
 
-#: models/storia/etichette.py:237 models/storia/etichette.py:248
+#: models/storia/etichette.py:244 models/storia/etichette.py:255
 msgid "come i gironi"
 msgstr "same as the groups"
 
-#: models/storia/etichette.py:242 models/storia/etichette.py:250
+#: models/storia/etichette.py:249 models/storia/etichette.py:257
 msgid "come la fase finale"
 msgstr "same as the final phase"
 
-#: models/storia/etichette.py:265
+#: models/storia/etichette.py:272
 msgid "come il campionato"
 msgstr "as the championship"
 
-#: models/storia/etichette.py:284
+#: models/storia/etichette.py:291
 msgid "girone unico"
 msgstr "single group"
 
-#: models/storia/etichette.py:285
+#: models/storia/etichette.py:292
 #, python-format
 msgid "fino a %(n)s"
 msgstr "up to %(n)s"
 
-#: models/storia/etichette.py:292 templates/components/_gara_info.html:52
+#: models/storia/etichette.py:299 templates/components/_gara_info.html:52
 #: templates/components/_open_inscriptions_modal.html:37
 msgid "senza limite"
 msgstr "no limit"
 
-#: models/storia/etichette.py:293 models/training_sheet/measure.py:263
+#: models/storia/etichette.py:300 models/training_sheet/measure.py:263
 #, python-format
 msgid "%(n)s minuti"
 msgstr "%(n)s minutes"
 
-#: models/storia/etichette.py:295 templates/base.html:602
+#: models/storia/etichette.py:302 templates/base.html:602
 #: templates/base.html:605
 msgid "sì"
 msgstr "yes"
 
-#: models/storia/etichette.py:295 models/training_sheet/summary_view.py:48
+#: models/storia/etichette.py:302 models/training_sheet/summary_view.py:48
 #: templates/base.html:602 templates/base.html:605
 #: templates/exam/session.html:42
 msgid "no"
@@ -5845,7 +5862,7 @@ msgid "Punteggio"
 msgstr "Score"
 
 #: models/training_sheet/measure.py:132
-#: templates/components/_campionato_general_classification.html:57
+#: templates/components/_campionato_general_classification.html:56
 #: templates/direttore/_classifica.html:96
 msgid "Vinte"
 msgstr "Won"
@@ -7201,8 +7218,8 @@ msgstr "The image could not be uploaded: %(errore)s"
 msgid "Locandina rimossa."
 msgstr "Poster removed."
 
-#: routes/admin/campionato_form_parser.py:189
-#: routes/admin/competition/form_parser.py:766
+#: routes/admin/campionato_form_parser.py:194
+#: routes/admin/competition/form_parser.py:780
 #, python-format
 msgid ""
 "Il limite di tempo si scrive in minuti, da 1 a %(max)s; lascia vuoto per "
@@ -7540,22 +7557,22 @@ msgstr "The competition was not cancelled because of an unexpected error."
 msgid "«%(nome)s» annullata: gli iscritti ricevono la notifica."
 msgstr "«%(nome)s» cancelled: registered players will be notified."
 
-#: routes/admin/competition/form_parser.py:99
+#: routes/admin/competition/form_parser.py:100
 #, python-format
 msgid "I gironi vanno da 1 (girone unico) a %(max)s."
 msgstr "Groups go from 1 (single group) to %(max)s."
 
-#: routes/admin/competition/form_parser.py:112
+#: routes/admin/competition/form_parser.py:113
 #, python-format
 msgid "Composizione dei gironi sconosciuta: %(v)s"
 msgstr "Unknown group composition: %(v)s"
 
-#: routes/admin/competition/form_parser.py:126
+#: routes/admin/competition/form_parser.py:127
 #, python-format
 msgid "Fase finale sconosciuta: %(v)s"
 msgstr "Unknown final phase: %(v)s"
 
-#: routes/admin/competition/form_parser.py:152
+#: routes/admin/competition/form_parser.py:153
 #, python-format
 msgid "Al tabellone passano da 1 a %(max)s giocatori per girone."
 msgstr "From 1 to %(max)s players per group go to the bracket."
@@ -9253,9 +9270,9 @@ msgstr "Close"
 #: templates/challenge/builder.html:32 templates/challenge/builder.html:432
 #: templates/challenge/form.html:41
 #: templates/components/_campionato_create_modal.html:35
-#: templates/components/_campionato_edit_form.html:329
+#: templates/components/_campionato_edit_form.html:336
 #: templates/components/_gara_edit_form.html:472
-#: templates/components/_new_gara_modal.html:518
+#: templates/components/_new_gara_modal.html:521
 #: templates/components/_preset_modulo.html:49
 #: templates/components/_soft_delete_modal.html:48
 #: templates/direttore/_modali_gioco.html:117
@@ -9352,7 +9369,7 @@ msgstr "Read in the guide"
 
 #: templates/admin/campionato_wizard_step1.html:208
 #: templates/admin/gara_create_standalone.html:519 templates/base.html:796
-#: templates/components/_new_gara_modal.html:520
+#: templates/components/_new_gara_modal.html:523
 #: templates/exam/session.html:263
 #: templates/individual_match/tpa_referto.html:153
 msgid "Avanti"
@@ -10194,7 +10211,7 @@ msgstr "Link to the rules"
 #: templates/admin/gara_edit_avviata.html:297
 #: templates/admin/playoff_proposta_finale.html:51
 #: templates/admin/venue_manager_requests.html:147
-#: templates/components/_campionato_edit_form.html:321
+#: templates/components/_campionato_edit_form.html:328
 #: templates/components/_gara_edit_form.html:33
 #: templates/components/_gara_edit_form.html:458
 #: templates/components/_gara_edit_form.html:465
@@ -10414,8 +10431,8 @@ msgstr "Actions"
 #: templates/admin/users_list.html:215 templates/auth/diagnosi_cookie.html:49
 #: templates/components/_gara_edit_form.html:202
 #: templates/components/_gara_edit_form.html:205
-#: templates/components/_new_gara_modal.html:439
-#: templates/components/_new_gara_modal.html:440
+#: templates/components/_new_gara_modal.html:442
+#: templates/components/_new_gara_modal.html:443
 #: templates/components/_role_grant_actions.html:22
 msgid "Sì"
 msgstr "Yes"
@@ -10426,8 +10443,8 @@ msgstr "Yes"
 #: templates/admin/users_list.html:217 templates/auth/diagnosi_cookie.html:50
 #: templates/components/_gara_edit_form.html:202
 #: templates/components/_gara_edit_form.html:206
-#: templates/components/_new_gara_modal.html:439
-#: templates/components/_new_gara_modal.html:441
+#: templates/components/_new_gara_modal.html:442
+#: templates/components/_new_gara_modal.html:444
 #: templates/components/_role_grant_actions.html:24
 #: templates/gamification/admin/streak_config.html:85
 msgid "No"
@@ -10500,7 +10517,7 @@ msgstr "Terminate"
 #: templates/admin/campionato_detail.html:98
 #: templates/admin/campionato_wizard_step2.html:42
 #: templates/components/_campionato_gare.html:37
-#: templates/components/_campionato_general_classification.html:60
+#: templates/components/_campionato_general_classification.html:59
 #: templates/components/_gamification_labels.html:51
 #: templates/components/_history_gare_tab.html:14
 #: templates/components/_history_gare_tab.html:50
@@ -10896,7 +10913,7 @@ msgstr "Reason, optional"
 #: templates/admin/campionato_proposta_gare.html:53
 #: templates/admin/gara_edit_avviata.html:297
 #: templates/admin/playoff_proposta_finale.html:51
-#: templates/components/_campionato_edit_form.html:321
+#: templates/components/_campionato_edit_form.html:328
 #: templates/components/_gara_edit_form.html:465
 #: templates/components/_playoff_config_form.html:85
 msgid "Motivo della modifica"
@@ -10950,9 +10967,9 @@ msgid "Nessuna configurazione playoff attiva."
 msgstr "No active playoff configuration."
 
 #: templates/admin/campionato_detail.html:452
-#: templates/admin/campionato_wizard_step2.html:248
+#: templates/admin/campionato_wizard_step2.html:257
 #: templates/components/_campionato_edit_form.html:130
-#: templates/components/_campionato_general_classification.html:88
+#: templates/components/_campionato_general_classification.html:87
 #: templates/components/_tessera_campionato.html:69
 #: templates/public/campionato_detail.html:66
 msgid "Classifica generale"
@@ -11108,13 +11125,13 @@ msgstr ""
 " be met. Terminate anyway?"
 
 #: templates/admin/campionato_detail.html:734 templates/admin/gara_edit.html:91
-#: templates/components/_new_gara_modal.html:769
+#: templates/components/_new_gara_modal.html:772
 #, python-brace-format
 msgid "Esatto numero: {distance} triangoli totali"
 msgstr "Exact number: {distance} total racks"
 
 #: templates/admin/campionato_detail.html:735 templates/admin/gara_edit.html:93
-#: templates/components/_new_gara_modal.html:770
+#: templates/components/_new_gara_modal.html:773
 #, python-brace-format
 msgid "Al {distance} (si vince a {distance} triangoli)"
 msgstr "Race to {distance} (first to {distance} racks wins)"
@@ -11153,7 +11170,7 @@ msgstr "No competitions to update."
 #: templates/admin/campionato_proposta_gare.html:55
 #: templates/admin/gara_edit_avviata.html:299
 #: templates/admin/playoff_proposta_finale.html:53
-#: templates/components/_campionato_edit_form.html:323
+#: templates/components/_campionato_edit_form.html:330
 #: templates/components/_gara_edit_form.html:467
 #: templates/components/_playoff_config_form.html:87
 msgid "Scrivi perché: servirà in caso di contestazioni"
@@ -11596,8 +11613,8 @@ msgstr "The three lowest players play a three-player match."
 msgid "Solo per distanze 2-7."
 msgstr "For distances 2-7 only."
 
-#: templates/admin/campionato_wizard_step2.html:156
-#: templates/components/_campionato_edit_form.html:250
+#: templates/admin/campionato_wizard_step2.html:165
+#: templates/components/_campionato_edit_form.html:257
 msgid ""
 "Proposti a ogni gara del campionato, che può cambiarli. Quanti gironi, lo"
 " sceglie il direttore all'avvio di ogni gara, sugli iscritti presenti: "
@@ -11607,7 +11624,7 @@ msgstr ""
 " How many groups is chosen by the director at the start of each "
 "competition, on the players present: at least 3 players per group."
 
-#: templates/admin/campionato_wizard_step2.html:168
+#: templates/admin/campionato_wizard_step2.html:177
 #: templates/admin/gara_create_standalone.html:436
 #: templates/admin/gara_edit_avviata.html:138
 #: templates/components/_gara_edit_form.html:368
@@ -11617,7 +11634,7 @@ msgstr ""
 msgid "Regola di inizio"
 msgstr "Start rule"
 
-#: templates/admin/campionato_wizard_step2.html:174
+#: templates/admin/campionato_wizard_step2.html:183
 #: templates/admin/gara_create_standalone.html:442
 #: templates/components/_gara_edit_form.html:380
 msgid ""
@@ -11627,27 +11644,27 @@ msgstr ""
 "With a lag the scoreboard asks who won it and who breaks: the winner may "
 "send the opponent to the table."
 
-#: templates/admin/campionato_wizard_step2.html:191
+#: templates/admin/campionato_wizard_step2.html:200
 #: templates/components/_campionato_details_info.html:135
 #: templates/components/_gara_edit_form.html:141
 msgid "Anti-rematch"
 msgstr "Rematch avoidance"
 
-#: templates/admin/campionato_wizard_step2.html:192
+#: templates/admin/campionato_wizard_step2.html:201
 msgid "Evita di riabbinare gli stessi giocatori nella stessa gara"
 msgstr "Avoids pairing the same players twice in one tournament"
 
-#: templates/admin/campionato_wizard_step2.html:201
+#: templates/admin/campionato_wizard_step2.html:210
 #: templates/admin/gara_create_standalone.html:328
 #: templates/admin/gara_edit_avviata.html:165
-#: templates/components/_campionato_edit_form.html:294
+#: templates/components/_campionato_edit_form.html:301
 #: templates/components/_gara_edit_form.html:198
 #: templates/components/_gara_edit_form.html:212
-#: templates/components/_new_gara_modal.html:437
+#: templates/components/_new_gara_modal.html:440
 msgid "Gioco con handicap"
 msgstr "Handicap mode"
 
-#: templates/admin/campionato_wizard_step2.html:202
+#: templates/admin/campionato_wizard_step2.html:211
 msgid ""
 "Il rating Elo si aggiorna solo fra giocatori della stessa categoria. "
 "Ereditato da gare e partite."
@@ -11655,8 +11672,8 @@ msgstr ""
 "The Elo rating is only updated between players of the same category. "
 "Inherited by competitions and matches."
 
-#: templates/admin/campionato_wizard_step2.html:212
-#: templates/components/_campionato_edit_form.html:303
+#: templates/admin/campionato_wizard_step2.html:221
+#: templates/components/_campionato_edit_form.html:310
 msgid ""
 "Proposto a ogni gara del campionato, che può cambiarlo. Il tempo parte "
 "all'acchito, o con «Avvia partita»: è un riferimento, a tempo scaduto "
@@ -11666,7 +11683,7 @@ msgstr ""
 "The clock starts at the lag, or with «Start match»: it is a reference, "
 "when time is up the director decides."
 
-#: templates/admin/campionato_wizard_step2.html:219
+#: templates/admin/campionato_wizard_step2.html:228
 #: templates/components/_campionato_edit_form.html:106
 msgid ""
 "Proposti a ogni gara del campionato, che li riceve quando nasce. Si "
@@ -11676,19 +11693,19 @@ msgstr ""
 "when it is created. The standings go on points only; on equal points the "
 "tie criteria decide."
 
-#: templates/admin/campionato_wizard_step2.html:232
+#: templates/admin/campionato_wizard_step2.html:241
 #: templates/admin/gara_create_standalone.html:396
 #: templates/components/_campionato_edit_form.html:116
 #: templates/components/_gara_info.html:130
-#: templates/components/_new_gara_modal.html:477
+#: templates/components/_new_gara_modal.html:480
 msgid "Pari merito"
 msgstr "Ties"
 
-#: templates/admin/campionato_wizard_step2.html:234
+#: templates/admin/campionato_wizard_step2.html:243
 msgid "Come si ordinano i giocatori a pari punti nella classifica generale."
 msgstr "How players on equal points are ordered in the overall standings."
 
-#: templates/admin/campionato_wizard_step2.html:236
+#: templates/admin/campionato_wizard_step2.html:245
 #: templates/components/_campionato_edit_form.html:119
 msgid ""
 "Come si ordinano i giocatori a pari merito. Le prime due catene sono "
@@ -11698,24 +11715,24 @@ msgstr ""
 "How tied players are ordered. The first two chains are proposed to every "
 "event, which can change them; the third applies to the overall standings."
 
-#: templates/admin/campionato_wizard_step2.html:241
+#: templates/admin/campionato_wizard_step2.html:250
 #: templates/components/_campionato_edit_form.html:121
 msgid "Classifica di turno"
 msgstr "Round standings"
 
-#: templates/admin/campionato_wizard_step2.html:242
+#: templates/admin/campionato_wizard_step2.html:251
 #: templates/components/_campionato_edit_form.html:122
 msgid ""
 "Da lì nascono gli abbinamenti: l'ordine è sempre completo, lo chiude il "
 "sorteggio."
 msgstr "Pairings come from it: the order is always complete, settled by the draw."
 
-#: templates/admin/campionato_wizard_step2.html:244
+#: templates/admin/campionato_wizard_step2.html:253
 #: templates/components/_campionato_edit_form.html:125
 msgid "Classifica finale di ogni gara"
 msgstr "Final standings of each event"
 
-#: templates/admin/campionato_wizard_step2.html:245
+#: templates/admin/campionato_wizard_step2.html:254
 #: templates/components/_campionato_edit_form.html:126
 msgid ""
 "Chi resta pari condivide la posizione. Lo spareggio SSR si gioca a gara "
@@ -11724,7 +11741,7 @@ msgstr ""
 "Players still tied share the place. The SSR tiebreaker is played after "
 "the event, up to the place you choose."
 
-#: templates/admin/campionato_wizard_step2.html:249
+#: templates/admin/campionato_wizard_step2.html:258
 #: templates/components/_campionato_edit_form.html:131
 msgid ""
 "Somma le classifiche delle gare. L'ordine è sempre completo: da lì "
@@ -11733,11 +11750,11 @@ msgstr ""
 "It adds up the event standings. The order is always complete: playoff "
 "invitations start from it."
 
-#: templates/admin/campionato_wizard_step2.html:263
+#: templates/admin/campionato_wizard_step2.html:272
 #: templates/admin/gara_create_standalone.html:515
 #: templates/admin/venue_form.html:12 templates/admin/venue_form.html:23
 #: templates/challenge/statistics.html:11
-#: templates/components/_new_gara_modal.html:515 templates/exam/session.html:27
+#: templates/components/_new_gara_modal.html:518 templates/exam/session.html:27
 #: templates/gamification/admin/feature_create.html:6
 #: templates/gamification/admin/feature_detail.html:6
 #: templates/gamification/admin/level_config.html:6
@@ -11747,7 +11764,7 @@ msgstr ""
 msgid "Indietro"
 msgstr "Back"
 
-#: templates/admin/campionato_wizard_step2.html:266
+#: templates/admin/campionato_wizard_step2.html:275
 msgid "Crea campionato"
 msgstr "Create championship"
 
@@ -12033,7 +12050,7 @@ msgstr "Avoid rematches between the same players"
 
 #: templates/admin/gara_create_standalone.html:331
 #: templates/components/_gara_edit_form.html:215
-#: templates/components/_new_gara_modal.html:443
+#: templates/components/_new_gara_modal.html:446
 msgid ""
 "Le partite con handicap non aggiornano il rating Elo quando i giocatori "
 "sono di categorie diverse."
@@ -12056,7 +12073,7 @@ msgstr "If Odd Number of Players"
 
 #: templates/admin/gara_create_standalone.html:353
 #: templates/components/_gara_edit_form.html:240
-#: templates/components/_new_gara_modal.html:333
+#: templates/components/_new_gara_modal.html:336
 msgid "La partita a tre vale solo per distanze da 2 a 7"
 msgstr "The three-player match only applies to distances from 2 to 7"
 
@@ -12082,7 +12099,7 @@ msgstr "Points (win, draw, loss)"
 
 #: templates/admin/gara_create_standalone.html:401
 #: templates/components/_gara_edit_form.html:449
-#: templates/components/_new_gara_modal.html:497
+#: templates/components/_new_gara_modal.html:500
 msgid ""
 "Ordina i giocatori dopo ogni turno, e da lì nascono gli abbinamenti: "
 "l'ordine è sempre completo, lo chiude il sorteggio."
@@ -12093,13 +12110,13 @@ msgstr ""
 #: templates/admin/gara_create_standalone.html:404
 #: templates/admin/gara_edit_avviata.html:267
 #: templates/components/_gara_edit_form.html:452
-#: templates/components/_new_gara_modal.html:500
+#: templates/components/_new_gara_modal.html:503
 msgid "Pari merito nella classifica finale"
 msgstr "Ties in the final standings"
 
 #: templates/admin/gara_create_standalone.html:405
 #: templates/components/_gara_edit_form.html:453
-#: templates/components/_new_gara_modal.html:501
+#: templates/components/_new_gara_modal.html:504
 msgid ""
 "Chi resta pari dopo questi criteri condivide la posizione. Lo spareggio "
 "SSR si gioca a gara finita, fino al posto che scegli."
@@ -12170,7 +12187,7 @@ msgid ""
 msgstr "You can still go back and fix any mistakes before saving permanently."
 
 #: templates/admin/gara_create_standalone.html:523
-#: templates/components/_new_gara_modal.html:523
+#: templates/components/_new_gara_modal.html:526
 msgid "Crea Gara"
 msgstr "Create Competition"
 
@@ -12359,7 +12376,7 @@ msgstr ""
 
 #: templates/admin/gara_edit_avviata.html:238
 #: templates/components/_gara_edit_form.html:258
-#: templates/components/_new_gara_modal.html:356
+#: templates/components/_new_gara_modal.html:359
 msgid "Esercizio per la X"
 msgstr "Drill for the X"
 
@@ -12390,7 +12407,7 @@ msgstr ""
 
 #: templates/admin/gara_edit_avviata.html:277
 #: templates/components/_gara_edit_form.html:116
-#: templates/components/_new_gara_modal.html:457
+#: templates/components/_new_gara_modal.html:460
 #: templates/direttore/_dal_campionato.html:36
 msgid "Peso nella classifica"
 msgstr "Weight in the standings"
@@ -16145,7 +16162,7 @@ msgid "Sede"
 msgstr "Venue"
 
 #: templates/components/_campionato_details_info.html:122
-#: templates/components/_new_gara_modal.html:318
+#: templates/components/_new_gara_modal.html:321
 msgid "Gestione Dispari"
 msgstr "Odd Player Handling"
 
@@ -16239,28 +16256,28 @@ msgstr "Matchmaking Options"
 msgid "Gestione Numero Dispari"
 msgstr "Odd Number Management"
 
-#: templates/components/_campionato_edit_form.html:261
-#: templates/components/_new_gara_modal.html:423
+#: templates/components/_campionato_edit_form.html:268
+#: templates/components/_new_gara_modal.html:426
 msgid "Anti-Rematch"
 msgstr "Anti-Rematch"
 
-#: templates/components/_campionato_edit_form.html:264
+#: templates/components/_campionato_edit_form.html:271
 msgid "Evita accoppiamenti ripetuti tra gli stessi giocatori nella stessa gara"
 msgstr "Avoids repeated pairings between the same players in the same competition"
 
-#: templates/components/_campionato_edit_form.html:269
+#: templates/components/_campionato_edit_form.html:276
 msgid "Regola di Inizio Predefinita"
 msgstr "Default Start Rule"
 
-#: templates/components/_campionato_edit_form.html:275
+#: templates/components/_campionato_edit_form.html:282
 msgid "Da qui la ereditano le gare del campionato."
 msgstr "The competitions in this championship inherit it from here."
 
-#: templates/components/_campionato_edit_form.html:279
+#: templates/components/_campionato_edit_form.html:286
 msgid "Spaccata Predefinita"
 msgstr "Default Break Rule"
 
-#: templates/components/_campionato_edit_form.html:297
+#: templates/components/_campionato_edit_form.html:304
 msgid ""
 "Le partite si giocano con handicap: il rating Elo si aggiorna solo fra "
 "giocatori della stessa categoria. Ereditato da gare e partite."
@@ -16269,7 +16286,7 @@ msgstr ""
 "between players of the same category. Inherited by competitions and "
 "matches."
 
-#: templates/components/_campionato_edit_form.html:317
+#: templates/components/_campionato_edit_form.html:324
 msgid ""
 "Questi sono i valori proposti alle gare nuove. Se ne cambi uno, ti "
 "chiederemo a quali gare già create e non ancora avviate applicarlo. Il "
@@ -16283,7 +16300,7 @@ msgstr ""
 "placements — applies to every competition, and can be changed until one "
 "has started. Every change stays in the championship's history."
 
-#: templates/components/_campionato_edit_form.html:332
+#: templates/components/_campionato_edit_form.html:339
 msgid "Salva Modifiche"
 msgstr "Save Changes"
 
@@ -16460,109 +16477,109 @@ msgstr "No events scheduled yet."
 msgid "Nessuna gara ancora: la prima si crea da «Nuova gara»."
 msgstr "No competition yet: create the first one with «New competition»."
 
-#: templates/components/_campionato_general_classification.html:52
+#: templates/components/_campionato_general_classification.html:51
 msgid "Posto"
 msgstr "Place"
 
-#: templates/components/_campionato_general_classification.html:55
-#: templates/components/_campionato_general_classification.html:58
+#: templates/components/_campionato_general_classification.html:54
+#: templates/components/_campionato_general_classification.html:57
 #: templates/direttore/_classifica.html:97
 msgid "Diff"
 msgstr "Diff"
 
-#: templates/components/_campionato_general_classification.html:86
+#: templates/components/_campionato_general_classification.html:85
 #: templates/public/vetrina_campionato.html:55
 msgid "definitiva"
 msgstr "final"
 
-#: templates/components/_campionato_general_classification.html:91
+#: templates/components/_campionato_general_classification.html:90
 #, python-format
 msgid "dopo la gara %(num)s"
 msgstr "after competition %(num)s"
 
-#: templates/components/_campionato_general_classification.html:102
+#: templates/components/_campionato_general_classification.html:101
 #, python-format
 msgid "Classifica ricalcolata il %(quando)s"
 msgstr "Standings recalculated on %(quando)s"
 
-#: templates/components/_campionato_general_classification.html:103
+#: templates/components/_campionato_general_classification.html:102
 #, python-format
 msgid "da %(prima)s a %(dopo)s"
 msgstr "from %(prima)s to %(dopo)s"
 
-#: templates/components/_campionato_general_classification.html:107
+#: templates/components/_campionato_general_classification.html:106
 msgid "Nessun motivo indicato."
 msgstr "No reason given."
 
-#: templates/components/_campionato_general_classification.html:113
+#: templates/components/_campionato_general_classification.html:112
 #: templates/direttore/_classifica.html:87
 #, python-format
 msgid "Prime %(n)s"
 msgstr "Top %(n)s"
 
-#: templates/components/_campionato_general_classification.html:114
+#: templates/components/_campionato_general_classification.html:113
 #: templates/direttore/_classifica.html:88
 #, python-format
 msgid "Tutti (%(n)s)"
 msgstr "All (%(n)s)"
 
-#: templates/components/_campionato_general_classification.html:125
+#: templates/components/_campionato_general_classification.html:124
 #, python-format
 msgid "Zona playoff · primi %(n)s"
 msgstr "Playoff zone · top %(n)s"
 
-#: templates/components/_campionato_general_classification.html:126
+#: templates/components/_campionato_general_classification.html:125
 msgid "Zona playoff"
 msgstr "Playoff zone"
 
-#: templates/components/_campionato_general_classification.html:127
+#: templates/components/_campionato_general_classification.html:126
 msgid "inviti partiti"
 msgstr "invitations sent"
 
-#: templates/components/_campionato_general_classification.html:133
+#: templates/components/_campionato_general_classification.html:132
 msgid "Fuori dai playoff"
 msgstr "Out of the playoffs"
 
-#: templates/components/_campionato_general_classification.html:144
+#: templates/components/_campionato_general_classification.html:143
 msgid "Decisa dalla finale"
 msgstr "Decided by the final"
 
-#: templates/components/_campionato_general_classification.html:145
+#: templates/components/_campionato_general_classification.html:144
 msgid "Poi l'ordine del campionato"
 msgstr "Then the championship order"
 
-#: templates/components/_campionato_general_classification.html:161
+#: templates/components/_campionato_general_classification.html:160
 #: templates/direttore/_classifica.html:30
 msgid "primo turno"
 msgstr "first round"
 
-#: templates/components/_campionato_general_classification.html:161
+#: templates/components/_campionato_general_classification.html:160
 #: templates/direttore/_classifica.html:30
 #, python-format
 msgid "sale di %(n)s"
 msgstr "up by %(n)s"
 
-#: templates/components/_campionato_general_classification.html:161
+#: templates/components/_campionato_general_classification.html:160
 #: templates/direttore/_classifica.html:30
 #, python-format
 msgid "scende di %(n)s"
 msgstr "down by %(n)s"
 
-#: templates/components/_campionato_general_classification.html:175
+#: templates/components/_campionato_general_classification.html:174
 msgid "Campionato:"
 msgstr "Championship:"
 
-#: templates/components/_campionato_general_classification.html:176
+#: templates/components/_campionato_general_classification.html:175
 #, python-format
 msgid "%(n)s triangoli"
 msgstr "%(n)s racks"
 
-#: templates/components/_campionato_general_classification.html:179
+#: templates/components/_campionato_general_classification.html:178
 #, python-format
 msgid "%(n)s vinte"
 msgstr "%(n)s won"
 
-#: templates/components/_campionato_general_classification.html:194
+#: templates/components/_campionato_general_classification.html:193
 msgid ""
 "Le righe colorate sono in ordine di arrivo nella finale playoff: le "
 "colonne sono quelle della finale, i numeri del campionato stanno sotto il"
@@ -16603,7 +16620,7 @@ msgid ""
 "triangoli totale."
 msgstr "General standings: sorted by matches won, then by total rack difference."
 
-#: templates/components/_campionato_general_classification.html:205
+#: templates/components/_campionato_general_classification.html:206
 msgid ""
 "La barra segna chi va ai playoff: prima degli inviti chi verrebbe "
 "invitato adesso, dopo chi ha un invito valido."
@@ -16799,6 +16816,23 @@ msgid ""
 msgstr ""
 "The clock starts at the lag, or with «Start match». It is a reference: "
 "when time is up the director decides."
+
+#: templates/components/_campo_primo_abbinamento_proposto.html:5
+#: templates/components/_gara_edit_form.html:224
+msgid "Primo abbinamento"
+msgstr "First pairing"
+
+#: templates/components/_campo_primo_abbinamento_proposto.html:11
+msgid ""
+"Come si abbina il primo turno di ogni gara. Con la classifica, la prima "
+"gara si sorteggia (la classifica non c'è ancora) e dalla seconda il primo"
+" turno parte dalla classifica generale. Nelle gare a girone o casuali il "
+"primo turno si sorteggia sempre."
+msgstr ""
+"How the first round of each competition is paired. With the standings, "
+"the first competition is drawn (there are no standings yet) and from the "
+"second one the first round starts from the overall standings. In round-"
+"robin or random competitions the first round is always drawn."
 
 #: templates/components/_campo_punti.html:30
 #: templates/components/_user_recent_matches_table.html:77
@@ -17394,25 +17428,17 @@ msgid ""
 "competizione."
 msgstr "Avoids pairing the same players again. It depends on the competition type."
 
-#: templates/components/_gara_edit_form.html:224
-msgid "Primo abbinamento"
-msgstr "First pairing"
-
-#: templates/components/_gara_edit_form.html:227
-msgid "Basato su rating"
-msgstr "Based on rating"
-
 #: templates/components/_gara_edit_form.html:228
 msgid "Basato su classifica"
 msgstr "Based on standings"
 
 #: templates/components/_gara_edit_form.html:260
-#: templates/components/_new_gara_modal.html:358
+#: templates/components/_new_gara_modal.html:361
 msgid "Scegli un esercizio…"
 msgstr "Choose a drill…"
 
 #: templates/components/_gara_edit_form.html:266
-#: templates/components/_new_gara_modal.html:364
+#: templates/components/_new_gara_modal.html:367
 msgid ""
 "Lo stesso esercizio per tutti i turni: chi riposa affronta la stessa "
 "prova, in qualunque turno gli capiti."
@@ -17421,12 +17447,12 @@ msgstr ""
 "whichever round it falls in."
 
 #: templates/components/_gara_edit_form.html:267
-#: templates/components/_new_gara_modal.html:365
+#: templates/components/_new_gara_modal.html:368
 msgid "Non trovi quello giusto? Creane uno"
 msgstr "Can't find the right one? Create one"
 
 #: templates/components/_gara_edit_form.html:271
-#: templates/components/_new_gara_modal.html:369
+#: templates/components/_new_gara_modal.html:372
 msgid "aggiorna l'elenco"
 msgstr "refresh the list"
 
@@ -19129,27 +19155,27 @@ msgstr "Pairing Strategy"
 msgid "Primo Abbinamento"
 msgstr "First Pairing"
 
-#: templates/components/_new_gara_modal.html:310
+#: templates/components/_new_gara_modal.html:313
 msgid "Basato su Rating"
 msgstr "Based on Rating"
 
-#: templates/components/_new_gara_modal.html:311
+#: templates/components/_new_gara_modal.html:314
 msgid "Basato su Classifica"
 msgstr "Based on Standings"
 
-#: templates/components/_new_gara_modal.html:426
+#: templates/components/_new_gara_modal.html:429
 msgid "Evita reincontri tra stessi avversari"
 msgstr "Avoid rematches between the same opponents"
 
-#: templates/components/_new_gara_modal.html:439
+#: templates/components/_new_gara_modal.html:442
 msgid "Come il campionato"
 msgstr "As the championship"
 
-#: templates/components/_new_gara_modal.html:461
+#: templates/components/_new_gara_modal.html:464
 msgid "Moltiplicatore"
 msgstr "Multiplier"
 
-#: templates/components/_new_gara_modal.html:468
+#: templates/components/_new_gara_modal.html:471
 msgid ""
 "Il punteggio di questa prova viene moltiplicato per il peso prima di "
 "entrare nella classifica del campionato. 1 = una prova come le altre; 3 ="
@@ -19159,17 +19185,17 @@ msgstr ""
 " championship standings. 1 = a competition like any other; 3 = it counts "
 "as three."
 
-#: templates/components/_new_gara_modal.html:507
+#: templates/components/_new_gara_modal.html:510
 #: templates/player/challenge_attempt_detail.html:151
 #: templates/player/my_venue_requests.html:25
 msgid "Note"
 msgstr "Notes"
 
-#: templates/components/_new_gara_modal.html:509
+#: templates/components/_new_gara_modal.html:512
 msgid "Note aggiuntive sulla gara... (opzionale)"
 msgstr "Extra notes about the competition... (optional)"
 
-#: templates/components/_new_gara_modal.html:771
+#: templates/components/_new_gara_modal.html:774
 msgid ""
 "Con una fase finale dopo i gironi si gioca a chi arriva prima: nelle "
 "finali il pareggio non esiste."
