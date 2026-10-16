@@ -222,7 +222,7 @@
 
 {# L'amministratore non prova le challenge: e' una funzione di gioco. #}
 {% if not current_user.is_admin %}
-<div class="c7-actionbar" style="flex-direction:column;gap:6px">
+<div class="c7-actionbar c7-actionbar--stack">
   <a href="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}" class="btn btn-primary w-100">
     <i class="fas fa-play"></i>&nbsp;{{ _("Allenati su questo esercizio") }}
   </a>

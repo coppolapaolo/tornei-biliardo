@@ -159,6 +159,13 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 }
 .c7-actionbar .btn { flex: 1; }
 .c7-actionbar .btn.c7-btn-narrow { flex: 0 0 auto; padding: 0 20px; }
+/* Barra in colonna (il comando, e sotto una riga di spiegazione o un secondo
+   pulsante). In colonna `flex: 1` lavorerebbe sull'altezza: base 0% vince sui
+   56px di `.btn`, che non ha padding verticale, e il pulsante restava alto una
+   riga di testo. I pulsanti prendono comunque tutta la larghezza: in colonna
+   e' l'`align-items: stretch` predefinito a darla. */
+.c7-actionbar--stack { flex-direction: column; gap: 6px; }
+.c7-actionbar--stack .btn { flex: 0 0 auto; }
 
 /* --------------------------------------------------------------------------
    3. Sidebar desktop / nav flottante mobile
