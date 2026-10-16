@@ -4,74 +4,92 @@
    gara stanno su `match`, le sfide individuali su `individual_match`, e qui
    arrivano già nella stessa forma (`MatchEntry` di `PlayerHistoryService`).
 
-   Prima questo componente riceveva oggetti `Match` grezzi e disegnava una
-   tabella con le colonne del torneo — campionato, gara, turno. Una sfida
-   individuale non ha nessuna delle tre, e infatti non arrivava nemmeno fin
-   qui: la query del profilo interrogava la sola tabella `match`.
+   Un elenco per vista di certificazione (ADR-083), `data-vista`: il selettore
+   in testa al profilo decide quale si vede. Le sfide in attesa della seconda
+   firma compaiono solo in *Tutte*, col loro segno — un elenco unico con le
+   righe da nascondere lascerebbe nelle altre viste meno partite di quelle
+   che hanno.
 
    La forma è quella della scheda «Partite» dello storico
    (`_history_matches_tab.html`): due schermate che mostrano la stessa cosa si
    somigliano, invece di somigliarsi poco.
 
    Parametri:
-   - matches: lista di `MatchEntry`
+   - matches: `[{"valore": "tornei", "voci": [MatchEntry, …]}, …]`, uno per
+     vista, da `_partite_recenti` in `routes/player/profile.py`
    - is_own_profile: cambia solo il titolo
 #}
+{% set partite_in_tutte = matches[-1].voci|length %}
 <div class="c7-card mb-4">
     <div class="c7-sechead mb-3">
         <h2>{% if is_own_profile %}{{ _("Storico Partite Recenti") }}{% else %}{{ _("Partite Recenti") }}{% endif %}</h2>
         {% if is_own_profile and feature_visible('player.history') %}
-        <a class="c7-sechead__more" href="{{ url_for('player.history') }}">{{ _("Tutte") }}</a>
+        {# «Storico» e non «Tutte»: accanto a un selettore che ha una vista
+           *Tutte*, la stessa parola su un link diverso direbbe due cose. #}
+        <a class="c7-sechead__more" href="{{ url_for('player.history') }}">{{ _("Storico") }}</a>
         {% endif %}
     </div>
 
-    {% if matches %}
-    <div class="c7-rows" style="background:var(--c7-bg)">
-        {% for voce in matches %}
-        {% set stile = {'campionato': ['c7-state--info', _('Campionato')],
-                        'gara': ['c7-state--ok', _('Gara')],
-                        'individuale': ['c7-state--muted', _('Individuale')]}[voce.context] %}
-        <div class="c7-rows__row">
-            {# L'esito come tassello: si legge prima del testo, ed è la cosa
-               che si cerca scorrendo un elenco di partite. #}
-            <span class="c7-tile c7-tile--sm {{ 'c7-tile--locked' if voce.outcome != 'won' }}">
-                {%- if voce.outcome == 'won' %}<i class="fas fa-trophy"></i>
-                {%- elif voce.outcome == 'lost' %}<i class="fas fa-xmark"></i>
-                {%- else %}<i class="fas fa-equals"></i>{% endif %}
-            </span>
+    {% if partite_in_tutte %}
+    {% for elenco in matches %}
+    <div data-vista="{{ elenco.valore }}">
+        {% if elenco.voci %}
+        <div class="c7-rows" style="background:var(--c7-bg)">
+            {% for voce in elenco.voci %}
+            {% set stile = {'campionato': ['c7-state--info', _('Campionato')],
+                            'gara': ['c7-state--ok', _('Gara')],
+                            'individuale': ['c7-state--muted', _('Individuale')]}[voce.context] %}
+            <div class="c7-rows__row">
+                {# L'esito come tassello: si legge prima del testo, ed è la cosa
+                   che si cerca scorrendo un elenco di partite. #}
+                <span class="c7-tile c7-tile--sm {{ 'c7-tile--locked' if voce.outcome != 'won' }}">
+                    {%- if voce.outcome == 'won' %}<i class="fas fa-trophy"></i>
+                    {%- elif voce.outcome == 'lost' %}<i class="fas fa-xmark"></i>
+                    {%- else %}<i class="fas fa-equals"></i>{% endif %}
+                </span>
 
-            <div class="c7-rows__main">
-                <div class="c7-rows__title">
-                    {%- if voce.opponents %}{{ voce.opponents|join(' · ') }}
-                    {%- else %}{{ _("Avversario non registrato") }}{% endif -%}
-                    {%- if voce.my_score is not none %}
-                    <span class="c7-num" style="margin-left:8px">
-                        {{- voce.my_score }}{% if voce.opponent_score is not none %}–{{ voce.opponent_score }}{% endif -%}
-                    </span>
-                    {%- endif %}
+                <div class="c7-rows__main">
+                    <div class="c7-rows__title">
+                        {%- if voce.opponents %}{{ voce.opponents|join(' · ') }}
+                        {%- else %}{{ _("Avversario non registrato") }}{% endif -%}
+                        {%- if voce.my_score is not none %}
+                        <span class="c7-num" style="margin-left:8px">
+                            {{- voce.my_score }}{% if voce.opponent_score is not none %}–{{ voce.opponent_score }}{% endif -%}
+                        </span>
+                        {%- endif %}
+                    </div>
+                    <div class="c7-rows__sub">
+                        {# Firmata da uno solo: il risultato è quello dichiarato,
+                           e la riga lo dice invece di sembrare chiusa. #}
+                        {%- if voce.in_attesa %}<span class="c7-state c7-state--warn" data-in-attesa>{{ _("In attesa") }}</span> {% endif -%}
+                        <span class="c7-state {{ stile[0] }}">{{ stile[1] }}</span>
+                        {%- if voce.competition %} <span class="c7-sep">·</span> {{ voce.competition }}{% endif -%}
+                        {%- if voce.played_on %} <span class="c7-sep">·</span> <span class="c7-num">{{ voce.played_on|date_local }}</span>{% endif -%}
+                        {%- if voce.is_trio %} <span class="c7-sep">·</span> {{ _("partita a tre") }}{% endif -%}
+                    </div>
                 </div>
-                <div class="c7-rows__sub">
-                    <span class="c7-state {{ stile[0] }}">{{ stile[1] }}</span>
-                    {%- if voce.competition %} <span class="c7-sep">·</span> {{ voce.competition }}{% endif -%}
-                    {%- if voce.played_on %} <span class="c7-sep">·</span> <span class="c7-num">{{ voce.played_on|date_local }}</span>{% endif -%}
-                    {%- if voce.is_trio %} <span class="c7-sep">·</span> {{ _("partita a tre") }}{% endif -%}
-                </div>
+
+                {% if voce.source == 'individual' and feature_visible('individual_match.match_detail') %}
+                <a class="c7-iconbtn" href="{{ url_for('individual_match.match_detail', match_id=voce.match_id) }}"
+                   title="{{ _('Apri la sfida') }}" aria-label="{{ _('Apri la sfida') }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% elif voce.source == 'tournament' and feature_visible('admin.match.match_detail') %}
+                <a class="c7-iconbtn" href="{{ url_for('admin.match.match_detail', match_id=voce.match_id) }}"
+                   title="{{ _('Apri la partita') }}" aria-label="{{ _('Apri la partita') }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
             </div>
-
-            {% if voce.source == 'individual' and feature_visible('individual_match.match_detail') %}
-            <a class="c7-iconbtn" href="{{ url_for('individual_match.match_detail', match_id=voce.match_id) }}"
-               title="{{ _('Apri la sfida') }}" aria-label="{{ _('Apri la sfida') }}">
-                <i class="fas fa-chevron-right"></i>
-            </a>
-            {% elif voce.source == 'tournament' and feature_visible('admin.match.match_detail') %}
-            <a class="c7-iconbtn" href="{{ url_for('admin.match.match_detail', match_id=voce.match_id) }}"
-               title="{{ _('Apri la partita') }}" aria-label="{{ _('Apri la partita') }}">
-                <i class="fas fa-chevron-right"></i>
-            </a>
-            {% endif %}
+            {% endfor %}
         </div>
-        {% endfor %}
+        {% elif elenco.valore == 'tornei' %}
+        <p class="c7-rows__sub" style="margin:0">{{ _("Nessuna partita di torneo.") }}</p>
+        {% else %}
+        <p class="c7-rows__sub" style="margin:0">{{ _("Nessuna partita confermata: le sfide in attesa sono nella vista Tutte.") }}</p>
+        {% endif %}
     </div>
+    {% endfor %}
     {% else %}
     <div class="c7-empty">
         <div class="c7-empty__ico"><i class="fas fa-table-tennis-paddle-ball"></i></div>

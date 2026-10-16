@@ -1,68 +1,83 @@
 {# templates/components/_player_ratings.html — 7c
 
-   Rating del giocatore: Elo e, per chi ce l'ha, TPA.
+   Rating del giocatore: Elo e, per chi ce l'ha, TPA — in ognuna delle tre
+   viste di certificazione (ADR-083). Un blocco per vista, `data-vista`; quale
+   si vede lo decide il selettore in testa al profilo
+   (`_vista_certificazione.html`).
 
    Parametri (dal contesto della pagina profilo):
-   - user: il giocatore di cui si mostra il profilo
-   - tpa_stats: riassunto TPA di carriera, oppure None se qui il TPA non va
-     mostrato (vedi `TpaStatsService.profile_summary`). Quando manca, l'Elo
-     occupa tutta la riga invece di lasciare mezza card vuota.
+   - viste: i numeri delle tre viste, da `_numeri_per_vista` in
+     `routes/player/profile.py`. Per ognuna `elo` (un pool per vista: tornei →
+     competitivo, confermate → globale, tutte → ELO_ALL; `None` se il pool non
+     ha ancora un valore) e `tpa`, il riassunto TPA oppure `None` se qui il
+     TPA non va mostrato (vedi `TpaStatsService.profile_summary`). Quando
+     manca, l'Elo occupa tutta la riga invece di lasciare mezza card vuota.
 
-   Era rimasto markup Bootstrap, con `h3.text-primary` per i due numeri: un
-   colore che `theme-7c.css` non sovrascrive, quindi fuori palette. La forma e'
-   quella dei componenti accanto — `c7-sechead`, `c7-card` con `c7-num-lg`,
-   `c7-rows__sub` per l'etichetta sotto. #}
-{% from "components/_elo_display.html" import elo_display %}
-{% set show_tpa = tpa_stats is defined and tpa_stats %}
+   Nella vista *Tornei* il TPA non c'è: il referto esiste solo nelle sfide.
+   Si scrive una lineetta e si dice perché, invece di sembrare un dato perso.
+#}
 <section class="c7-stack">
   <div class="c7-sechead">
     <h2 data-help="profilo-rating">{{ _("Rating") }}</h2>
     <span class="c7-sechead__note">{{ _("Lv. 6+") }}</span>
   </div>
 
-  <div class="c7-grid" style="grid-template-columns:{{ '1fr 1fr' if show_tpa else '1fr' }}">
-    <div class="c7-card">
-      {# `c7-num-lg` sul contenitore e non sul numero: il valore lo scrive la
-         macro `elo_display`, che ci mette dentro anche l'icona dello scambio
-         competitivo/globale. La classe `elo-value` deve restare sua, perche'
-         e' quella che `window.EloToggle` va a cercare. #}
-      <div class="c7-num-lg">{{ elo_display(user.elo_rating, user.elo_global_rating, show_label=false) }}</div>
-      <div class="c7-rows__sub">Elo <span class="elo-mode-label"></span></div>
+  {% for v in viste %}
+  {% set tpa = v.tpa %}
+  <div class="c7-stack" data-vista="{{ v.valore }}">
+    <div class="c7-grid" style="grid-template-columns:{{ '1fr 1fr' if tpa else '1fr' }}">
+      <div class="c7-card">
+        <div class="c7-num-lg" data-stat="elo">
+          {%- if v.elo is not none %}{{ v.elo }}{% else %}<span style="color:var(--c7-ink-faint)">—</span>{% endif -%}
+        </div>
+        <div class="c7-rows__sub">Elo</div>
+      </div>
+
+      {% if tpa %}
+      <div class="c7-card">
+        <div class="c7-num-lg" data-stat="tpa">
+          {%- if tpa.tpa is not none -%}
+          {{ tpa.tpa|tpa_display }}
+          {%- else -%}
+          <span style="color:var(--c7-ink-faint)">—</span>
+          {%- endif -%}
+        </div>
+        <div class="c7-rows__sub">
+          TPA
+          {%- if tpa.referti %}
+          <span class="c7-sep">·</span>
+          {{ ngettext("%(n)s referto", "%(n)s referti", tpa.referti, n=tpa.referti) }}
+          {%- endif %}
+        </div>
+      </div>
+      {% endif %}
     </div>
 
-    {% if show_tpa %}
-    <div class="c7-card">
-      <div class="c7-num-lg">
-        {%- if tpa_stats.tpa is not none -%}
-        {{ tpa_stats.tpa|tpa_display }}
-        {%- else -%}
-        <span style="color:var(--c7-ink-faint)">—</span>
-        {%- endif -%}
-      </div>
-      <div class="c7-rows__sub">
-        TPA
-        {%- if tpa_stats.referti %}
-        <span class="c7-sep">·</span>
-        {{ ngettext("%(n)s referto", "%(n)s referti", tpa_stats.referti, n=tpa_stats.referti) }}
-        {%- endif %}
-      </div>
-    </div>
+    {# Due paragrafi e non uno: sono due spiegazioni di due numeri diversi, e
+       accodate diventavano un muro di testo piccolo in cui la seconda spariva. #}
+    <p class="c7-rows__sub" style="margin:0">
+      {%- if v.valore == 'tornei' -%}
+      {{ _("L'Elo competitivo: si muove solo con le partite di torneo, e decide categoria e handicap.") }}
+      {%- elif v.valore == 'confermate' -%}
+      {{ _("L'Elo di tornei e sfide firmate da entrambi i giocatori.") }}
+      {%- elif v.elo is none -%}
+      {{ _("L'Elo che conta anche le sfide in attesa non è ancora stato calcolato.") }}
+      {%- else -%}
+      {{ _("L'Elo che conta anche le sfide firmate da uno solo, in attesa dell'altro.") }}
+      {%- endif -%}
+    </p>
+    {% if tpa %}
+    <p class="c7-rows__sub" style="margin:0">
+      {%- if v.valore == 'tornei' -%}
+      {{ _("Il TPA esiste solo nelle sfide: il referto si compila durante una sfida, non in una partita di torneo.") }}
+      {%- elif tpa.tpa is not none -%}
+      {{ _("Il TPA è la percentuale di azioni riuscite al tavolo: %(balls)s bilie imbucate contro %(errors)s errori.",
+            balls=tpa.balls_potted, errors=tpa.errors) }}
+      {%- else -%}
+      {{ _("Il TPA compare dopo il primo referto compilato durante una partita.") }}
+      {%- endif -%}
+    </p>
     {% endif %}
   </div>
-
-  {# Due paragrafi e non uno: sono due spiegazioni di due numeri diversi, e
-     accodate diventavano un muro di testo piccolo in cui la seconda spariva. #}
-  <p class="c7-rows__sub" style="margin:0">
-    {{ _("L'Elo competitivo si aggiorna a fine partita ufficiale. Clicca il valore per vedere l'Elo globale (include le sfide individuali).") }}
-  </p>
-  {% if show_tpa %}
-  <p class="c7-rows__sub" style="margin:0">
-    {%- if tpa_stats.tpa is not none -%}
-    {{ _("Il TPA è la percentuale di azioni riuscite al tavolo: %(balls)s bilie imbucate contro %(errors)s errori.",
-          balls=tpa_stats.balls_potted, errors=tpa_stats.errors) }}
-    {%- else -%}
-    {{ _("Il TPA compare dopo il primo referto compilato durante una partita.") }}
-    {%- endif -%}
-  </p>
-  {% endif %}
+  {% endfor %}
 </section>

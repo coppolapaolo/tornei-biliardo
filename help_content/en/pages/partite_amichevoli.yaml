@@ -282,17 +282,19 @@ blocks:
 
   - type: text
     text: >-
-      Yes. In your [profile](/aiuto/account/profilo_e_statistiche) friendly
-      matches sit among the recent matches alongside competition ones, labelled
+      Yes. In your [profile](/aiuto/account/profilo_e_statistiche), in the
+      «Confirmed» and «All» views, friendly matches sit among the recent matches alongside competition ones, labelled
       «Individual», and they count towards matches played, won and lost. The
       same goes for the history, in the «Matches» tab.
 
   - type: text
     text: >-
-      What does keep them separate is the **rating**, which has two modes:
-      **competitive** (official competitions only) and **overall**
-      (competitions plus friendlies). You can switch with one tap. Competition
-      standings, on the other hand, are untouched by friendlies.
+      The selector at the top of the profile chooses which matches count:
+      **Competitions** (official competitions only, with the competitive
+      rating), **Confirmed** (individual matches signed by both players as
+      well) and **All** (those signed by only one as well, waiting for the
+      other). Rating, wins and TPA change together. Competition standings, on
+      the other hand, are untouched by friendlies.
 
   - type: note
     tone: info

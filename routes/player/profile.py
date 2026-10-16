@@ -25,6 +25,7 @@ from models.user.models import User
 from models.user.services import UserService
 from models.user.permission_service import UserPermissionService
 from models.user.runout_stats import runout_summary
+from models.certificazione import Vista
 from utils import feature_required, player_only
 from utils.route_helpers import handle_service_action
 
@@ -51,13 +52,110 @@ def _training_overview(user_id: int) -> dict:
         return {"stats": None, "history": [], "drills": [], "exams": []}
 
 
+#: Quante partite recenti mostra il profilo, in ciascuna vista.
+PARTITE_RECENTI = 10
+
+#: Lo storico intero, non una pagina: le statistiche delle tre viste si
+#: contano su tutte le partite, e la paginazione dello storico è in memoria.
+_TUTTO_LO_STORICO = 1_000_000
+
+
+def _voci_del_profilo(user_id: int) -> list:
+    """Tutte le partite del giocatore, nella vista più larga (ADR-083).
+
+    Le altre due viste si ottengono **togliendo** da queste voci, mai
+    rileggendo il database: così i numeri dei tre blocchi del profilo vengono
+    dallo stesso elenco e non possono contraddirsi.
+    """
+    from models.player.history_service import HistoryFilters, PlayerHistoryService
+
+    pagina, _stats = PlayerHistoryService.get_unified_match_history(
+        user_id=user_id,
+        filters=HistoryFilters(),
+        page=1,
+        per_page=_TUTTO_LO_STORICO,
+        vista=Vista.TUTTE,
+    )
+    return pagina.items
+
+
+def _numeri_per_vista(user: User, voci: list) -> list:
+    """I numeri del profilo in ognuna delle tre viste, nell'ordine del selettore.
+
+    Il server li rende **tutti e tre** e il selettore li alterna nel browser
+    senza ricaricare (``static/js/vista_certificazione.js``). ``voci`` sono
+    quelle che chi guarda può vedere: il profilo altrui le passa già filtrate,
+    quindi una partita nascosta resta fuori da tutte le viste.
+
+    TPA e runout si chiedono per vista: il runout prende il TPA della **stessa**
+    vista, che è quella in cui va contato il referto.
+    """
+    from models.player.history_service import PlayerHistoryService
+    from models.tpa.stats_service import TpaStatsService
+
+    stats = PlayerHistoryService.stats_per_vista(voci)
+    elo = _elo_per_vista(user, stats)
+
+    viste = []
+    for vista in Vista:
+        tpa = TpaStatsService.profile_summary(user.id, user=user, vista=vista)
+        viste.append(
+            {
+                "valore": vista.value,
+                "stats": stats[vista],
+                "elo": elo[vista],
+                "tpa": tpa,
+                "runouts": runout_summary(user.id, tpa, vista=vista),
+            }
+        )
+    return viste
+
+
+def _elo_per_vista(user: User, stats: dict) -> dict:
+    """Un pool ELO per vista: competitivo, globale, «Tutte» (ADR-083).
+
+    I ripieghi sono quelli che il profilo ha sempre avuto: senza competitivo
+    si mostra il valore di partenza, senza globale il competitivo. Per
+    *Tutte* il ripiego su *Confermate* vale solo se le due viste contengono le
+    stesse partite: finché il pool non è stato calcolato (UC9), dare a chi ha
+    sfide in attesa l'ELO di *Confermate* sarebbe un numero che quelle sfide
+    non hanno mai mosso. Lì si mostra una lineetta.
+    """
+    tornei = user.elo_rating if user.elo_rating is not None else 1200
+    globale = user.elo_global_rating
+    confermate = globale if globale is not None else tornei
+    tutte = user.elo_all_rating
+    if tutte is None:
+        stesse_partite = (
+            stats[Vista.TUTTE].total_matches == stats[Vista.CONFERMATE].total_matches
+        )
+        tutte = confermate if stesse_partite else None
+    return {Vista.TORNEI: tornei, Vista.CONFERMATE: confermate, Vista.TUTTE: tutte}
+
+
+def _partite_recenti(voci: list, quante: int = PARTITE_RECENTI) -> list:
+    """Le ultime ``quante`` partite di ogni vista, un elenco per vista.
+
+    Un elenco per vista e non uno solo con le righe da nascondere: una sfida
+    in attesa sta solo in *Tutte*, e nelle altre due viste al suo posto scorre
+    una partita più vecchia. Prendere le ultime dieci di *Tutte* e nasconderne
+    qualcuna lascerebbe *Tornei* con meno righe di quelle che ha.
+    """
+    return [
+        {
+            "valore": vista.value,
+            "voci": [v for v in voci if vista.comprende(v.livello)][:quante],
+        }
+        for vista in Vista
+    ]
+
+
 @player_bp.route("/profile")
 @login_required
 @player_only
 def profile():
     """Profilo personale del giocatore"""
     from models.classification.models import Classification
-    from models.player.history_service import HistoryFilters, PlayerHistoryService
 
     # Iscrizioni dell'utente (incluse gare standalone)
     inscriptions = (
@@ -82,13 +180,10 @@ def profile():
     #
     # Lo storico completo faceva già la cosa giusta: il profilo mostrava meno
     # partite di quelle giocate, e senza errori da nessuna parte.
-    pagina_partite, match_stats = PlayerHistoryService.get_unified_match_history(
-        user_id=current_user.id,
-        filters=HistoryFilters(),
-        page=1,
-        per_page=10,
-    )
-    recent_matches = pagina_partite.items
+    #
+    # Le voci si prendono nella vista più larga: le tre viste del selettore
+    # (ADR-083) si ricavano da queste, togliendo.
+    voci = _voci_del_profilo(current_user.id)
 
     # Classifiche per campionato
     classifications = (
@@ -123,38 +218,32 @@ def profile():
     # profilo altrui ne costruiva una versione diversa, con un'altra forma.
     training = _training_overview(current_user.id)
 
+    # I numeri che non dipendono dalla vista: iscrizioni e gare sono tutte di
+    # torneo. Quelli che ne dipendono stanno in `viste`.
     stats = {
         "total_inscriptions": len(inscriptions),
-        "total_matches": match_stats.total_matches,
-        "won_matches": match_stats.won_matches,
-        "lost_matches": match_stats.lost_matches,
-        "win_percentage": match_stats.win_percentage,
         "tournaments_played": len(completed_tournaments),
         "gare_played": completed_gare,
     }
 
     # Privacy context for template consistency (own profile always has full access)
     from models.user.privacy_service import PrivacyService
-    from models.tpa.stats_service import TpaStatsService
 
     privacy = PrivacyService.get_privacy_settings(current_user.id)
 
-    # TPA: compare a chi ha sbloccato il referto oppure a chi ha gia' giocato
-    # una partita in cui qualcun altro lo teneva. `None` = qui non ci va.
-    tpa_stats = TpaStatsService.profile_summary(current_user.id, user=current_user)
-
-    # Runout: un numero, due fonti — il trattino sul tabellone e il tally del
-    # referto TPA, che non convivono mai sulla stessa partita (ADR-056).
-    # `tpa_stats` si passa perché è già stato calcolato qui sopra: ricalcolarlo
-    # vorrebbe dire rigiocare ogni referto una seconda volta.
-    stats["runouts"] = runout_summary(current_user.id, tpa_stats)
+    # ELO, vittorie, sconfitte, pareggi, TPA e runout nelle tre viste. Il TPA
+    # compare a chi ha sbloccato il referto oppure a chi ha già giocato una
+    # partita in cui qualcun altro lo teneva (`None` = qui non ci va); il
+    # runout unisce il trattino sul tabellone e il tally del referto TPA, che
+    # non convivono mai sulla stessa partita (ADR-056).
+    viste = _numeri_per_vista(current_user, voci)
 
     return render_template(
         "player/profile.html",
         user=current_user,
-        tpa_stats=tpa_stats,
+        viste=viste,
         inscriptions=inscriptions,
-        matches=recent_matches,
+        matches=_partite_recenti(voci),
         classifications=classifications,
         stats=stats,
         challenge_stats=training["stats"],
@@ -257,33 +346,20 @@ def view_profile(user_id):
     # Partite: stessa fonte del profilo proprio, per la stessa ragione (vedi
     # `profile()`). Il profilo altrui contava e mostrava per conto suo, quindi
     # aveva entrambi i difetti in copia.
-    from models.player.history_service import HistoryFilters, PlayerHistoryService
+    from models.player.history_service import PlayerHistoryService
 
-    tutte, _ = PlayerHistoryService.get_unified_match_history(
-        user_id=user.id,
-        filters=HistoryFilters(),
-        page=1,
-        per_page=1000,
-    )
-
-    # Le partite nascoste dal proprietario restano nascoste. L'elenco degli id
-    # nascosti riguarda le partite di **gara**: una sfida individuale non si può
-    # ancora nascondere, e gli id delle due tabelle si sovrappongono — filtrare
-    # senza guardare la provenienza ne nasconderebbe una a caso.
+    # Le partite nascoste dal proprietario restano nascoste, in **tutte** le
+    # viste: si filtrano le voci della vista più larga, e le altre due si
+    # ricavano da quelle filtrate. L'elenco degli id nascosti riguarda le
+    # partite di **gara**: una sfida individuale non si può ancora nascondere,
+    # e gli id delle due tabelle si sovrappongono — filtrare senza guardare la
+    # provenienza ne nasconderebbe una a caso.
     voci = PlayerHistoryService.filter_visible_entries(
         user_id=user_id,
         viewer_id=viewer_id,
-        entries=tutte.items,
+        entries=_voci_del_profilo(user.id),
         is_admin=is_admin,
     )
-
-    match_stats = PlayerHistoryService.stats_of(voci)
-    total_matches = match_stats.total_matches
-    won_matches = match_stats.won_matches
-    win_percentage = match_stats.win_percentage
-
-    # Partite recenti (ultime 10 visibili)
-    recent_matches = voci[:10]
 
     # Completed tournaments count
     visible_inscriptions = PrivacyService.filter_visible_inscriptions(
@@ -312,10 +388,6 @@ def view_profile(user_id):
 
     stats = {
         "total_inscriptions": len(visible_inscriptions),
-        "total_matches": total_matches,
-        "won_matches": won_matches,
-        "lost_matches": match_stats.lost_matches,
-        "win_percentage": win_percentage,
         "tournaments_played": len(completed_tournaments),
         "gare_played": completed_gare,
     }
@@ -325,17 +397,12 @@ def view_profile(user_id):
     # componente non sa leggere: le righe uscivano vuote, senza errore.
     training = _training_overview(user.id)
 
-    from models.tpa.stats_service import TpaStatsService
-
-    tpa_stats = TpaStatsService.profile_summary(user.id, user=user)
-    stats["runouts"] = runout_summary(user.id, tpa_stats)
-
     return render_template(
         "player/profile.html",
         user=user,
-        tpa_stats=tpa_stats,
+        viste=_numeri_per_vista(user, voci),
         inscriptions=visible_inscriptions,
-        matches=recent_matches,
+        matches=_partite_recenti(voci),
         stats=stats,
         challenge_stats=training["stats"],
         challenge_history=training["history"],

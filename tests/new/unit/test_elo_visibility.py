@@ -170,15 +170,19 @@ class TestNienteNumeriDiRipiego:
 
 
 class TestIlTabelloneNonUsaIlToggle:
-    def test_il_valore_sul_tabellone_non_e_marcato_elo_value(self):
-        """`window.EloToggle` riscrive ogni `.elo-value` col pool salvato.
+    def test_il_valore_sul_tabellone_non_segue_la_vista_di_chi_guarda(self):
+        """Il selettore di certificazione nasconde ogni `[data-vista]` che non
+        è della vista scelta (ADR-083), e prima `window.EloToggle` riscriveva
+        ogni `.elo-value` col pool salvato.
 
         Sul tabellone il pool lo decide il tipo di partita: marcarlo così
-        vorrebbe dire che un clic altrove nella pagina ci scrive sopra l'altro
-        numero, contraddicendo la riga sotto al nome senza che niente lo dica.
+        vorrebbe dire che una scelta fatta nel profilo ci nasconde o ci scrive
+        sopra un altro numero, contraddicendo la riga sotto al nome senza che
+        niente lo dica.
         """
         board = Path("templates/components/_match_scoreboard.html").read_text(
             encoding="utf-8"
         )
         assert "c7-board__elo" in board
         assert not re.search(r'class="[^"]*\belo-value\b', board)
+        assert not re.search(r"<[^>]*\sdata-vista=", board)

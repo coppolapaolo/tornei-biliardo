@@ -3,7 +3,7 @@ section: account
 kind: approfondimento
 audience: [giocatore]
 minutes: 4
-summary: "Cosa contiene il tuo profilo, come si legge il rating e dove ritrovare tutto quello che hai giocato: partite, gare, campionati, esercizi ed esami."
+summary: "Cosa contiene il tuo profilo, come si legge il rating, cosa cambia fra Tornei, Confermate e Tutte, e dove ritrovare tutto quello che hai giocato: partite, gare, campionati, esercizi ed esami."
 screens: [player.profile, player.history, player.edit_profile, player.dashboard,
   player.view_profile]
 related: [privacy_e_dati, progressi]
@@ -40,9 +40,10 @@ blocks:
         hint: profilo.rating
       - name: "Statistiche"
         text: >-
-          Campionati e gare giocate, vittorie, sconfitte, totale delle partite
-          e percentuale di vittorie. Conta **tutto quello che hai giocato**,
-          comprese le partite amichevoli.
+          Campionati e gare giocate, vittorie, sconfitte, pareggi, totale delle
+          partite e percentuale di vittorie. Quali partite contano lo decide il
+          selettore **Tornei · Confermate · Tutte** in cima al profilo.
+        hint: profilo.vista
       - name: "Runout"
         text: >-
           Quanti triangoli hai chiuso **in un solo turno**, cioè senza mai
@@ -59,6 +60,51 @@ blocks:
       il [referto TPA](/aiuto/giocare/referto_tpa) riconosce da sé quando lo
       tieni. Il numero grande è il totale; i break and run sono la parte di
       quelli in cui avevi anche il tiro di apertura.
+
+  - type: heading
+    id: viste
+    title: "Tornei, Confermate, Tutte"
+
+  - type: text
+    text: >-
+      Non tutti i risultati sono garantiti allo stesso modo. Una partita di
+      gara l'ha garantita il direttore di gara; una sfida individuale firmata
+      da **tutti e due** i giocatori l'hanno garantita entrambi; una sfida
+      firmata da **uno solo** aspetta ancora la firma dell'altro.
+
+  - type: text
+    text: >-
+      In cima al profilo un selettore sceglie quali partite contano. Tocca una
+      delle tre voci e cambiano **insieme** rating, vittorie, sconfitte,
+      pareggi, TPA, runout e partite recenti.
+
+  - type: options
+    items:
+      - name: "Tornei"
+        text: >-
+          Solo le partite di gara. Il rating è quello competitivo, che decide
+          categoria e handicap. Il TPA non c'è: il referto si compila solo
+          nelle sfide individuali. Se hai giocato solo sfide, lo dice invece di
+          mostrarti una fila di zeri.
+      - name: "Confermate"
+        text: >-
+          Le partite di gara e le sfide firmate da entrambi, comprese quelle
+          chiuse con un abbandono. È la vista di partenza.
+      - name: "Tutte"
+        text: >-
+          Anche le sfide firmate da uno solo. Fra le partite recenti portano il
+          segno **In attesa**: il risultato è quello che ha firmato chi ha
+          segnato i triangoli.
+
+  - type: note
+    tone: info
+    title: "La scelta resta"
+    text: >-
+      L'app si ricorda l'ultima vista che hai scelto, su questo telefono o
+      computer: riaprendo il profilo, o il profilo di un altro giocatore, la
+      ritrovi. In una finestra privata, o se il browser non conserva i dati
+      dei siti, il selettore funziona lo stesso ma riparte ogni volta da
+      **Confermate**.
 
   - type: heading
     id: rating
@@ -80,12 +126,13 @@ blocks:
 
   - type: note
     tone: info
-    title: "Due rating, non uno"
+    title: "Tre rating, uno per vista"
     text: >-
-      C'è un rating **competitivo**, che considera solo le gare ufficiali, e
-      uno **globale**, che comprende anche le partite amichevoli. Ovunque
-      compaia il rating puoi passare dall'uno all'altro con un tocco: la
-      scelta viene ricordata su tutte le pagine.
+      Il rating cambia con il selettore. In **Tornei** è quello
+      **competitivo**, che conta solo le gare ufficiali. In **Confermate**
+      comprende anche le sfide firmate da entrambi, in **Tutte** anche quelle
+      firmate da uno solo. Le sfide chiuse con un abbandono e quelle finite
+      in pareggio non muovono nessun rating.
 
   - type: text
     text: >-
@@ -102,8 +149,8 @@ blocks:
   - type: text
     text: >-
       Scorrendo il profilo, dopo le statistiche e gli esercizi, trovi le
-      **ultime dieci partite**, da qualunque parte vengano: quelle giocate in
-      gara e quelle amichevoli, nello stesso elenco. Ogni riga si apre con
+      **ultime dieci partite** della vista scelta, da qualunque parte vengano:
+      quelle giocate in gara e quelle amichevoli, nello stesso elenco. Ogni riga si apre con
       l'esito — una coppa se hai vinto, una croce se hai perso — poi
       l'avversario e il punteggio.
 
@@ -111,11 +158,13 @@ blocks:
     text: >-
       Sotto al nome, un'etichetta dice **da dove viene** quella partita:
       «Campionato», «Gara» oppure «Individuale» per le amichevoli. Accanto ci
-      sono la competizione e la data. La freccia a destra apre la partita.
+      sono la competizione e la data. Nella vista **Tutte** le sfide che
+      aspettano ancora una firma hanno davanti l'etichetta «In attesa». La
+      freccia a destra apre la partita.
 
   - type: text
     text: >-
-      Con **Tutte**, in alto a destra, si passa allo storico completo: lì le
+      Con **Storico**, in alto a destra, si passa allo storico completo: lì le
       partite non si fermano alle ultime dieci e si possono filtrare.
 
   - type: heading
@@ -200,11 +249,13 @@ blocks:
   - type: faq
     items:
       - q: "Perché il mio rating è sceso anche se ho vinto?"
-        a: "Non succede: vincere non fa mai scendere il rating. Se il numero sembra diverso, controlla di non aver cambiato modalità fra competitivo e globale."
+        a: "Non succede: vincere non fa mai scendere il rating. Se il numero sembra diverso, controlla quale vista è scelta in cima al profilo: Tornei, Confermate e Tutte hanno tre rating diversi."
       - q: "Posso cambiare nome utente?"
         a: "No: compare in classifiche già pubblicate, e cambiarlo renderebbe irriconoscibili i risultati passati."
       - q: "Le partite amichevoli compaiono nel profilo?"
-        a: "Sì: nell'elenco delle partite recenti, con l'etichetta «Individuale», e nei conteggi delle partite giocate, vinte e perse. A tenerle fuori è solo il rating competitivo: per contarle serve quello globale."
+        a: "Sì, nelle viste Confermate e Tutte: nell'elenco delle partite recenti, con l'etichetta «Individuale», e nei conteggi delle partite giocate, vinte e perse. La vista Tornei le lascia fuori, rating compreso."
+      - q: "Perché una mia sfida compare solo in «Tutte»?"
+        a: "Perché l'ha firmata uno solo dei due giocatori. Quando firma anche l'altro passa fra le confermate; se la rifiuta, esce dalle statistiche finché non la correggete."
       - q: "Chi vede il mio indirizzo email?"
         a: "Nessun altro giocatore. È conservato cifrato e serve solo alle comunicazioni dell'app."
       - q: "Ho chiesto il link per la password più volte: quale uso?"

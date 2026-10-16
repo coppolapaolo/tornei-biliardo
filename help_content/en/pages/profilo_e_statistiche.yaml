@@ -3,7 +3,7 @@ section: account
 kind: approfondimento
 audience: [giocatore]
 minutes: 4
-summary: "What your profile holds, how to read the rating, and where to find the history of competitions you have played."
+summary: "What your profile holds, how to read the rating, what changes between Competitions, Confirmed and All, and where to find the history of competitions you have played."
 screens: [player.profile, player.history, player.edit_profile, player.dashboard,
   player.view_profile]
 related: [privacy_e_dati, progressi]
@@ -40,9 +40,10 @@ blocks:
         hint: profilo.rating
       - name: "Statistics"
         text: >-
-          Championships and competitions played, wins, losses, total matches
-          and win percentage. It counts **everything you have played**,
-          friendly matches included.
+          Championships and competitions played, wins, losses, draws, total
+          matches and win percentage. Which matches count is up to the
+          **Competitions · Confirmed · All** selector at the top of the profile.
+        hint: profilo.vista
       - name: "Runout"
         text: >-
           How many racks you closed **in a single visit**, that is without ever
@@ -60,6 +61,50 @@ blocks:
       scoresheet](/aiuto/giocare/referto_tpa) recognises by itself when you
       keep one. The big number is the total; break and runs are the share of
       those where you also had the break shot.
+
+  - type: heading
+    id: viste
+    title: "Competitions, Confirmed, All"
+
+  - type: text
+    text: >-
+      Not every result is vouched for in the same way. A competition match is
+      vouched for by the competition director; an individual match signed by
+      **both** players is vouched for by both; an individual match signed by
+      **only one** is still waiting for the other signature.
+
+  - type: text
+    text: >-
+      At the top of the profile a selector chooses which matches count. Tap
+      one of the three options and rating, wins, losses, draws, TPA, runouts
+      and recent matches all change **together**.
+
+  - type: options
+    items:
+      - name: "Competitions"
+        text: >-
+          Competition matches only. The rating is the competitive one, which
+          decides category and handicap. There is no TPA: the scoresheet is
+          only kept in individual matches. If you have only played individual
+          matches, it says so instead of showing you a row of zeros.
+      - name: "Confirmed"
+        text: >-
+          Competition matches and individual matches signed by both players,
+          including those closed by a concession. This is the starting view.
+      - name: "All"
+        text: >-
+          Individual matches signed by only one player as well. Among the
+          recent matches they carry the **Pending** label: the result is the
+          one signed by whoever scored the racks.
+
+  - type: note
+    tone: info
+    title: "Your choice is remembered"
+    text: >-
+      The app remembers the last view you chose, on this phone or computer:
+      when you reopen the profile, or another player's profile, you find it
+      again. In a private window, or if the browser does not keep site data,
+      the selector still works but starts from **Confirmed** every time.
 
   - type: heading
     id: rating
@@ -81,12 +126,13 @@ blocks:
 
   - type: note
     tone: info
-    title: "Two ratings, not one"
+    title: "Three ratings, one per view"
     text: >-
-      There is a **competitive** rating, which counts official competitions
-      only, and an **overall** one, which also includes friendly matches.
-      Wherever the rating appears you can switch between them with one tap:
-      your choice is remembered across all pages.
+      The rating changes with the selector. In **Competitions** it is the
+      **competitive** one, which counts official competitions only. In
+      **Confirmed** it also includes individual matches signed by both
+      players, in **All** those signed by only one as well. Individual
+      matches closed by a concession or ending in a draw move no rating.
 
   - type: text
     text: >-
@@ -103,7 +149,7 @@ blocks:
   - type: text
     text: >-
       Scrolling down the profile, past the statistics and the drills, you find
-      your **last ten matches**, wherever they come from: the ones played in a
+      your **last ten matches** in the chosen view, wherever they come from: the ones played in a
       competition and the friendly ones, in the same list. Every row opens with
       the outcome — a trophy if you won, a cross if you lost — then the
       opponent and the score.
@@ -112,12 +158,13 @@ blocks:
     text: >-
       Under the name, a label says **where that match comes from**:
       «Championship», «Competition» or «Individual» for friendly matches. Next
-      to it are the competition and the date. The arrow on the right opens the
-      match.
+      to it are the competition and the date. In the **All** view, individual
+      matches still waiting for a signature are marked «Pending». The arrow on
+      the right opens the match.
 
   - type: text
     text: >-
-      «All», at the top right, takes you to the full history: there the matches
+      «History», at the top right, takes you to the full history: there the matches
       do not stop at the last ten and you can filter them.
 
   - type: heading
@@ -200,11 +247,13 @@ blocks:
   - type: faq
     items:
       - q: "Why did my rating fall even though I won?"
-        a: "It does not: winning never lowers the rating. If the number looks different, check you have not switched between competitive and overall."
+        a: "It does not: winning never lowers the rating. If the number looks different, check which view is selected at the top of the profile: Competitions, Confirmed and All have three different ratings."
       - q: "Can I change my username?"
         a: "No: it appears in standings that are already published, and changing it would make past results unrecognisable."
       - q: "Do friendly matches show in my profile?"
-        a: "Yes: in the recent matches list, labelled «Individual», and in the counts of matches played, won and lost. The only thing that leaves them out is the competitive rating: to count them, switch to the overall one."
+        a: "Yes, in the Confirmed and All views: in the recent matches list, labelled «Individual», and in the counts of matches played, won and lost. The Competitions view leaves them out, rating included."
+      - q: "Why does one of my individual matches only appear in «All»?"
+        a: "Because only one of the two players has signed it. When the other signs too it moves among the confirmed ones; if they reject it, it leaves the statistics until you correct it."
       - q: "Who can see my email address?"
         a: "No other player. It is stored encrypted and is only used for the app's own messages."
       - q: "I asked for the password link more than once: which one works?"

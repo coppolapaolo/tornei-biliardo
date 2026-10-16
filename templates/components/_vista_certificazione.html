@@ -1,0 +1,33 @@
+{# templates/components/_vista_certificazione.html — 7c
+
+   Il selettore delle viste di certificazione (ADR-083, UC6): Tornei ·
+   Confermate · Tutte. Cambia **insieme** ELO, vittorie, sconfitte, pareggi,
+   TPA, runout e partite recenti.
+
+   Il server rende i numeri di tutte e tre le viste, ciascuno in un blocco
+   `data-vista="…"` (o `data-vista="confermate tutte"` per una riga che sta in
+   più viste); il selettore li alterna senza ricaricare. Lo fa
+   `static/js/vista_certificazione.js`, caricato nel head di `base.html`: mette
+   la vista scelta su `<html data-vista-attiva>` prima che il corpo esista, e
+   il CSS (`theme-7c.css`, «Viste di certificazione») nasconde i blocchi delle
+   altre. Così chi ha scelto *Tornei* non vede lampeggiare *Confermate* a ogni
+   pagina.
+
+   La scelta la ricorda il browser di chi guarda, ed è la stessa sul profilo
+   proprio e su quello altrui: è una preferenza di lettura, non un dato
+   dell'account. Senza preferenza — prima volta, ospite, browser che non
+   conserva niente — si parte da *Confermate*.
+
+   Il segmento è `.c7-seg`, lo stesso dello storico e del catalogo. Tre parole
+   corte: a 500px stanno su una riga senza scorrere.
+#}
+<section class="c7-stack c7-vista-cert" data-help="profilo-vista" aria-label="{{ _('Quali partite contano nei numeri') }}">
+  <div class="c7-seg" role="group" aria-label="{{ _('Quanto sono certificati i numeri') }}">
+    <button type="button" class="c7-seg__item" data-vista-scelta="tornei" aria-pressed="false">{{ _("Tornei") }}</button>
+    <button type="button" class="c7-seg__item" data-vista-scelta="confermate" aria-pressed="true">{{ _("Confermate") }}</button>
+    <button type="button" class="c7-seg__item" data-vista-scelta="tutte" aria-pressed="false">{{ _("Tutte") }}</button>
+  </div>
+  <p class="c7-rows__sub c7-vista-cert__nota" data-vista="tornei">{{ _("Solo le partite di torneo, garantite da un direttore di gara.") }}</p>
+  <p class="c7-rows__sub c7-vista-cert__nota" data-vista="confermate">{{ _("Tornei e sfide firmate da entrambi i giocatori.") }}</p>
+  <p class="c7-rows__sub c7-vista-cert__nota" data-vista="tutte">{{ _("Anche le sfide firmate da uno solo, in attesa dell'altro.") }}</p>
+</section>

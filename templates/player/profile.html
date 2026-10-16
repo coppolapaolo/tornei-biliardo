@@ -17,14 +17,24 @@
 {% endblock %}
 
 {% block content %}
+{# Il selettore sta in testa, sopra le due colonne: cambia numeri che vivono
+   in tre sezioni diverse, e messo dentro una di loro sembrerebbe riguardare
+   solo quella. Compare se c'è almeno una sezione che lo ascolta. #}
+{% set mostra_rating = can_view_ratings and (is_own_profile or is_admin or privacy.show_statistics) %}
+{% set mostra_statistiche = is_own_profile or is_admin or privacy.show_statistics %}
+{% set mostra_partite = is_own_profile or is_admin or privacy.show_recent_matches %}
+{% if mostra_rating or mostra_statistiche or mostra_partite %}
+{% include "components/_vista_certificazione.html" %}
+{% endif %}
+
 <div class="c7-cols">
     <div class="c7-stack">
         {# Ratings: solo se can_view_ratings e (privacy.show_statistics o profilo proprio/admin) #}
-        {% if can_view_ratings and (is_own_profile or is_admin or privacy.show_statistics) %}
+        {% if mostra_rating %}
         {% include "components/_player_ratings.html" %}
         {% endif %}
 
-        {% if is_own_profile or is_admin or privacy.show_statistics %}
+        {% if mostra_statistiche %}
         {% include "components/_player_statistics.html" %}
         {% endif %}
 
@@ -33,7 +43,7 @@
         {% include "components/_player_training.html" %}
         {% endif %}
 
-        {% if is_own_profile or is_admin or privacy.show_recent_matches %}
+        {% if mostra_partite %}
         {% include "components/_player_recent_matches.html" %}
         {% endif %}
 

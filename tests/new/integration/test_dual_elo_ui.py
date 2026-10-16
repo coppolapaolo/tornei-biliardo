@@ -1,13 +1,10 @@
 """Workstream B (UI) — supporto dati del dual ELO.
 
-- la macro `elo_display` emette entrambi i valori come data-attributes;
 - `User.elo_global_rating` legge il pool ELO_GLOBAL;
 - la classifica ELO globale è ordinata sul pool globale (display-only).
 """
 
 from datetime import timedelta
-
-from flask import render_template_string
 
 from models.individual_match.models import IndividualMatch
 from models.gamification.leaderboard_service import LeaderboardService
@@ -15,28 +12,6 @@ from models.gamification.models import LeaderboardType
 from models.rating.models import PlayerRating, RatingSystem
 from models.status_enum import MatchStatus
 from models.base import utc_now
-
-
-def test_macro_emits_both_values(app):
-    out = render_template_string(
-        "{% from 'components/_elo_display.html' import elo_display %}"
-        "{{ elo_display(1500, 1620) }}"
-    )
-    assert 'data-elo-competitive="1500"' in out
-    assert 'data-elo-global="1620"' in out
-    assert 'class="elo-value"' in out
-    # render iniziale mostra il competitivo
-    assert ">1500<" in out
-
-
-def test_macro_defaults_when_none(app):
-    out = render_template_string(
-        "{% from 'components/_elo_display.html' import elo_display %}"
-        "{{ elo_display(None, None) }}"
-    )
-    # default 1200 per il competitivo, globale ricade sul competitivo
-    assert 'data-elo-competitive="1200"' in out
-    assert 'data-elo-global="1200"' in out
 
 
 def test_user_elo_global_rating_property(app, db_session, isolated_players):

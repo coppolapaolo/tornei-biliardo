@@ -125,10 +125,11 @@
     {% endif %}
     </span>
     <span class="c7-board__name {{ 'c7-board__name--behind' if behind }}">{{ name }}{% if mine %} <span class="c7-board__you">{{ _('tu') }}</span>{% endif %}</span>
-    {# Il pool lo decide il tipo di partita, non chi guarda: niente classe
-       `elo-value`, che `window.EloToggle` riscriverebbe al primo clic altrove
-       nella pagina. Il nome per esteso sta nel `title`, dove non toglie spazio
-       alle cifre. #}
+    {# Il pool lo decide il tipo di partita, non chi guarda: niente
+       `data-vista`, che il selettore di certificazione del profilo
+       (`vista_certificazione.js`) nasconderebbe secondo la scelta di chi
+       guarda. Il nome per esteso sta nel `title`, dove non toglie spazio alle
+       cifre. #}
     {% if elo is not none %}
     <span class="c7-board__elo c7-num" title="{{ elo_label }}" aria-label="{{ elo_label }} {{ elo }}">{{ elo }}</span>
     {% endif %}

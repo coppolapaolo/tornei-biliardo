@@ -305,17 +305,20 @@ blocks:
 
   - type: text
     text: >-
-      Sì. Nel tuo [profilo](/aiuto/account/profilo_e_statistiche) le amichevoli
-      stanno fra le partite recenti insieme a quelle di gara, con l'etichetta
-      «Individuale», e sono contate fra le partite giocate, vinte e perse. Lo
+      Sì. Nel tuo [profilo](/aiuto/account/profilo_e_statistiche), nelle viste
+      «Confermate» e «Tutte», le amichevoli stanno fra le partite recenti
+      insieme a quelle di gara, con l'etichetta «Individuale», e sono contate
+      fra le partite giocate, vinte e perse. Lo
       stesso nello storico, nella linguetta «Partite».
 
   - type: text
     text: >-
-      A tenerle separate è il **rating**, che ha due modalità: **competitivo**
-      (solo gare ufficiali) e **globale** (gare più amichevoli). Puoi passare
-      dall'una all'altra con un tocco. Le classifiche delle gare, invece, non
-      sono toccate dalle amichevoli.
+      Il selettore in cima al profilo sceglie quali partite contano:
+      **Tornei** (solo gare ufficiali, con il rating competitivo),
+      **Confermate** (anche le sfide firmate da entrambi) e **Tutte** (anche
+      quelle firmate da uno solo, in attesa dell'altro). Rating, vittorie e
+      TPA cambiano insieme. Le classifiche delle gare, invece, non sono
+      toccate dalle amichevoli.
 
   - type: note
     tone: info

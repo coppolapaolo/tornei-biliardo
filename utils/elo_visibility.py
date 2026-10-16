@@ -16,10 +16,11 @@ Tre domande che sembrano una sola e non lo sono:
    globale: li' non si stampa 1200 di ripiego. Un numero finto accanto a una
    partita vera e' peggio di uno spazio vuoto.
 
-Il valore che esce di qui **non** va marcato con la classe ``elo-value``: quella
-la governa ``window.EloToggle`` (base.html), che alterna competitivo/globale su
-tutta la pagina. Qui il pool lo decide il tipo di partita, e un toggle lo
-contraddirebbe al primo clic.
+Il valore che esce di qui **non** va messo in un blocco ``data-vista``: quelli
+li governa il selettore di certificazione del profilo
+(``static/js/vista_certificazione.js``, ADR-083), che mostra la vista scelta da
+chi guarda. Qui il pool lo decide il tipo di partita, e il selettore lo
+contraddirebbe.
 """
 
 from __future__ import annotations
