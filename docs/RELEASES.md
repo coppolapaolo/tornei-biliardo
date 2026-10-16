@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.80.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.79.0...v1.80.0) (2026-10-16)
+
+
+### Funzioni nuove
+
+* un selettore nel profilo sceglie quanto certificati sono i numeri ([#700](https://github.com/coppolapaolo/tornei-biliardo/issues/700)) ([69227f4](https://github.com/coppolapaolo/tornei-biliardo/commit/69227f41785f14610f632fb4e9380cafe1ced612))
+
 ## [1.79.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.78.1...v1.79.0) (2026-10-16)
 
 
