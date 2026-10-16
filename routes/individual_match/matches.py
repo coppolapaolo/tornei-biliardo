@@ -16,7 +16,7 @@ from models import IndividualMatch
 from models.base import db
 from models.individual_match.services import IndividualMatchService
 from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
-from models.status_enum import Discipline
+from models.status_enum import Discipline, MatchStatus
 from models.user.permissions import RoleRequirement
 from utils.local_time import parse_local_datetime
 from utils.safe_redirect import safe_next_url
@@ -747,8 +747,12 @@ def rematch(match_id):
         flash(_("Accesso negato a questa sfida."), "danger")
         return redirect(url_for("individual_match.match_list"))
 
-    # Match must be completed
-    if match.status.value not in ["completed", "validated"]:
+    # Finita, oppure firmata da me e in attesa dell'avversario: per chi ha
+    # firmato la partita è chiusa (UC2 di docs/usecases/sfide-e-certificazione.md).
+    if not (
+        MatchStatus.is_finished(match.status.value)
+        or match.signed_and_waiting(current_user.id)
+    ):
         flash(_("Solo le sfide completate permettono di giocarne un'altra."), "warning")
         return redirect(url_for("individual_match.match_detail", match_id=match_id))
 

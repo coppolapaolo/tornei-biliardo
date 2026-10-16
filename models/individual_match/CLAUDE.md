@@ -153,10 +153,13 @@ senza accettazione.
   giocata → sala in cui risulta disponibile (`UserLocationAvailability`) →
   default di sistema
 - `find_open_match(user_id, opponent_id)` - la partita che i due stanno già
-  giocando (guardia sul doppio avvio)
+  giocando (guardia sul doppio avvio), **purché `user_id` non l'abbia già
+  firmata**: chi ha firmato ha chiuso la sua parte e può aprirne un'altra con
+  lo stesso avversario, anche se quello non firma mai (UC2 di
+  `docs/usecases/sfide-e-certificazione.md`)
 - `start(user_id, opponent_id, config=None)` - crea la partita **già
   `IN_PROGRESS`**; le chiavi assenti in `config` vengono dai default. Se una
-  partita fra i due è in corso, restituisce quella.
+  partita fra i due è in corso e `user_id` non l'ha firmata, restituisce quella.
 
 L'accettazione non è saltata: è la doppia conferma di fine partita
 (`CONFIRMED_BY_BOTH`), che è anche l'unica condizione che muove l'ELO globale.

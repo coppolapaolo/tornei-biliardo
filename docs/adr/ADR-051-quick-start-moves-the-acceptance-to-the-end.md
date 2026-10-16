@@ -109,3 +109,25 @@ danno possibile è una riga «in corso» da ignorare, non un punteggio falso.
 - Test: `tests/new/unit/test_quick_match_service.py` (fra cui
   `test_il_risultato_resta_da_confermare_in_due`, che presidia il patto di
   questo ADR) e `tests/new/integration/test_individual_match_quick_routes.py`.
+
+## Emendamento del 2026-10-16 — chi ha firmato non è più trattenuto
+
+La guardia sul doppio avvio restituiva la partita in corso fra i due **anche
+quando chi avviava l'aveva già firmata**. Con un avversario che non usa l'app
+la seconda firma può non arrivare mai: chi la aspettava non poteva più
+segnare una partita contro di lui, e l'avvio rapido lo riportava ogni volta a
+quella vecchia.
+
+`find_open_match(user_id, opponent_id)` considera ora solo la partita che
+`user_id` **non ha ancora firmato**. Così:
+
+- chi ha firmato apre una partita nuova, e la vecchia resta in attesa;
+- chi deve firmare viene riportato alla partita da chiudere, come prima;
+- finché nessuno ha firmato, il doppio tocco resta protetto.
+
+Il patto di questo ADR non cambia: nessuno conferma al posto dell'altro, e
+solo la doppia conferma muove l'ELO globale. Il dettaglio della sfida offre
+«Rigioca adesso» anche a chi ha firmato e aspetta
+(`IndividualMatch.signed_and_waiting`). Regola in SPECIFICHE.md, «Ciclo di
+vita dei Match»; casi d'uso in `docs/usecases/sfide-e-certificazione.md`
+(UC2, UC3).

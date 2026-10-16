@@ -147,6 +147,14 @@ class QuickMatchService:
         Serve contro il doppio tocco: due partite in corso fra le stesse due
         persone non esistono al biliardo, e la seconda resterebbe lì a sporcare
         lo storico di entrambi.
+
+        Conta solo una sfida che ``user_id`` **non ha ancora firmato**. Chi ha
+        firmato ha chiuso la sua parte: la sfida aspetta l'avversario, e se
+        quello non usa l'app la firma può non arrivare mai. Restituirgliela
+        voleva dire non poter più segnare una partita contro di lui (richiesta
+        del 2026-10-06, UC2 di ``docs/usecases/sfide-e-certificazione.md``).
+        L'avversario che deve firmare invece la ritrova, ed è giusto: è proprio
+        quella da chiudere.
         """
         return (
             IndividualMatch.query.filter(
@@ -155,10 +163,12 @@ class QuickMatchService:
                     db.and_(
                         IndividualMatch.player1_id == user_id,
                         IndividualMatch.player2_id == opponent_id,
+                        IndividualMatch.player1_confirmed.is_(False),
                     ),
                     db.and_(
                         IndividualMatch.player1_id == opponent_id,
                         IndividualMatch.player2_id == user_id,
+                        IndividualMatch.player2_confirmed.is_(False),
                     ),
                 ),
             )

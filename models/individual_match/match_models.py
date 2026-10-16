@@ -359,6 +359,21 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
             return self.player1_id
         return None
 
+    def signed_and_waiting(self, user_id: int) -> bool:
+        """Se ``user_id`` ha firmato e la partita aspetta solo l'avversario.
+
+        Per lui la partita è chiusa: può rigiocare con lo stesso avversario
+        anche se quello non firma mai (UC2 di
+        ``docs/usecases/sfide-e-certificazione.md``). Chi deve ancora firmare
+        non rientra: per lui la partita da chiudere è proprio questa.
+        """
+        waiting_for = self.awaiting_confirmation_from_id
+        return (
+            self.is_player(user_id)
+            and waiting_for is not None
+            and waiting_for != user_id
+        )
+
     @property
     def awaiting_confirmation_since(self) -> Optional[datetime]:
         """Da quando la partita aspetta quella firma: l'ora della prima."""

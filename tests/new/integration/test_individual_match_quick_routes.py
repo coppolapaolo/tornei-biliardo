@@ -201,3 +201,62 @@ class TestQuickMatchStart:
         notifiche = Notification.query.filter_by(user_id=opponent.id).all()
         assert len(notifiche) == 1
         assert player.username in notifiche[0].message
+
+
+def _firma_vinta(match_id, vincitore):
+    """La partita arriva alla distanza e il vincitore firma d'ufficio, come
+    fa il segnapunti (``IndividualRackService.add_rack_for_player``)."""
+    match = db.session.get(IndividualMatch, match_id)
+    assert match is not None
+    if match.player1_id == vincitore.id:
+        match.player1_score, match.player1_confirmed = match.distance, True
+    else:
+        match.player2_score, match.player2_confirmed = match.distance, True
+    db.session.commit()
+    return match
+
+
+def _avvia_e_firma(app, player, opponent):
+    avvio = _post(
+        _client_for(app, player), "/match/quick", json={"opponent_id": opponent.id}
+    )
+    match_id = avvio.get_json()["match_id"]
+    _firma_vinta(match_id, player)
+    return match_id
+
+
+@pytest.mark.integration
+class TestDopoLaFirma:
+    """UC2 di ``docs/usecases/sfide-e-certificazione.md``: chi ha firmato può
+    giocare ancora con lo stesso avversario, anche se quello non firma mai."""
+
+    def test_un_nuovo_avvio_apre_una_partita_nuova(self, app):
+        player, opponent = _player(), _player()
+        prima = _avvia_e_firma(app, player, opponent)
+
+        seconda = _post(
+            _client_for(app, player), "/match/quick", json={"opponent_id": opponent.id}
+        )
+
+        assert seconda.get_json()["match_id"] != prima
+        assert IndividualMatch.query.count() == 2
+
+    def test_chi_ha_firmato_vede_rigioca_adesso(self, app):
+        player, opponent = _player(), _player()
+        match_id = _avvia_e_firma(app, player, opponent)
+
+        suo = _get(_client_for(app, player), f"/match/matches/{match_id}")
+        dell_altro = _get(_client_for(app, opponent), f"/match/matches/{match_id}")
+
+        assert "Rigioca adesso" in suo.get_data(as_text=True)
+        # Chi deve firmare ha davanti la partita da chiudere, non una rivincita.
+        assert "Rigioca adesso" not in dell_altro.get_data(as_text=True)
+
+    def test_proporre_un_altra_data_si_puo_dopo_la_firma(self, app):
+        player, opponent = _player(), _player()
+        match_id = _avvia_e_firma(app, player, opponent)
+
+        resp = _get(_client_for(app, player), f"/match/matches/{match_id}/rematch")
+
+        assert resp.status_code == 302
+        assert "rematch=true" in resp.headers["Location"]
