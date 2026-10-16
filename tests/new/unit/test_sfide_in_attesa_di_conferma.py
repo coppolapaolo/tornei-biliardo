@@ -324,3 +324,68 @@ class TestBlocco:
         match = _sfida_firmata_da(vincitore, perdente, ore_fa=2)
 
         assert QuickMatchService.start(perdente.id, vincitore.id).id == match.id
+
+
+class TestChiHaFirmatoGiocaAncora:
+    """Chi ha firmato ha chiuso la sua parte, e può giocare ancora con lo
+    stesso avversario anche se quello non firma mai (richiesta del 2026-10-06,
+    `docs/usecases/sfide-e-certificazione.md`, UC2).
+
+    La doppia firma resta la difesa contro chi bara (ADR-051): la sfida vecchia
+    rimane in attesa, nessuno firma al posto dell'altro. Cambia solo che non fa
+    più da tappo: con chi non usa l'app, aspettarne la firma voleva dire non
+    poter più segnare una partita contro di lui.
+    """
+
+    def test_chi_ha_firmato_apre_una_sfida_nuova(self, coppia):
+        vincitore, perdente = coppia
+        vecchia = _sfida_firmata_da(vincitore, perdente, ore_fa=2)
+
+        nuova = QuickMatchService.start(vincitore.id, perdente.id)
+
+        assert nuova.id != vecchia.id
+        assert nuova.status == MatchStatus.IN_PROGRESS
+        vecchia = db.session.get(IndividualMatch, vecchia.id)
+        assert vecchia.status == MatchStatus.IN_PROGRESS
+        assert vecchia.awaiting_confirmation_from_id == perdente.id
+
+    def test_anche_da_secondo_giocatore(self, coppia):
+        """Chi ha firmato può essere stato il secondo giocatore della sfida
+        vecchia: conta la sua firma, non il posto."""
+        vincitore, perdente = coppia
+        vecchia = _sfida_firmata_da(
+            perdente,
+            vincitore,
+            ore_fa=2,
+            player1_score=1,
+            player2_score=3,
+            player1_confirmed=False,
+            player1_confirmed_at=None,
+            player2_confirmed=True,
+            player2_confirmed_at=utc_now(),
+        )
+
+        assert QuickMatchService.start(vincitore.id, perdente.id).id != vecchia.id
+
+    def test_le_sfide_in_attesa_si_accumulano(self, coppia):
+        """Due partite firmate e mai confermate: aspettano entrambe, e a chi
+        deve firmare si chiedono entrambe."""
+        vincitore, perdente = coppia
+        prima = _sfida_firmata_da(vincitore, perdente, ore_fa=3)
+        seconda = _sfida_firmata_da(vincitore, perdente, ore_fa=2)
+
+        terza = QuickMatchService.start(vincitore.id, perdente.id)
+
+        assert terza.id not in (prima.id, seconda.id)
+        in_attesa = {m.id for m in PendingConfirmationService.pending_for(perdente.id)}
+        assert in_attesa == {prima.id, seconda.id}
+
+    def test_la_partita_non_ancora_firmata_resta_una_sola(self, coppia):
+        """Il doppio tocco resta protetto: finché nessuno ha firmato, i due
+        stanno ancora giocando quella."""
+        a, b = coppia
+        in_corso = _sfida_firmata_da(
+            a, b, ore_fa=1, player1_confirmed=False, player1_confirmed_at=None
+        )
+
+        assert QuickMatchService.start(a.id, b.id).id == in_corso.id
