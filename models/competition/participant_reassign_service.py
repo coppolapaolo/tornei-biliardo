@@ -871,8 +871,7 @@ class GaraParticipantReassignService:
         """Azzera e rigioca l'ELO: è path-dependent, non si può correggere a mano."""
         from models.rating.calculation_service import RatingCalculationService
 
-        RatingCalculationService.recalculate_all_elo()
-        RatingCalculationService.recalculate_all_elo_global()
+        RatingCalculationService.recalculate_all_pools()
 
     @staticmethod
     def _rebuild_gamification(source_id: int, target_id: int) -> Dict[str, Any]:

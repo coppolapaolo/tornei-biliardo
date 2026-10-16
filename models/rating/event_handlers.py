@@ -63,8 +63,10 @@ class RatingEventHandlers:
         """Match individuale/casual VALIDATO → aggiorna SOLO il pool ELO_GLOBAL.
 
         Il casual non tocca l'ELO competitivo. Niente walkover/handicap qui: il
-        forfait non emette questo evento (solo VALIDATED). I pareggi (winner_id
-        None) non aggiornano il rating.
+        forfait non emette questo evento (solo VALIDATED). I pareggi non
+        aggiornano il rating: la regola è `sfida_conta_per_elo`, la stessa del
+        ricalcolo da zero (ADR-083). Il pool ELO_ALL non passa di qui: lo
+        segue `elo_tutte`, che guarda le firme.
         """
         from models.individual_match.models import IndividualMatch
 
@@ -75,8 +77,10 @@ class RatingEventHandlers:
             )
             return
 
-        if not im.winner_id:
-            logger.info(f"Skipping ELO_GLOBAL for casual {im.id} without winner (tie)")
+        from models.certificazione import sfida_conta_per_elo
+
+        if not sfida_conta_per_elo(im):
+            logger.info(f"Skipping ELO_GLOBAL for casual {im.id} (tie)")
             return
 
         try:

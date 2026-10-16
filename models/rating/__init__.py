@@ -52,3 +52,8 @@ def register_rating_handlers():
 
 # Auto-register when module is imported
 register_rating_handlers()
+
+# L'ELO della vista «Tutte» segue le firme delle sfide (ADR-083).
+from .elo_tutte import registra_ascoltatore  # noqa: E402
+
+registra_ascoltatore()

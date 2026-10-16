@@ -340,6 +340,28 @@ _Nota del 2026-10-16: l'ultima regola è nuova, decisa dall'utente. Fino a quest
 
 _Nota del 2026-09-14: regole nuove, decise dall'utente. Prima una partita mai confermata restava «in corso» a tempo indeterminato, in dashboard e fuori, come l'ADR-051 aveva messo in conto fra le conseguenze negative; e nulla impediva a chi non confermava di aprire altre sfide. Il giorno si conta dalla prima conferma perché è il momento in cui la partita smette di aspettare un gioco e comincia ad aspettare una firma: una partita ancora da finire non è in attesa di nessuno._
 
+### Livelli di certificazione
+
+Un risultato vale quanto chi lo garantisce. Ogni partita ha un **livello di certificazione**, o nessuno:
+
+| Partita | Livello | Conta per l'ELO |
+|---|---|---|
+| Partita di torneo conclusa | **Torneo** — l'ha garantita il direttore di gara | se ammessa (vedi «Rating» e ADR-049) |
+| Sfida confermata da entrambi i giocatori | **Confermata** | sì, se non è un pareggio |
+| Sfida chiusa con un forfait | **Confermata** — chi abbandona ammette la sconfitta | **no**, come il walkover nei tornei |
+| Sfida firmata da un solo giocatore, in attesa dell'altro | **In attesa** | sì, se non è un pareggio |
+| Sfida senza firme, programmata o annullata | nessuno | no |
+
+Le prestazioni di un giocatore — ELO, vittorie, sconfitte e pareggi, TPA, runout — si leggono in **tre viste cumulative**:
+
+1. **Tornei**: solo le partite di livello Torneo.
+2. **Confermate**: Tornei più le sfide confermate. È la vista predefinita.
+3. **Tutte**: Confermate più le sfide in attesa.
+
+Ogni vista ha il suo ELO. Il TPA esiste solo nelle sfide, quindi ha due valori (Confermate e Tutte); nella vista Tornei non c'è. Una sfida in attesa vale il risultato dichiarato da chi l'ha firmata: il punteggio che ha accettato.
+
+_Regola nuova del 2026-10-17, decisa dall'utente (ADR-083). Prima i numeri mescolavano i livelli senza dirlo, e TPA e runout contavano anche partite annullate o mai firmate. Casi d'uso in `docs/usecases/sfide-e-certificazione.md`._
+
 ## Rack
 
 Un **rack** è relativo ad una disciplina come, ad esempio, "palla 8", "palla 9", "palla 10", "pool continuo", "one pocket". Il valore di default della disciplina viene dal set, che a sua volta prende il valore di default del match, che lo prende da turno, che lo prende come valore di default da gara.

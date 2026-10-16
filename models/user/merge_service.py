@@ -306,7 +306,7 @@ class UserMergeService:
     def _recalculate_elo() -> None:
         from models.rating.calculation_service import RatingCalculationService
 
-        RatingCalculationService.recalculate_all_elo()
+        RatingCalculationService.recalculate_all_pools()
 
     @staticmethod
     def _recalculate_classifications(target_id: int) -> None:

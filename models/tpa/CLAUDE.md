@@ -86,6 +86,11 @@ TpaStatsService.profile_summary(user_id, user=user)
 
 # Tutti i numeri, referto per referto
 TpaStatsService.career_stats(user_id)
+
+# Per vista di certificazione (ADR-083): contano solo i referti di sfide
+# confermate, o anche in attesa con `Vista.TUTTE`. Predefinita: CONFERMATE.
+from models.certificazione import Vista
+TpaStatsService.profile_summary(user_id, user=user, vista=Vista.TUTTE)
 ```
 
 **Il TPA di carriera non e' la media dei TPA di partita.** Si sommano bilie ed

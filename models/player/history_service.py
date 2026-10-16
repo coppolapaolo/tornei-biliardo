@@ -12,6 +12,14 @@ from sqlalchemy import or_, and_, func, select
 from sqlalchemy.orm import joinedload, selectinload
 
 from models.base import db
+from models.certificazione import (
+    VISTA_PREDEFINITA,
+    Livello,
+    Vista,
+    esito_dichiarato,
+    livello_di_sfida,
+    sfide_della_vista,
+)
 from models.match.models import Match, TrioMatch
 from models.competition.models import Gara, Inscription
 from models.campionato.models import Campionato
@@ -79,6 +87,10 @@ class MatchStats:
     #: 'individuale': n}. È la torta, e si conta qui: un template che conta può
     #: contare diversamente dalla riga sopra.
     by_context: Dict[str, int] = field(default_factory=dict)
+    #: I pareggi, contati e non dedotti: un «esattamente N» con N pari può
+    #: finire in parità, e senza questo campo chi mostra V/P/X doveva
+    #: ricavarli per sottrazione.
+    tied_matches: int = 0
 
 
 @dataclass
@@ -114,6 +126,14 @@ class MatchEntry:
     #: riconosce più una volta uscita dall'ORM.
     gara_id: Optional[int] = None
     campionato_id: Optional[int] = None
+    #: Chi garantisce il risultato (ADR-083): un direttore, i due giocatori,
+    #: o solo chi ha firmato. Decide in quali viste la voce compare.
+    livello: Optional[Livello] = None
+
+    @property
+    def in_attesa(self) -> bool:
+        """Firmata da uno solo: la riga lo dice, invece di sembrare chiusa."""
+        return self.livello is Livello.IN_ATTESA
 
 
 class ListPagination:
@@ -436,8 +456,13 @@ class PlayerHistoryService:
         filters: HistoryFilters,
         page: int = 1,
         per_page: int = 20,
+        vista: Vista = VISTA_PREDEFINITA,
     ) -> Tuple["ListPagination", MatchStats]:
         """Lo storico delle partite, da qualunque parte siano nate.
+
+        ``vista`` dice quanto certificate devono essere (ADR-083): *Tornei*,
+        *Confermate* — tornei e sfide chiuse, ed è quella predefinita — o
+        *Tutte*, che aggiunge le sfide firmate da uno solo.
 
         **Perché non una query sola.** Le partite di torneo stanno su ``match``,
         le sfide individuali su ``individual_match``: due tabelle con colonne
@@ -457,6 +482,7 @@ class PlayerHistoryService:
         """
         voci = PlayerHistoryService._tournament_entries(user_id, filters)
         voci += PlayerHistoryService._individual_entries(user_id, filters)
+        voci = [v for v in voci if vista.comprende(v.livello)]
 
         if filters.context:
             voci = [v for v in voci if v.context == filters.context]
@@ -512,6 +538,7 @@ class PlayerHistoryService:
                     is_trio=bool(match.is_trio),
                     gara_id=gara.id if gara else None,
                     campionato_id=campionato.id if campionato else None,
+                    livello=Livello.TORNEO,
                 )
             )
         return voci
@@ -526,6 +553,12 @@ class PlayerHistoryService:
         ``_apply_match_filters``: quello parla di ``Match`` e di ``Gara``, che
         una sfida individuale non ha. Riusarlo avrebbe voluto dire piegare la
         query a colonne inesistenti.
+
+        Escono **tutte** le sfide che hanno un livello, anche quelle firmate da
+        uno solo: la vista la sceglie il chiamante. Il risultato di una sfida
+        in attesa è quello dichiarato da chi l'ha firmata (`esito_dichiarato`):
+        ``winner_id`` lo scrive la seconda firma, e leggendo quello ogni sfida
+        in attesa sembrerebbe un pareggio.
         """
         from models.individual_match.match_models import IndividualMatch
 
@@ -536,7 +569,7 @@ class PlayerHistoryService:
                 joinedload(IndividualMatch.player2),
             )
             .filter(
-                IndividualMatch.status.in_(MatchStatus.finished_values()),
+                sfide_della_vista(Vista.TUTTE),
                 or_(
                     IndividualMatch.player1_id == user_id,
                     IndividualMatch.player2_id == user_id,
@@ -561,13 +594,8 @@ class PlayerHistoryService:
                     ),
                 )
             )
-        if filters.result == "won":
-            query = query.filter(IndividualMatch.winner_id == user_id)
-        elif filters.result == "lost":
-            query = query.filter(
-                IndividualMatch.winner_id.isnot(None),
-                IndividualMatch.winner_id != user_id,
-            )
+        # Il filtro sull'esito si applica sotto, sull'esito dichiarato: in SQL
+        # leggerebbe `winner_id`, che una sfida in attesa non ha ancora.
         # Una sfida individuale non appartiene mai a una gara o a un campionato:
         # se il filtro ne chiede uno, qui non c'è niente da restituire.
         if filters.campionato_id or filters.gara_id:
@@ -582,6 +610,10 @@ class PlayerHistoryService:
             if filters.date_to and (giorno is None or giorno > filters.date_to):
                 continue
 
+            esito = PlayerHistoryService._outcome_of(esito_dichiarato(im), user_id)
+            if filters.result in ("won", "lost") and esito != filters.result:
+                continue
+
             sono_p1 = im.player1_id == user_id
             avversario = im.player2 if sono_p1 else im.player1
             voci.append(
@@ -593,11 +625,12 @@ class PlayerHistoryService:
                     opponents=[avversario.username] if avversario else [],
                     my_score=(im.player1_score if sono_p1 else im.player2_score),
                     opponent_score=(im.player2_score if sono_p1 else im.player1_score),
-                    outcome=PlayerHistoryService._outcome_of(im.winner_id, user_id),
+                    outcome=esito,
                     discipline=im.discipline,
                     venue=im.location,
                     competition=None,
                     is_trio=False,
+                    livello=livello_di_sfida(im),
                 )
             )
         return voci
@@ -661,6 +694,21 @@ class PlayerHistoryService:
         return PlayerHistoryService._stats_from_entries(voci)
 
     @staticmethod
+    def stats_per_vista(voci: List["MatchEntry"]) -> Dict[Vista, MatchStats]:
+        """Gli aggregati delle stesse voci in ognuna delle tre viste (ADR-083).
+
+        Le voci vanno prese nella vista *Tutte*, che le contiene tutte: le
+        altre si ottengono togliendo, mai rileggendo il database, così i tre
+        numeri vengono dallo stesso elenco e non possono contraddirsi.
+        """
+        return {
+            vista: PlayerHistoryService._stats_from_entries(
+                [v for v in voci if vista.comprende(v.livello)]
+            )
+            for vista in Vista
+        }
+
+    @staticmethod
     def filter_visible_entries(
         user_id: int,
         viewer_id: Optional[int],
@@ -708,6 +756,7 @@ class PlayerHistoryService:
         totale = len(voci)
         vinte = sum(1 for v in voci if v.outcome == "won")
         perse = sum(1 for v in voci if v.outcome == "lost")
+        pari = sum(1 for v in voci if v.outcome == "tie")
         vinti = sum(v.my_score or 0 for v in voci)
         persi = sum(v.opponent_score or 0 for v in voci)
 
@@ -723,6 +772,7 @@ class PlayerHistoryService:
             total_racks_won=vinti,
             total_racks_lost=persi,
             by_context=per_contesto,
+            tied_matches=pari,
         )
 
     # =========================================================================

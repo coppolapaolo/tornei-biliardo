@@ -3792,3 +3792,73 @@ class TestLeFinaliPerPiazzamento:
             bande, [(1, [1, 11]), (3, [2, 12])], pari_merito=pari
         )
         assert fasce == [(1, [1]), (2, [11]), (3, [2, 12])]
+
+
+class TestLivelliDiCertificazione:
+    """SPECIFICHE.md, «Livelli di certificazione» (ADR-083)."""
+
+    @staticmethod
+    def _sfida(status, p1=False, p2=False, s1=3, s2=1, winner_id=None):
+        from models.individual_match.match_models import IndividualMatch
+
+        return IndividualMatch(
+            player1_id=1,
+            player2_id=2,
+            status=status,
+            player1_confirmed=p1,
+            player2_confirmed=p2,
+            player1_score=s1,
+            player2_score=s2,
+            winner_id=winner_id,
+        )
+
+    def test_il_forfait_e_confermato_ma_non_conta_per_l_elo(self):
+        """«Sfida chiusa con un forfait | Confermata … | no, come il walkover
+        nei tornei»."""
+        from models.certificazione import Livello, livello_di_sfida, sfida_conta_per_elo
+
+        forfait = self._sfida(MatchStatus.CLOSED_UNILATERALLY, winner_id=2)
+
+        assert livello_di_sfida(forfait) is Livello.CONFERMATA
+        assert sfida_conta_per_elo(forfait) is False
+
+    def test_la_sfida_in_attesa_conta_per_l_elo(self):
+        """«Sfida firmata da un solo giocatore, in attesa dell'altro | In attesa
+        | sì, se non è un pareggio»."""
+        from models.certificazione import Livello, livello_di_sfida, sfida_conta_per_elo
+
+        in_attesa = self._sfida(MatchStatus.IN_PROGRESS, p1=True)
+
+        assert livello_di_sfida(in_attesa) is Livello.IN_ATTESA
+        assert sfida_conta_per_elo(in_attesa) is True
+
+    def test_il_pareggio_non_conta_per_l_elo(self):
+        """«sì, se non è un pareggio»."""
+        from models.certificazione import sfida_conta_per_elo
+
+        pari = self._sfida(MatchStatus.CONFIRMED_BY_BOTH, True, True, s1=2, s2=2)
+
+        assert sfida_conta_per_elo(pari) is False
+
+    def test_senza_firme_nessun_livello(self):
+        """«Sfida senza firme, programmata o annullata | nessuno»."""
+        from models.certificazione import livello_di_sfida
+
+        for status in (
+            MatchStatus.IN_PROGRESS,
+            MatchStatus.SCHEDULED,
+            MatchStatus.CANCELLED,
+        ):
+            assert livello_di_sfida(self._sfida(status)) is None
+
+    def test_tre_viste_cumulative_e_la_predefinita(self):
+        """«tre viste cumulative: Tornei; Confermate, … la vista predefinita;
+        Tutte»."""
+        from models.certificazione import VISTA_PREDEFINITA, Livello, Vista
+
+        assert [sorted(v.value for v in vista.livelli) for vista in Vista] == [
+            ["torneo"],
+            ["confermata", "torneo"],
+            sorted(livello.value for livello in Livello),
+        ]
+        assert VISTA_PREDEFINITA is Vista.CONFERMATE

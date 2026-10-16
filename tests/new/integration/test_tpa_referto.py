@@ -58,6 +58,19 @@ def _match(player1: User, player2: User, **overrides) -> IndividualMatch:
     return match
 
 
+def _confermata(match: IndividualMatch) -> IndividualMatch:
+    """La partita la chiudono i due giocatori: da qui il suo referto conta.
+
+    Un referto conta nelle statistiche solo se la sfida ha un livello di
+    certificazione (ADR-083): firmata da entrambi, o da uno solo nella vista
+    *Tutte*. Prima contava anche a partita in corso, senza firme.
+    """
+    match.status = MatchStatus.CONFIRMED_BY_BOTH
+    match.player1_confirmed = match.player2_confirmed = True
+    db.session.commit()
+    return match
+
+
 @pytest.fixture
 def players(app):
     with app.app_context():
@@ -846,7 +859,7 @@ class TestStatisticheDiCarriera:
         referto = TpaRefertoService.open_referto(match.id, one.id)
         for comando in comandi:
             TpaRefertoService.press(referto.id, one.id, comando)
-        return match
+        return _confermata(match)
 
     def test_senza_referti_e_senza_sblocco_il_tpa_non_si_mostra(self, app, players):
         """La condizione che decide se il TPA compare o no."""
@@ -958,6 +971,7 @@ class TestStatisticheDiCarriera:
             referto = TpaRefertoService.open_referto(match.id, one.id)
             for comando in ["1", "3", "M", "end", "2", "S", "end"]:
                 TpaRefertoService.press(referto.id, one.id, comando)
+            _confermata(match)
 
             mine = TpaStatsService.career_stats(one.id)
             theirs = TpaStatsService.career_stats(two.id)
@@ -1003,6 +1017,65 @@ class TestStatisticheDiCarriera:
             # 9 bilie e nessun errore: TPA pieno, scritto `1.000` e non `.1000`.
             assert "1.000".encode() in response.data
             assert ".1000".encode() not in response.data
+
+
+class TestIlTpaSegueLaCertificazione:
+    """UC8 di ``docs/usecases/sfide-e-certificazione.md`` (ADR-083)."""
+
+    @staticmethod
+    def _referto(one: User, two: User, **match_kw) -> IndividualMatch:
+        match = _match(one, two, **match_kw)
+        referto = TpaRefertoService.open_referto(match.id, one.id)
+        for comando in ["1", "9", "end"]:
+            TpaRefertoService.press(referto.id, one.id, comando)
+        return db.session.get(IndividualMatch, match.id)
+
+    def test_senza_firme_non_conta_in_nessuna_vista(self, app, players):
+        from models.certificazione import Vista
+        from models.tpa.stats_service import TpaStatsService
+
+        with app.app_context():
+            one, two = players
+            self._referto(one, two)
+
+            for vista in Vista:
+                assert TpaStatsService.career_stats(one.id, vista) is None
+
+    def test_annullata_non_conta(self, app, players):
+        from models.certificazione import Vista
+        from models.tpa.stats_service import TpaStatsService
+
+        with app.app_context():
+            one, two = players
+            match = self._referto(one, two)
+            match.status = MatchStatus.CANCELLED
+            db.session.commit()
+
+            assert TpaStatsService.career_stats(one.id, Vista.TUTTE) is None
+
+    def test_firmata_da_uno_solo_conta_solo_in_tutte(self, app, players):
+        from models.certificazione import Vista
+        from models.tpa.stats_service import TpaStatsService
+
+        with app.app_context():
+            one, two = players
+            match = self._referto(one, two)
+            match.player1_confirmed = True
+            db.session.commit()
+
+            assert TpaStatsService.career_stats(one.id, Vista.CONFERMATE) is None
+            assert TpaStatsService.career_stats(one.id, Vista.TUTTE)["tpa"] == 1000
+
+    def test_confermata_conta_anche_nelle_confermate(self, app, players):
+        from models.certificazione import Vista
+        from models.tpa.stats_service import TpaStatsService
+
+        with app.app_context():
+            one, two = players
+            _confermata(self._referto(one, two))
+
+            assert TpaStatsService.career_stats(one.id, Vista.TORNEI) is None
+            assert TpaStatsService.career_stats(one.id, Vista.CONFERMATE)["tpa"] == 1000
 
 
 class TestRefertoChiuso:
@@ -1073,6 +1146,7 @@ class TestRefertoChiuso:
             assert mine["closed_in_one_turn"] == 2
 
             # Stessa regola nel riepilogo di carriera.
+            _confermata(match)
             career = TpaStatsService.career_stats(one.id)
             assert career["closed_in_one_turn"] == 2
 

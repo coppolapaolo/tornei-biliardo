@@ -48,9 +48,10 @@ class RatingCalculationService:
         """
         Process the result of a completed (tournament) match and update ratings.
 
-        Dual pool: di default aggiorna SIA ELO (competitivo) SIA ELO_GLOBAL
-        (tornei + casual). I match di torneo contano in entrambi i pool; il
-        pool globale è solo-display e NON tocca categoria/handicap/User.elo_rating.
+        Di default aggiorna i tre pool: ELO (competitivo), ELO_GLOBAL (tornei +
+        sfide confermate) ed ELO_ALL (anche le sfide in attesa, ADR-083). Una
+        partita di torneo è in tutte e tre le viste; i due pool larghi sono
+        solo-display e NON toccano categoria/handicap/User.elo_rating.
 
         Idempotente PER POOL: se esiste già history per (match, sistema) quel
         pool è un no-op. Protegge da MatchCompletedEvent ri-emessi
@@ -66,7 +67,7 @@ class RatingCalculationService:
         rete di sicurezza.
         """
         if systems is None:
-            systems = [RatingSystem.ELO, RatingSystem.ELO_GLOBAL]
+            systems = [RatingSystem.ELO, RatingSystem.ELO_GLOBAL, RatingSystem.ELO_ALL]
 
         for system in systems:
             if MatchRatingHistory.exists_for_match(match.id, system):
@@ -84,14 +85,17 @@ class RatingCalculationService:
                 RatingCalculationService._process_standard_match(match, system)
 
     @staticmethod
-    def process_individual_match_result(individual_match) -> None:
-        """Aggiorna SOLO il pool ELO_GLOBAL per un match individuale VALIDATO.
+    def process_individual_match_result(
+        individual_match, system: RatingSystem = RatingSystem.ELO_GLOBAL
+    ) -> None:
+        """Aggiorna un pool largo (ELO_GLOBAL o ELO_ALL) con una sfida individuale.
 
-        I casual non toccano l'ELO competitivo (riservato ai tornei arbitrati).
-        Idempotente per (individual_match, ELO_GLOBAL): protegge da eventi
-        ri-emessi (es. reject→re-conferma) e dal recalc globale.
+        Le sfide non toccano mai l'ELO competitivo (riservato ai tornei
+        arbitrati). Quali sfide entrano in quale pool lo decide
+        `models.certificazione`: qui si applica e basta.
+        Idempotente per (sfida, pool): protegge da eventi ri-emessi (es.
+        reject→re-conferma) e dai ricalcoli.
         """
-        system = RatingSystem.ELO_GLOBAL
         if MatchRatingHistory.exists_for_individual_match(individual_match.id, system):
             logger.info(
                 f"Casual {individual_match.id} già processato per "
@@ -166,33 +170,76 @@ class RatingCalculationService:
         return {"processed": processed, "skipped": skipped, "total": len(matches)}
 
     @staticmethod
-    def recalculate_all_elo_global() -> dict:
-        """Reset e replay del pool ELO_GLOBAL (tornei + casual VALIDATED).
+    def recalculate_all_pools() -> Dict[str, dict]:
+        """I tre pool da zero: competitivo, globale e quello della vista «Tutte».
 
-        ELO è path-dependent: i match di torneo e i casual vanno fusi in UN
-        unico ordine cronologico (``ended_at``, poi ``id``). Resetta SOLO il
-        pool ELO_GLOBAL: NON tocca ``User.elo_rating`` né il pool competitivo.
+        È la chiamata per chi ha cambiato i fatti sotto l'ELO — un'unione di
+        account, una partecipazione riassegnata, categorie corrette — e non
+        deve sapere quanti pool esistono. Ricalcolarne uno solo lascia gli
+        altri fermi a prima: l'unione di account l'ha fatto fino all'ADR-083,
+        rigiocando il solo competitivo.
+
+        Pure/in-transaction: il caller gestisce la transazione.
+        """
+        return {
+            "elo": RatingCalculationService.recalculate_all_elo(),
+            "elo_global": RatingCalculationService.recalculate_all_elo_global(),
+            "elo_all": RatingCalculationService.recalculate_all_elo_all(),
+        }
+
+    @staticmethod
+    def recalculate_all_elo_global() -> dict:
+        """Reset e replay del pool ELO_GLOBAL (tornei + sfide confermate).
 
         Pure/in-transaction come ``recalculate_all_elo``: il caller gestisce la
-        transazione.
+        transazione. NON tocca ``User.elo_rating`` né il pool competitivo.
+        """
+        from models.certificazione import Vista
+
+        return RatingCalculationService._ricalcola_pool_largo(
+            RatingSystem.ELO_GLOBAL, Vista.CONFERMATE
+        )
+
+    @staticmethod
+    def recalculate_all_elo_all() -> dict:
+        """Reset e replay del pool ELO_ALL: anche le sfide in attesa (ADR-083).
+
+        È il calcolo autorevole del pool, e la strada per toglierne una sfida:
+        l'ELO dipende dall'ordine, quindi una partita che esce dal conto — un
+        risultato rifiutato, un forfait — non si sottrae, si rigioca tutto
+        senza di lei (`models/rating/elo_tutte.py`).
+        """
+        from models.certificazione import Vista
+
+        return RatingCalculationService._ricalcola_pool_largo(
+            RatingSystem.ELO_ALL, Vista.TUTTE
+        )
+
+    @staticmethod
+    def _ricalcola_pool_largo(system: RatingSystem, vista) -> dict:
+        """Reset e replay di un pool che mescola tornei e sfide individuali.
+
+        ELO è path-dependent: le partite di torneo e le sfide vanno fuse in UN
+        unico ordine cronologico. Le sfide sono quelle che la ``vista``
+        comprende e che muovono l'ELO (`sfida_conta_per_elo`: niente forfait,
+        niente pareggi). Una sfida in attesa non ha ancora ``ended_at``: la
+        sua data è la prima firma, il momento in cui il risultato è stato
+        dichiarato.
 
         Returns:
             dict: counters ``{processed, skipped, total}``.
         """
+        from models.certificazione import sfida_conta_per_elo, sfide_della_vista
         from models.status_enum import MatchStatus
         from models.individual_match.models import IndividualMatch
 
-        # 1. Drop SOLO il pool globale (PlayerRating + history).
-        db.session.query(PlayerRating).filter_by(
-            rating_system=RatingSystem.ELO_GLOBAL
-        ).delete()
-        db.session.query(MatchRatingHistory).filter_by(
-            rating_system=RatingSystem.ELO_GLOBAL
-        ).delete()
+        # 1. Drop SOLO questo pool (PlayerRating + history).
+        db.session.query(PlayerRating).filter_by(rating_system=system).delete()
+        db.session.query(MatchRatingHistory).filter_by(rating_system=system).delete()
         db.session.flush()
 
-        # 2. Carica torneo (finished) + casual (VALIDATED), entrambi con un
-        #    marcatore di sorgente, e fondili per ordine cronologico.
+        # 2. Torneo (finished) + sfide della vista, con un marcatore di
+        #    sorgente, fusi per ordine cronologico.
         tournament = [
             ("match", m)
             for m in Match.query.filter(
@@ -201,16 +248,29 @@ class RatingCalculationService:
         ]
         casual = [
             ("individual", im)
-            for im in IndividualMatch.query.filter(
-                IndividualMatch.status == MatchStatus.CONFIRMED_BY_BOTH
-            ).all()
+            for im in IndividualMatch.query.filter(sfide_della_vista(vista)).all()
+            if sfida_conta_per_elo(im)
         ]
+
+        def _quando(obj):
+            if obj.ended_at is not None:
+                return obj.ended_at
+            firme = [
+                t
+                for t in (
+                    getattr(obj, "player1_confirmed_at", None),
+                    getattr(obj, "player2_confirmed_at", None),
+                )
+                if t is not None
+            ]
+            return min(firme) if firme else None
 
         def _sort_key(item):
             _kind, obj = item
-            # ended_at può essere None su dati vecchi: spingili in coda con un
-            # sentinel alto ma deterministico, poi ordina per id.
-            return (obj.ended_at is None, obj.ended_at, obj.id)
+            # Una data può mancare su dati vecchi: in coda, con un ordine
+            # deterministico per id.
+            quando = _quando(obj)
+            return (quando is None, quando, obj.id)
 
         merged = sorted(tournament + casual, key=_sort_key)
 
@@ -223,11 +283,9 @@ class RatingCalculationService:
                 if not RatingEligibility.counts_for_rating(obj, categorie):
                     skipped += 1
                     continue
-                RatingCalculationService.process_match_result(
-                    obj, systems=[RatingSystem.ELO_GLOBAL]
-                )
-            else:  # individual (casual) — forfait già esclusi (solo VALIDATED)
-                RatingCalculationService.process_individual_match_result(obj)
+                RatingCalculationService.process_match_result(obj, systems=[system])
+            else:
+                RatingCalculationService.process_individual_match_result(obj, system)
             processed += 1
 
         return {"processed": processed, "skipped": skipped, "total": len(merged)}
