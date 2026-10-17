@@ -114,8 +114,107 @@ class PendingConfirmationService:
         return (now or utc_now()) - since > DASHBOARD_GRACE
 
 
+def pagina_della_sfida(match: IndividualMatch) -> str:
+    """Il link della sfida nelle notifiche, scritto per esteso.
+
+    Niente ``url_for``: la notifica può nascere fuori da una richiesta.
+    """
+    return f"/match/matches/{match.id}"
+
+
+def _nome(match: IndividualMatch, user_id: int) -> str:
+    giocatore = match.player1 if user_id == match.player1_id else match.player2
+    return giocatore.username if giocatore is not None else ""
+
+
+def avvisa_chi_deve_firmare(match: IndividualMatch) -> None:
+    """Alla prima firma, una notifica a chi deve ancora firmare (2026-10-17).
+
+    Fino a questa data arrivava solo l'evento in tempo reale: chi non aveva la
+    pagina aperta non sapeva di avere una sfida da confermare. La firma nasce
+    in tre posti — la conferma, la firma d'ufficio alla distanza, il referto
+    TPA — e ognuno chiama questa funzione dopo ``confirm_result``.
+
+    Un avviso ancora da leggere basta: un rifiuto seguito da una nuova firma,
+    o un triangolo tolto e rimesso, non ne accumulano altri.
+    """
+    from flask_babel import lazy_gettext as _l
+
+    from models.notification.models import (
+        Notification,
+        NotificationPriority,
+        NotificationStatus,
+        NotificationType,
+    )
+    from models.notification.services import NotificationService
+
+    destinatario_id = match.awaiting_confirmation_from_id
+    if destinatario_id is None:
+        return
+
+    link = pagina_della_sfida(match)
+    gia_avvisato = Notification.query.filter(
+        Notification.user_id == destinatario_id,
+        Notification.notification_type == NotificationType.MATCH_RESULT_TO_CONFIRM,
+        Notification.action_url == link,
+        Notification.status.in_(  # type: ignore[attr-defined]
+            [NotificationStatus.PENDING, NotificationStatus.SENT]
+        ),
+    ).first()
+    if gia_avvisato is not None:
+        return
+
+    firmatario_id = (
+        match.player1_id if destinatario_id == match.player2_id else match.player2_id
+    )
+    NotificationService.create_notification(
+        user_id=destinatario_id,
+        notification_type=NotificationType.MATCH_RESULT_TO_CONFIRM,
+        title=_l("Una sfida aspetta la tua firma"),
+        message=_l(
+            "%(nome)s ha firmato il risultato della vostra sfida "
+            "(%(p1)s-%(p2)s): confermalo o rifiutalo.",
+            nome=_nome(match, firmatario_id),
+            p1=match.player1_score,
+            p2=match.player2_score,
+        ),
+        priority=NotificationPriority.NORMAL,
+        related_entities={"individual_match_id": match.id},
+        action_url=link,
+        action_text=_l("Apri la sfida"),
+    )
+
+
+def avvisa_del_ritiro(
+    match: IndividualMatch, ritirata_da: int, avversario_id: int
+) -> None:
+    """La sfida che aspettava la firma di ``avversario_id`` è stata ritirata."""
+    from flask_babel import lazy_gettext as _l
+
+    from models.notification.models import NotificationPriority, NotificationType
+    from models.notification.services import NotificationService
+
+    NotificationService.create_notification(
+        user_id=avversario_id,
+        notification_type=NotificationType.MATCH_CANCELLED,
+        title=_l("Sfida ritirata"),
+        message=_l(
+            "%(nome)s ha ritirato la sfida che aspettava la tua firma: "
+            "non conta più per nessuno dei due.",
+            nome=_nome(match, ritirata_da),
+        ),
+        priority=NotificationPriority.NORMAL,
+        related_entities={"individual_match_id": match.id},
+        action_url=pagina_della_sfida(match),
+        action_text=_l("Apri la sfida"),
+    )
+
+
 __all__ = [
     "DASHBOARD_GRACE",
     "PendingConfirmationError",
     "PendingConfirmationService",
+    "avvisa_chi_deve_firmare",
+    "avvisa_del_ritiro",
+    "pagina_della_sfida",
 ]

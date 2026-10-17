@@ -143,6 +143,7 @@ Single rack result within a match.
 - `start_match(match_id, user_id)` - Start playing
 - `confirm_match_result(match_id, user_id)` - Confirm result
 - `reject_match_result(match_id, user_id)` - Reject and undo last rack
+- `withdraw_match(match_id, user_id)` - Ritira una sfida firmata solo da `user_id` (2026-10-17): `CANCELLED`, avviso all'avversario; l'avversario non può, dopo la doppia firma nessuno
 - `send_match_reminders(hours_before, window_minutes)` - Send reminder notifications
 
 ### QuickMatchService (ADR-051)
@@ -186,6 +187,8 @@ Vedi `docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md`.
 | Direct invitation | MATCH_PROPOSAL | Invited player |
 | Proposal accepted | MATCH_ACCEPTED | Proposer |
 | Avvio rapido: partita aperta con te | MATCH_ACCEPTED | Avversario |
+| Prima firma del risultato | MATCH_RESULT_TO_CONFIRM | Chi deve ancora firmare (una sola finché non la legge) |
+| Sfida ritirata da chi l'aveva firmata | MATCH_CANCELLED | Avversario |
 
 ---
 

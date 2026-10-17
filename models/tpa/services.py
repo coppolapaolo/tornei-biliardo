@@ -485,6 +485,12 @@ class TpaRefertoService:
             else:
                 match.confirm_result(referto.compiler_id)
 
+            from models.individual_match.pending_confirmation import (
+                avvisa_chi_deve_firmare,
+            )
+
+            avvisa_chi_deve_firmare(match)
+
     @staticmethod
     def _score_of(match: IndividualMatch, seat: int) -> int:
         return (match.player1_score if seat == 1 else match.player2_score) or 0

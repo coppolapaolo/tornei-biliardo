@@ -27,7 +27,7 @@ blocks:
       - name: "Your opponent for the round"
         text: "As soon as the director starts a round, you get the name of who you will face and the table assigned."
       - name: "Results to confirm"
-        text: "When a match needs your confirmation before becoming final."
+        text: "When a match needs your confirmation before becoming final. For one-on-one matches it arrives when your opponent signs first, and you are also notified if they withdraw it."
       - name: "Match proposals"
         text: "When someone proposes a friendly, and when they answer one of yours."
       - name: "Changes in registrations"

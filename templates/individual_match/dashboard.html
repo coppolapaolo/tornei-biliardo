@@ -44,7 +44,7 @@
 
 {% set received = proposals.received_proposals if proposals else [] %}
 {% set sent = (proposals.sent_proposals if proposals else []) + (proposals.open_proposals if proposals else []) %}
-{% set has_nothing = not received and not sent and not active_matches and not recent_matches %}
+{% set has_nothing = not received and not sent and not active_matches and not awaiting_matches and not recent_matches %}
 
 <div class="c7-stack c7-sections">
 
@@ -129,6 +129,41 @@
       <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
          class="btn btn-primary w-100" style="margin-top:14px">
         {{ _("Continua") if is_playing else _("Apri la partita") }}
+      </a>
+    </article>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {# ---------- In attesa di conferma ----------
+     Partite finite a cui manca una firma (2026-10-17). Non sono «da
+     giocare»: «Continua» riportava al segnapunti di una partita chiusa. Chi
+     deve firmare la apre per confermare o rifiutare, chi ha firmato per
+     rigiocare o ritirarla. #}
+  {% if awaiting_matches %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _('In attesa di conferma') }}</h2>
+      <span class="c7-sechead__note c7-num">{{ awaiting_matches|length }}</span>
+    </div>
+    {% for match in awaiting_matches %}
+    {% set other = match.player2 if match.player1_id == current_user.id else match.player1 %}
+    {% set tocca_a_me = match.awaiting_confirmation_from_id == current_user.id %}
+    <article class="c7-card">
+      <div class="d-flex align-items-center gap-2">
+        <span class="c7-state c7-state--warn">{{ _('In attesa di conferma') }}</span>
+        <span class="c7-kicker" style="margin-left:auto">{{ match.discipline|discipline_display }}</span>
+      </div>
+      {{ opponent(other,
+           _('Manca la tua firma') if tocca_a_me else _("Manca la firma dell'avversario")) }}
+      <div class="d-flex align-items-center gap-2" style="margin-top:12px">
+        <span class="c7-num-lg">{{ match.player1_score }}</span>
+        <span class="c7-sep">–</span>
+        <span class="c7-num-lg">{{ match.player2_score }}</span>
+      </div>
+      <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+         class="btn {{ 'btn-primary' if tocca_a_me else 'btn-secondary' }} w-100" style="margin-top:14px">
+        {{ _("Apri la sfida") }}
       </a>
     </article>
     {% endfor %}

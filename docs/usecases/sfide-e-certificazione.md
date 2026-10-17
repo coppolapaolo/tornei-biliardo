@@ -26,6 +26,9 @@ UC4, UC5, UC7, UC8 e UC9 sono realizzati lato dominio con l'ADR-083
 (PR #698). UC6, il selettore nel profilo, è realizzato con la PR del
 selettore di certificazione (`test_profilo_selettore_certificazione.py` e
 `tests/frontend/test_vista_certificazione.cjs`).
+UC10, il ritiro di una sfida rimasta senza seconda firma, è realizzato con la
+PR del ritiro (`test_ritiro_sfida_senza_seconda_firma.py`, unitario e di
+integrazione).
 
 ## Use case 1 — Avvio rapido dal telefono
 
@@ -146,3 +149,30 @@ selettore di certificazione (`test_profilo_selettore_certificazione.py` e
 - Lo rilancia con `--commit` e rimette la web app su **Enabled**.
 - Nel profilo di Paolo la vista *Tutte* mostra un ELO. Senza sfide in attesa
   coincide con quello di *Confermate*.
+
+## Use case 10 — Paolo ritira una sfida che Pietro non firmerà mai
+
+_Regola del 2026-10-17, decisa dall'utente (`SPECIFICHE.md`, nota datata)._
+
+- Delle due sfide di UC2 Pietro non ne ha firmata nessuna, e non lo farà. Paolo
+  ne vuole togliere una e tenere l'altra così, *in attesa*.
+- Alla prima firma di Paolo, Pietro aveva ricevuto una **notifica**: «Una
+  sfida aspetta la tua firma», con il pulsante «Apri la sfida». Prima arrivava
+  solo l'aggiornamento in tempo reale, che vede solo chi ha la pagina aperta.
+- Nella pagina delle sfide Paolo le trova nella sezione **«In attesa di
+  conferma»**, ciascuna con il punteggio, «Manca la firma dell'avversario» e il
+  pulsante «Apri la sfida». Non ci sono più fra quelle «Da giocare» con
+  «Continua», che lo riportava al segnapunti di una partita già finita.
+- Apre la prima e tocca **«Ritira la sfida»**. Un foglio gli chiede conferma
+  con il pulsante «Ritira»: tocca Pietro e non si disfa.
+- La sfida è annullata. Esce dalla vista *Tutte* del profilo di Paolo e di
+  Pietro, e l'ELO di *Tutte* torna quello che sarebbe stato senza di lei.
+- Pietro riceve la notifica «Sfida ritirata».
+- La seconda sfida resta *in attesa*, e conta nella vista *Tutte* come prima.
+- _(variante: Pietro apre la sfida che aspetta la sua firma → non vede «Ritira
+  la sfida»: per lui ci sono conferma e rifiuto)_
+- _(variante: Pietro firma prima che Paolo la ritiri → la sfida è
+  confermata da entrambi e non si ritira più)_
+- _(variante: una sfida senza firme, con dei triangoli segnati → non si
+  ritira: i due la stanno ancora giocando)_
+

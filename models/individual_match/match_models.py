@@ -630,6 +630,46 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if reason:
             self.notes = f"Cancelled: {reason}"
 
+    def withdraw_by_signer(self, user_id: int) -> None:
+        """Ritira la sfida che ``user_id`` ha firmato e l'avversario no.
+
+        Regola del 2026-10-17, decisa dall'utente (``SPECIFICHE.md``, nota
+        datata; UC10 di ``docs/usecases/sfide-e-certificazione.md``). Con chi
+        non usa l'app la seconda firma può non arrivare mai, e la sfida resta
+        «in attesa» per sempre: chi l'ha firmata deve poterla togliere.
+
+        Non passa da ``has_recorded_play()``, che decide l'annullamento di una
+        sfida mai giocata: questa è giocata per intero, e proprio per questo
+        serve una strada a parte. Le condizioni sono due, e bastano:
+
+        * **solo chi ha firmato** — l'avversario ha già «rifiuta»;
+        * **solo finché manca l'altra firma** — dopo la doppia conferma la
+          sfida è dei due, e nessuno dei due la toglie da solo.
+
+        La sfida finisce ``CANCELLED``: nessun livello di certificazione,
+        nessuna vista, nessun ELO (il pool ``ELO_ALL`` si riallinea a fine
+        transazione, ``models/rating/elo_tutte.py``). Le firme restano scritte
+        com'erano: dicono chi aveva firmato prima del ritiro, e su una sfida
+        annullata non contano più per niente.
+        """
+        from ..exceptions import ConflictError, PermissionDeniedError
+
+        if not self.is_player(user_id):
+            raise PermissionDeniedError("La sfida la ritira solo chi l'ha giocata")
+
+        if self.signed_and_waiting(user_id):
+            self.status = MatchStatus.CANCELLED
+            return
+
+        if self.awaiting_confirmation_from_id == user_id:
+            raise PermissionDeniedError(
+                "La sfida aspetta la tua firma: puoi confermarla o rifiutarla, "
+                "ma la ritira solo chi l'ha firmata"
+            )
+        raise ConflictError(
+            "Si ritira solo una sfida firmata da te e non ancora dall'avversario"
+        )
+
     def forfeit_match(self, user_id: int) -> None:
         """Forfeit the match - user loses, opponent wins.
 

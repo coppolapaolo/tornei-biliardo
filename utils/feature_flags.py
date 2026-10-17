@@ -473,6 +473,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.pending_confirmations": {"player", "director"},
     "individual_match.complete_match": {"player", "director"},
     "individual_match.cancel_match": {"player", "director"},
+    # Ritiro di una sfida firmata da te e non dall'avversario (2026-10-17).
+    "individual_match.withdraw_match": {"player", "director"},
     "individual_match.edit_match": {"player", "director"},
     "individual_match.update_match_times": {"player", "director"},
     "individual_match.forfeit_match": {"player", "director"},

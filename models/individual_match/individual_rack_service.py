@@ -131,6 +131,10 @@ class IndividualRackService:
             else:
                 match.confirm_result(user_id)
 
+            from .pending_confirmation import avvisa_chi_deve_firmare
+
+            avvisa_chi_deve_firmare(match)
+
         return rack
 
     @staticmethod

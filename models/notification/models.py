@@ -28,6 +28,8 @@ class NotificationType(Enum):
     MATCH_DECLINED = "match_declined"  # Your match proposal was declined
     MATCH_CANCELLED = "match_cancelled"  # Match was cancelled
     MATCH_REMINDER = "match_reminder"  # Upcoming match reminder
+    #: L'avversario ha firmato il risultato di una sfida: manca la tua firma.
+    MATCH_RESULT_TO_CONFIRM = "match_result_to_confirm"
 
     TOURNAMENT_INVITATION = "campionato_invitation"  # Invited to campionato
     TOURNAMENT_REGISTRATION = (

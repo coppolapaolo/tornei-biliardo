@@ -296,10 +296,20 @@ class IndividualMatchStatisticsService:
         availability = IndividualMatchStatisticsService.get_user_availability(user_id)
         stats = IndividualMatchStatisticsService.get_user_statistics(user_id)
 
-        active_matches = [
+        open_matches = [
             m
             for m in all_matches
             if m.status in [MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS]
+        ]
+        # Una partita che aspetta solo una firma non è «da giocare»: proporre
+        # «Continua» su una sfida già finita mandava al segnapunti di una
+        # partita chiusa (2026-10-17). Va in una sezione sua, con lo stato
+        # «In attesa di conferma», come in dashboard e nell'elenco delle sfide.
+        awaiting_matches = [
+            m for m in open_matches if m.awaiting_confirmation_from_id is not None
+        ]
+        active_matches = [
+            m for m in open_matches if m.awaiting_confirmation_from_id is None
         ]
         completed_matches = [
             m
@@ -313,6 +323,7 @@ class IndividualMatchStatisticsService:
             "proposals": proposals,
             "matches": all_matches,
             "active_matches": active_matches,
+            "awaiting_matches": awaiting_matches,
             "recent_matches": recent_matches,
             "availability": availability,
             "statistics": stats,

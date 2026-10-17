@@ -71,7 +71,10 @@ class MatchLifecycleService:
         if not match.is_ready_for_validation():
             raise ValueError("Match is not ready for validation")
 
+        from .pending_confirmation import avvisa_chi_deve_firmare
+
         match.confirm_result(user_id)
+        avvisa_chi_deve_firmare(match)
         return match
 
     @staticmethod
@@ -127,6 +130,30 @@ class MatchLifecycleService:
             raise ValueError("Only match players can cancel the match")
 
         match.cancel_match(reason)
+        return match
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def withdraw_match(match_id: int, user_id: int) -> IndividualMatch:
+        """Ritira una sfida firmata da ``user_id`` e non dall'avversario.
+
+        La regola sta in ``IndividualMatch.withdraw_by_signer``. Qui si
+        aggiunge l'avviso all'avversario: la partita che aspettava la sua firma
+        sparisce, e senza dirglielo la cercherebbe. L'ELO di *Tutte* non si
+        tocca qui: lo riallinea l'ascoltatore di ``models/rating/elo_tutte.py``
+        al commit, come per il rifiuto.
+        """
+        from ..exceptions import NotFoundError
+        from .pending_confirmation import avvisa_del_ritiro
+
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            raise NotFoundError("Sfida non trovata")
+
+        avversario_id = match.awaiting_confirmation_from_id
+        match.withdraw_by_signer(user_id)
+        if avversario_id is not None:
+            avvisa_del_ritiro(match, ritirata_da=user_id, avversario_id=avversario_id)
         return match
 
     @staticmethod
