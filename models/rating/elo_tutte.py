@@ -9,7 +9,8 @@ Perché un ascoltatore della sessione e non una chiamata nei servizi
 -------------------------------------------------------------------
 Le firme si scrivono in tanti punti: la firma d'ufficio di chi arriva alla
 distanza (`IndividualRackService`), la conferma, il rifiuto, il triangolo
-tolto, il referto TPA che si chiude, il forfait. Ognuno è un posto dove
+tolto, il referto TPA che si chiude, il forfait, il rifiuto per giocatore
+della partita di altri due (ADR-084). Ognuno è un posto dove
 dimenticarsi del rating. Qui si guarda il **risultato**: a fine transazione,
 per ogni sfida toccata, si confronta «conta?» (`sfida_conta_per_elo`) con
 «è già nel pool?» (`MatchRatingHistory`). È lo stesso schema di
@@ -48,6 +49,9 @@ _COLONNE = (
     "player2_confirmed",
     "player1_score",
     "player2_score",
+    # Il rifiuto per giocatore della partita di altri due (ADR-084).
+    "player1_rejected_at",
+    "player2_rejected_at",
 )
 
 
@@ -81,9 +85,16 @@ def sincronizza(sfide_ids: Set[int]) -> None:
 
 def _dopo_il_flush(session: Session, _flush_context) -> None:
     from models.individual_match.match_models import IndividualMatch
+    from models.tpa.models import TpaReferto
 
     toccate = session.info.setdefault(_CHIAVE, set())
     for obj in list(session.new) + list(session.dirty):
+        # La partita di altri due entra nel pool quando chi la segna chiude il
+        # referto (ADR-084): il fatto sta sul referto, non sulla partita.
+        if isinstance(obj, TpaReferto) and obj.individual_match_id is not None:
+            if inspect(obj).attrs["closed_at"].history.has_changes():
+                toccate.add(obj.individual_match_id)
+            continue
         if not isinstance(obj, IndividualMatch) or obj.id is None:
             continue
         stato = inspect(obj)
@@ -95,9 +106,10 @@ def _dopo_il_flush(session: Session, _flush_context) -> None:
 
 def _prima_del_commit(session: Session) -> None:
     from models.individual_match.match_models import IndividualMatch
+    from models.tpa.models import TpaReferto
 
     in_sospeso = any(
-        isinstance(obj, IndividualMatch)
+        isinstance(obj, (IndividualMatch, TpaReferto))
         for obj in list(session.new) + list(session.dirty)
     )
     if not session.info.get(_CHIAVE) and not in_sospeso:

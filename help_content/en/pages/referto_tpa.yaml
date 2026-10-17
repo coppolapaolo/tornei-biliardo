@@ -4,7 +4,7 @@ kind: tutorial
 audience: [giocatore]
 minutes: 8
 summary: "In friendly matches you can record the whole match, not just who wins the racks, and get your TPA: the share of successful actions."
-screens: [individual_match.tpa_referto]
+screens: [individual_match.tpa_referto, individual_match.scored_match]
 related: [partite_amichevoli, profilo_e_statistiche]
 
 blocks:
@@ -347,6 +347,43 @@ blocks:
       Below is the scoresheet inning by inning, with the racks **folded**: each
       row says who won it and the score at that point. Tap a rack to open it,
       or «Expand all».
+
+  - type: heading
+    id: altri-due
+    title: "Scoring a match between two other players"
+
+  - type: text
+    text: >-
+      If you are an **instructor** or a **competition director** you can keep
+      the scoresheet of a match played by two other players: a final you are
+      watching, a match of one of your students. In **Individual matches** tap
+      **Score a match between two others**, pick player A and player B, write
+      which match it is, and tap **Start the scoresheet**. You cannot be one
+      of the two.
+
+  - type: steps
+    items:
+      - title: "Keep the scoresheet"
+        text: "The match starts at once, with the scoresheet already open and yours. The two players get a notice with the description: they see it among their matches, but they do not score it."
+      - title: "Close it when the match ends"
+        text: "It closes only at the distance, or after at least one rack in free format. Nobody signs on the players' behalf: once it is closed, both of them get a notice."
+      - title: "Each one decides for themselves"
+        text: "Each player **confirms** or **rejects** the match, once. Whoever confirms keeps it in their statistics; whoever rejects no longer sees it, and the rejection takes nothing away from the other."
+
+  - type: list
+    title: "What about ELO?"
+    items:
+      - "Confirmed by both: it counts like any confirmed match."
+      - "Closed and rejected by nobody: it counts in the **All** view."
+      - "Rejected even by one: it does not count for either player's ELO."
+
+  - type: note
+    tone: info
+    title: "If the match stops halfway"
+    text: >-
+      Until one of the two confirms it, the scorer can **cancel** it from the
+      match page, even with racks recorded: the players get a notice. After
+      the first confirmation it can no longer be cancelled.
 
   - type: heading
     id: dove-si-vede

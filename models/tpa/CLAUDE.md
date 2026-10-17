@@ -35,6 +35,10 @@ La traduzione posto → utente la fa `TpaReferto.player_number()` /
 ```python
 from models.tpa.services import TpaRefertoService
 
+# Chi tiene / chi guarda il referto: un permesso solo (ADR-084)
+TpaRefertoService.can_compile(match, user_id)   # giocatore, o lo scorer se c'e'
+TpaRefertoService.can_read(match, user)         # + istruttori dei due giocatori
+
 # Si puo' aprire? (e se no, perche' — frase gia' tradotta)
 motivo = TpaRefertoService.blocking_reason(match, user_id)
 

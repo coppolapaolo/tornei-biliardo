@@ -17,7 +17,7 @@ from models.certificazione import (
     Livello,
     Vista,
     esito_dichiarato,
-    livello_di_sfida,
+    livello_di_sfida_per,
     sfide_della_vista,
 )
 from models.match.models import Match, TrioMatch
@@ -572,7 +572,10 @@ class PlayerHistoryService:
                 joinedload(IndividualMatch.player2),
             )
             .filter(
-                sfide_della_vista(Vista.TUTTE),
+                # Con la persona: nella partita di altri due il livello è suo
+                # (ADR-084), e chi l'ha confermata la tiene anche se l'altro
+                # la rifiuta.
+                sfide_della_vista(Vista.TUTTE, user_id=user_id),
                 or_(
                     IndividualMatch.player1_id == user_id,
                     IndividualMatch.player2_id == user_id,
@@ -633,7 +636,7 @@ class PlayerHistoryService:
                     venue=im.location,
                     competition=None,
                     is_trio=False,
-                    livello=livello_di_sfida(im),
+                    livello=livello_di_sfida_per(im, user_id),
                     description=im.description,
                 )
             )

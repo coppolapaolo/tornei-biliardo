@@ -338,6 +338,15 @@ Una sfida a due si chiude con la **conferma di entrambi i giocatori** (ADR-051).
 - Chi ha confermato può **ritirare** la sfida finché l'avversario non la conferma: la sfida è annullata, non conta per nessuno dei due in nessuna vista né per l'ELO, e l'avversario riceve un avviso. Lo può fare **solo chi ha firmato**: chi deve ancora firmare ha già il rifiuto. Dopo la conferma di entrambi la sfida non si ritira più, e una sfida senza firme si annulla, come prima, solo finché non è stato segnato niente.
 - Alla prima firma l'avversario riceve una notifica che gli chiede di confermare o rifiutare.
 
+**La partita di altri due** (2026-10-17, ADR-084). Un **istruttore** o un **direttore** (anche l'admin) può segnare la sfida fra due altri giocatori, tenendone il referto TPA: chi segna non può essere uno dei due. Il punteggio discende dal referto come sempre; quando chi segna lo chiude — a distanza raggiunta, o dopo almeno un triangolo nel formato libero — la partita è **dichiarata** e i due giocatori ricevono un avviso, con la descrizione della partita.
+
+- **Nessuna firma d'ufficio**: né chi vince né chi segna firma al posto dei giocatori.
+- Ogni giocatore **conferma** o **rifiuta** per sé, una volta sola. Il rifiuto vuol dire «non la riconosco»: è un fatto suo, non toglie triangoli e non tocca l'altro giocatore.
+- Con la conferma di **entrambi** la sfida è confermata (`validated`), come ogni sfida a due.
+- La sfida di un terzo **non blocca** i due giocatori (non è una sfida che hanno chiesto) e non si **ritira**: lì i giocatori hanno conferma e rifiuto. Chi segna può **annullarla** finché nessuno dei due ha confermato, anche a triangoli segnati; dopo la prima conferma no.
+
+_Nota del 2026-10-17: regola nuova, decisa dall'utente (ADR-084, che emenda ADR-044 e ADR-083). Fino a questa data il referto lo teneva solo uno dei due giocatori, e chi vince firmava d'ufficio. Casi d'uso in `docs/usecases/sfide-e-certificazione.md`, UC12._
+
 _Nota del 2026-10-17: le ultime due regole sono nuove, decise dall'utente. Fino a questa data una sfida firmata da uno solo restava in attesa per sempre se l'altro non firmava mai: l'annullamento era possibile solo prima del primo triangolo, e chi l'aveva firmata non aveva modo di toglierla. Il ritiro non è un secondo rifiuto: il rifiuto contesta il risultato e riapre la partita, il ritiro la toglie del tutto. Una sfida ritirata è una sfida annullata, e per la tabella dei livelli qui sotto non ha nessun livello. Prima della notifica all'avversario arrivava solo l'aggiornamento in tempo reale, che vede solo chi ha la pagina aperta. Casi d'uso in `docs/usecases/sfide-e-certificazione.md`, UC10._
 
 _Nota del 2026-10-16: la regola sull'altra sfida con lo stesso avversario è nuova, decisa dall'utente. Fino a questa data l'avvio rapido riportava chiunque alla partita in corso fra i due, firmata o no: con un avversario che non usa l'app, aspettarne la firma voleva dire non poter più segnare una partita contro di lui. La doppia conferma resta la difesa contro chi bara — nessuno firma al posto dell'altro — e cambia solo che una firma mancante non blocca più chi ha già firmato. Casi d'uso in `docs/usecases/sfide-e-certificazione.md`._
@@ -355,6 +364,9 @@ Un risultato vale quanto chi lo garantisce. Ogni partita ha un **livello di cert
 | Sfida chiusa con un forfait | **Confermata** — chi abbandona ammette la sconfitta | **no**, come il walkover nei tornei |
 | Sfida firmata da un solo giocatore, in attesa dell'altro | **In attesa** | sì, se non è un pareggio |
 | Sfida senza firme, programmata, annullata o ritirata | nessuno | no |
+| Sfida di un terzo, per il giocatore che l'ha **confermata** | **Confermata** | solo se l'hanno confermata **entrambi** |
+| Sfida di un terzo, dichiarata, per il giocatore che non ha **ancora deciso** | **In attesa** | nella vista *Tutte*, se nessuno dei due l'ha rifiutata |
+| Sfida di un terzo, per il giocatore che l'ha **rifiutata** | nessuno | no — e con un rifiuto non conta per l'ELO di **nessuno** dei due |
 
 Le prestazioni di un giocatore — ELO, vittorie, sconfitte e pareggi, TPA, runout — si leggono in **tre viste cumulative**:
 
@@ -363,6 +375,8 @@ Le prestazioni di un giocatore — ELO, vittorie, sconfitte e pareggi, TPA, runo
 3. **Tutte**: Confermate più le sfide in attesa.
 
 Ogni vista ha il suo ELO. Il TPA esiste solo nelle sfide, quindi ha due valori (Confermate e Tutte); nella vista Tornei non c'è. Una sfida in attesa vale il risultato dichiarato da chi l'ha firmata: il punteggio che ha accettato.
+
+Nella sfida di un terzo il livello è **per giocatore**: la stessa partita può essere *Confermata* per chi l'ha confermata e *In attesa* per l'altro, o sparire per chi l'ha rifiutata e restare nelle statistiche di chi l'ha confermata. L'ELO invece è una misura a coppie e resta per partita: conferma di entrambi → ELO di *Confermate*; nessun rifiuto → ELO di *Tutte*; un rifiuto → fuori dall'ELO per tutti e due. _Nota del 2026-10-17 (ADR-084)._
 
 _Regola nuova del 2026-10-17, decisa dall'utente (ADR-083). Prima i numeri mescolavano i livelli senza dirlo, e TPA e runout contavano anche partite annullate o mai firmate. Casi d'uso in `docs/usecases/sfide-e-certificazione.md`._
 

@@ -29,6 +29,8 @@
   {# Le partite che aspettano la **tua** firma bloccano le sfide nuove
      (2026-09-14): si dice qui, prima che lo scopra provando. #}
   {% set da_confermare = matches|selectattr('awaiting_confirmation_from_id', 'equalto', current_user.id)|list %}
+  {# Le partite di altri due da confermare non bloccano niente (ADR-084): non
+     entrano in questo avviso, stanno nel loro gruppo qui sotto. #}
   {% if da_confermare and feature_visible('individual_match.pending_confirmations') %}
   <a class="c7-card c7-card--warn d-flex align-items-center gap-3 text-decoration-none"
      href="{{ url_for('individual_match.pending_confirmations') }}">
@@ -106,9 +108,22 @@
     {% set i_won = match.winner_id == current_user.id %}
     {# In attesa di conferma: una firma c'è, l'altra manca. La si vede da
        entrambe le parti; chi deve firmare ha anche il pulsante per farlo. #}
-    {% set waiting_for = match.awaiting_confirmation_from_id %}
+    {# Nella partita di altri due (ADR-084) aspetta la decisione di ciascuno:
+       prima la mia, poi quella dell'altro. Decisa da entrambi senza doppia
+       conferma, per questo elenco è giocata: chi l'ha rifiutata la vede
+       spenta, chi l'ha confermata la vede sua. #}
+    {% set di_un_terzo = match.is_scored_by_third_party %}
+    {% if di_un_terzo %}
+      {% set waiting_for = current_user.id if match.awaits_decision_from(current_user.id)
+                           else (match.opponent_of(current_user.id) if match.is_awaiting_decisions else none) %}
+    {% else %}
+      {% set waiting_for = match.awaiting_confirmation_from_id %}
+    {% endif %}
+    {% set in_lavorazione = di_un_terzo and not match.is_declared_by_scorer and state == MatchStatus.IN_PROGRESS.value %}
+    {% set decisa = di_un_terzo and match.is_declared_by_scorer and not waiting_for and state == MatchStatus.IN_PROGRESS.value %}
+    {% set mia_decisione = match.decision_of(current_user.id) %}
     {% set group = 'annullati' if state == MatchStatus.CANCELLED.value
-                   else ('giocati' if is_finished
+                   else ('giocati' if is_finished or decisa
                    else ('da_confermare' if waiting_for
                    else ('in_corso' if state == MatchStatus.IN_PROGRESS.value else 'da_giocare'))) %}
     <article class="c7-card match-card {{ 'c7-dim' if state == MatchStatus.CANCELLED.value }}"
@@ -117,7 +132,13 @@
       <div class="d-flex align-items-center gap-2">
         <span class="c7-kicker">{{ match.discipline|discipline_display }}</span>
         <span style="margin-left:auto">
-          {%- if waiting_for %}
+          {%- if decisa %}
+          <span class="c7-state {{ 'c7-state--muted' if mia_decisione == 'rejected' else 'c7-state--ok' }}">
+            {{ _('Rifiutata da te') if mia_decisione == 'rejected' else _('Confermata da te') }}
+          </span>
+          {%- elif in_lavorazione %}
+          <span class="c7-state c7-state--info">{{ _('La segna %(name)s', name=match.scorer.username if match.scorer else '') }}</span>
+          {%- elif waiting_for %}
           <span class="c7-state c7-state--warn">{{ _('In attesa di conferma') }}</span>
           {%- elif state == MatchStatus.IN_PROGRESS.value %}
           <span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
@@ -160,7 +181,8 @@
          class="btn {{ 'btn-primary' if not is_finished else 'btn-secondary' }} w-100" style="margin-top:14px">
         {%- if state == MatchStatus.SCHEDULED.value %}{{ _("Apri la partita") }}
         {%- elif waiting_for == current_user.id %}{{ _("Conferma o rifiuta") }}
-        {%- elif waiting_for %}{{ _("Dettagli") }}
+        {%- elif waiting_for or decisa %}{{ _("Dettagli") }}
+        {%- elif in_lavorazione %}{{ _("Segui la partita") }}
         {%- elif state == MatchStatus.IN_PROGRESS.value %}{{ _("Continua") }}
         {%- else %}{{ _("Dettagli") }}{% endif %}
       </a>

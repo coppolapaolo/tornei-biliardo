@@ -57,7 +57,15 @@
         </div>
         {# Nel suo primo giorno la partita che aspetta una firma si vede qui
            con lo stato giusto; dopo esce dalla dashboard (2026-09-14). #}
-        {% if sfida.awaiting_confirmation_from_id %}
+        {# La partita di altri due (ADR-084): la segna un terzo; a referto
+           chiuso tocca a te confermarla o rifiutarla. #}
+        {% if sfida.is_scored_by_third_party %}
+        {% if sfida.awaits_decision_from(current_user.id) %}
+        <span class="c7-state c7-state--warn">{{ _('Da confermare') }}</span>
+        {% else %}
+        <span class="c7-state c7-state--info">{{ _('La segna %(name)s', name=sfida.scorer.username if sfida.scorer else '') }}</span>
+        {% endif %}
+        {% elif sfida.awaiting_confirmation_from_id %}
         <span class="c7-state c7-state--warn">{{ _('In attesa di conferma') }}</span>
         {% else %}
         <span class="c7-state {{ 'c7-state--err' if iniziata else 'c7-state--info' }}">
@@ -74,7 +82,7 @@
 
       <a href="{{ url_for('individual_match.match_detail', match_id=sfida.id) }}"
          class="btn btn-primary btn-sm w-100">
-        <i class="fas fa-play"></i>{{ _('Gioca') if iniziata else _('Apri la sfida') }}
+        <i class="fas fa-play"></i>{{ _('Gioca') if iniziata and not sfida.is_scored_by_third_party else _('Apri la sfida') }}
       </a>
     </article>
     {% endfor %}

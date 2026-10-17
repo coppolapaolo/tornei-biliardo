@@ -905,6 +905,14 @@ hints:
     page: partite_amichevoli
     section: avvio-rapido
 
+  - id: sfida.altri_due_chi_gioca
+    label: "Chi gioca"
+    short: "I due giocatori della partita che segni: devono avere un account, e tu non puoi essere uno dei due. A fine partita confermano o rifiutano, ciascuno per sé."
+    anchor: partita-altri-due-chi-gioca
+    screens: [individual_match.scored_match]
+    page: referto_tpa
+    section: altri-due
+
   - id: sfida.riepilogo_rapido
     label: "Come si gioca"
     short: "Sala, disciplina e distanza sono già quelle dell'ultima partita. Se vanno bene non tocchi niente; «Cambia» le apre."

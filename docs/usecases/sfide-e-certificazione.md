@@ -11,6 +11,10 @@ I livelli di certificazione di una partita sono tre:
 | Sfida confermata da entrambi, o chiusa con un forfait | **Confermata** |
 | Sfida firmata da uno solo, in attesa dell'altro | **In attesa** |
 
+Nella partita tenuta da un terzo (UC12) il livello è **per giocatore**: chi
+l'ha confermata la vede *Confermata*, chi non ha ancora deciso *In attesa*,
+chi l'ha rifiutata non la vede.
+
 Il profilo li mostra in tre viste cumulative: *Tornei*, *Confermate* (tornei
 più sfide confermate) e *Tutte* (anche le sfide in attesa).
 
@@ -19,7 +23,8 @@ Personaggi:
 - **Paolo**, che usa l'app;
 - **Pietro**, che non la apre quasi mai;
 - **Gianni**, che la usa;
-- **Luca**, che guarda i profili da ospite.
+- **Luca**, che guarda i profili da ospite;
+- **Marco**, istruttore, che segna le partite degli altri.
 
 Stato: UC1 è realizzato (PR #696), UC2 e UC3 con l'emendamento all'ADR-051.
 UC4, UC5, UC7, UC8 e UC9 sono realizzati lato dominio con l'ADR-083
@@ -28,6 +33,9 @@ selettore di certificazione (`test_profilo_selettore_certificazione.py` e
 `tests/frontend/test_vista_certificazione.cjs`).
 UC10, il ritiro di una sfida rimasta senza seconda firma, è realizzato con la
 PR del ritiro (`test_ritiro_sfida_senza_seconda_firma.py`, unitario e di
+integrazione).
+UC12, la partita di altri due tenuta da un istruttore o da un direttore, è
+realizzato con l'ADR-084 (`test_partita_di_altri_due.py`, unitario e di
 integrazione).
 
 ## Use case 1 — Avvio rapido dal telefono
@@ -202,3 +210,39 @@ regionale. Lo dice la sfida stessa, e il video arriva due giorni dopo.
 - _(variante: partita di **gara** → il riquadro «Video della partita» c'è
   anche lì, senza descrizione; lo scrivono i giocatori e i direttori della
   gara)_
+
+
+## Use case 12 — Marco, istruttore, tiene il referto della finale di Paolo e Pietro
+
+Marco è istruttore (ADR-069). Paolo e Pietro giocano la finale, e Marco la
+segna dal bordo del tavolo (ADR-084).
+
+- In `/match/` Marco tocca «Segna la partita di altri due»: la voce la vede
+  solo chi è istruttore o direttore.
+- Sceglie Paolo come giocatore A e Pietro come giocatore B, scrive «Finale
+  1ª giornata, serie C FVG», palla 9 al 7. Tocca «Inizia il referto».
+- La partita nasce in corso, col referto aperto e Marco compilatore. Paolo e
+  Pietro ricevono un avviso con la descrizione: la partita compare nelle loro
+  sfide, segnata da Marco, **senza «Continua»**.
+- Marco annota la partita. Al settimo triangolo di Paolo nessuno firma
+  d'ufficio. Marco chiude il referto: la partita è **dichiarata**, e Paolo e
+  Pietro ricevono la notifica «Una sfida aspetta la tua firma».
+- Paolo conferma: per lui la partita è *Confermata*. Per Pietro, che non ha
+  ancora deciso, è *In attesa*. L'ELO di *Tutte* si muove per entrambi.
+- Pietro conferma anche lui: la sfida è confermata da entrambi, e si muove
+  l'ELO di *Confermate*.
+- _(variante: Pietro **rifiuta** → per lui la partita sparisce da ogni vista;
+  per Paolo resta *Confermata*, con TPA e vittoria. Nessun triangolo viene
+  tolto, e la partita esce dall'ELO di tutti e due)_
+- _(variante: Pietro non apre mai l'app → non è bloccato su nuove sfide: la
+  partita non l'ha chiesta lui)_
+- _(variante: a metà partita Paolo si ritira e Marco **annulla** la partita →
+  sparisce per tutti; dopo la prima conferma Marco non la può più annullare)_
+- _(variante: Gianni, giocatore senza ruolo, non vede la voce, e un modulo
+  mandato a mano viene rifiutato)_
+- _(variante: Marco prova a mettersi come giocatore A → rifiutato: chi segna
+  non gioca)_
+- _(variante: Marco prova a chiudere il referto a 3-2 in una partita al 7 →
+  rifiutato; la partita a metà si annulla)_
+- _(variante: Lucia è l'istruttrice a cui Paolo ha aperto una scheda → può
+  guardare il referto in sola lettura)_

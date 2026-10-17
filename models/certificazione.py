@@ -18,6 +18,14 @@ lo chiedono a questo modulo: una seconda definizione di «confermata» darebbe
 due numeri diversi nella stessa pagina, ed è il guasto che i pool ELO hanno
 già conosciuto (ADR-073 racconta lo stesso schema per la classifica).
 
+Nella **partita di altri due** (ADR-084) — il referto lo tiene un istruttore
+o un direttore — il livello è **per giocatore**: chi la conferma la vede
+*Confermata*, chi non ha ancora deciso *In attesa*, chi la rifiuta non la vede.
+Le funzioni che ricevono una persona (`livello_di_sfida_per`,
+`sfide_della_vista(vista, user_id=…)`) applicano quella regola; senza persona la
+regola è **di coppia**, ed è quella dell'ELO, che misura una partita fra due e
+non si divide: con un rifiuto la partita esce dall'ELO di tutti e due.
+
 Casi d'uso in ``docs/usecases/sfide-e-certificazione.md``.
 """
 
@@ -26,7 +34,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING, Any, FrozenSet, Optional
 
-from sqlalchemy import and_, false, or_
+from sqlalchemy import and_, exists, false, not_, or_
+from sqlalchemy.orm import aliased
 
 from models.status_enum import MatchStatus
 
@@ -40,6 +49,7 @@ __all__ = [
     "VISTA_PREDEFINITA",
     "livello_di_partita",
     "livello_di_sfida",
+    "livello_di_sfida_per",
     "esito_dichiarato",
     "sfide_della_vista",
     "sfida_conta_per_elo",
@@ -98,14 +108,28 @@ def livello_di_partita(match: "Match") -> Optional[Livello]:
 
 
 def livello_di_sfida(sfida: "IndividualMatch") -> Optional[Livello]:
-    """Il livello di una sfida individuale, o ``None`` se non ne ha.
+    """Il livello di una sfida individuale **per la coppia**, o ``None``.
 
     Senza nessuna firma la sfida non ha livello: i due la stanno ancora
     giocando, oppure non l'hanno giocata.
+
+    È il livello che decide l'ELO. Per i numeri di **un** giocatore si chiede
+    `livello_di_sfida_per`: nella partita di un terzo i due possono vederla in
+    modo diverso.
     """
     stato = _valore(sfida.status)
     if MatchStatus.is_finished(stato):
         return Livello.CONFERMATA
+    if getattr(sfida, "scorer_id", None) is not None:
+        # Partita di un terzo (ADR-084): dichiarata e nessuno l'ha rifiutata.
+        if (
+            stato == MatchStatus.IN_PROGRESS.value
+            and sfida.is_declared_by_scorer
+            and sfida.player1_rejected_at is None
+            and sfida.player2_rejected_at is None
+        ):
+            return Livello.IN_ATTESA
+        return None
     if stato == MatchStatus.IN_PROGRESS.value and bool(sfida.player1_confirmed) != (
         bool(sfida.player2_confirmed)
     ):
@@ -113,14 +137,42 @@ def livello_di_sfida(sfida: "IndividualMatch") -> Optional[Livello]:
     return None
 
 
+def livello_di_sfida_per(sfida: "IndividualMatch", user_id: int) -> Optional[Livello]:
+    """Il livello della sfida **per questo giocatore** (ADR-084).
+
+    Sulla sfida normale coincide con `livello_di_sfida`: le firme sono dei due
+    insieme. Nella partita di un terzo ciascuno decide per sé: chi l'ha
+    confermata la vede *Confermata*, chi non ha ancora deciso *In attesa*
+    (purché chi la segna l'abbia dichiarata chiudendo il referto), chi l'ha
+    rifiutata non la vede.
+    """
+    if getattr(sfida, "scorer_id", None) is None:
+        return livello_di_sfida(sfida)
+    if not sfida.is_player(user_id):
+        return None
+    stato = _valore(sfida.status)
+    if MatchStatus.is_finished(stato):
+        return Livello.CONFERMATA
+    if stato != MatchStatus.IN_PROGRESS.value or not sfida.is_declared_by_scorer:
+        return None
+    decisione = sfida.decision_of(user_id)
+    if decisione == "rejected":
+        return None
+    if decisione == "confirmed":
+        return Livello.CONFERMATA
+    return Livello.IN_ATTESA
+
+
 def esito_dichiarato(sfida: "IndividualMatch") -> Optional[int]:
     """Chi ha vinto la sfida, secondo chi l'ha firmata. ``None`` è un pareggio.
 
-    ``winner_id`` lo scrive la seconda firma, quindi una sfida in attesa non
-    ce l'ha: il risultato dichiarato sta nel punteggio, che chi ha firmato ha
-    visto e accettato.
+    ``winner_id`` lo scrive la seconda firma, quindi una sfida non ancora
+    chiusa non ce l'ha: il risultato dichiarato sta nel punteggio, che chi ha
+    firmato ha visto e accettato. Vale anche per la partita di un terzo
+    confermata da uno e rifiutata dall'altro: per chi l'ha confermata è una
+    vittoria o una sconfitta, non un pareggio.
     """
-    if livello_di_sfida(sfida) is not Livello.IN_ATTESA:
+    if MatchStatus.is_finished(_valore(sfida.status)):
         return sfida.winner_id
     uno, due = sfida.player1_score or 0, sfida.player2_score or 0
     if uno == due:
@@ -139,26 +191,76 @@ def sfida_conta_per_elo(sfida: "IndividualMatch") -> bool:
     return livello_di_sfida(sfida) is not None and esito_dichiarato(sfida) is not None
 
 
-def sfide_della_vista(vista: Vista) -> Any:
+def sfide_della_vista(vista: Vista, user_id: Optional[int] = None) -> Any:
     """La stessa regola di `livello_di_sfida`, come condizione SQL.
 
     Per le query che contano o sommano sulle sfide individuali. Nella vista
     *Tornei* non entra nessuna sfida.
+
+    Con ``user_id`` è la regola di `livello_di_sfida_per`: **le query sulle
+    sfide di un giocatore lo passano sempre**. Senza, la regola è di coppia
+    (quella dell'ELO), e una partita di un terzo confermata da lui e rifiutata
+    dall'altro sparirebbe anche dai suoi numeri.
     """
     from models.individual_match.match_models import IndividualMatch
+    from models.tpa.models import TpaReferto
 
     concluse = IndividualMatch.status.in_(
         [MatchStatus.CLOSED_UNILATERALLY, MatchStatus.CONFIRMED_BY_BOTH]
     )
-    in_attesa = and_(
+    normale = IndividualMatch.scorer_id.is_(None)
+    in_attesa_normale = and_(
+        normale,
         IndividualMatch.status == MatchStatus.IN_PROGRESS,
         IndividualMatch.player1_confirmed != IndividualMatch.player2_confirmed,
     )
+    # La partita di un terzo, dichiarata: chi la segna ha chiuso il referto.
+    # Un alias con correlazione esplicita: chi interroga i referti
+    # (`TpaStatsService.referti_for_user`) ha già `tpa_referto` nella query, e
+    # senza alias l'EXISTS si correlerebbe anche a quello, restando vuoto.
+    referto = aliased(TpaReferto)
+    dichiarata = and_(
+        IndividualMatch.scorer_id.isnot(None),
+        IndividualMatch.status == MatchStatus.IN_PROGRESS,
+        exists()
+        .where(
+            referto.individual_match_id == IndividualMatch.id,
+            referto.closed_at.isnot(None),
+        )
+        .correlate(IndividualMatch),
+    )
+
+    if user_id is None:
+        confermate_di_un_terzo = false()
+        in_attesa_di_un_terzo = and_(
+            dichiarata,
+            IndividualMatch.player1_rejected_at.is_(None),
+            IndividualMatch.player2_rejected_at.is_(None),
+        )
+    else:
+        come_primo = IndividualMatch.player1_id == user_id
+        come_secondo = IndividualMatch.player2_id == user_id
+        ha_confermato = or_(
+            and_(come_primo, IndividualMatch.player1_confirmed.is_(True)),
+            and_(come_secondo, IndividualMatch.player2_confirmed.is_(True)),
+        )
+        ha_rifiutato = or_(
+            and_(come_primo, IndividualMatch.player1_rejected_at.isnot(None)),
+            and_(come_secondo, IndividualMatch.player2_rejected_at.isnot(None)),
+        )
+        confermate_di_un_terzo = and_(dichiarata, ha_confermato)
+        in_attesa_di_un_terzo = and_(
+            dichiarata,
+            or_(come_primo, come_secondo),
+            not_(ha_confermato),
+            not_(ha_rifiutato),
+        )
+
     condizioni = []
     if Livello.CONFERMATA in vista.livelli:
-        condizioni.append(concluse)
+        condizioni.extend([concluse, confermate_di_un_terzo])
     if Livello.IN_ATTESA in vista.livelli:
-        condizioni.append(in_attesa)
+        condizioni.extend([in_attesa_normale, in_attesa_di_un_terzo])
     if not condizioni:
         return false()
     return or_(*condizioni)

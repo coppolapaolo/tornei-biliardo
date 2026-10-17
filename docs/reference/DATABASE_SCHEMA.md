@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-10-17 20:31 UTC
+> Last updated: 2026-10-17 21:06 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -1350,6 +1350,9 @@
 | `player2_confirmed` | BOOLEAN | NO |  | False |  |
 | `player1_confirmed_at` | DATETIME | YES |  |  |  |
 | `player2_confirmed_at` | DATETIME | YES |  |  |  |
+| `scorer_id` | INTEGER | YES | FK→user.id |  |  |
+| `player1_rejected_at` | DATETIME | YES |  |  |  |
+| `player2_rejected_at` | DATETIME | YES |  |  |  |
 | `created_at` | DATETIME | NO |  | func |  |
 | `updated_at` | DATETIME | NO |  | func |  |
 
@@ -1363,6 +1366,7 @@
 - `player1_id` → `user.id` (ON DELETE CASCADE)
 - `player2_id` → `user.id` (ON DELETE CASCADE)
 - `proposal_id` → `match_proposal.id` (ON DELETE NO ACTION)
+- `scorer_id` → `user.id` (ON DELETE NO ACTION)
 - `winner_id` → `user.id` (ON DELETE NO ACTION)
 
 ### individual_rack

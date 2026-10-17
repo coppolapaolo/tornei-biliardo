@@ -46,7 +46,7 @@
 
 {% set received = proposals.received_proposals if proposals else [] %}
 {% set sent = (proposals.sent_proposals if proposals else []) + (proposals.open_proposals if proposals else []) %}
-{% set has_nothing = not received and not sent and not active_matches and not awaiting_matches and not recent_matches %}
+{% set has_nothing = not received and not sent and not active_matches and not awaiting_matches and not recent_matches and not scored_matches %}
 
 <div class="c7-stack c7-sections">
 
@@ -68,6 +68,62 @@
     </div>
     <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
   </a>
+
+  {# ---------- Segni la partita di altri due (ADR-084) ----------
+     Solo per istruttori e direttori: stessa forma della voce qui sopra,
+     perché è la stessa domanda — «una partita sta cominciando adesso» —
+     posta da chi la guarda invece che da chi la gioca. #}
+  {% if can_score and feature_visible('individual_match.scored_match') %}
+  <a class="c7-card d-flex align-items-center gap-3"
+     href="{{ url_for('individual_match.scored_match') }}"
+     style="color:inherit;text-decoration:none">
+    <span class="c7-avatar c7-avatar--lg" style="background:var(--c7-bg);color:var(--c7-accent)">
+      <i class="fas fa-pen-to-square"></i>
+    </span>
+    <div class="flex-fill" style="min-width:0">
+      <div style="font-size:16px;font-weight:800;letter-spacing:-.02em">{{ _("Segna la partita di altri due") }}</div>
+      <div style="margin-top:3px;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+        {{ _("Tieni tu il referto TPA: a fine partita confermano loro") }}
+      </div>
+    </div>
+    <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+  </a>
+  {% endif %}
+
+  {# ---------- Le partite che segni ---------- #}
+  {% if scored_matches %}
+  <section class="c7-stack">
+    <div class="c7-sechead">
+      <h2>{{ _('Partite che segni') }}</h2>
+      <span class="c7-sechead__note c7-num">{{ scored_matches|length }}</span>
+    </div>
+    <div class="c7-rows">
+      {% for match in scored_matches %}
+      {% set dichiarata = match.is_declared_by_scorer %}
+      <a class="c7-rows__row"
+         href="{{ url_for('individual_match.match_detail', match_id=match.id) if dichiarata else url_for('individual_match.tpa_referto', match_id=match.id) }}"
+         style="color:inherit;text-decoration:none">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">
+            {{ match.player1.username if match.player1 else '—' }} {{ _('vs') }} {{ match.player2.username if match.player2 else '—' }}
+          </div>
+          {{ match_video.subtitle(match, style='margin-top:2px') }}
+          <div class="c7-rows__sub">
+            {{ match.discipline|discipline_display }} <span class="c7-sep">·</span>
+            <span class="c7-num">{{ match.player1_score }}–{{ match.player2_score }}</span>
+          </div>
+        </div>
+        {% if dichiarata %}
+        <span class="c7-state c7-state--warn">{{ _('In attesa di conferma') }}</span>
+        {% else %}
+        <span class="c7-state c7-state--err">{{ _('In corso') }}</span>
+        {% endif %}
+        <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
 
   {# ---------- Attendono la tua risposta ---------- #}
   {% if received %}
@@ -111,10 +167,13 @@
        gia' cosi'. #}
     {% set is_playing = match.status.value == MatchStatus.IN_PROGRESS.value %}
     {% set other = match.player2 if match.player1_id == current_user.id else match.player1 %}
+    {# La partita di altri due la segna un terzo: si segue, non si continua. #}
+    {% set di_un_terzo = match.is_scored_by_third_party %}
     <article class="c7-card">
       <div class="d-flex align-items-center gap-2">
         <span class="c7-kicker" style="color:{{ 'var(--c7-err)' if is_playing else 'var(--c7-ok)' }}">
-          {{ _('In corso') if is_playing else _('Data confermata') }}
+          {%- if di_un_terzo %}{{ _('La segna %(name)s', name=match.scorer.username if match.scorer else '') }}
+          {%- else %}{{ _('In corso') if is_playing else _('Data confermata') }}{% endif %}
         </span>
         <span class="c7-kicker" style="margin-left:auto">{{ match.discipline|discipline_display }}</span>
       </div>
@@ -130,8 +189,9 @@
       </div>
       {% endif %}
       <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
-         class="btn btn-primary w-100" style="margin-top:14px">
-        {{ _("Continua") if is_playing else _("Apri la partita") }}
+         class="btn {{ 'btn-secondary' if di_un_terzo else 'btn-primary' }} w-100" style="margin-top:14px">
+        {%- if di_un_terzo %}{{ _("Segui la partita") }}
+        {%- else %}{{ _("Continua") if is_playing else _("Apri la partita") }}{% endif %}
       </a>
     </article>
     {% endfor %}
@@ -151,14 +211,20 @@
     </div>
     {% for match in awaiting_matches %}
     {% set other = match.player2 if match.player1_id == current_user.id else match.player1 %}
-    {% set tocca_a_me = match.awaiting_confirmation_from_id == current_user.id %}
+    {% set tocca_a_me = match.awaits_decision_from(current_user.id) %}
     <article class="c7-card">
       <div class="d-flex align-items-center gap-2">
         <span class="c7-state c7-state--warn">{{ _('In attesa di conferma') }}</span>
         <span class="c7-kicker" style="margin-left:auto">{{ match.discipline|discipline_display }}</span>
       </div>
+      {% if match.is_scored_by_third_party %}
+      {{ opponent(other,
+           _('Segnata da %(name)s: manca la tua conferma', name=match.scorer.username if match.scorer else '') if tocca_a_me
+           else _("Hai confermato: manca la decisione dell'avversario")) }}
+      {% else %}
       {{ opponent(other,
            _('Manca la tua firma') if tocca_a_me else _("Manca la firma dell'avversario")) }}
+      {% endif %}
       {{ match_video.subtitle(match) }}
       <div class="d-flex align-items-center gap-2" style="margin-top:12px">
         <span class="c7-num-lg">{{ match.player1_score }}</span>

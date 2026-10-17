@@ -13,7 +13,7 @@ from flask_babel import gettext as _
 from sqlalchemy import func
 
 from ..base import db, utc_now
-from ..exceptions import NotFoundError, ValidationError
+from ..exceptions import NotFoundError, PermissionDeniedError, ValidationError
 from ..transaction.manager import transactional
 from .models import IndividualMatch, IndividualRack
 
@@ -35,6 +35,12 @@ class IndividualRackService:
 
         if not match.is_player(user_id):
             raise ValueError("User is not part of this match")
+
+        if match.is_scored_by_third_party:
+            # Il punteggio discende dal referto di chi segna (ADR-084).
+            raise PermissionDeniedError(
+                _("Questa partita la segna chi tiene il referto.")
+            )
 
         if not match.is_player(winner_id):
             raise ValueError("Invalid winner ID")
@@ -151,6 +157,12 @@ class IndividualRackService:
 
         if not match.is_player(user_id):
             raise ValueError("User is not part of this match")
+
+        if match.is_scored_by_third_party:
+            # Il punteggio discende dal referto di chi segna (ADR-084).
+            raise PermissionDeniedError(
+                _("Questa partita la segna chi tiene il referto.")
+            )
 
         if match.is_multi_set:
             # Il triangolo appartiene a un set, e `player*_score` conta i set:

@@ -37,14 +37,21 @@ from models.user.permissions import RoleRequirement
 from utils.permissions import feature_required
 
 from . import individual_match_bp
+from .scored import player_director_or_scorer
 
 logger = logging.getLogger(__name__)
 
 
 def _load(match_id: int):
-    """Il match e il suo referto, con l'utente corrente gia' verificato."""
+    """Il match e il suo referto, con l'utente corrente gia' verificato.
+
+    Il terzo valore dice se chi chiede **può guardare** il referto
+    (`TpaRefertoService.can_read`): i due giocatori, chi lo tiene nella
+    partita di altri due, gli istruttori di uno dei due (ADR-084). Chi può
+    *scriverlo* lo decide il servizio, a ogni comando.
+    """
     match = db.get_or_404(IndividualMatch, match_id)
-    if current_user.id not in (match.player1_id, match.player2_id):
+    if not TpaRefertoService.can_read(match, current_user):
         return match, None, False
     return match, TpaRefertoService.get_for_match(match_id), True
 
@@ -126,7 +133,7 @@ def _domain_error(error: Exception):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa")
-@RoleRequirement.player_or_director_required
+@player_director_or_scorer
 def tpa_referto(match_id: int):
     """La pagina del referto: si compila o si guarda, secondo chi sei."""
     match, referto, is_player = _load(match_id)
@@ -177,7 +184,7 @@ def tpa_open(match_id: int):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa/press", methods=["POST"])
-@RoleRequirement.player_or_director_required
+@player_director_or_scorer
 def tpa_press(match_id: int):
     """Registra un tocco sul tastierino."""
     match, referto, is_player = _load(match_id)
@@ -201,7 +208,7 @@ def tpa_press(match_id: int):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa/undo", methods=["POST"])
-@RoleRequirement.player_or_director_required
+@player_director_or_scorer
 def tpa_undo(match_id: int):
     """Annulla l'ultimo tocco."""
     match, referto, is_player = _load(match_id)
@@ -224,7 +231,7 @@ def tpa_undo(match_id: int):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa/clear", methods=["POST"])
-@RoleRequirement.player_or_director_required
+@player_director_or_scorer
 def tpa_clear(match_id: int):
     """«Cancella»: via l'annotazione del turno in corso."""
     match, referto, is_player = _load(match_id)
@@ -247,7 +254,7 @@ def tpa_clear(match_id: int):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa/restart", methods=["POST"])
-@RoleRequirement.player_or_director_required
+@player_director_or_scorer
 def tpa_restart(match_id: int):
     """«Riparti da questo turno…»: il registro si tronca a un turno del passato."""
     match, referto, is_player = _load(match_id)
@@ -278,7 +285,7 @@ def tpa_restart(match_id: int):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa/state")
-@RoleRequirement.player_or_director_required
+@player_director_or_scorer
 def tpa_state(match_id: int):
     """Lo stato del referto, per chi lo sta guardando in sola lettura."""
     match, referto, is_player = _load(match_id)
@@ -288,7 +295,7 @@ def tpa_state(match_id: int):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa/close", methods=["POST"])
-@RoleRequirement.player_or_director_required
+@player_director_or_scorer
 def tpa_close(match_id: int):
     """Chiude il referto: da qui in poi si legge e basta."""
     match, referto, is_player = _load(match_id)

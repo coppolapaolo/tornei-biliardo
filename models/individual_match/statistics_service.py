@@ -305,11 +305,45 @@ class IndividualMatchStatisticsService:
         # «Continua» su una sfida già finita mandava al segnapunti di una
         # partita chiusa (2026-10-17). Va in una sezione sua, con lo stato
         # «In attesa di conferma», come in dashboard e nell'elenco delle sfide.
+        # La partita di altri due (ADR-084) non è mai «da giocare» per chi la
+        # gioca: la segna un terzo. Finché chi segna scrive il referto sta fra
+        # le partite in corso, da seguire; a referto chiuso sta fra quelle da
+        # confermare, finché uno dei due ha ancora da decidere.
         awaiting_matches = [
-            m for m in open_matches if m.awaiting_confirmation_from_id is not None
+            m
+            for m in open_matches
+            if (
+                m.is_scored_by_third_party
+                and m.is_awaiting_decisions
+                and m.decision_of(user_id) != "rejected"
+            )
+            or (
+                not m.is_scored_by_third_party
+                and m.awaiting_confirmation_from_id is not None
+            )
         ]
         active_matches = [
-            m for m in open_matches if m.awaiting_confirmation_from_id is None
+            m
+            for m in open_matches
+            if (m.is_scored_by_third_party and not m.is_declared_by_scorer)
+            or (
+                not m.is_scored_by_third_party
+                and m.awaiting_confirmation_from_id is None
+            )
+        ]
+        # Le partite che questo utente segna per altri due: ancora da chiudere
+        # o in attesa delle decisioni dei giocatori.
+        scored_matches = [
+            m
+            for m in IndividualMatch.query.filter(
+                IndividualMatch.scorer_id == user_id,
+                IndividualMatch.status.in_(
+                    [MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS]
+                ),
+            )
+            .order_by(IndividualMatch.scheduled_at.desc())
+            .all()
+            if not m.is_declared_by_scorer or m.is_awaiting_decisions
         ]
         completed_matches = [
             m
@@ -324,6 +358,7 @@ class IndividualMatchStatisticsService:
             "matches": all_matches,
             "active_matches": active_matches,
             "awaiting_matches": awaiting_matches,
+            "scored_matches": scored_matches,
             "recent_matches": recent_matches,
             "availability": availability,
             "statistics": stats,

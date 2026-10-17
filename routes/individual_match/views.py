@@ -28,8 +28,14 @@ logger = logging.getLogger(__name__)
 def dashboard():
     """Individual match dashboard for current user."""
     try:
+        from models.individual_match.scored_match_service import ScoredMatchService
+
         user_data = IndividualMatchService.get_user_dashboard_data(current_user.id)
-        return render_template("individual_match/dashboard.html", **user_data)
+        return render_template(
+            "individual_match/dashboard.html",
+            can_score=ScoredMatchService.can_score(current_user),
+            **user_data,
+        )
     except Exception as e:
         logger.error("Error loading dashboard: %s", e, exc_info=True)
         flash(_("Errore interno del server"), "danger")

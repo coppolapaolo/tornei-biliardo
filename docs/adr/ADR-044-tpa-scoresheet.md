@@ -249,6 +249,14 @@ tavolo passa. L'annulla di un solo tocco (`undo`) resta nel servizio e nella
 route, ma l'interfaccia non lo usa più: fra «cancella» e «riparti» non gli
 resta un caso suo.
 
+## Emendamento del 2026-10-17 · il referto lo può tenere un terzo
+
+«Il referto lo tiene uno dei due giocatori» non vale più per la sfida creata da
+un istruttore o da un direttore fra altri due: lì il compilatore è lo scorer
+(`IndividualMatch.scorer_id`), e alla distanza nessuno firma d'ufficio. Il
+permesso è uno solo, `TpaRefertoService.can_compile`; posti e motore non
+cambiano. Decisione e conseguenze in [ADR-084](ADR-084-tpa-tenuto-da-un-terzo.md).
+
 ## Riferimenti
 
 - `models/tpa/engine.py` — le regole, con le divergenze documentate in testa

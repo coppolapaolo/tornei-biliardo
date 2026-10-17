@@ -47,8 +47,9 @@ class TpaReferto(BaseModel):
         unique=True,
     )
 
-    #: Chi tiene il referto: uno dei due giocatori, quello che lo ha aperto.
-    #: L'altro vede la stessa schermata, in sola lettura.
+    #: Chi tiene il referto: uno dei due giocatori, quello che lo ha aperto,
+    #: oppure — nella partita di altri due — chi la segna (ADR-084). Gli altri
+    #: vedono la stessa schermata, in sola lettura.
     compiler_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
     #: Bilie del rack: 8, 9 o 10. Si fissa all'apertura perche' il motore ci

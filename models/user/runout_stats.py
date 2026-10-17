@@ -99,7 +99,7 @@ def _dai_triangoli(user_id: int, vista: Vista) -> Dict[str, int]:
             IndividualRack,
             IndividualMatch,
             IndividualRack.match_id == IndividualMatch.id,
-            sfide_della_vista(vista),
+            sfide_della_vista(vista, user_id=user_id),
         )
     ]
     if Livello.TORNEO in vista.livelli:

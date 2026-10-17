@@ -25,6 +25,7 @@ from utils.local_time import parse_local_datetime
 from utils.route_helpers import safe_json_error
 
 from . import individual_match_bp
+from .scored import player_director_or_scorer
 from .pending import pending_confirmation_response
 
 logger = logging.getLogger(__name__)
@@ -72,7 +73,7 @@ def proposal_detail(proposal_id):
 
 
 @individual_match_bp.route("/players/search")
-@RoleRequirement.player_or_director_required
+@player_director_or_scorer
 def search_players():
     """Search for players by username for direct invitations.
 
@@ -102,8 +103,19 @@ def search_players():
         .all()
     )
 
-    # Filter by feature access (consistent with menu visibility and opponent list)
-    eligible_users = [u for u in users if u.can_access("create_match_direct")][:limit]
+    # Filter by feature access (consistent with menu visibility and opponent list).
+    # Per la partita di altri due no (ADR-084): i giocatori non l'hanno chiesta,
+    # e chi segna sceglie chi ha davanti al tavolo.
+    from models.individual_match.scored_match_service import ScoredMatchService
+
+    if request.args.get("ambito") == "altri_due" and ScoredMatchService.can_score(
+        current_user
+    ):
+        eligible_users = users[:limit]
+    else:
+        eligible_users = [u for u in users if u.can_access("create_match_direct")][
+            :limit
+        ]
 
     return jsonify(
         [

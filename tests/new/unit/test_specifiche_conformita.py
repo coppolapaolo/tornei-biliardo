@@ -3862,3 +3862,64 @@ class TestLivelliDiCertificazione:
             sorted(livello.value for livello in Livello),
         ]
         assert VISTA_PREDEFINITA is Vista.CONFERMATE
+
+
+class TestPartitaDiUnTerzo:
+    """SPECIFICHE.md, «Ciclo di vita dei Match» («La partita di altri due») e
+    «Livelli di certificazione», note del 2026-10-17 (ADR-084)."""
+
+    @staticmethod
+    def _sfida(p1=False, p2=False, r1=False, r2=False, status=None):
+        from models.base import utc_now
+        from models.individual_match.match_models import IndividualMatch
+        from models.tpa.models import TpaReferto
+
+        sfida = IndividualMatch(
+            player1_id=1,
+            player2_id=2,
+            scorer_id=3,
+            status=status or MatchStatus.IN_PROGRESS,
+            player1_confirmed=p1,
+            player2_confirmed=p2,
+            player1_rejected_at=utc_now() if r1 else None,
+            player2_rejected_at=utc_now() if r2 else None,
+            player1_score=3,
+            player2_score=1,
+            distance=3,
+            is_race_to=True,
+        )
+        sfida.tpa_referto = TpaReferto(compiler_id=3, game_type=9, closed_at=utc_now())
+        return sfida
+
+    def test_il_livello_e_per_giocatore(self):
+        """«Sfida di un terzo, per il giocatore che l'ha confermata |
+        Confermata»; «… che non ha ancora deciso | In attesa»; «… che l'ha
+        rifiutata | nessuno»."""
+        from models.certificazione import Livello, livello_di_sfida_per
+
+        sfida = self._sfida(p1=True, r2=False)
+        assert livello_di_sfida_per(sfida, 1) is Livello.CONFERMATA
+        assert livello_di_sfida_per(sfida, 2) is Livello.IN_ATTESA
+        rifiutata = self._sfida(p1=True, r2=True)
+        assert livello_di_sfida_per(rifiutata, 2) is None
+        assert livello_di_sfida_per(rifiutata, 1) is Livello.CONFERMATA
+
+    def test_l_elo_e_per_coppia(self):
+        """«conferma di entrambi → ELO di Confermate; nessun rifiuto → ELO di
+        Tutte; un rifiuto → fuori dall'ELO per tutti e due»."""
+        from models.certificazione import Livello, livello_di_sfida, sfida_conta_per_elo
+
+        entrambi = self._sfida(True, True, status=MatchStatus.CONFIRMED_BY_BOTH)
+        entrambi.winner_id = 1
+        assert livello_di_sfida(entrambi) is Livello.CONFERMATA
+        nessun_rifiuto = self._sfida()
+        assert livello_di_sfida(nessun_rifiuto) is Livello.IN_ATTESA
+        assert sfida_conta_per_elo(nessun_rifiuto) is True
+        assert sfida_conta_per_elo(self._sfida(p1=True, r2=True)) is False
+
+    def test_nessuna_firma_d_ufficio_e_nessun_blocco(self):
+        """«Nessuna firma d'ufficio»; «non blocca i due giocatori … e non si
+        ritira»."""
+        sfida = self._sfida()
+        assert sfida.awaiting_confirmation_from_id is None
+        assert not sfida.signed_and_waiting(1)

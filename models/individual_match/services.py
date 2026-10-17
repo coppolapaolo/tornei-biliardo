@@ -501,6 +501,12 @@ class IndividualMatchService:
         if not match.is_player(user_id):
             raise ValueError("La sfida la correggono i due giocatori")
 
+        if match.is_scored_by_third_party:
+            raise ValueError(
+                "La partita di altri due non si corregge: chi la segna la "
+                "annulla e la ricrea"
+            )
+
         if not match.can_be_revised():
             raise ValueError(
                 "La sfida è cominciata: come si gioca si decide "

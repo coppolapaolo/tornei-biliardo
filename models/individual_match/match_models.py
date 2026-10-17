@@ -147,6 +147,17 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
     player1_confirmed_at = db.Column(db.DateTime, nullable=True)
     player2_confirmed_at = db.Column(db.DateTime, nullable=True)
 
+    # La partita di altri due (ADR-084). `scorer_id` presente vuol dire che il
+    # referto lo tiene un istruttore o un direttore che non gioca: nessuno
+    # firma d'ufficio, e ognuno dei due conferma o **rifiuta per sé**. Il
+    # rifiuto è «non la riconosco»: un fatto solo suo, che non toglie
+    # triangoli e non tocca l'altro giocatore.
+    scorer_id = db.Column(
+        db.Integer, db.ForeignKey("user.id"), nullable=True, index=True
+    )
+    player1_rejected_at = db.Column(db.DateTime, nullable=True)
+    player2_rejected_at = db.Column(db.DateTime, nullable=True)
+
     # Relationships
     proposal = db.relationship("MatchProposal", back_populates="individual_match")
     billiard_hall = db.relationship("BilliardHall", foreign_keys=[billiard_hall_id])
@@ -155,6 +166,7 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
     winner = db.relationship("User", foreign_keys=[winner_id])
     lag_winner = db.relationship("User", foreign_keys=[lag_winner_id])
     first_break_player = db.relationship("User", foreign_keys=[first_break_player_id])
+    scorer = db.relationship("User", foreign_keys=[scorer_id])
 
     # UNIQUE on proposal_id prevents double-accept of same proposal (TOCTOU guard).
     # SQLite allows multiple NULLs → matches without proposal remain valid.
@@ -360,7 +372,13 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         triangolo, mentre i due stanno ancora giocando.
 
         Vedi ``models/individual_match/pending_confirmation.py``.
+
+        Nella partita di un terzo (ADR-084) non aspetta mai **una** firma:
+        aspetta la decisione di ciascuno dei due (`awaits_decision_from`), che
+        non blocca nessuno e non si ritira. Da cui ``None``.
         """
+        if self.is_scored_by_third_party:
+            return None
         if not self.is_ready_for_validation():
             return None
         if self.player1_confirmed and not self.player2_confirmed:
@@ -368,6 +386,123 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if self.player2_confirmed and not self.player1_confirmed:
             return self.player1_id
         return None
+
+    # ------------------------------------------------------------------
+    # La partita di altri due (ADR-084)
+    # ------------------------------------------------------------------
+
+    @property
+    def is_scored_by_third_party(self) -> bool:
+        """Se il referto lo tiene un terzo, istruttore o direttore."""
+        return self.scorer_id is not None
+
+    @property
+    def is_declared_by_scorer(self) -> bool:
+        """Se chi segna ha chiuso il referto: la partita è *dichiarata*.
+
+        Il fatto sta sul referto (`TpaReferto.closed_at`) e non su una colonna
+        della partita: due colonne per la stessa cosa prima o poi si
+        contraddicono. Prima della chiusura i giocatori non decidono niente.
+        """
+        if not self.is_scored_by_third_party:
+            return False
+        referto = getattr(self, "tpa_referto", None)
+        return referto is not None and referto.closed_at is not None
+
+    def decision_of(self, user_id: Optional[int]) -> Optional[str]:
+        """``"confirmed"``, ``"rejected"`` o ``None``: cosa ha deciso un giocatore.
+
+        Il rifiuto lascia traccia solo nella partita di un terzo; nella sfida
+        normale toglie l'ultimo triangolo e azzera le firme.
+        """
+        if user_id is None or not self.is_player(user_id):
+            return None
+        primo = user_id == self.player1_id
+        rifiuto = self.player1_rejected_at if primo else self.player2_rejected_at
+        if rifiuto is not None:
+            return "rejected"
+        if self.player1_confirmed if primo else self.player2_confirmed:
+            return "confirmed"
+        return None
+
+    def awaits_decision_from(self, user_id: Optional[int]) -> bool:
+        """Se la partita aspetta che ``user_id`` confermi o rifiuti.
+
+        Una domanda sola per i due tipi di sfida: nella sfida normale è la
+        firma che manca (`awaiting_confirmation_from_id`), nella partita di un
+        terzo è la decisione di ciascuno, a referto chiuso.
+        """
+        if user_id is None:
+            return False
+        if not self.is_scored_by_third_party:
+            return self.awaiting_confirmation_from_id == user_id
+        return (
+            self.status == MatchStatus.IN_PROGRESS
+            and self.is_declared_by_scorer
+            and self.is_player(user_id)
+            and self.decision_of(user_id) is None
+        )
+
+    @property
+    def is_awaiting_decisions(self) -> bool:
+        """Se qualcuno deve ancora confermare (o, qui, decidere)."""
+        if not self.is_scored_by_third_party:
+            return self.awaiting_confirmation_from_id is not None
+        return self.awaits_decision_from(self.player1_id) or self.awaits_decision_from(
+            self.player2_id
+        )
+
+    def _require_decision(self, user_id: int) -> None:
+        from ..exceptions import ConflictError, PermissionDeniedError
+
+        if not self.is_player(user_id):
+            raise PermissionDeniedError(
+                "Conferma o rifiuta solo chi ha giocato la partita"
+            )
+        if not self.is_declared_by_scorer or self.status != MatchStatus.IN_PROGRESS:
+            raise ConflictError(
+                "La partita si conferma quando chi la segna ha chiuso il referto"
+            )
+        if self.decision_of(user_id) is not None:
+            raise ConflictError("Hai già deciso su questa partita")
+
+    def confirm_as_player(self, user_id: int) -> bool:
+        """Conferma della partita di un terzo, per sé.
+
+        Vero se ora la confermano entrambi: allora è ``CONFIRMED_BY_BOTH``,
+        come ogni sfida a due, con l'evento che muove l'ELO globale.
+        """
+        self._require_decision(user_id)
+        return self.confirm_result(user_id)
+
+    def reject_as_player(self, user_id: int) -> None:
+        """«Non la riconosco»: il rifiuto della partita di un terzo, per sé.
+
+        Non toglie triangoli e non tocca l'altro giocatore: chi ha confermato
+        se la tiene (ADR-084).
+        """
+        self._require_decision(user_id)
+        if user_id == self.player1_id:
+            self.player1_rejected_at = utc_now()
+        else:
+            self.player2_rejected_at = utc_now()
+
+    def cancel_by_scorer(self, user_id: int) -> None:
+        """Chi segna annulla la partita, finché nessuno dei due l'ha confermata.
+
+        Anche a triangoli segnati: la partita a metà — uno se ne va, il
+        referto è partito male — si toglie così. Dopo la prima conferma la
+        partita è anche di chi l'ha confermata, e chi segna non la toglie più.
+        """
+        from ..exceptions import ConflictError, PermissionDeniedError
+
+        if not self.is_scored_by_third_party or self.scorer_id != user_id:
+            raise PermissionDeniedError("La partita la annulla solo chi la segna")
+        if self.status not in (MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS):
+            raise ConflictError("La partita è già chiusa o annullata")
+        if self.player1_confirmed or self.player2_confirmed:
+            raise ConflictError("Un giocatore l'ha già confermata: non si annulla più")
+        self.status = MatchStatus.CANCELLED
 
     def signed_and_waiting(self, user_id: int) -> bool:
         """Se ``user_id`` ha firmato e la partita aspetta solo l'avversario.
@@ -554,6 +689,9 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if self.status != MatchStatus.IN_PROGRESS:
             raise ValueError("Match is not in progress")
 
+        if self.is_scored_by_third_party:
+            raise ValueError("La partita segnata da un terzo la chiude il referto")
+
         # Data-integrity guard (C1): the winner MUST be one of the two players.
         # Without this, a player could close a match declaring an arbitrary
         # winner_id, corrupting stats/ELO downstream.
@@ -621,7 +759,10 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         Il punto unico del permesso: oggi i due giocatori; quando la partita
         potrà essere presa da un terzo, anche chi tiene il referto. Non dipende
         dallo stato: il video arriva spesso a partita chiusa da giorni.
+        Nella partita di un terzo anche chi la segna (ADR-084).
         """
+        if user_id is not None and self.scorer_id == user_id:
+            return True
         return self.is_player(user_id)
 
     def cancel_match(self, reason: Optional[str] = None) -> None:
@@ -676,6 +817,13 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if not self.is_player(user_id):
             raise PermissionDeniedError("La sfida la ritira solo chi l'ha giocata")
 
+        if self.is_scored_by_third_party:
+            # Lì i giocatori hanno conferma e rifiuto, per sé (ADR-084).
+            raise ConflictError(
+                "La partita segnata da un terzo non si ritira: si conferma o "
+                "si rifiuta"
+            )
+
         if self.signed_and_waiting(user_id):
             self.status = MatchStatus.CANCELLED
             return
@@ -704,6 +852,10 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         # Validate user is a player
         if user_id not in [self.player1_id, self.player2_id]:
             raise ValueError("User is not a player in this match")
+
+        if self.is_scored_by_third_party:
+            # Lì ognuno conferma o rifiuta per sé (ADR-084).
+            raise ValueError("La partita segnata da un terzo non ha forfait")
 
         # Validate match status
         if self.status not in [MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS]:
