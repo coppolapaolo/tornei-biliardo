@@ -29,6 +29,8 @@
    Attesi: campionato, general_classification, last_completed_gara_number;
    opzionali zone_playoff e classifica_finale. Lo includono la pagina del campionato del
    direttore e quella pubblica. #}
+{% from "components/_nome_giocatore.html" import nome_giocatore, badge_non_registrato %}
+
 {% set classification_sys = campionato.classification_system %}
 {% set _finale = classifica_finale is defined and classifica_finale %}
 {% set _fasce = namespace(attive=false, prec=none) %}
@@ -170,7 +172,7 @@
          colonne sono quelle della finale. #}
       {% set _diff = ('+' if dati.total_rack_difference > 0 else '') ~ dati.total_rack_difference %}
       <span class="c7-classifica__gioc">
-        <span class="c7-rows__title">{{ dati.username }}</span>
+        <span class="c7-rows__title">{{ nome_giocatore(dati) }}</span>
         <span class="c7-rows__sub">{{ _('Campionato:') }}
           {% if classification_sys == ClassificationSystem.RACK %}{{ _('%(n)s triangoli', n=dati.total_racks_won) }}
           {% elif classification_sys == ClassificationSystem.POSITION %}{{ _('%(n)s punti', n=dati.total_points or 0) }}
@@ -180,7 +182,7 @@
       </span>
       {{ _valori(_po.sistema, _po, finale=true) }}
       {% else %}
-      <span class="c7-classifica__gioc c7-rows__title">{{ dati.username }}</span>
+      <span class="c7-classifica__gioc c7-rows__title">{{ nome_giocatore(dati) }}</span>
       {{ _valori(classification_sys, _campionato) }}
       {% endif %}
       <span class="c7-classifica__col c7-classifica__col--sec c7-num{% if _finale %} d-none d-lg-block{% endif %}">{{ dati.participations }}</span>

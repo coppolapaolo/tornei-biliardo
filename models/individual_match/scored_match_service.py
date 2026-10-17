@@ -9,14 +9,17 @@ Chi segna non firma per nessuno. Quando chiude il referto la partita è
 *dichiarata* e i due giocatori decidono, ciascuno per sé
 (`IndividualMatch.confirm_as_player` / `reject_as_player`).
 
-I giocatori, oggi, sono utenti registrati: la scelta passa da
-`ScoredMatchService._giocatore`, il punto da estendere quando arriveranno i
-giocatori non ancora registrati.
+I giocatori sono utenti che esistono, registrati o no, oppure nascono dal
+modulo come giocatori non ancora registrati (`NuovoGiocatore`, ADR-085): la
+scelta passa da `ScoredMatchService._giocatore`. Per un non registrato la
+decisione resta assente — non ha un account con cui confermare — quindi per
+lui la partita è *in attesa* (livello per giocatore, ADR-084).
 """
 
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 from flask_babel import gettext as _
@@ -28,6 +31,14 @@ from ..transaction.manager import transactional
 from .match_models import IndividualMatch
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class NuovoGiocatore:
+    """Un giocatore da creare dal modulo, perché non ha un account (ADR-085)."""
+
+    first_name: str
+    last_name: str
 
 
 class ScoredMatchService:
@@ -46,14 +57,23 @@ class ScoredMatchService:
         return bool(user.is_admin or user.is_director or user.is_instructor)
 
     @staticmethod
-    def _giocatore(user_id: Any, etichetta: str):
+    def _giocatore(user_id: Any, etichetta: str, scorer=None):
         """Il giocatore scelto nel modulo.
 
-        Oggi un utente registrato e non cancellato. È il punto da estendere
-        per i giocatori non registrati (creati da chi segna): il resto del
-        servizio riceve un ``User`` e non sa da dove viene.
+        Un utente che esiste — registrato, o non registrato già creato da
+        qualcuno — oppure uno da creare adesso: chi segna scrive nome e
+        cognome di chi ha davanti e senza account (``NuovoGiocatore``,
+        ADR-085). Il resto del servizio riceve un ``User`` e non sa da dove
+        viene.
         """
         from ..user.models import User
+
+        if isinstance(user_id, NuovoGiocatore):
+            from ..user.profile_service import UserProfileService
+
+            return UserProfileService.create_placeholder(
+                user_id.first_name, user_id.last_name, scorer
+            )
 
         try:
             uid = int(user_id)
@@ -118,8 +138,8 @@ class ScoredMatchService:
                 _("La partita di altri due la segnano istruttori e direttori.")
             )
 
-        primo = ScoredMatchService._giocatore(player1_id, _("giocatore A"))
-        secondo = ScoredMatchService._giocatore(player2_id, _("giocatore B"))
+        primo = ScoredMatchService._giocatore(player1_id, _("giocatore A"), scorer)
+        secondo = ScoredMatchService._giocatore(player2_id, _("giocatore B"), scorer)
         if primo.id == secondo.id:
             raise ValidationError(_("I due giocatori devono essere diversi."))
         if scorer.id in (primo.id, secondo.id):
@@ -225,4 +245,4 @@ class ScoredMatchService:
             )
 
 
-__all__ = ["ScoredMatchService"]
+__all__ = ["NuovoGiocatore", "ScoredMatchService"]

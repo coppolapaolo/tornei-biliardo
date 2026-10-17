@@ -77,6 +77,11 @@ class UserService:
         )
 
     @staticmethod
+    def create_placeholder(first_name: str, last_name: str, created_by: Any) -> User:
+        """Delegate to UserProfileService: giocatore non registrato (ADR-085)."""
+        return UserProfileService.create_placeholder(first_name, last_name, created_by)
+
+    @staticmethod
     def update_user(user_id: int, **kwargs) -> User:
         """Delegate to UserProfileService for user updates."""
         return UserProfileService.update_user(user_id, **kwargs)
@@ -259,8 +264,9 @@ class UserService:
         # Find user by username (case sensitive)
         user = User.query.filter(User.username == username_normalized).first()
 
-        # Check if user exists and password is correct
-        if user and user.check_password(password):
+        # Check if user exists and password is correct. Un giocatore non
+        # registrato non entra (ADR-085).
+        if user and not user.is_placeholder and user.check_password(password):
             return user
 
         return None

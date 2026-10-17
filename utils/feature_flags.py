@@ -314,6 +314,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.close_inscriptions": {"director"},
     "admin.competition.modify_inscription_dates": {"director"},
     "admin.competition.admin_inscribe_user": {"director"},
+    # Chi è in sala senza account: il direttore lo crea e lo iscrive (ADR-085).
+    "admin.competition.admin_inscribe_placeholder": {"director"},
     "admin.competition.admin_uninscribe_user": {"director"},
     # Il ritiro di un iscritto a gara in corso, per chi se ne va senza dirlo.
     "admin.competition.ritira_iscritto": {"director"},

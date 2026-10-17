@@ -32,6 +32,11 @@ if TYPE_CHECKING:  # Avoid runtime circular imports
 
 from models.base import SoftDeleteMixin, utc_now
 
+#: La password di un giocatore non ancora registrato (ADR-085). Non è un hash
+#: di Werkzeug — non ha nemmeno il separatore `$` — quindi nessuna password la
+#: verifica. Come `"!fittizio!"` per i fittizi della prova (ADR-058).
+PASSWORD_DA_RISCATTARE = "!da-riscattare!"
+
 
 # ────────────────────────────────────────────────────────────────────────────────
 # USER
@@ -162,6 +167,29 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     prova_gara_id = db.Column(db.Integer, nullable=True, index=True)
     prova_campionato_id = db.Column(db.Integer, nullable=True, index=True)
 
+    # Giocatore **non ancora registrato** (ADR-085). Lo crea un direttore che
+    # iscrive alla gara chi è in sala senza account, o un istruttore che segna
+    # la partita di altri due: esiste per l'app — gioca partite vere, entra in
+    # classifica, ha un ELO — ma nessuno può entrare con lui. Nasce senza
+    # email e con `PASSWORD_DA_RISCATTARE`, che non corrisponde a nessuna
+    # password; il login e il caricamento della sessione lo rifiutano anche
+    # se qualcuno gliene impostasse una.
+    #
+    # Non è un fittizio (ADR-058): quello vive e muore con la sua prova e il
+    # rating lo ignora; questo è una persona vera a cui manca solo l'account.
+    # Chi poi si registra lo **riscatta**: le sue partite passano al nuovo
+    # account con `UserMergeService`, se `created_by` conferma (o l'admin,
+    # per chi non ha un creatore). `claimed_at` dice quando è successo.
+    is_placeholder = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    created_by_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
+    claimed_at = db.Column(db.DateTime, nullable=True)
+
+    created_by = db.relationship(
+        "User", remote_side=[id], foreign_keys=[created_by_id], lazy="select"
+    )
+
     # Relationships (string names to postpone model imports)
     # `foreign_keys` esplicito: `inscription` punta a `user` due volte, chi è
     # iscritto e chi lo ha iscritto (`inscribed_by_id`, 2026-09-16).
@@ -266,6 +294,10 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
 
         user = db.session.get(cls, int(id_str))
         if user is None or user.is_deleted:
+            return None
+        # Un giocatore non registrato non entra (ADR-085): nessuno ha le sue
+        # credenziali, e un cookie col suo id non può che essere costruito.
+        if user.is_placeholder:
             return None
 
         # `compare_digest` e non `==`: il confronto non deve dire, col tempo
@@ -633,6 +665,13 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         Returns:
             True if feature is unlocked or overridden, False otherwise.
         """
+        # Un giocatore non registrato non usa niente da sé (ADR-085): non entra
+        # nell'app. Chi lo interroga sono gli altri — l'elenco degli avversari,
+        # la ricerca, l'avvio rapido — e per tutti la risposta è no: non può
+        # ricevere una sfida a cui non saprebbe rispondere.
+        if self.is_placeholder:
+            return False
+
         if self.gamification_override:
             return True
 

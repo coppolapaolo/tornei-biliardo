@@ -3923,3 +3923,74 @@ class TestPartitaDiUnTerzo:
         sfida = self._sfida()
         assert sfida.awaiting_confirmation_from_id is None
         assert not sfida.signed_and_waiting(1)
+
+
+class TestGiocatoriNonRegistrati:
+    """SPECIFICHE.md, «Tipologie di utenti» → «Giocatori non ancora
+    registrati», regola del 2026-10-17 (ADR-085)."""
+
+    @staticmethod
+    def _direttore(db_session):
+        s = uuid.uuid4().hex[:8]
+        u = User(
+            username=f"dir_{s}", email=f"dir_{s}@test.com", role=UserRole.DIRECTOR.value
+        )
+        u.set_password("test1234")
+        db_session.add(u)
+        db_session.flush()
+        return u
+
+    def test_lo_username_e_nome_e_cognome_poi_un_numero(self, db_session):
+        """«Lo username è il nome e cognome; se è già preso si aggiunge un
+        numero: «Mario Rossi (2)»»."""
+        from models.user.services import UserService
+
+        direttore = self._direttore(db_session)
+        cognome = f"Rossi{uuid.uuid4().hex[:4]}"
+        primo = UserService.create_placeholder("Mario", cognome, direttore)
+        secondo = UserService.create_placeholder("Mario", cognome, direttore)
+        assert primo.username == f"Mario {cognome}"
+        assert secondo.username == f"Mario {cognome} (2)"
+
+    def test_non_entra_nell_app(self, db_session):
+        """«Non entra nell'app: non ha email né password, e il login lo
+        rifiuta comunque»."""
+        from models.user.services import UserService
+
+        giocatore = UserService.create_placeholder(
+            "Anna", f"Verdi{uuid.uuid4().hex[:4]}", self._direttore(db_session)
+        )
+        assert giocatore.email is None
+        giocatore.set_password("test1234")
+        assert UserService.authenticate_user(giocatore.username, "test1234") is None
+        assert User.from_session_id(giocatore.get_id()) is None
+
+    def test_non_riceve_notifiche(self, db_session):
+        """«Non riceve niente: né notifiche, né proposte di sfida»."""
+        from models.notification.models import NotificationType
+        from models.notification.services import NotificationService
+        from models.user.services import UserService
+
+        giocatore = UserService.create_placeholder(
+            "Luca", f"Neri{uuid.uuid4().hex[:4]}", self._direttore(db_session)
+        )
+        assert (
+            NotificationService.create_notification(
+                user_id=giocatore.id,
+                notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
+                title="x",
+                message="x",
+            )
+            is None
+        )
+
+    def test_non_e_un_avversario_delle_sfide(self, db_session):
+        """«non compare fra gli avversari delle sfide individuali e non si
+        sfida con l'avvio rapido»: il permesso delle sfide gli è negato."""
+        from models.user.services import UserService
+
+        giocatore = UserService.create_placeholder(
+            "Sara", f"Gialli{uuid.uuid4().hex[:4]}", self._direttore(db_session)
+        )
+        giocatore.gamification_override = True
+        assert giocatore.can_access("create_match_direct") is False

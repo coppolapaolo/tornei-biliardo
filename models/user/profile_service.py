@@ -7,7 +7,8 @@ following Task 1.3 decomposition patterns.
 
 from typing import Optional, List, Dict, Any
 from models.base import db
-from models.user.models import User
+from models.exceptions import PermissionDeniedError, ValidationError
+from models.user.models import PASSWORD_DA_RISCATTARE, User
 from models.user.role_enum import UserRole
 from models.transaction.manager import transactional, read_only
 from models.user.tokens import UserToken
@@ -35,6 +36,68 @@ class UserProfileService:
     - Provides authentication primitives for authorization
     - Supports user profile management workflows
     """
+
+    # ---------------------------------------------------- non registrati
+
+    @staticmethod
+    def can_create_placeholder(user: Any) -> bool:
+        """Chi può creare un giocatore non ancora registrato (ADR-085).
+
+        I direttori — che iscrivono alla gara chi è in sala senza account — e
+        gli istruttori, che segnano la partita di altri due. L'admin è un
+        direttore anche qui: ``is_director`` non lo dice, quindi si scrive.
+        """
+        if user is None or getattr(user, "is_placeholder", False):
+            return False
+        return bool(user.is_admin or user.is_director or user.is_instructor)
+
+    @staticmethod
+    @transactional(domain="user")
+    def create_placeholder(first_name: str, last_name: str, created_by: Any) -> User:
+        """Crea un giocatore che gioca davvero ma non ha ancora un account.
+
+        Nasce senza email e con una password che non vale niente
+        (`PASSWORD_DA_RISCATTARE`): nessuno entra con lui, finché qualcuno
+        non lo riscatta registrandosi. Lo username è il nome e cognome, reso
+        unico; nome e cognome si salvano anche nell'anagrafica, cifrati come
+        per chiunque, perché è da lì che chi si registra si riconoscerà.
+
+        Raises:
+            PermissionDeniedError: chi crea non è direttore, admin o istruttore.
+            ValidationError: manca il nome o il cognome.
+        """
+        from models.user.username_libero import username_libero
+
+        if not UserProfileService.can_create_placeholder(created_by):
+            raise PermissionDeniedError(
+                _("I giocatori non registrati li creano direttori e istruttori.")
+            )
+        nome = " ".join((first_name or "").split())
+        cognome = " ".join((last_name or "").split())
+        if not nome or not cognome:
+            raise ValidationError(
+                _("Scrivi nome e cognome del giocatore da aggiungere.")
+            )
+        if len(nome) > 100 or len(cognome) > 100:
+            raise ValidationError(_("Nome e cognome sono troppo lunghi."))
+
+        giocatore = User(
+            username=username_libero(f"{nome} {cognome}"),
+            email=None,
+            role=UserRole.PLAYER.value,
+            password_hash=PASSWORD_DA_RISCATTARE,
+            is_verified=False,
+            # Nessuno lo vedrà mai: chi lo riscatta fa l'onboarding del suo
+            # account, non di questo.
+            onboarding_completed=True,
+            first_name=nome,
+            last_name=cognome,
+            is_placeholder=True,
+            created_by_id=created_by.id,
+        )
+        db.session.add(giocatore)
+        db.session.flush()
+        return giocatore
 
     @staticmethod
     @transactional(domain="user")
@@ -432,7 +495,9 @@ class UserProfileService:
             return None
 
         user = User.query.filter(User.username == username.strip()).first()
-        if user and user.check_password(password):
+        # Un giocatore non registrato non entra, qualunque cosa ci sia nella
+        # sua colonna password (ADR-085).
+        if user and not user.is_placeholder and user.check_password(password):
             return user
         return None
 

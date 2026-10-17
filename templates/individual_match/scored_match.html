@@ -31,20 +31,39 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     {# ---------- Chi gioca ----------
-       I due giocatori sono utenti registrati. Il giocatore A è il posto 1
-       del referto, il B il posto 2: chi spacca si sceglie nel referto. #}
+       Il giocatore A è il posto 1 del referto, il B il posto 2: chi spacca si
+       sceglie nel referto. Chi non ha un account si aggiunge con nome e
+       cognome e nasce non registrato (ADR-085). #}
     <div class="c7-card">
       <div class="c7-sechead mb-3"><h2 data-help="partita-altri-due-chi-gioca">{{ _("Chi gioca") }}</h2></div>
 
       <div class="mb-3">
         <label for="player1Search" class="form-label">{{ _("Giocatore A") }}</label>
-        <select id="player1Search" name="player1_id" placeholder="{{ _('Cerca per nome...') }}" required></select>
+        <select id="player1Search" name="player1_id" placeholder="{{ _('Cerca per nome...') }}"></select>
+        <details class="c7-nonreg-crea" data-nuovo="player1">
+          <summary class="c7-nonreg-crea__apri"><i class="fas fa-user-plus"></i>&nbsp;{{ _("Non ha un account? Aggiungilo") }}</summary>
+          <div class="c7-grid mt-1" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <input type="text" class="form-control" name="player1_new_first_name" maxlength="100"
+                   autocomplete="off" placeholder="{{ _('Nome') }}" aria-label="{{ _('Nome del giocatore A') }}">
+            <input type="text" class="form-control" name="player1_new_last_name" maxlength="100"
+                   autocomplete="off" placeholder="{{ _('Cognome') }}" aria-label="{{ _('Cognome del giocatore A') }}">
+          </div>
+        </details>
       </div>
       <div>
         <label for="player2Search" class="form-label">{{ _("Giocatore B") }}</label>
-        <select id="player2Search" name="player2_id" placeholder="{{ _('Cerca per nome...') }}" required></select>
+        <select id="player2Search" name="player2_id" placeholder="{{ _('Cerca per nome...') }}"></select>
+        <details class="c7-nonreg-crea" data-nuovo="player2">
+          <summary class="c7-nonreg-crea__apri"><i class="fas fa-user-plus"></i>&nbsp;{{ _("Non ha un account? Aggiungilo") }}</summary>
+          <div class="c7-grid mt-1" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <input type="text" class="form-control" name="player2_new_first_name" maxlength="100"
+                   autocomplete="off" placeholder="{{ _('Nome') }}" aria-label="{{ _('Nome del giocatore B') }}">
+            <input type="text" class="form-control" name="player2_new_last_name" maxlength="100"
+                   autocomplete="off" placeholder="{{ _('Cognome') }}" aria-label="{{ _('Cognome del giocatore B') }}">
+          </div>
+        </details>
       </div>
-      <div class="form-text">{{ _("Devono avere un account: la partita finisce nel loro storico, se la confermano.") }}</div>
+      <div class="form-text">{{ _("Chi ha un account la ritrova nel suo storico, se la conferma. Chi non ce l'ha nasce non registrato: la partita resta in attesa finché non si registra.") }}</div>
     </div>
 
     {# ---------- Che partita è ----------
@@ -133,7 +152,8 @@
         noResults: {{ _("Nessun giocatore con questo nome.")|tojson }},
         typeMore: {{ _("Scrivi almeno due lettere.")|tojson }},
         samePlayer: {{ _("I due giocatori devono essere diversi.")|tojson }},
-        missing: {{ _("Scegli i due giocatori prima di iniziare.")|tojson }}
+        missing: {{ _("Scegli i due giocatori prima di iniziare.")|tojson }},
+        notRegistered: {{ _("non registrato")|tojson }}
     };
     const searchUrl = {{ url_for("individual_match.search_players", ambito="altri_due")|tojson }};
 
@@ -155,7 +175,10 @@
             },
             render: {
                 option: function (data, escape) {
-                    return '<div class="py-2 px-3"><i class="fas fa-user me-2 text-muted"></i>' + escape(data.username) + '</div>';
+                    const segno = data.is_placeholder
+                        ? '<span class="c7-state c7-state--muted c7-nonreg">' + escape(i18nScored.notRegistered) + '</span>'
+                        : '';
+                    return '<div class="py-2 px-3"><i class="fas fa-user me-2 text-muted"></i>' + escape(data.username) + segno + '</div>';
                 },
                 item: function (data, escape) {
                     return '<div><i class="fas fa-user me-1"></i>' + escape(data.username) + '</div>';
@@ -192,9 +215,17 @@
         }
     });
 
+    // Un posto è scelto se c'è un giocatore dalla ricerca, oppure nome e
+    // cognome di uno da aggiungere (ADR-085).
+    function nuovo(posto) {
+        const nome = document.querySelector('[name="' + posto + '_new_first_name"]').value.trim();
+        const cognome = document.querySelector('[name="' + posto + '_new_last_name"]').value.trim();
+        return nome && cognome ? 'nuovo:' + nome + ' ' + cognome : '';
+    }
+
     document.getElementById('scoredForm').addEventListener('submit', function (e) {
-        const a = document.getElementById('player1Search').value;
-        const b = document.getElementById('player2Search').value;
+        const a = document.getElementById('player1Search').value || nuovo('player1');
+        const b = document.getElementById('player2Search').value || nuovo('player2');
         if (!a || !b) {
             e.preventDefault();
             showError(i18nScored.missing);

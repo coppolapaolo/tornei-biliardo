@@ -555,29 +555,11 @@ class ProvaService:
 
 
 def _username_libero(base: str) -> str:
-    """`base`, o `base (2)`, `base (3)`… se e' gia' preso.
+    """Vedi `models.user.username_libero`: la regola è la stessa dei giocatori
+    non registrati (ADR-085), quindi sta in un posto solo."""
+    from models.user.username_libero import username_libero
 
-    Due prove aperte insieme hanno entrambe una Maria Rossi: la seconda si
-    chiama «Maria Rossi (2)». Si guarda **tutta** la tabella, fittizi di altre
-    prove e utenti soft-eliminati compresi: il vincolo di unicita' vale per
-    tutte le righe, non per quelle visibili.
-    """
-    from models.user.models import User
-
-    presi = {
-        nome
-        for (nome,) in db.session.execute(
-            select(User.username)
-            .where(or_(User.username == base, User.username.like(f"{base} (%")))
-            .execution_options(include_prova=True, include_deleted=True)
-        ).all()
-    }
-    if base not in presi:
-        return base
-    n = 2
-    while f"{base} ({n})" in presi:
-        n += 1
-    return f"{base} ({n})"
+    return username_libero(base)
 
 
 # ---------------------------------------------------------------------------

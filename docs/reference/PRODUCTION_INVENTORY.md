@@ -88,6 +88,7 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/gara/<int:gara_id>/modify_inscription_dates` | POST | `admin.competition.modify_inscription_dates` | `@gara_manager_required` | action | Modifica date inizio/fine iscrizioni |
 | `/admin/gara/<int:gara_id>/close_inscriptions` | POST | `admin.competition.close_inscriptions` | `@gara_manager_required` | action | Chiude iscrizioni |
 | `/admin/gara/<int:gara_id>/admin_inscribe` | POST | `admin.competition.admin_inscribe_user` | `@gara_manager_required` | action | Iscrive player manualmente |
+| `/admin/gara/<int:gara_id>/admin_inscribe_placeholder` | POST | `admin.competition.admin_inscribe_placeholder` | `@gara_manager_required` | action | Crea un giocatore non registrato e lo iscrive (ADR-085) |
 | `/admin/gara/<int:gara_id>/admin_uninscribe/<int:user_id>` | POST | `admin.competition.admin_uninscribe_user` | `@gara_manager_required` | action | Disiscrive player manualmente |
 | `/admin/gara/<int:gara_id>/ritira/<int:user_id>` | POST | `admin.competition.ritira_iscritto` | `@gara_manager_required` | action | Ritira un iscritto a gara in corso: vale come il suo forfait, con la regola della gara sui ritiri e una notifica al giocatore |
 | `/admin/gara/<int:gara_id>/prova/iscrivi/<modalita>` | POST | `admin.competition.prova_iscrivi_fittizi` | `@gara_manager_required` | action | Competizione di prova (ADR-058): crea e iscrive giocatori fittizi (il minimo, fino al massimo, uno in più) |

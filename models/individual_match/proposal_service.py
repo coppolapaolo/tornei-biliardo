@@ -99,13 +99,23 @@ class ProposalService:
         from ..user.models import User
 
         wanted = {uid for uid in invited_user_ids if uid != proposer_id}
-        found = (
-            {row.id for row in User.query.filter(User.id.in_(wanted)).all()}
-            if wanted
-            else set()
-        )
+        invitati = User.query.filter(User.id.in_(wanted)).all() if wanted else []
+        found = {row.id for row in invitati}
         if wanted - found:
             raise NotFoundError(_("Il giocatore invitato non esiste"))
+        # Un giocatore non registrato non riceve proposte (ADR-085): non ha un
+        # account con cui leggerle, né con cui accettarle.
+        from ..exceptions import ValidationError
+
+        for invitato in invitati:
+            if invitato.is_placeholder:
+                raise ValidationError(
+                    _(
+                        "%(nome)s non è ancora registrato: non può ricevere "
+                        "proposte di sfida.",
+                        nome=invitato.username,
+                    )
+                )
 
         proposal = MatchProposal(
             proposer_id=proposer_id,

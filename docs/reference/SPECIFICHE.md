@@ -11,6 +11,20 @@ Ci sono tre tipologie di utenti:
 2. **player**: l'utente registrato che può iscriversi ai campionati e alle gare e giocare
 3. **director**: il player che ha chiesto e ottenuto di poter diventare direttore di gara. Mantiene tutte le funzionalità del player, ma assume i poteri di ``admin`` limitatamente alla gestione di campionati e di gare create da lui o in cui è nominato _co-direttore_
 
+#### Giocatori non ancora registrati
+
+Un **direttore** (o l'admin) e un **istruttore** possono creare un giocatore che non ha un account, scrivendone **nome e cognome**: è chi arriva in sala per giocare senza essersi mai registrato. Lo si crea dall'iscrizione a una gara, accanto alla ricerca, o dal modulo della partita di altri due.
+
+- Lo **username** è il nome e cognome; se è già preso si aggiunge un numero: «Mario Rossi (2)».
+- **Non entra nell'app**: non ha email né password, e il login lo rifiuta comunque.
+- **Gioca davvero**: le sue partite contano per classifiche ed ELO come quelle di chiunque. Non è un giocatore fittizio di una prova.
+- **Non riceve niente**: né notifiche, né proposte di sfida; non compare fra gli avversari delle sfide individuali e non si sfida con l'avvio rapido.
+- **Non firma**: nella partita di altri due la sua conferma resta assente, quindi per lui la partita è *In attesa* (vedi «Livelli di certificazione»).
+- Accanto al suo nome, negli iscritti, nelle classifiche e nel profilo, c'è il segno **«non registrato»**.
+- Chi poi si registra lo **riscatta**: le partite passano al nuovo account con la conferma di chi l'ha creato, o dell'admin per i giocatori senza creatore.
+
+_Regola nuova del 2026-10-17, decisa dall'utente (ADR-085). Il riscatto arriva con una modifica successiva._
+
 ## Campionati
 
 La app permette di organizzare campionati. ``admin`` o un utente ``director`` possono creare nuovi campionati. Un **campionato** è una collezione di ``n`` **gare**, con una **classifica** complessiva. 
