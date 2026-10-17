@@ -569,6 +569,11 @@ class IndividualMatchService:
         return MatchLifecycleService.cancel_match(match_id, user_id, reason)
 
     @staticmethod
+    def withdraw_match(match_id: int, user_id: int) -> IndividualMatch:
+        """Ritira una sfida firmata solo da ``user_id`` (2026-10-17)."""
+        return MatchLifecycleService.withdraw_match(match_id, user_id)
+
+    @staticmethod
     def forfeit_match(match_id: int, user_id: int) -> IndividualMatch:
         """Forfeit a match - user loses, opponent wins.
 

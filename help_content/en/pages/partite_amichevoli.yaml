@@ -161,6 +161,16 @@ blocks:
       old one keeps waiting for their confirmation, and when they open the app
       they are asked for all of them.
 
+  - type: text
+    text: >-
+      If your opponent never confirms, you can also **withdraw** the match you
+      signed: open it and tap **Withdraw the match**, then **Withdraw**. The
+      match is cancelled, no longer counts for either of you, and your
+      opponent is notified. Only the player who signed can do it: the one who
+      still has to sign has **I reject the result**. Once you have both
+      signed, the match can no longer be withdrawn. Matches waiting for a
+      signature are in the Matches page, under **Awaiting confirmation**.
+
   - type: heading
     id: chi-apre
     title: "Who breaks, and how the shot passes"
@@ -314,7 +324,7 @@ blocks:
       - q: "I cannot see the Matches section."
         a: "It is a feature that unlocks as you use the platform. If it is not there yet, play a few more competitions and it will appear."
       - q: "My opponent does not confirm the result."
-        a: "The match stays pending: after a day it leaves the dashboard, but you will find it among your matches. Nudge them: without both confirmations the result does not go into the statistics. Until they confirm, they cannot start or accept other matches; you can, even against them."
+        a: "The match stays pending: after a day it leaves the dashboard, but you will find it among your matches. Nudge them: without both confirmations the result does not go into the statistics. Until they confirm, they cannot start or accept other matches; you can, even against them. If they never confirm it, you can withdraw it: open the match and tap Withdraw the match."
       - q: "Why can't I start or accept a match?"
         a: "You have at least one match waiting for your confirmation. Confirm or reject it from the page the app offers you, or from My matches: once the last one is closed, you can start again."
       - q: "Can I propose a match to someone who is not on the app?"

@@ -279,6 +279,20 @@
         {{ _("Vedi le statistiche") }}
       </a>
       {% endif %}
+
+      {# Ritiro (2026-10-17): la seconda firma può non arrivare mai, e chi ha
+         firmato deve poter togliere la sfida. Solo lui: l'avversario ha già
+         «rifiuta». Tocca un altro giocatore e non si disfa, quindi il foglio
+         col nome dell'azione (ADR-074), non l'Annulla in tre secondi. #}
+      {% if signed_waiting and feature_visible('individual_match.withdraw_match') %}
+      <form method="POST" action="{{ url_for('individual_match.withdraw_match', match_id=match.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="button" class="btn btn-outline-danger w-100"
+                onclick='confirmSubmit(this.closest("form"), {{ _("Ritirare la sfida? Non conterà più per nessuno dei due, e il tuo avversario riceverà un avviso.")|tojson }}, {confirmText: {{ _("Ritira")|tojson }}, confirmClass: "btn-danger"})'>
+          <i class="fas fa-trash-can"></i>&nbsp;{{ _("Ritira la sfida") }}
+        </button>
+      </form>
+      {% endif %}
     </section>
     {% endif %}
 

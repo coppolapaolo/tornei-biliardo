@@ -1,6 +1,7 @@
 """Match scoring and lifecycle routes for individual matches."""
 
 from flask import (
+    abort,
     request,
     redirect,
     url_for,
@@ -548,6 +549,37 @@ def cancel_match(match_id):
         else:
             flash(error_msg, "danger")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
+@individual_match_bp.route("/matches/<int:match_id>/withdraw", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def withdraw_match(match_id):
+    """Ritira una sfida firmata da te e non dall'avversario (2026-10-17).
+
+    I messaggi d'errore si scrivono qui, tradotti: quelli del dominio sono per
+    chi legge il codice e i log.
+    """
+    from models.exceptions import NotFoundError, PermissionDeniedError
+
+    try:
+        IndividualMatchService.withdraw_match(match_id, current_user.id)
+    except NotFoundError:
+        abort(404)
+    except PermissionDeniedError:
+        flash(_("La sfida la ritira solo chi l'ha firmata."), "danger")
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+    except ValueError:
+        flash(
+            _(
+                "Questa sfida non si può ritirare: si ritira solo quando l'hai "
+                "firmata tu e l'avversario non ancora."
+            ),
+            "danger",
+        )
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    flash(_("Sfida ritirata: non conta più per nessuno dei due."), "success")
+    return redirect(url_for("individual_match.dashboard"))
 
 
 @individual_match_bp.route("/matches/<int:match_id>/edit", methods=["GET", "POST"])

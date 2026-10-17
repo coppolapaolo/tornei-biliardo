@@ -158,6 +158,16 @@ blocks:
       e anche l'avvio rapido apre una partita nuova. Quella vecchia resta in
       attesa della sua conferma, e quando apre l'app gli si chiedono tutte.
 
+  - type: text
+    text: >-
+      Se l'avversario non conferma mai, la sfida che hai firmato puoi anche
+      **ritirarla**: aprila e tocca **Ritira la sfida**, poi **Ritira**. La
+      sfida è annullata, non conta più per nessuno dei due, e l'avversario
+      riceve un avviso. Può farlo solo chi ha firmato: chi deve ancora firmare
+      ha **Rifiuto il risultato**. Quando avete firmato tutti e due, la sfida
+      non si ritira più. Le sfide in attesa le trovi nella pagina Sfide, nella
+      sezione **In attesa di conferma**.
+
   - type: heading
     id: chi-apre
     title: "Chi apre, e come si passa il tiro"
@@ -338,7 +348,7 @@ blocks:
       - q: "Non vedo la sezione Sfide."
         a: "È una funzione che si sblocca con l'uso della piattaforma. Se non compare, continua a giocare qualche gara: comparirà."
       - q: "L'avversario non conferma il risultato."
-        a: "La partita resta in attesa: dopo un giorno esce dalla dashboard, ma la trovi fra le sfide. Sollecitalo: senza la conferma di entrambi il risultato non entra nelle statistiche. Finché non conferma, lui non può lanciare né accettare altre sfide; tu sì, anche contro di lui."
+        a: "La partita resta in attesa: dopo un giorno esce dalla dashboard, ma la trovi fra le sfide. Sollecitalo: senza la conferma di entrambi il risultato non entra nelle statistiche. Finché non conferma, lui non può lanciare né accettare altre sfide; tu sì, anche contro di lui. Se non la conferma mai, puoi ritirarla: apri la sfida e tocca Ritira la sfida."
       - q: "Perché non riesco a lanciare o accettare una sfida?"
         a: "Hai almeno una partita che aspetta la tua conferma. Confermala o rifiutala dalla pagina che l'app ti propone, o da Le mie sfide: chiusa l'ultima, puoi ripartire."
       - q: "Posso proporre una partita a chi non è iscritto all'app?"
