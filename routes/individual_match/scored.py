@@ -22,7 +22,10 @@ from flask_login import current_user
 
 from models.base import db
 from models.exceptions import DomainError
-from models.individual_match.scored_match_service import ScoredMatchService
+from models.individual_match.scored_match_service import (
+    NuovoGiocatore,
+    ScoredMatchService,
+)
 from models.tpa.engine import GAME_TYPE_BY_DISCIPLINE
 
 from . import individual_match_bp
@@ -94,8 +97,8 @@ def scored_match():
     try:
         match = ScoredMatchService.start(
             current_user,
-            data.get("player1_id"),
-            data.get("player2_id"),
+            _scelta(data, "player1"),
+            _scelta(data, "player2"),
             config,
         )
     except DomainError as exc:
@@ -104,6 +107,23 @@ def scored_match():
 
     flash(_("Partita aperta: il referto è tuo."), "success")
     return redirect(url_for("individual_match.tpa_referto", match_id=match.id))
+
+
+def _scelta(data, posto: str):
+    """L'id scelto dalla ricerca, o nome e cognome di un giocatore da creare.
+
+    Il modulo ha per ogni posto la ricerca e, sotto, «Non ha un account?» con
+    nome e cognome (ADR-085). Se c'è un id vince l'id: i due campi restano
+    nel modulo anche quando chi segna ha cambiato idea e ha cercato.
+    """
+    scelto = data.get(f"{posto}_id")
+    if scelto:
+        return scelto
+    nome = (data.get(f"{posto}_new_first_name") or "").strip()
+    cognome = (data.get(f"{posto}_new_last_name") or "").strip()
+    if nome or cognome:
+        return NuovoGiocatore(nome, cognome)
+    return None
 
 
 def _form():

@@ -1,5 +1,6 @@
 <!-- templates/player/profile.html — 7c. Profilo giocatore (personale o pubblico) -->
 {% extends "base.html" %}
+{% from "components/_nome_giocatore.html" import badge_non_registrato %}
 
 {% block title %}
 {% if is_own_profile %}{{ _("Il mio profilo") }} - {{ user.username }}{% else %}{{ _("Profilo di") }} {{ user.username }}{% endif %}
@@ -9,7 +10,7 @@
    seconda dentro `content`. Sovrascrivere `page_head` per intero farebbe
    sparire il link indietro e l'avatar che base.html mostra sul mobile. #}
 {% block page_title %}{{ user.username }}{% endblock %}
-{% block page_sub %}{% if is_own_profile %}{{ _("Il mio profilo") }}{% else %}{{ _("Profilo pubblico") }}{% endif %}{% endblock %}
+{% block page_sub %}{% if is_own_profile %}{{ _("Il mio profilo") }}{% else %}{{ _("Profilo pubblico") }}{% endif %}{{ badge_non_registrato(user) }}{% endblock %}
 {% block page_actions %}
     {% if is_own_profile %}
     <a href="{{ url_for('player.history') }}" class="btn btn-secondary btn-sm">{{ _("Storico") }}</a>
@@ -17,6 +18,17 @@
 {% endblock %}
 
 {% block content %}
+{% if user.is_placeholder %}
+{# Un giocatore non ancora registrato (ADR-085): i numeri sono veri, ma
+   nessuno ha ancora l'account per entrare con lui. #}
+<div class="c7-flash c7-flash--info mb-3">
+  <span class="c7-flash__ico"><i class="fas fa-user-clock"></i></span>
+  <div class="c7-flash__body">
+    <div class="c7-flash__title">{{ _("Non ancora registrato") }}</div>
+    <div class="c7-flash__text">{{ _("Questo giocatore l'ha aggiunto un direttore o un istruttore: le sue partite e le sue classifiche contano come quelle di tutti, ma non ha ancora un account.") }}</div>
+  </div>
+</div>
+{% endif %}
 {# Il selettore sta in testa, sopra le due colonne: cambia numeri che vivono
    in tre sezioni diverse, e messo dentro una di loro sembrerebbe riguardare
    solo quella. Compare se c'è almeno una sezione che lo ascolta. #}

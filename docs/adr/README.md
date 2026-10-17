@@ -98,6 +98,7 @@ Crea un ADR quando:
 | ADR-082 | [I preset dei direttori](ADR-082-preset-dei-direttori.md) | Accepted | 2026-10-12 |
 | ADR-083 | [Le prestazioni hanno livelli di certificazione](ADR-083-livelli-di-certificazione.md) | Accepted | 2026-10-17 |
 | ADR-084 | [Istruttori e direttori tengono il TPA della partita di altri due](ADR-084-tpa-tenuto-da-un-terzo.md) | Accepted | 2026-10-17 |
+| ADR-085 | [Direttori e istruttori creano giocatori non ancora registrati](ADR-085-giocatori-non-ancora-registrati.md) | Accepted | 2026-10-17 |
 
 ## Come Creare un Nuovo ADR
 

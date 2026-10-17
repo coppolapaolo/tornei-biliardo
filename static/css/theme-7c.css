@@ -5100,3 +5100,21 @@ html[data-vista-attiva="tutte"] [data-vista-scelta="tutte"] { background: var(--
 @media (min-width: 992px) {
   .c7-vista-cert .c7-seg { max-width: 480px; }
 }
+
+/* Il segno «non registrato» accanto al nome (ADR-085,
+   `components/_nome_giocatore.html`). Più piccolo di uno stato di riga: è
+   una nota sul nome, non lo stato di qualcosa. */
+.c7-nonreg {
+  height: 18px; padding: 0 7px; margin-left: 6px; font-size: 9px;
+  vertical-align: middle; white-space: nowrap;
+}
+
+/* «Nuovo giocatore non registrato» sotto la ricerca degli iscrivibili: si apre
+   solo quando serve, la ricerca resta il gesto principale. */
+.c7-nonreg-crea__apri {
+  list-style: none; cursor: pointer; min-height: 48px;
+  display: flex; align-items: center;
+  font-size: 13px; font-weight: 700; color: var(--c7-accent-tint-ink);
+}
+.c7-nonreg-crea__apri::-webkit-details-marker { display: none; }
+.c7-nonreg-crea[open] .c7-nonreg-crea__apri { color: var(--c7-ink); }

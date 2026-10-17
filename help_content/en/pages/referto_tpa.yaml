@@ -359,7 +359,10 @@ blocks:
       watching, a match of one of your students. In **Individual matches** tap
       **Score a match between two others**, pick player A and player B, write
       which match it is, and tap **Start the scoresheet**. You cannot be one
-      of the two.
+      of the two. If one of them has no account, tap **No account? Add them**
+      below their slot and type first and last name: an unregistered player
+      is created. They get no notices and cannot confirm, so for them the
+      match stays *pending* until they sign up.
 
   - type: steps
     items:

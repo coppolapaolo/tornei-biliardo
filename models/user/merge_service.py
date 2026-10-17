@@ -255,6 +255,15 @@ class UserMergeService:
         """
         reassigned = 0
         for table, col in UserMergeService._user_fk_columns():
+            if table.name == "user" and col.name == "created_by_id":
+                # Chi ha creato i giocatori non registrati (ADR-085) è una
+                # persona: se i suoi due account si uniscono, il riscatto di
+                # quei giocatori lo conferma il destinatario.
+                db.session.execute(
+                    update(table).where(col == source_id).values({col.name: target_id})
+                )
+                reassigned += 1
+                continue
             if table.name == "user" or table.name in _DELETE_SOURCE_TABLES:
                 continue
             if UserMergeService._is_constrained(table, col):

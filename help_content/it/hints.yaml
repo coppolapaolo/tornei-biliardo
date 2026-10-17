@@ -259,6 +259,14 @@ hints:
     page: condurre_la_gara
     section: primo_turno
 
+  - id: gara.iscrivi_non_registrato
+    label: "Nuovo giocatore non registrato"
+    short: "Per chi è in sala senza account: scrivi nome e cognome e lo iscrivi subito. Gioca e va in classifica, ma non riceve notifiche finché non si registra."
+    anchor: gara-iscrivi-non-registrato
+    screens: [admin.competition.gara_detail]
+    page: gestire_le_iscrizioni
+    section: durante
+
   - id: gara.cerca_da_iscrivere
     label: "Cerca il giocatore da iscrivere"
     short: "Scrivi username, nome o cognome: l'elenco si accorcia mentre scrivi. Chi ha messo il nome nel profilo compare con quello."
@@ -907,7 +915,7 @@ hints:
 
   - id: sfida.altri_due_chi_gioca
     label: "Chi gioca"
-    short: "I due giocatori della partita che segni: devono avere un account, e tu non puoi essere uno dei due. A fine partita confermano o rifiutano, ciascuno per sé."
+    short: "I due giocatori della partita che segni; tu non puoi essere uno dei due. Chi non ha un account lo aggiungi con nome e cognome. A fine partita ognuno conferma o rifiuta per sé."
     anchor: partita-altri-due-chi-gioca
     screens: [individual_match.scored_match]
     page: referto_tpa

@@ -1,0 +1,30 @@
+{# templates/components/_nome_giocatore.html — il nome di un giocatore, col suo segno.
+
+   Un posto solo per dire che un giocatore **non è ancora registrato**
+   (ADR-085): l'ha creato un direttore o un istruttore, gioca partite vere e
+   sta in classifica, ma nessuno ha ancora l'account per entrare con lui.
+
+   `giocatore` è un `User` oppure un dizionario di classifica: Jinja legge
+   `giocatore.username` e `giocatore.is_placeholder` da entrambi. L'id è
+   `user_id` nei dizionari, `id` sugli oggetti.
+
+   Qui arriverà anche il «Sei tu? Riscatta» delle pagine pubbliche: chi
+   disegna un nome passando da queste macro lo riceverà senza toccare la sua
+   pagina.
+
+   Uso:
+     {% from "components/_nome_giocatore.html" import nome_giocatore, badge_non_registrato %}
+     {{ nome_giocatore(inscription.user) }}            nome + segno
+     {{ badge_non_registrato(dati) }}                  il solo segno, dopo un nome già scritto
+#}
+
+{% macro badge_non_registrato(giocatore) -%}
+{%- if giocatore and giocatore.is_placeholder -%}
+<span class="c7-state c7-state--muted c7-nonreg"
+      title="{{ _('Non ancora registrato: gioca e sta in classifica, ma non ha ancora un account') }}">{{ _('non registrato') }}</span>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro nome_giocatore(giocatore) -%}
+{{ giocatore.username }}{{ badge_non_registrato(giocatore) }}
+{%- endmacro %}

@@ -271,6 +271,48 @@ def admin_inscribe_user(gara_id):
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
+@competition_bp.route("/<int:gara_id>/admin_inscribe_placeholder", methods=["POST"])
+@login_required
+@gara_manager_required
+def admin_inscribe_placeholder(gara_id):
+    """Crea un giocatore non ancora registrato e lo iscrive (ADR-085).
+
+    Per chi è in sala senza account: il direttore scrive nome e cognome. Il
+    giocatore non riceve notifiche — non ha un account per leggerle — e il
+    giorno che si registra potrà riscattare le sue partite.
+    """
+    from models.exceptions import DomainError
+
+    destinazione = url_for("admin.competition.gara_detail", gara_id=gara_id)
+    try:
+        iscrizione = InscriptionService.iscrivi_non_registrato(
+            gara_id,
+            request.form.get("first_name", ""),
+            request.form.get("last_name", ""),
+            current_user,
+        )
+    except DomainError as errore:
+        flash(str(errore), "error")
+        return redirect(destinazione)
+
+    nome = iscrizione.user.username
+    if iscrizione.is_waitlist:
+        flash(
+            _(
+                "%(utente)s aggiunto alla lista d'attesa (posizione %(posizione)s).",
+                utente=nome,
+                posizione=iscrizione.waitlist_position,
+            ),
+            "warning",
+        )
+    else:
+        flash(
+            _("%(utente)s iscritto: non è ancora registrato.", utente=nome),
+            "success",
+        )
+    return redirect(destinazione)
+
+
 @competition_bp.route("/<int:gara_id>/admin_uninscribe/<int:user_id>", methods=["POST"])
 @login_required
 @gara_manager_required

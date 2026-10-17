@@ -18,6 +18,7 @@
    volte, mobile e desktop): il combo delle categorie, il `<datalist>` e il
    foglio della squadra stanno in `direttore/_squadre_categorie.html`. #}
 
+{% from "components/_nome_giocatore.html" import nome_giocatore, badge_non_registrato %}
 {% set _attivi = inscriptions | selectattr('is_waitlist', 'equalto', false) | selectattr('is_withdrawn', 'equalto', false) | list %}
 {% set _attesa = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn', 'equalto', false) | sort(attribute='waitlist_position') | list %}
 {% set _puo_ritirare = user_can_manage and ritiro_iscritti is defined and ritiro_iscritti and gara.status == GaraStatus.PLAYING.value %}
@@ -33,8 +34,13 @@
 
 <section class="c7-stack">
 
-  {# ---- Iscrivi un giocatore: il campo in cima ---- #}
-  {% if _puo_iscrivere and available_users and available_users|length > 0 and not gara.is_prova %}
+  {# ---- Iscrivi un giocatore: il campo in cima ----
+     Sotto la ricerca, chi è in sala senza account: nome e cognome, e nasce
+     un giocatore non ancora registrato già iscritto (ADR-085). Il modulo c'è
+     anche quando non c'è nessuno da cercare. #}
+  {% if _puo_iscrivere and not gara.is_prova %}
+  <div class="c7-stack" style="gap:8px">
+  {% if available_users and available_users|length > 0 %}
   <div class="c7-stack" data-iscrivibili data-massimo="8" style="gap:8px">
     <div>
       <label class="c7-label" data-help="gara-cerca-da-iscrivere">{{ _('Iscrivi un giocatore') }}</label>
@@ -51,7 +57,7 @@
         <input type="hidden" name="user_id" value="{{ user.id }}">
         <span class="c7-avatar">{{ user.username[:2]|upper }}</span>
         <span class="c7-rows__main">
-          <span class="c7-rows__title d-block">{{ user.username }}</span>
+          <span class="c7-rows__title d-block">{{ nome_giocatore(user) }}</span>
           {% if user.full_name %}<span class="c7-rows__sub d-block">{{ user.full_name }}{% if user.home_city %} <span class="c7-sep">·</span> {{ user.home_city }}{% endif %}</span>{% endif %}
         </span>
         <button type="submit" class="btn btn-primary btn-sm" title="{{ _('Aggiungi iscritto') }}">
@@ -60,10 +66,34 @@
       </form>
       {% endfor %}
       <div class="c7-rows__row c7-rows__row--dim js-iscritti-nessuno" hidden>
-        <div class="c7-rows__sub">{{ _('Nessun giocatore con questo nome. Serve un account: puoi crearglielo insieme.') }}</div>
+        <div class="c7-rows__sub">{{ _('Nessun giocatore con questo nome. Se non ha un account, iscrivilo qui sotto con nome e cognome.') }}</div>
       </div>
     </div>
     <div class="js-iscritti-esito c7-kicker" aria-live="polite" data-formato="{{ _('{n} giocatori trovati') }}"></div>
+  </div>
+  {% endif %}
+
+  {% if feature_visible('admin.competition.admin_inscribe_placeholder') %}
+  <details class="c7-nonreg-crea">
+    <summary class="c7-nonreg-crea__apri" data-help="gara-iscrivi-non-registrato">
+      <i class="fas fa-user-plus"></i>&nbsp;{{ _('Nuovo giocatore non registrato') }}
+    </summary>
+    <form method="POST" action="{{ url_for('admin.competition.admin_inscribe_placeholder', gara_id=gara.id) }}"
+          class="c7-stack mt-2" style="gap:8px">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="c7-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+        <input type="text" class="form-control" name="first_name" maxlength="100" required
+               autocomplete="off" placeholder="{{ _('Nome') }}" aria-label="{{ _('Nome') }}">
+        <input type="text" class="form-control" name="last_name" maxlength="100" required
+               autocomplete="off" placeholder="{{ _('Cognome') }}" aria-label="{{ _('Cognome') }}">
+      </div>
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="fas fa-user-plus"></i>&nbsp;{{ _('Crea e iscrivi') }}
+      </button>
+      <div class="c7-nota">{{ _("Gioca e va in classifica come tutti, ma non riceve notifiche finché non si registra. Quando lo farà, potrà prendersi le sue partite.") }}</div>
+    </form>
+  </details>
+  {% endif %}
   </div>
   {% endif %}
 
@@ -138,7 +168,7 @@
       <div class="c7-rows__main">
         <a href="{{ url_for('player.view_profile', user_id=inscription.user_id) }}"
            class="c7-rows__title d-block" style="color:var(--c7-ink){% if inscription.is_forfeit %};text-decoration:line-through;color:var(--c7-ink-muted){% endif %}">
-          {{ inscription.user.username }}
+          {{ nome_giocatore(inscription.user) }}
         </a>
         <div class="c7-rows__sub">
           {# Nome e cognome li vede chi dirige, per distinguere due iscritti

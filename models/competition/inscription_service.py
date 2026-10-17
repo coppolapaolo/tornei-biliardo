@@ -48,6 +48,56 @@ class InscriptionService:
 
     @staticmethod
     @transactional(domain="competition")
+    def iscrivi_non_registrato(
+        gara_id: int, first_name: str, last_name: str, director: Any
+    ) -> Inscription:
+        """Crea un giocatore non ancora registrato e lo iscrive (ADR-085).
+
+        È chi arriva in sala senza account: il direttore scrive nome e
+        cognome, e in un gesto solo il giocatore nasce e si iscrive. Una sola
+        transazione: se l'iscrizione fallisce — gara piena di proposito, già
+        avviata — il giocatore non resta orfano (i `@transactional` annidati
+        chiudono un savepoint e salva solo il più esterno, ADR-061).
+
+        Raises:
+            NotFoundError: la gara non esiste.
+            ValidationError: gara di prova, o fuori dalla fase di iscrizione.
+            PermissionDeniedError: chi crea non è direttore o admin.
+        """
+        from models.competition.models import Gara
+        from models.user.profile_service import UserProfileService
+
+        gara = db.session.get(Gara, gara_id)
+        if gara is None:
+            raise NotFoundError(_("Gara non trovata."))
+        # In una prova si iscrivono solo i fittizi (ADR-058).
+        if gara.is_prova:
+            raise ValidationError(
+                _(
+                    "In una competizione di prova si iscrivono solo "
+                    "i giocatori fittizi."
+                )
+            )
+        if gara.status != GaraStatus.INSCRIPTION.value:
+            raise ValidationError(
+                _(
+                    "Non è possibile iscrivere utenti quando la gara non è in "
+                    "fase di iscrizione."
+                )
+            )
+
+        giocatore = UserProfileService.create_placeholder(
+            first_name, last_name, director
+        )
+        iscrizione = InscriptionService.inscribe_user(
+            giocatore.id, gara_id, inscribed_by_id=director.id
+        )
+        if iscrizione is None:  # pragma: no cover - un giocatore appena nato
+            raise ConflictError(_("Iscrizione non riuscita."))
+        return iscrizione
+
+    @staticmethod
+    @transactional(domain="competition")
     def inscribe_user(
         user_id: int,
         gara_id: int,

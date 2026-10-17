@@ -299,6 +299,15 @@ hints:
   - admin.campionato.edit_campionato
   page: opzioni_della_gara
   section: struttura
+- id: gara.iscrivi_non_registrato
+  label: New unregistered player
+  short: 'For someone at the venue without an account: type first and last name and enroll them at once.
+    They play and appear in the standings, but get no notifications until they sign up.'
+  anchor: gara-iscrivi-non-registrato
+  screens:
+  - admin.competition.gara_detail
+  page: gestire_le_iscrizioni
+  section: durante
 - id: gara.cerca_da_iscrivere
   label: Search for the player to enter
   short: 'Type a username, first name or last name: the list narrows as you type. Players who added their name to their profile show up with it.'
@@ -1046,8 +1055,8 @@ hints:
   section: avvio-rapido
 - id: sfida.altri_due_chi_gioca
   label: Who plays
-  short: 'The two players of the match you score: they need an account, and you cannot be one of them.
-    When it ends, each confirms or rejects it for themselves.'
+  short: 'The two players of the match you score; you cannot be one of them. Add anyone without an account
+    by first and last name. When it ends, each confirms or rejects it for themselves.'
   anchor: partita-altri-due-chi-gioca
   screens:
   - individual_match.scored_match

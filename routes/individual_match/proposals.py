@@ -108,14 +108,18 @@ def search_players():
     # e chi segna sceglie chi ha davanti al tavolo.
     from models.individual_match.scored_match_service import ScoredMatchService
 
+    # I giocatori non registrati (ADR-085) li trova solo chi segna la partita
+    # di altri due: una sfida normale non la riceverebbero.
     if request.args.get("ambito") == "altri_due" and ScoredMatchService.can_score(
         current_user
     ):
         eligible_users = users[:limit]
     else:
-        eligible_users = [u for u in users if u.can_access("create_match_direct")][
-            :limit
-        ]
+        eligible_users = [
+            u
+            for u in users
+            if not u.is_placeholder and u.can_access("create_match_direct")
+        ][:limit]
 
     return jsonify(
         [
@@ -123,6 +127,7 @@ def search_players():
                 "id": u.id,
                 "username": u.username,
                 "avatar_url": u.avatar_url if hasattr(u, "avatar_url") else None,
+                "is_placeholder": bool(u.is_placeholder),
             }
             for u in eligible_users
         ]

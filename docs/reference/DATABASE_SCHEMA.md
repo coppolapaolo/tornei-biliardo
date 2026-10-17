@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-10-17 21:06 UTC
+> Last updated: 2026-10-17 21:33 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -58,6 +58,9 @@
 | `is_fittizio` | BOOLEAN | NO |  | False |  |
 | `prova_gara_id` | INTEGER | YES |  |  |  |
 | `prova_campionato_id` | INTEGER | YES |  |  |  |
+| `is_placeholder` | BOOLEAN | NO |  | False |  |
+| `created_by_id` | INTEGER | YES | FK→user.id |  |  |
+| `claimed_at` | DATETIME | YES |  |  |  |
 | `created_at` | DATETIME | NO |  | func |  |
 | `updated_at` | DATETIME | NO |  | func |  |
 | `deleted_at` | DATETIME | YES |  |  |  |
@@ -65,6 +68,9 @@
 **Constraints:**
 - UNIQUE(email)
 - UNIQUE(username)
+
+**Foreign Keys:**
+- `created_by_id` → `user.id` (ON DELETE SET NULL)
 
 ### director_assignment
 

@@ -360,6 +360,10 @@ blocks:
       un tuo allievo. In **Sfide individuali** tocca **Segna la partita di
       altri due**, scegli il giocatore A e il giocatore B, scrivi che partita
       è, e tocca **Inizia il referto**. Tu non puoi essere uno dei due.
+      Se uno dei due non ha un account, tocca **Non ha un account?
+      Aggiungilo** sotto il suo posto e scrivi nome e cognome: nasce un
+      giocatore non registrato. Non riceve avvisi e non può confermare, quindi
+      per lui la partita resta *in attesa* finché non si registra.
 
   - type: steps
     items:

@@ -52,6 +52,22 @@ def _riguarda_una_prova(related_entities: Dict[str, Any]) -> bool:
         return False
 
 
+def _non_registrato(user_id: int) -> bool:
+    """True se il destinatario è un giocatore non ancora registrato (ADR-085).
+
+    Non ha un account con cui leggerla: la notifica resterebbe lì, e il giorno
+    del riscatto passerebbe al nuovo account insieme alle partite — un mucchio
+    di avvisi vecchi su cose che nessuno ha mai visto.
+    """
+    from models.user.models import User
+
+    return bool(
+        db.session.execute(
+            db.select(User.is_placeholder).where(User.id == user_id)
+        ).scalar()
+    )
+
+
 class NotificationService:
     """Service for notification management and delivery."""
 
@@ -87,6 +103,9 @@ class NotificationService:
                          If provided, title/message will be translated at display time.
             template_params: Optional params dict for template substitution.
         """
+
+        if _non_registrato(user_id):
+            return None
 
         # Check user preferences
         if not NotificationPreference.is_notification_enabled(
