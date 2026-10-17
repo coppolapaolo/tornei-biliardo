@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.81.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.80.0...v1.81.0) (2026-10-17)
+
+
+### Funzioni nuove
+
+* chi ha firmato può ritirare una sfida rimasta senza seconda firma ([#703](https://github.com/coppolapaolo/tornei-biliardo/issues/703)) ([4f7ec5e](https://github.com/coppolapaolo/tornei-biliardo/commit/4f7ec5e96074c9e742e122daa86131f46878b984))
+* chi si registra può riscattare il proprio giocatore ([#708](https://github.com/coppolapaolo/tornei-biliardo/issues/708)) ([e27d863](https://github.com/coppolapaolo/tornei-biliardo/commit/e27d863e7acccce0cef4266079f1ad8c05945be7))
+* direttori e istruttori creano giocatori non ancora registrati ([#707](https://github.com/coppolapaolo/tornei-biliardo/issues/707)) ([4b75317](https://github.com/coppolapaolo/tornei-biliardo/commit/4b753172967b006011e049201ab4610b63a8473a))
+* istruttori e direttori tengono il TPA della partita di altri due ([#706](https://github.com/coppolapaolo/tornei-biliardo/issues/706)) ([c3c4fa6](https://github.com/coppolapaolo/tornei-biliardo/commit/c3c4fa6cfb9bad4d1de20449d2877375c9ee79c0))
+* link al video della partita e descrizione delle sfide ([#705](https://github.com/coppolapaolo/tornei-biliardo/issues/705)) ([e184425](https://github.com/coppolapaolo/tornei-biliardo/commit/e184425006e993a501ce17bf915b698ac86270f1))
+
 ## [1.80.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.79.0...v1.80.0) (2026-10-16)
 
 
