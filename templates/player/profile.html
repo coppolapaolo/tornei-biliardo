@@ -1,6 +1,6 @@
 <!-- templates/player/profile.html — 7c. Profilo giocatore (personale o pubblico) -->
 {% extends "base.html" %}
-{% from "components/_nome_giocatore.html" import badge_non_registrato %}
+{% from "components/_nome_giocatore.html" import badge_non_registrato, riscatta %}
 
 {% block title %}
 {% if is_own_profile %}{{ _("Il mio profilo") }} - {{ user.username }}{% else %}{{ _("Profilo di") }} {{ user.username }}{% endif %}
@@ -25,7 +25,7 @@
   <span class="c7-flash__ico"><i class="fas fa-user-clock"></i></span>
   <div class="c7-flash__body">
     <div class="c7-flash__title">{{ _("Non ancora registrato") }}</div>
-    <div class="c7-flash__text">{{ _("Questo giocatore l'ha aggiunto un direttore o un istruttore: le sue partite e le sue classifiche contano come quelle di tutti, ma non ha ancora un account.") }}</div>
+    <div class="c7-flash__text">{{ _("Questo giocatore l'ha aggiunto un direttore o un istruttore: le sue partite e le sue classifiche contano come quelle di tutti, ma non ha ancora un account.") }} {{ riscatta(user) }}</div>
   </div>
 </div>
 {% endif %}

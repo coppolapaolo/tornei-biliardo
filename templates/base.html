@@ -255,6 +255,17 @@
                     <i class="fas fa-bullhorn"></i>{{ _('Segnalazioni') }}
                 </a>
                 {% endif %}
+                {# Chi ha creato giocatori non registrati decide chi li
+                   riscatta (ADR-086): la voce compare solo se qualcuno aspetta. #}
+                {% if not current_user.is_admin and feature_visible('riscatto.richieste') %}
+                {% set _riscatti = riscatti_da_decidere() %}
+                {% if _riscatti %}
+                <a href="{{ url_for('riscatto.richieste') }}" class="{{ 'is-active' if ep.startswith('riscatto.') }}">
+                    <i class="fas fa-user-check"></i>{{ _('Riscatti') }}
+                    <span class="c7-num ms-1">{{ _riscatti }}</span>
+                </a>
+                {% endif %}
+                {% endif %}
             </nav>
 
             {% if current_user.is_admin %}
@@ -289,6 +300,11 @@
                 {% if feature_visible('roles.role_requests') %}
                 <a href="{{ url_for('roles.role_requests') }}" class="{{ 'is-active' if ep == 'roles.role_requests' }}">
                     <i class="fas fa-user-graduate"></i>{{ _('Richieste Esaminatore') }}
+                </a>
+                {% endif %}
+                {% if feature_visible('riscatto.richieste') %}
+                <a href="{{ url_for('riscatto.richieste') }}" class="{{ 'is-active' if ep.startswith('riscatto.') }}">
+                    <i class="fas fa-user-check"></i>{{ _('Riscatti') }}
                 </a>
                 {% endif %}
             </nav>

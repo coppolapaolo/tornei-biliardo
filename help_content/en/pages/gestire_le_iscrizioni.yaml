@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore]
 minutes: 4
 summary: "Opening, extending and closing registrations; adding or removing someone by hand; understanding the waitlist."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, riscatto.richieste, riscatto.richiesta]
 related: [creare_una_gara, condurre_la_gara, numero_dispari]
 
 blocks:
@@ -77,7 +77,7 @@ blocks:
           mark next to the name: they play and appear in the standings like
           everyone else, but get no notifications. Next time you find them in
           the search, without creating them again. When they sign up they
-          will be able to take over their matches.
+          can claim the player: see «Who claims a player you added» below.
       - name: "Remove an entrant"
         text: >-
           For people who say they cannot come. The player is notified, and if
@@ -172,6 +172,38 @@ blocks:
       double: that one action creates everybody's path to the final, closes
       registrations and freezes the teams. A no-show removed a minute later
       costs you a bracket to redo. See [The bracket](/aiuto/giocare/tabellone).
+
+  - type: heading
+    id: riscatto
+    title: "Who claims a player you added"
+
+  - type: text
+    text: >-
+      When the person you registered without an account signs up, they find
+      **«Is this you? Claim»** next to the name and ask to take over its
+      matches. The request comes **to you**, since you added them and know
+      them: you get a notification, and the **Claims** item appears in the
+      menu while something is waiting.
+
+  - type: steps
+    items:
+      - title: "Open the request"
+        text: >-
+          You see the claimant's username and email, and whether the email is
+          already verified. Check that it really is the person you registered.
+      - title: "Confirm or reject"
+        text: >-
+          **Confirm the claim**: the player's registrations, matches, standings
+          and ELO move to their account, and this can't be undone. **Not them:
+          reject**: the player stays as it was, and someone else can claim it.
+
+  - type: note
+    tone: info
+    title: "Players that were already there"
+    text: >-
+      An unregistered player with no creator — those already in the app before
+      this feature — can only be confirmed by the administrator. The same
+      applies if the director who added it has deleted their account.
 
   - type: faq
     items:

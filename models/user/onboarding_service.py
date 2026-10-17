@@ -35,16 +35,26 @@ class OnboardingService:
         home_city: Optional[str] = None,
         venue_ids: Optional[Iterable[int]] = None,
         interests: Optional[Iterable[str]] = None,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
     ) -> User:
         """Salva i dati dell'onboarding e marca il flag come completato.
 
         - ``home_city``: stringa città (opt-in), fallback centroide geo.
         - ``venue_ids``: sale per cui creare ``UserLocationAvailability``.
         - ``interests``: sottoinsieme di :data:`VALID_INTERESTS`.
+        - ``first_name``/``last_name``: l'anagrafica facoltativa. Qui serve a
+          trovare i giocatori non registrati che si chiamano come lui, da
+          riscattare (ADR-086); un campo vuoto non cancella quello che c'era.
         """
         user = db.session.get(User, user_id)
         if user is None:
             raise ValueError(f"Utente {user_id} non trovato")
+
+        for campo, valore in (("first_name", first_name), ("last_name", last_name)):
+            pulito = " ".join((valore or "").split())[:100]
+            if pulito:
+                setattr(user, campo, pulito)
 
         cleaned_city = (home_city or "").strip() or None
         if cleaned_city:

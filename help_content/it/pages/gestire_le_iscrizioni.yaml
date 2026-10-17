@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore]
 minutes: 4
 summary: "Aprire, prorogare e chiudere le iscrizioni; iscrivere o togliere qualcuno a mano; capire la lista d'attesa."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, riscatto.richieste, riscatto.richiesta]
 related: [creare_una_gara, condurre_la_gara, numero_dispari]
 
 blocks:
@@ -75,7 +75,8 @@ blocks:
           iscritto, con il segno «non registrato» accanto al nome: gioca e va
           in classifica come tutti, ma non riceve notifiche. La gara dopo lo
           ritrovi nella ricerca, senza crearlo di nuovo. Quando si registrerà
-          potrà prendersi le sue partite.
+          potrà riscattarlo: vedi «Chi riscatta un giocatore che hai aggiunto»
+          più sotto.
       - name: "Togliere un iscritto"
         text: >-
           Per chi avvisa che non viene. Il giocatore riceve una notifica, e se
@@ -167,6 +168,40 @@ blocks:
       chiudono le iscrizioni e le squadre si congelano. Un assente tolto un
       minuto dopo costa un tabellone da rifare. Vedi [Il
       tabellone](/aiuto/giocare/tabellone).
+
+  - type: heading
+    id: riscatto
+    title: "Chi riscatta un giocatore che hai aggiunto"
+
+  - type: text
+    text: >-
+      Quando la persona che hai iscritto senza account si registra, accanto al
+      suo nome trova **«Sei tu? Riscatta»** e chiede di prendersi le sue
+      partite. La richiesta arriva **a te**, che l'hai aggiunto e lo conosci:
+      ti arriva una notifica, e nel menu compare la voce **Riscatti** finché
+      c'è qualcosa da decidere.
+
+  - type: steps
+    items:
+      - title: "Apri la richiesta"
+        text: >-
+          Vedi il nome utente e l'email di chi chiede, e se l'email è già
+          verificata. Controlla che sia proprio la persona che hai iscritto.
+      - title: "Conferma o rifiuta"
+        text: >-
+          **Conferma il riscatto**: le iscrizioni, le partite, le classifiche e
+          l'ELO del giocatore passano al suo account, e non si torna indietro.
+          **Non è lui: rifiuta**: il giocatore resta com'era, e qualcun altro
+          potrà chiederlo.
+
+  - type: note
+    tone: info
+    title: "I giocatori che c'erano già"
+    text: >-
+      Un giocatore non registrato senza un creatore — quelli presenti
+      nell'app prima di questa funzione — lo conferma solo l'amministratore.
+      Lo stesso vale se il direttore che l'aveva aggiunto ha cancellato il
+      suo account.
 
   - type: faq
     items:

@@ -1,0 +1,36 @@
+{# templates/riscatto/omonimi.html — il passo «Sei tu?» dell'onboarding (ADR-086).
+
+   Chi ha appena scritto nome e cognome vede i giocatori non registrati che si
+   chiamano come lui: se ha già giocato in sala, uno di questi è lui. #}
+{% extends "base.html" %}
+
+{% block title %}{{ _("Hai già giocato in sala?") }}{% endblock %}
+{% block page_title %}{{ _("Hai già giocato in sala?") }}{% endblock %}
+{% block page_sub %}{{ _("Questi giocatori si chiamano come te") }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:560px">
+  <p class="mb-0">{{ _("Un direttore o un istruttore li ha aggiunti senza account. Se uno di loro sei tu, riscattalo: le sue partite passano al tuo account quando chi l'ha aggiunto conferma.") }}</p>
+
+  {% for c in candidati %}
+  <section class="c7-card c7-stack">
+    <div>
+      <div style="font-size:17px;font-weight:800">{{ c.giocatore.username }}</div>
+      <div class="c7-rows__sub">{{ ngettext("iscritto a %(n)s gara", "iscritto a %(n)s gare", c.n_gare, n=c.n_gare) }}</div>
+    </div>
+    {% if c.mia %}
+    <div class="c7-nota">{{ _("Hai già chiesto di riscattarlo: la richiesta aspetta una risposta.") }}</div>
+    {% elif c.motivo %}
+    <div class="c7-nota">{{ c.motivo }}</div>
+    {% elif feature_visible('main.riscatta_giocatore') %}
+    <form method="POST" action="{{ url_for('main.riscatta_giocatore', user_id=c.giocatore.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-primary w-100">{{ _("Sono io: chiedi il riscatto") }}</button>
+    </form>
+    {% endif %}
+  </section>
+  {% endfor %}
+
+  <a class="btn btn-secondary w-100" href="{{ url_for('dashboard.dashboard') }}">{{ _("Nessuno di questi sono io") }}</a>
+</div>
+{% endblock %}

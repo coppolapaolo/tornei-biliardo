@@ -5109,6 +5109,17 @@ html[data-vista-attiva="tutte"] [data-vista-scelta="tutte"] { background: var(--
   vertical-align: middle; white-space: nowrap;
 }
 
+/* «Sei tu? Riscatta» accanto al segno (ADR-086). Un link breve dentro una
+   riga di classifica: il bersaglio cresce col padding, compensato dal margine
+   negativo, così il tocco arriva a 48px senza allargare la riga. */
+.c7-nonreg-riscatta {
+  display: inline-block; margin: -14px 0 -14px 4px; padding: 14px 6px;
+  font-size: 12px; font-weight: 800; line-height: 20px; white-space: nowrap;
+  color: var(--c7-accent); text-decoration: none; vertical-align: middle;
+}
+/* Sotto il nome, su una riga sua (iscritti): il testo si allinea al nome. */
+.c7-rows__main > .c7-nonreg-riscatta { margin-left: -6px; }
+
 /* «Nuovo giocatore non registrato» sotto la ricerca degli iscrivibili: si apre
    solo quando serve, la ricerca resta il gesto principale. */
 .c7-nonreg-crea__apri {

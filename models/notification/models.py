@@ -61,6 +61,10 @@ class NotificationType(Enum):
     ROLE_REQUEST_CLOSED = "role_request_closed"  # Presa in carico da un altro
     ROLE_GRANTED = "role_granted"  # Ti è stato concesso un ruolo
 
+    # Riscatto di un giocatore non registrato (ADR-086)
+    CLAIM_REQUEST_RECEIVED = "claim_request_received"  # Qualcuno dice di essere lui
+    CLAIM_REQUEST_PROCESSED = "claim_request_processed"  # Esito del tuo riscatto
+
     # Istruttori e allievi (ADR-069). I due avvisi non sono simmetrici di
     # proposito: chi **toglie** un istruttore non deve annunciarglielo — è una
     # decisione sua, e per un minorenne un avviso sarebbe una pressione —

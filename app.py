@@ -481,6 +481,7 @@ def create_app(config_name=None, *, da_script: bool = False):
         questo enum combacia con qualunque riga.
         """
         from models.status_enum import (
+            ClaimRequestStatus,
             ClassificationSystem,
             Discipline,
             GaraStatus,
@@ -501,6 +502,7 @@ def create_app(config_name=None, *, da_script: bool = False):
 
         return {
             "GaraStatus": GaraStatus,
+            "ClaimRequestStatus": ClaimRequestStatus,
             # Il comando che una gara aspetta dal suo direttore. Non sta in
             # colonna e vive solo dentro una richiesta: e' qui per la stessa
             # ragione degli altri — un template che deve nominarlo non deve
@@ -736,6 +738,24 @@ def create_app(config_name=None, *, da_script: bool = False):
         gironi_in_pagina,
     )
 
+    # «Sei tu? Riscatta» accanto a un non registrato, e la coda di chi decide
+    # (ADR-086). Funzioni e non variabili: le chiamano macro incluse da molte
+    # pagine, e calcolare per ogni pagina sarebbe una query per niente.
+    from flask_login import current_user as _utente_corrente
+
+    from models.user.claim_service import ClaimService
+
+    def puo_riscattare(giocatore) -> bool:
+        # Le macro importate non vedono i context processor: l'allowlist
+        # (ADR-028) si guarda qui, accanto alla regola del riscatto.
+        return is_endpoint_visible(
+            "main.riscatta_giocatore", _utente_corrente
+        ) and ClaimService.puo_proporre_riscatto(_utente_corrente, giocatore)
+
+    app.jinja_env.globals["puo_riscattare"] = puo_riscattare
+    app.jinja_env.globals["riscatti_da_decidere"] = (
+        lambda: ClaimService.conta_da_decidere(_utente_corrente)
+    )
     app.jinja_env.globals["gironi_in_pagina"] = gironi_in_pagina
     app.jinja_env.globals["girone_della_riga"] = girone_della_riga
     # La fase finale dopo i gironi, per le note e le righe (ADR-081): quella

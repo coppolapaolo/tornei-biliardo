@@ -74,6 +74,17 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Informativa privacy/cookie: deve essere raggiungibile da chiunque,
     # utenti non registrati inclusi (link nel footer di base.html).
     "main.privacy_policy": {"anonimo", "player", "director"},
+    # «Sei tu? Riscatta» (ADR-086): la pagina la apre chi non ha ancora un
+    # account — è il suo modo di arrivare a crearne uno. Per un anonimo il POST
+    # salva solo l'intenzione e porta al login: la richiesta nasce dopo.
+    "main.riscatta_giocatore": {"anonimo", "player", "director"},
+    # Le richieste di riscatto: le decide il creatore del giocatore — un
+    # direttore, un istruttore, o chi lo era — e le legge chi le ha fatte.
+    # Chi può cosa lo decide `ClaimService`, non questa riga.
+    "riscatto.richieste": {"player", "director"},
+    "riscatto.richiesta": {"player", "director"},
+    "riscatto.decidi": {"player", "director"},
+    "riscatto.omonimi": {"player", "director"},
     "admin.competition.gara_detail": {"anonimo", "player", "director"},
     # Tabellone della gara (US-13): sola lettura, e la segue anche chi non ha
     # un account — è la schermata che si condivide durante un torneo.

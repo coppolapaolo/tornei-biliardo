@@ -156,3 +156,11 @@ non registrati che aveva creato passano al destinatario, che sarà chi conferma.
   `models/individual_match/scored_match_service.py`,
   `models/competition/inscription_service.py`,
   `templates/components/_nome_giocatore.html`.
+
+## Emendamento (2026-10-17)
+
+Il riscatto è arrivato con l'**ADR-086**: `ClaimRequest`, il pulsante «Sei tu?
+Riscatta» dentro `nome_giocatore` (macro `riscatta`), la conferma del creatore
+o dell'admin per i giocatori senza creatore. `merge_users` non è più solo
+dell'admin: lo è ancora, tranne quando lo chiama `ClaimService.approve` con
+`riscatto_approvato=True`.

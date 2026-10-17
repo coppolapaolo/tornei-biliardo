@@ -24,6 +24,7 @@ from .models import (
 )
 from .role_enum import UserRole, GrantableRole
 from .role_grant import RoleGrant, RoleRequest, RoleRequestRecipient
+from .claim_request import ClaimRequest, ClaimRequestRecipient
 from .role_grant_service import RoleGrantService, GrantPolicy, GRANT_POLICY
 from .permissions import PermissionChecker, RoleRequirement
 from .services import (
@@ -55,6 +56,9 @@ __all__ = [
     "RoleGrant",
     "RoleRequest",
     "RoleRequestRecipient",
+    # Riscatto dei giocatori non registrati (ADR-086)
+    "ClaimRequest",
+    "ClaimRequestRecipient",
     "RoleGrantService",
     "GrantPolicy",
     "GRANT_POLICY",
@@ -97,6 +101,8 @@ def get_user_models():
         "RoleGrant": RoleGrant,
         "RoleRequest": RoleRequest,
         "RoleRequestRecipient": RoleRequestRecipient,
+        "ClaimRequest": ClaimRequest,
+        "ClaimRequestRecipient": ClaimRequestRecipient,
         "UserPrivacySetting": UserPrivacySetting,
         "HiddenMatch": HiddenMatch,
         "HiddenInscription": HiddenInscription,

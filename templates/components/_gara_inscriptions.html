@@ -18,7 +18,7 @@
    volte, mobile e desktop): il combo delle categorie, il `<datalist>` e il
    foglio della squadra stanno in `direttore/_squadre_categorie.html`. #}
 
-{% from "components/_nome_giocatore.html" import nome_giocatore, badge_non_registrato %}
+{% from "components/_nome_giocatore.html" import nome_giocatore, badge_non_registrato, riscatta %}
 {% set _attivi = inscriptions | selectattr('is_waitlist', 'equalto', false) | selectattr('is_withdrawn', 'equalto', false) | list %}
 {% set _attesa = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn', 'equalto', false) | sort(attribute='waitlist_position') | list %}
 {% set _puo_ritirare = user_can_manage and ritiro_iscritti is defined and ritiro_iscritti and gara.status == GaraStatus.PLAYING.value %}
@@ -57,7 +57,7 @@
         <input type="hidden" name="user_id" value="{{ user.id }}">
         <span class="c7-avatar">{{ user.username[:2]|upper }}</span>
         <span class="c7-rows__main">
-          <span class="c7-rows__title d-block">{{ nome_giocatore(user) }}</span>
+          <span class="c7-rows__title d-block">{{ nome_giocatore(user, riscatto=false) }}</span>
           {% if user.full_name %}<span class="c7-rows__sub d-block">{{ user.full_name }}{% if user.home_city %} <span class="c7-sep">·</span> {{ user.home_city }}{% endif %}</span>{% endif %}
         </span>
         <button type="submit" class="btn btn-primary btn-sm" title="{{ _('Aggiungi iscritto') }}">
@@ -168,8 +168,9 @@
       <div class="c7-rows__main">
         <a href="{{ url_for('player.view_profile', user_id=inscription.user_id) }}"
            class="c7-rows__title d-block" style="color:var(--c7-ink){% if inscription.is_forfeit %};text-decoration:line-through;color:var(--c7-ink-muted){% endif %}">
-          {{ nome_giocatore(inscription.user) }}
+          {{ nome_giocatore(inscription.user, riscatto=false) }}
         </a>
+        {{ riscatta(inscription.user) }}
         <div class="c7-rows__sub">
           {# Nome e cognome li vede chi dirige, per distinguere due iscritti
              con username simili prima di toglierne uno per sbaglio (issue

@@ -3994,3 +3994,110 @@ class TestGiocatoriNonRegistrati:
         )
         giocatore.gamification_override = True
         assert giocatore.can_access("create_match_direct") is False
+
+
+class TestRiscattoDeiNonRegistrati:
+    """SPECIFICHE.md, «Tipologie di utenti» → «Giocatori non ancora
+    registrati» → «Il riscatto», regola del 2026-10-17 (ADR-086)."""
+
+    @staticmethod
+    def _utente(db_session, role=UserRole.PLAYER.value):
+        s = uuid.uuid4().hex[:8]
+        u = User(username=f"ris_{s}", email=f"ris_{s}@test.com", role=role)
+        u.set_password("test1234")
+        db_session.add(u)
+        db_session.flush()
+        return u
+
+    def _giocatore(self, db_session, creatore=None):
+        from models.user.services import UserService
+
+        creatore = creatore or self._utente(db_session, UserRole.DIRECTOR.value)
+        return UserService.create_placeholder(
+            "Gino", f"Riscatto{uuid.uuid4().hex[:4]}", creatore
+        )
+
+    def test_decide_chi_l_ha_creato(self, db_session):
+        """«Decide chi ha creato il giocatore»."""
+        from models.user.claim_service import ClaimService
+
+        direttore = self._utente(db_session, UserRole.DIRECTOR.value)
+        giocatore = self._giocatore(db_session, direttore)
+        assert [u.id for u in ClaimService.destinatari(giocatore)] == [direttore.id]
+
+    def test_senza_creatore_decide_solo_l_admin(self, db_session):
+        """«Per un giocatore senza creatore […] decide solo l'amministratore»."""
+        from models.user.claim_service import ClaimService
+
+        admin = User.query.filter_by(role=UserRole.ADMIN.value).first() or (
+            self._utente(db_session, UserRole.ADMIN.value)
+        )
+        storico = self._utente(db_session)
+        storico.is_placeholder = True
+        db_session.flush()
+        destinatari = ClaimService.destinatari(storico)
+        assert destinatari and all(u.is_admin for u in destinatari)
+        assert admin.id in {u.id for u in destinatari}
+
+    def test_una_sola_richiesta_in_attesa(self, db_session):
+        """«C'è una sola richiesta in attesa per giocatore»."""
+        from models.exceptions import ConflictError
+        from models.user.claim_service import ClaimService
+
+        giocatore = self._giocatore(db_session)
+        ClaimService.richiedi(giocatore.id, self._utente(db_session))
+        with pytest.raises(ConflictError):
+            ClaimService.richiedi(giocatore.id, self._utente(db_session))
+
+    def test_non_lo_riscatta_chi_l_ha_creato_ne_l_admin(self, db_session):
+        """«Non lo riscatta chi l'ha creato, né l'amministratore»."""
+        from models.exceptions import ValidationError
+        from models.user.claim_service import ClaimService
+
+        direttore = self._utente(db_session, UserRole.DIRECTOR.value)
+        giocatore = self._giocatore(db_session, direttore)
+        admin = self._utente(db_session, UserRole.ADMIN.value)
+        for chi in (direttore, admin):
+            with pytest.raises(ValidationError):
+                ClaimService.richiedi(giocatore.id, chi)
+
+    def test_non_serve_l_email_verificata(self, db_session):
+        """«Non serve l'email verificata»."""
+        from models.user.claim_service import ClaimService
+
+        chi = self._utente(db_session)
+        assert chi.is_verified is False
+        richiesta = ClaimService.richiedi(self._giocatore(db_session).id, chi)
+        assert richiesta.is_pending
+
+    def test_il_pulsante_non_lo_vede_il_creatore(self, db_session):
+        """«Lo vede chiunque, anche senza account, tranne il giocatore stesso e
+        chi l'ha creato; sparisce quando una richiesta è già in attesa»."""
+        from models.user.claim_service import ClaimService
+
+        direttore = self._utente(db_session, UserRole.DIRECTOR.value)
+        giocatore = self._giocatore(db_session, direttore)
+        assert ClaimService.puo_proporre_riscatto(None, giocatore)
+        assert not ClaimService.puo_proporre_riscatto(direttore, giocatore)
+        ClaimService.richiedi(giocatore.id, self._utente(db_session))
+        # Un'altra pagina: la memoria della richiesta HTTP non vale più.
+        from flask import g
+
+        g.pop("_riscatto_proponibile", None)
+        assert not ClaimService.puo_proporre_riscatto(None, giocatore)
+
+    def test_nell_onboarding_omonimi_senza_accenti_e_maiuscole(self, db_session):
+        """«chi scrive nome e cognome vede i giocatori non registrati che si
+        chiamano come lui, accenti e maiuscole a parte»."""
+        from models.user.claim_service import ClaimService
+        from models.user.services import UserService
+
+        cognome = f"Nicolò{uuid.uuid4().hex[:4]}"
+        giocatore = UserService.create_placeholder(
+            "Niccolò", cognome, self._utente(db_session, UserRole.DIRECTOR.value)
+        )
+        nuovo = self._utente(db_session)
+        nuovo.first_name = "niccolo"
+        nuovo.last_name = cognome.upper().replace("Ò", "O")
+        db_session.flush()
+        assert giocatore.id in {u.id for u in ClaimService.omonimi(nuovo)}

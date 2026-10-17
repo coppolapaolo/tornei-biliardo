@@ -1,0 +1,94 @@
+{# templates/riscatto/richiesta.html — una richiesta di riscatto (ADR-086).
+
+   La leggono chi l'ha fatta, chi la decide e l'admin. Chi decide vede chi
+   chiede: nome utente, email e se è verificata — non si chiede l'email
+   confermata per riscattare, la difesa è questo sguardo. #}
+{% extends "base.html" %}
+
+{% block title %}{{ _("Riscatto di %(nome)s", nome=nome) }}{% endblock %}
+{% block page_back %}
+{% if feature_visible('riscatto.richieste') %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('riscatto.richieste') }}"
+   aria-label="{{ _('Torna alle richieste di riscatto') }}"><i class="fas fa-arrow-left"></i></a>
+{% endif %}
+{% endblock %}
+{% block page_title %}{{ _("Riscatto") }}{% endblock %}
+{% block page_sub %}{{ nome }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:560px">
+
+  <section class="c7-card c7-stack">
+    <div class="d-flex align-items-center gap-2">
+      <div class="c7-kicker flex-fill">{{ _("Richiesta del %(data)s", data=richiesta.created_at|datetime_local) }}</div>
+      {% if richiesta.is_pending %}
+      <span class="c7-state c7-state--warn">{{ _("in attesa") }}</span>
+      {% elif richiesta.status == ClaimRequestStatus.APPROVED.value %}
+      <span class="c7-state c7-state--ok">{{ _("confermata") }}</span>
+      {% else %}
+      <span class="c7-state c7-state--muted">{{ _("rifiutata") }}</span>
+      {% endif %}
+    </div>
+    <div>
+      {{ _("%(chi)s dice di essere %(giocatore)s.", chi=claimant.username if claimant else "—", giocatore=nome) }}
+    </div>
+    {# Dopo la conferma le iscrizioni sono passate a chi ha chiesto: il conto
+       direbbe zero, che è vero e fuorviante. #}
+    {% if richiesta.is_pending %}
+    <div class="c7-rows__sub">
+      {{ ngettext("%(giocatore)s è iscritto a %(n)s gara.", "%(giocatore)s è iscritto a %(n)s gare.", n_gare, giocatore=nome, n=n_gare) }}
+    </div>
+    {% endif %}
+    {% if richiesta.is_pending %}
+    <div class="c7-nota">{{ _("La decide %(chi)s.", chi=a_chi) }}</div>
+    {% elif richiesta.decided_by %}
+    <div class="c7-nota">{{ _("Decisa da %(chi)s il %(data)s.", chi=richiesta.decided_by.username, data=richiesta.decided_at|datetime_local) }}</div>
+    {% endif %}
+  </section>
+
+  {% if puo_decidere and claimant %}
+  <section class="c7-card c7-stack">
+    <div class="c7-kicker">{{ _("Chi chiede") }}</div>
+    <div class="c7-rows" style="background:transparent">
+      <div class="c7-rows__row">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ claimant.username }}</div>
+          {% if claimant.full_name %}<div class="c7-rows__sub">{{ claimant.full_name }}</div>{% endif %}
+        </div>
+      </div>
+      <div class="c7-rows__row">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ claimant.email or "—" }}</div>
+          <div class="c7-rows__sub">
+            {% if claimant.is_verified %}{{ _("Email verificata") }}{% else %}{{ _("Email non ancora verificata") }}{% endif %}
+          </div>
+        </div>
+        {% if claimant.is_verified %}
+        <span class="c7-state c7-state--ok">{{ _("verificata") }}</span>
+        {% else %}
+        <span class="c7-state c7-state--warn">{{ _("da verificare") }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="c7-nota">{{ _("Conferma solo se sei sicuro che sia la persona che hai aggiunto: le partite passano al suo account e non tornano indietro.") }}</div>
+    <form method="POST" action="{{ url_for('riscatto.decidi', request_id=richiesta.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="decisione" value="approva">
+      <button type="submit" class="btn btn-success w-100"
+              onclick='return confirmSubmit(this.form, {{ _("Le partite di %(giocatore)s passano all'account di %(chi)s, e non si torna indietro.", giocatore=nome, chi=claimant.username)|tojson }}, {confirmText: {{ _("Conferma il riscatto")|tojson }}, confirmClass: "btn-success"})'>
+        <i class="fas fa-check"></i>&nbsp;{{ _("Conferma il riscatto") }}
+      </button>
+    </form>
+    <form method="POST" action="{{ url_for('riscatto.decidi', request_id=richiesta.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="decisione" value="rifiuta">
+      <button type="submit" class="btn btn-outline-danger w-100"
+              onclick='return confirmSubmit(this.form, {{ _("%(chi)s non riceverà le partite di %(giocatore)s.", giocatore=nome, chi=claimant.username)|tojson }}, {confirmText: {{ _("Rifiuta")|tojson }}, confirmClass: "btn-danger"})'>
+        <i class="fas fa-xmark"></i>&nbsp;{{ _("Non è lui: rifiuta") }}
+      </button>
+    </form>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}

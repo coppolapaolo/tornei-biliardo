@@ -200,6 +200,14 @@ def login():
                 )
                 flash(msg, "warning")
 
+            # Chi ha premuto «Sei tu? Riscatta» prima di entrare (ADR-086): la
+            # richiesta parte adesso, senza un secondo clic, e porta a lei.
+            from routes.riscatto import consuma_riscatto_in_sospeso
+
+            dopo_il_riscatto = consuma_riscatto_in_sospeso(user)
+            if dopo_il_riscatto is not None:
+                return dopo_il_riscatto
+
             return redirect(next_url or url_for("dashboard.dashboard"))
         else:
             flash(_("Username o password errati."), "error")
@@ -224,12 +232,16 @@ def register():
 
         # Use service layer for user creation
         try:
-            UserService.create_user(
+            nuovo = UserService.create_user(
                 username=username,
                 email=email,
                 password=password,
                 phone=phone if phone else None,
             )
+            # La mail di verifica: `create_user` prepara il token, ma spedire
+            # tocca a chi chiama, dopo il commit. Qui non lo faceva nessuno, e
+            # il messaggio sotto prometteva un'email mai partita.
+            UserProfileService.send_pending_verification_email(nuovo)
 
             # Analytics: tracciato qui e non con un onclick sul bottone, così
             # nel conteggio finiscono solo le registrazioni davvero riuscite
@@ -272,6 +284,10 @@ def register():
 def logout():
     """Logout utente"""
     logout_user()
+    # Un riscatto lasciato in sospeso non deve partire per chi entra dopo.
+    from routes.riscatto import dimentica_riscatto_in_sospeso
+
+    dimentica_riscatto_in_sospeso()
     return redirect(url_for("main.index"))
 
 
