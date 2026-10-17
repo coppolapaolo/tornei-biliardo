@@ -62,6 +62,7 @@ class ProposalService:
         billiard_hall_id: Optional[int] = None,
         is_multi_set: bool = False,
         match_distance: Optional[int] = None,
+        match_description: Optional[str] = None,
     ) -> MatchProposal:
         """Create a direct match proposal to specific players.
 
@@ -76,6 +77,12 @@ class ProposalService:
 
         # Chi ha partite che aspettano la sua firma le chiude prima (2026-09-14).
         PendingConfirmationService.ensure_none_pending(proposer_id)
+
+        # Che partita sarà: passa alla sfida all'accettazione. Si valida qui,
+        # non quando la sfida nasce: chi l'ha scritta è chi può correggerla.
+        from ..match.match_info_service import normalize_description
+
+        match_description = normalize_description(match_description)
 
         if scheduled_at < utc_now():
             raise ValueError(_("Non è possibile programmare una sfida nel passato"))
@@ -113,6 +120,7 @@ class ProposalService:
             break_rule=break_rule,
             start_rule=start_rule,
             description=description,
+            match_description=match_description,
             is_multi_set=is_multi_set,
             match_distance=match_distance,
         )
@@ -170,6 +178,7 @@ class ProposalService:
         billiard_hall_id: Optional[int] = None,
         is_multi_set: bool = False,
         match_distance: Optional[int] = None,
+        match_description: Optional[str] = None,
     ) -> MatchProposal:
         """Create an open match proposal for all eligible players.
 
@@ -186,6 +195,12 @@ class ProposalService:
         from models.base import utc_now
 
         PendingConfirmationService.ensure_none_pending(proposer_id)
+
+        # Che partita sarà: passa alla sfida all'accettazione. Si valida qui,
+        # non quando la sfida nasce: chi l'ha scritta è chi può correggerla.
+        from ..match.match_info_service import normalize_description
+
+        match_description = normalize_description(match_description)
 
         if scheduled_at < utc_now():
             raise ValueError(_("Non è possibile programmare una sfida nel passato"))
@@ -206,6 +221,7 @@ class ProposalService:
             break_rule=break_rule,
             start_rule=start_rule,
             description=description,
+            match_description=match_description,
             is_multi_set=is_multi_set,
             match_distance=match_distance,
         )

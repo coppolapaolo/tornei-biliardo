@@ -344,6 +344,26 @@ blocks:
     shot: gara-turni
     caption: "The round's matches: finished ones show the result with a crown next to the winner."
 
+  - type: heading
+    id: video
+    title: "The match video"
+
+  - type: text
+    text: >-
+      If the match was recorded, the match page has a **Match video** box:
+      tap **Add the video**, paste the YouTube link — a video, a live stream
+      or a short — and tap **Save**. From then on whoever opens the page taps
+      **Watch the video** and sees it in a new tab.
+
+  - type: note
+    tone: info
+    title: "Who can add it, and when"
+    text: >-
+      The players of the match and the competition directors, at any time:
+      even after the match is closed, because the video often arrives days
+      later. To remove it, leave the field empty and save. The video does not
+      change the result.
+
   - type: faq
     items:
       - q: "Can I record the score of a match that is not mine?"

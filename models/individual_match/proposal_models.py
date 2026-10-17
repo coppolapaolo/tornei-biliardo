@@ -97,7 +97,11 @@ class MatchProposal(BaseModel):
     start_rule = db.Column(
         db.String(20), nullable=True, default=DEFAULT_START_RULE.value
     )  # first_player, lag (acchito)
+    #: Il messaggio all'invitato («Ci vediamo alle nove?»): resta qui.
     description = db.Column(db.Text, nullable=True)
+    #: Che partita sarà («Semifinale del torneo sociale»): passa alla sfida
+    #: quando la proposta viene accettata, e diventa la sua `description`.
+    match_description = db.Column(db.Text, nullable=True)
 
     # Multi-set configuration (Phase 6: Frontend Integration)
     is_multi_set = db.Column(db.Boolean, default=False, nullable=True)
@@ -245,6 +249,7 @@ class MatchProposal(BaseModel):
             # NULL solo sulle proposte scritte prima della migration: per
             # loro valeva il primo giocatore, e l'accettazione non lo cambia.
             start_rule=self.start_rule or LEGACY_START_RULE.value,
+            description=self.match_description,
             # Phase 6: Copy multi-set configuration
             is_multi_set=self.is_multi_set if self.is_multi_set is not None else False,
             match_distance=self.match_distance,

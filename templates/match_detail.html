@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "components/_match_header.html" as match_head with context %}
+{% import "components/_match_video.html" as match_video with context %}
 
 {# Lo spazio dopo "Match" e' significativo: con `{%- if -%}` veniva mangiato
    e la linguetta del browser leggeva "Matchplayer2 vs player3". #}
@@ -128,6 +129,12 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
     {# ---------- Seconda colonna: contorno della partita ---------- #}
     <div class="c7-stack c7-sections">
         {% include "components/_match_info.html" %}
+
+        {# Il video della partita: giocatori e direttori della gara, in ogni
+           stato (`MatchInfoService.can_edit_gara_match_video`). #}
+        {{ match_video.card(match,
+                            url_for('admin.match.update_match_video', match_id=match.id),
+                            user_can_edit_video and feature_visible('admin.match.update_match_video')) }}
 
         {% if available_challenges %}
         <div class="c7-card">

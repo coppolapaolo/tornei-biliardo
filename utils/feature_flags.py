@@ -377,6 +377,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # anche al player. La pagina stessa decide cosa mostrare in base a
     # current_user.can_manage_competition(...) e is_player_in_match.
     "admin.match.match_detail": {"player", "director"},
+    # Video della partita: giocatori e direttori della gara; il permesso
+    # sulla singola partita lo decide `MatchInfoService`.
+    "admin.match.update_match_video": {"player", "director"},
     "admin.match.update_match_times": {"director"},
     "admin.match.assign_table": {"director"},
     "admin.match.add_rack_result": {"director"},
@@ -476,6 +479,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Ritiro di una sfida firmata da te e non dall'avversario (2026-10-17).
     "individual_match.withdraw_match": {"player", "director"},
     "individual_match.edit_match": {"player", "director"},
+    "individual_match.update_match_info": {"player", "director"},
     "individual_match.update_match_times": {"player", "director"},
     "individual_match.forfeit_match": {"player", "director"},
     "individual_match.rematch": {"player", "director"},

@@ -47,7 +47,8 @@ blocks:
         text: >-
           Sotto «Come si gioca» c'è il riepilogo di sala, disciplina e distanza.
           Vanno bene? Non toccare niente. Altrimenti tocca **Cambia** e correggi
-          quello che serve.
+          quello che serve. Se la partita ha un nome — una finale, una giornata
+          di campionato — tocca **Aggiungi una descrizione** e scrivilo.
       - title: "Decidi se tenere il referto TPA"
         text: >-
           Se hai sbloccato il referto, sopra il pulsante c'è **Tengo il referto
@@ -85,7 +86,10 @@ blocks:
       - title: "Indica dove e quando"
         text: >-
           Sala, data e ora. Se la sala è fra quelle registrate nell'app,
-          sceglila dall'elenco: comparirà con indirizzo e numero di tavoli.
+          sceglila dall'elenco: comparirà con indirizzo e numero di tavoli. Se
+          vuoi, scrivi anche la **descrizione della partita**: passa alla sfida
+          quando l'avversario accetta. Il messaggio, più sotto, resta invece
+          sulla proposta.
       - title: "Scegli il formato"
         text: >-
           Disciplina (palla 8, palla 9…) e distanza, cioè a quanti triangoli si
@@ -342,6 +346,40 @@ blocks:
   - type: shot
     shot: statistiche-amichevoli
     caption: "Le statistiche delle amichevoli: partite, vittorie e avversari più frequenti, contate a parte."
+
+  - type: heading
+    id: video-e-descrizione
+    title: "Il video e la descrizione"
+
+  - type: text
+    text: >-
+      Nella pagina della sfida c'è il riquadro **Video e descrizione**. La
+      descrizione dice che partita è, per esempio «Finale della prima giornata,
+      serie C»: compare sotto i nomi dei giocatori, in Le mie sfide e nello
+      storico. Il video è il link alla ripresa della partita su YouTube: chi
+      apre la pagina tocca **Guarda il video** e lo vede in una scheda nuova.
+
+  - type: steps
+    items:
+      - title: "Apri la sfida"
+        text: "Da Sfide o da Le mie sfide, tocca la partita."
+      - title: "Tocca «Aggiungi video e descrizione»"
+        text: >-
+          Scrivi la descrizione, al massimo 200 caratteri, e incolla il link
+          del video. Va bene un video, una diretta o uno short di YouTube,
+          anche con il punto da cui partire.
+      - title: "Tocca «Salva»"
+        text: >-
+          Per cambiarli si torna nello stesso riquadro; per toglierli si lascia
+          il campo vuoto e si salva.
+
+  - type: note
+    tone: info
+    title: "Si può fare anche giorni dopo"
+    text: >-
+      Video e descrizione si scrivono in qualunque momento, anche a partita
+      chiusa: il video arriva spesso giorni dopo. Li possono scrivere i due
+      giocatori, e non cambiano il risultato.
 
   - type: faq
     items:

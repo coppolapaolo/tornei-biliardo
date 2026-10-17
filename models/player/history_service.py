@@ -129,6 +129,9 @@ class MatchEntry:
     #: Chi garantisce il risultato (ADR-083): un direttore, i due giocatori,
     #: o solo chi ha firmato. Decide in quali viste la voce compare.
     livello: Optional[Livello] = None
+    #: Che partita era, quando chi l'ha giocata l'ha scritto: esiste solo
+    #: sulle sfide individuali (la partita di gara ha già `competition`).
+    description: Optional[str] = None
 
     @property
     def in_attesa(self) -> bool:
@@ -631,6 +634,7 @@ class PlayerHistoryService:
                     competition=None,
                     is_trio=False,
                     livello=livello_di_sfida(im),
+                    description=im.description,
                 )
             )
         return voci

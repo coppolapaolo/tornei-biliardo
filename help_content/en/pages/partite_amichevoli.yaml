@@ -46,7 +46,8 @@ blocks:
         text: >-
           Under «How it is played» you get a summary of venue, discipline and
           distance. Happy with it? Touch nothing. Otherwise tap **Change** and
-          fix what you need.
+          fix what you need. If the match has a name — a final, a championship
+          matchday — tap **Add a description** and write it.
       - title: "Decide whether to keep the TPA scoresheet"
         text: >-
           If you have unlocked the scoresheet, **I'll keep the TPA scoresheet**
@@ -85,7 +86,9 @@ blocks:
         text: >-
           Venue, date and time. If the venue is one of those registered in the
           app, pick it from the list: it will show with its address and number
-          of tables.
+          of tables. If you like, also write the **match description**: it
+          moves to the challenge when your opponent accepts. The message
+          further down stays on the proposal instead.
       - title: "Choose the format"
         text: >-
           Discipline (8-ball, 9-ball…) and distance, that is how many racks it
@@ -318,6 +321,41 @@ blocks:
   - type: shot
     shot: statistiche-amichevoli
     caption: "Friendly match statistics: matches, wins and most frequent opponents, counted separately."
+
+  - type: heading
+    id: video-e-descrizione
+    title: "The video and the description"
+
+  - type: text
+    text: >-
+      The challenge page has a **Video and description** box. The
+      description says which match it is, for example «Final of the first
+      matchday, Serie C»: it shows under the players' names, in My matches
+      and in the history. The video is the link to the match recording on
+      YouTube: whoever opens the page taps **Watch the video** and sees it in
+      a new tab.
+
+  - type: steps
+    items:
+      - title: "Open the challenge"
+        text: "From Matches or My matches, tap the match."
+      - title: "Tap «Add video and description»"
+        text: >-
+          Write the description, at most 200 characters, and paste the video
+          link. A YouTube video, live stream or short is fine, even with the
+          point to start from.
+      - title: "Tap «Save»"
+        text: >-
+          To change them, go back to the same box; to remove them, leave the
+          field empty and save.
+
+  - type: note
+    tone: info
+    title: "It can be done days later"
+    text: >-
+      Video and description can be written at any time, even after the match
+      is closed: the video often arrives days later. Either player can write
+      them, and they do not change the result.
 
   - type: faq
     items:

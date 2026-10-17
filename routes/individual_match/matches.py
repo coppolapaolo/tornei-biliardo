@@ -529,6 +529,41 @@ def complete_match(match_id):
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
 
+@individual_match_bp.route("/matches/<int:match_id>/info", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def update_match_info(match_id):
+    """Video e descrizione della sfida, in ogni stato.
+
+    Un modulo solo per le due informazioni sulla partita: il servizio le
+    valida entrambe prima di scrivere, quindi un link sbagliato non cancella
+    né quello buono né la descrizione.
+    """
+    from models.exceptions import DomainError, http_status_for_exception
+    from models.match.match_info_service import MatchInfoService
+
+    data = request.get_json() if request.is_json else request.form
+    try:
+        MatchInfoService.update_individual_match_info(
+            match_id,
+            current_user,
+            video_url=data.get("video_url"),
+            description=data.get("description"),
+        )
+    except DomainError as exc:
+        if request.is_json:
+            return (
+                jsonify({"success": False, "error": str(exc)}),
+                http_status_for_exception(exc),
+            )
+        flash(str(exc), "danger")
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    if request.is_json:
+        return jsonify({"success": True})
+    flash(_("Informazioni sulla partita salvate."), "success")
+    return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
 @individual_match_bp.route("/matches/<int:match_id>/cancel", methods=["POST"])
 @RoleRequirement.player_or_director_required
 def cancel_match(match_id):

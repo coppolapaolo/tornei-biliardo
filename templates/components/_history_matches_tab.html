@@ -91,6 +91,7 @@
         <div class="c7-rows__sub">
           <span class="c7-state {{ stile[0] }}">{{ stile[1] }}</span>
           {%- if voce.competition %} <span class="c7-sep">·</span> {{ voce.competition }}{% endif -%}
+          {%- if voce.description %} <span class="c7-sep">·</span> <span title="{{ voce.description }}">{{ voce.description|truncate(60) }}</span>{% endif -%}
           {%- if voce.played_on %} <span class="c7-sep">·</span> <span class="c7-num">{{ voce.played_on|date_local }}</span>{% endif -%}
           {%- if voce.venue %} <span class="c7-sep">·</span> {{ voce.venue }}{% endif -%}
           {%- if voce.is_trio %} <span class="c7-sep">·</span> {{ _("partita a tre") }}{% endif -%}

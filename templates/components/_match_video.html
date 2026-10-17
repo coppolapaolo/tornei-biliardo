@@ -1,0 +1,90 @@
+{# templates/components/_match_video.html — 7c
+
+   Le informazioni **sulla** partita: il link al video e, nelle sfide
+   individuali, la descrizione («Finale della prima giornata…»). Una card sola
+   per le due pagine di partita, la sfida e la partita di gara.
+
+   Il video è un **link esterno** che apre YouTube in una scheda nuova, non un
+   lettore incorporato: un iframe chiederebbe di aprire la CSP. Si scrive in
+   ogni stato — arriva spesso giorni dopo — quindi il modulo non guarda lo
+   stato della partita; lo stesso schema degli orari: si vede il dato, la
+   modifica sta dietro un comando.
+
+   La descrizione è testo dell'utente: si stampa con l'escape automatico,
+   mai con `|safe`.
+
+   Parametri:
+   - `match`: `IndividualMatch` o `Match`, con `video_url` (e `description`);
+   - `action_url`: dove si invia il modulo;
+   - `can_edit`: se chi guarda può scrivere;
+   - `with_description`: True nelle sfide individuali. #}
+{% macro card(match, action_url, can_edit, with_description=False) %}
+{% set descrizione = match.description if with_description else none %}
+{% if match.video_url or descrizione or can_edit %}
+<section class="c7-card">
+  <div class="c7-kicker">
+    {{- _('Video e descrizione') if with_description else _('Video della partita') -}}
+  </div>
+
+  {% if descrizione %}
+  <p style="margin: 10px 0 0; font-size: 14px; font-weight: 700; overflow-wrap: anywhere;">{{ descrizione }}</p>
+  {% endif %}
+
+  {% if match.video_url %}
+  <a class="btn btn-secondary w-100" style="margin-top: 12px;"
+     href="{{ match.video_url }}" target="_blank" rel="noopener noreferrer">
+    <i class="fab fa-youtube"></i>&nbsp;{{ _('Guarda il video') }}
+    <i class="fas fa-arrow-up-right-from-square" style="font-size: 11px;" aria-hidden="true"></i>
+    <span class="visually-hidden">{{ _('(si apre in una scheda nuova)') }}</span>
+  </a>
+  {% elif can_edit %}
+  <p class="text-muted" style="margin: 10px 0 0; font-size: 13px; font-weight: 600;">
+    {{ _('Se la partita è stata ripresa, aggiungi il link al video su YouTube: lo vedranno tutti quelli che aprono questa pagina.') }}
+  </p>
+  {% endif %}
+
+  {% if can_edit %}
+  {% set vuoto = not match.video_url and not descrizione %}
+  <details style="margin-top: 14px;">
+    <summary style="font-size: 13px; font-weight: 800; cursor: pointer;">
+      {%- if vuoto %}{{ _('Aggiungi video e descrizione') if with_description else _('Aggiungi il video') }}
+      {%- else %}{{ _('Modifica video e descrizione') if with_description else _('Modifica il video') }}{% endif -%}
+    </summary>
+    <form method="POST" action="{{ action_url }}" class="c7-stack" style="gap: 12px; margin-top: 12px;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if with_description %}
+      <div>
+        <label class="c7-label" for="matchInfoDescription">{{ _('Descrizione') }}</label>
+        <input type="text" class="form-control" id="matchInfoDescription" name="description"
+               maxlength="200" value="{{ match.description or '' }}"
+               placeholder="{{ _('Es. Finale della prima giornata, serie C') }}">
+      </div>
+      {% endif %}
+      <div>
+        <label class="c7-label" for="matchInfoVideo">{{ _('Link al video') }}</label>
+        {# `text` con `inputmode=url` e non `type=url`: chi incolla da un
+           messaggio spesso perde lo «https://», e il servizio lo rimette. #}
+        <input type="text" inputmode="url" autocomplete="off" class="form-control"
+               id="matchInfoVideo" name="video_url" maxlength="300"
+               value="{{ match.video_url or '' }}" placeholder="https://youtu.be/…">
+        <div class="text-muted" style="font-size: 12px; font-weight: 600; margin-top: 6px;">
+          {{ _('Un video di YouTube, anche una diretta o uno short. Lascia vuoto per toglierlo.') }}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">{{ _('Salva') }}</button>
+    </form>
+  </details>
+  {% endif %}
+</section>
+{% endif %}
+{% endmacro %}
+
+{# Il sottotitolo delle righe di elenco: la descrizione, troncata, sotto il
+   nome dell'avversario. Niente se la sfida non ce l'ha. `title` porta il
+   testo intero a chi lo cerca col cursore. #}
+{% macro subtitle(match, length=60, style='') -%}
+{%- if match.description -%}
+<div class="text-muted" title="{{ match.description }}"
+     style="margin-top:6px;font-size:12px;font-weight:700;overflow-wrap:anywhere;{{ style }}">{{ match.description|truncate(length) }}</div>
+{%- endif -%}
+{%- endmacro %}

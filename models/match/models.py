@@ -148,6 +148,10 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     #: abbiamo giocato" spariva insieme all'occupazione (issue #154).
     #: Stesso schema dell'ADR-056: un fatto si persiste, non si deduce.
     played_on_table = db.Column(db.String(10), nullable=True)
+    #: Il video della partita su YouTube, già in forma canonica
+    #: (`utils.video_link.normalize_video_url`). Lo scrivono i due giocatori
+    #: e i direttori della gara, in ogni stato.
+    video_url = db.Column(db.String(300), nullable=True)
 
     # ── Acchito e tiro di apertura (ADR-056) ──────────────────────────────
     # Le **regole** non stanno qui: il match le eredita sempre dalla gara e

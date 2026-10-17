@@ -120,7 +120,17 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
     )  # Race-to vs exact sets
 
     # Optional
+    #: Campo interno: oggi ci scrive solo `cancel_match` il motivo
+    #: dell'annullamento. Non è la descrizione della partita.
     notes = db.Column(db.Text, nullable=True)
+    #: Che partita è, detto da chi la gioca: «Finale della prima giornata del
+    #: campionato regionale». Testo dell'utente, al massimo 200 caratteri
+    #: (`models.match.match_info_service.DESCRIPTION_MAX_LENGTH`).
+    description = db.Column(db.Text, nullable=True)
+    #: Il video della partita su YouTube, già in forma canonica
+    #: (`utils.video_link.normalize_video_url`). Si scrive in ogni stato:
+    #: il video arriva spesso giorni dopo.
+    video_url = db.Column(db.String(300), nullable=True)
 
     # Results
     started_at = db.Column(db.DateTime, nullable=True)
@@ -604,6 +614,15 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
             self.status in (MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS)
             and not self.has_recorded_play()
         )
+
+    def can_edit_info(self, user_id: Optional[int]) -> bool:
+        """Chi può scrivere video e descrizione di questa sfida.
+
+        Il punto unico del permesso: oggi i due giocatori; quando la partita
+        potrà essere presa da un terzo, anche chi tiene il referto. Non dipende
+        dallo stato: il video arriva spesso a partita chiusa da giorni.
+        """
+        return self.is_player(user_id)
 
     def cancel_match(self, reason: Optional[str] = None) -> None:
         """Annulla la sfida, se non è ancora stato segnato niente.

@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-10-16 15:14 UTC
+> Last updated: 2026-10-17 20:31 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -473,6 +473,7 @@
 | `ended_at` | DATETIME | YES |  |  |  |
 | `table_assignment` | VARCHAR(10) | YES |  |  |  |
 | `played_on_table` | VARCHAR(10) | YES |  |  |  |
+| `video_url` | VARCHAR(300) | YES |  |  |  |
 | `lag_winner_id` | INTEGER | YES | FK→user.id |  |  |
 | `first_break_player_id` | INTEGER | YES | FK→user.id |  |  |
 | `has_handicap` | BOOLEAN | YES |  |  |  |
@@ -1282,6 +1283,7 @@
 | `break_rule` | VARCHAR(20) | YES |  | alternate |  |
 | `start_rule` | VARCHAR(20) | YES |  | lag |  |
 | `description` | TEXT | YES |  |  |  |
+| `match_description` | TEXT | YES |  |  |  |
 | `is_multi_set` | BOOLEAN | YES |  | False |  |
 | `match_distance` | INTEGER | YES |  |  |  |
 | `is_race_to_sets` | BOOLEAN | YES |  | True |  |
@@ -1337,6 +1339,8 @@
 | `match_distance` | INTEGER | YES |  |  |  |
 | `is_race_to_sets` | BOOLEAN | YES |  | True |  |
 | `notes` | TEXT | YES |  |  |  |
+| `description` | TEXT | YES |  |  |  |
+| `video_url` | VARCHAR(300) | YES |  |  |  |
 | `started_at` | DATETIME | YES |  |  |  |
 | `ended_at` | DATETIME | YES |  |  |  |
 | `player1_score` | INTEGER | NO |  | 0 |  |

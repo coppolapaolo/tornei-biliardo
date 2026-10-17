@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "components/_match_video.html" as match_video with context %}
 
 {% block title %}{{ _("Le mie sfide") }} - {{ config.APP_NAME }}{% endblock %}
 
@@ -146,6 +147,7 @@
         </div>
       </div>
 
+      {{ match_video.subtitle(match, length=90) }}
       <div class="c7-rows__sub" style="margin-top:12px">
         {%- if match.location_display %}{{ match.location_display }} <span class="c7-sep">·</span> {% endif -%}
         {{ _('Al') if match.is_race_to else _('Esattamente') }} {{ match.distance }}

@@ -197,6 +197,12 @@ class QuickMatchService:
         if opponent_id == user_id:
             raise ValidationError(_("Non puoi giocare contro te stesso."))
 
+        # Che partita è («Finale della prima giornata…»): facoltativa, e non
+        # fa parte delle precompilazioni — ogni partita ha la sua.
+        from ..match.match_info_service import normalize_description
+
+        description = normalize_description((config or {}).get("description"))
+
         opponent = db.session.get(User, opponent_id)
         if opponent is None or opponent.deleted_at is not None:
             raise NotFoundError(_("Giocatore non trovato."))
@@ -241,6 +247,7 @@ class QuickMatchService:
             is_multi_set=settings["is_multi_set"],
             match_distance=settings["match_distance"],
             is_race_to_sets=True if settings["is_multi_set"] else None,
+            description=description,
         )
         db.session.add(match)
         # flush prima di `start_match()`: nel multi-set quello crea il primo set,

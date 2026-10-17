@@ -176,3 +176,29 @@ _Regola del 2026-10-17, decisa dall'utente (`SPECIFICHE.md`, nota datata)._
 - _(variante: una sfida senza firme, con dei triangoli segnati → non si
   ritira: i due la stanno ancora giocando)_
 
+
+## Use case 11 — La finale di giornata ha un nome e un video
+
+Paolo e Pietro giocano la finale della prima giornata del campionato
+regionale. Lo dice la sfida stessa, e il video arriva due giorni dopo.
+
+- Paolo apre l'**avvio rapido**, sceglie Pietro, tocca «Aggiungi una
+  descrizione» e scrive «Finale della prima giornata, serie C FVG».
+- La descrizione compare sotto i nomi nella pagina della sfida, nel referto
+  TPA, in `/match/`, in «Le mie sfide» e nello storico del profilo.
+- Due giorni dopo, a sfida confermata da entrambi, Pietro apre la sfida e in
+  «Video e descrizione» incolla `youtu.be/…?t=95`. Il link si salva nella
+  forma `https://www.youtube.com/watch?v=…&t=95s`, e chi apre la pagina tocca
+  «Guarda il video»: YouTube si apre in una scheda nuova.
+- Video e descrizione non toccano il risultato, né il livello di
+  certificazione, né l'ELO.
+- _(variante: la sfida nasce da una **proposta** → la descrizione si scrive
+  nel campo «Descrizione della partita» e passa alla sfida quando Pietro
+  accetta; il «Messaggio» resta sulla proposta)_
+- _(variante: Pietro incolla un link di Vimeo → «Il link al video deve essere
+  un video di YouTube», e il link che c'era resta)_
+- _(variante: un terzo giocatore prova a scrivere il video → rifiutato: lo
+  scrivono solo i due giocatori della sfida)_
+- _(variante: partita di **gara** → il riquadro «Video della partita» c'è
+  anche lì, senza descrizione; lo scrivono i giocatori e i direttori della
+  gara)_
