@@ -4,7 +4,7 @@ kind: tutorial
 audience: [tutti]
 minutes: 3
 summary: "Creare l'account, confermare l'email ed entrare la prima volta. Sono cinque minuti, una volta sola."
-screens: [auth.register, auth.login, auth.forgot_password, auth.verify_email, auth.diagnosi_cookie, onboarding.onboarding]
+screens: [auth.register, auth.login, auth.forgot_password, auth.verify_email, auth.diagnosi_cookie, onboarding.onboarding, main.riscatta_giocatore, riscatto.omonimi]
 related: [iscriversi_a_una_gara, profilo_e_statistiche]
 
 blocks:
@@ -82,7 +82,7 @@ blocks:
   - type: text
     text: >-
       Al primo accesso l'app fa qualche domanda breve — che cosa ti interessa
-      fare, in che città giochi. Sono tutte facoltative e servono solo a
+      fare, in che città giochi, come ti chiami. Sono tutte facoltative e servono solo a
       mostrarti per prime le gare vicine a te. Puoi cambiare le risposte in
       qualsiasi momento dal profilo.
 
@@ -148,6 +148,41 @@ blocks:
       Su **computer** le stesse voci sono nella colonna di sinistra, e le
       pagine mostrano due colonne affiancate invece di una sola: le
       informazioni sono le stesse, solo disposte diversamente.
+
+  - type: heading
+    id: riscattare
+    title: "Hai già giocato in sala senza account?"
+
+  - type: text
+    text: >-
+      Se un direttore di gara o un istruttore ti ha aggiunto a una gara prima
+      che ti registrassi, nelle pagine delle gare il tuo nome ha accanto il
+      segno «non registrato» e il collegamento **«Sei tu? Riscatta»**.
+      Riscattarlo vuol dire prendere quelle partite nel tuo account.
+
+  - type: steps
+    items:
+      - title: "Tocca «Sei tu? Riscatta»"
+        text: >-
+          Si apre una pagina che spiega cosa succede e chi lo conferma: chi ti
+          ha aggiunto, o l'amministratore.
+      - title: "Crea un account, o accedi"
+        text: >-
+          Se non hai ancora un account tocca **Crea un account**; se ce l'hai,
+          **Ho già un account: accedi**. Appena entri, la richiesta parte da
+          sola: non devi tornare a cercare il tuo nome.
+      - title: "Aspetta la conferma"
+        text: >-
+          Ti arriva una notifica con l'esito. Se è confermato, iscrizioni,
+          partite, classifiche ed ELO di quel giocatore sono tuoi.
+
+  - type: note
+    tone: tip
+    title: "Se scrivi nome e cognome all'inizio"
+    text: >-
+      Nelle domande del primo accesso puoi scrivere nome e cognome. Se fra i
+      giocatori non registrati qualcuno si chiama come te, subito dopo l'app
+      te lo mostra con **«Sono io: chiedi il riscatto»**.
 
   - type: heading
     id: password_dimenticata

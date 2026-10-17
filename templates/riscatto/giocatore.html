@@ -1,0 +1,75 @@
+{# templates/riscatto/giocatore.html — «Sei tu?» (ADR-086).
+
+   La apre anche chi non ha un account: è il suo modo di arrivare a crearne
+   uno. I due pulsanti di un anonimo sono un POST che salva l'intenzione e
+   porta al login o alla registrazione; la richiesta parte dopo l'accesso,
+   senza un altro clic. Chi è già collegato la invia da qui. #}
+{% extends "base.html" %}
+
+{% block title %}{{ _("Sei tu %(nome)s?", nome=nome) }}{% endblock %}
+{% block page_title %}{{ _("Sei tu?") }}{% endblock %}
+{% block page_sub %}{{ nome }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:560px">
+
+  <section class="c7-card c7-stack">
+    <div class="c7-kicker">{{ _("Giocatore non registrato") }}</div>
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em">{{ nome }}</div>
+    <div class="c7-rows__sub">
+      {{ ngettext("Iscritto a %(n)s gara, aggiunto da un direttore o da un istruttore.", "Iscritto a %(n)s gare, aggiunto da un direttore o da un istruttore.", n_gare, n=n_gare) }}
+    </div>
+    <p class="mb-0">
+      {{ _("Se sei tu, puoi riscattarlo: tutte le sue partite, le iscrizioni, le classifiche e l'ELO passano al tuo account.") }}
+    </p>
+    <div class="c7-nota">
+      {% if conferma_admin %}
+      {{ _("Lo conferma l'amministratore, che vedrà il tuo nome utente e la tua email.") }}
+      {% else %}
+      {{ _("Lo conferma %(chi)s, che l'ha aggiunto e ti conosce: vedrà il tuo nome utente e la tua email.", chi=creatore.username) }}
+      {% endif %}
+    </div>
+  </section>
+
+  {% if mia_in_attesa %}
+  <section class="c7-card c7-card--locked c7-stack">
+    <div class="c7-kicker">{{ _("Richiesta inviata") }}</div>
+    <div>{{ _("La tua richiesta aspetta una risposta.") }}</div>
+    {% if feature_visible('riscatto.richiesta') %}
+    <a class="btn btn-secondary w-100" href="{{ url_for('riscatto.richiesta', request_id=mia_in_attesa.id) }}">{{ _("Vedi la richiesta") }}</a>
+    {% endif %}
+  </section>
+  {% elif motivo %}
+  <section class="c7-card c7-card--locked">
+    <div>{{ motivo }}</div>
+  </section>
+  {% elif current_user.is_authenticated %}
+  <form method="POST" action="{{ url_for('main.riscatta_giocatore', user_id=giocatore.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-primary w-100">
+      <i class="fas fa-hand"></i>&nbsp;{{ _("Sono io: chiedi il riscatto") }}
+    </button>
+  </form>
+  {% else %}
+  <section class="c7-stack" style="gap:10px">
+    <div class="c7-label">{{ _("Per riscattarlo serve un account") }}</div>
+    <form method="POST" action="{{ url_for('main.riscatta_giocatore', user_id=giocatore.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="azione" value="registrati">
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="fas fa-user-plus"></i>&nbsp;{{ _("Crea un account") }}
+      </button>
+    </form>
+    <form method="POST" action="{{ url_for('main.riscatta_giocatore', user_id=giocatore.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="azione" value="accedi">
+      <button type="submit" class="btn btn-secondary w-100">
+        <i class="fas fa-right-to-bracket"></i>&nbsp;{{ _("Ho già un account: accedi") }}
+      </button>
+    </form>
+    <div class="c7-nota">{{ _("Appena entri, la richiesta parte da sola.") }}</div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}

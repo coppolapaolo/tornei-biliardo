@@ -8,14 +8,21 @@
    `giocatore.username` e `giocatore.is_placeholder` da entrambi. L'id è
    `user_id` nei dizionari, `id` sugli oggetti.
 
-   Qui arriverà anche il «Sei tu? Riscatta» delle pagine pubbliche: chi
-   disegna un nome passando da queste macro lo riceverà senza toccare la sua
-   pagina.
+   Accanto al segno c'è «Sei tu? Riscatta» (ADR-086): porta alla pagina che
+   spiega il riscatto. Lo vede chi non è il giocatore né chi l'ha creato, solo
+   finché nessuno ha già chiesto di riscattarlo (`puo_riscattare`, da
+   `ClaimService.puo_proporre_riscatto`, che guarda anche l'allowlist ADR-028:
+   una macro importata non vede `feature_visible`). È un link a una pagina:
+   la richiesta parte da lì, con un POST.
+
+   Dove il nome sta già dentro un `<a>` il link non si annida: si scrive
+   `nome_giocatore(x, riscatto=false)` dentro e `riscatta(x)` dopo il `</a>`.
 
    Uso:
-     {% from "components/_nome_giocatore.html" import nome_giocatore, badge_non_registrato %}
-     {{ nome_giocatore(inscription.user) }}            nome + segno
+     {% from "components/_nome_giocatore.html" import nome_giocatore, badge_non_registrato, riscatta %}
+     {{ nome_giocatore(inscription.user) }}            nome + segno + «Sei tu?»
      {{ badge_non_registrato(dati) }}                  il solo segno, dopo un nome già scritto
+     {{ riscatta(dati) }}                              il solo «Sei tu? Riscatta»
 #}
 
 {% macro badge_non_registrato(giocatore) -%}
@@ -25,6 +32,12 @@
 {%- endif -%}
 {%- endmacro %}
 
-{% macro nome_giocatore(giocatore) -%}
-{{ giocatore.username }}{{ badge_non_registrato(giocatore) }}
+{% macro riscatta(giocatore) -%}
+{%- if giocatore and giocatore.is_placeholder and puo_riscattare(giocatore) -%}
+<a class="c7-nonreg-riscatta" href="{{ url_for('main.riscatta_giocatore', user_id=giocatore.user_id or giocatore.id) }}">{{ _('Sei tu? Riscatta') }}</a>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro nome_giocatore(giocatore, riscatto=true) -%}
+{{ giocatore.username }}{{ badge_non_registrato(giocatore) }}{% if riscatto %}{{ riscatta(giocatore) }}{% endif %}
 {%- endmacro %}

@@ -279,6 +279,17 @@ class RoleRequestRecipientStatus(_StrEnum):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# CLAIM REQUEST (riscatto di un giocatore non registrato, ADR-086)
+# Persistito: `claim_request.status` → {pending, approved, rejected}
+# Fonte: models/user/claim_request.py (ClaimRequest)
+# ──────────────────────────────────────────────────────────────────────────────
+class ClaimRequestStatus(_StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # EXAM ATTEMPT — modalità (ADR-042)
 # Persistito: `exam_attempt.mode` → {self_practice, certified}
 # Le due nature convivono in un solo modello, ma **solo `certified` certifica**:

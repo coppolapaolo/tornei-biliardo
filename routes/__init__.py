@@ -15,6 +15,10 @@ def register_blueprints(app):
     from .role_grant import role_grant_bp
     from .feedback import feedback_bp
 
+    # Il riscatto dei non registrati (ADR-086) aggiunge la sua pagina pubblica
+    # a `main_bp`: va importato prima che `main_bp` sia registrato.
+    from .riscatto import riscatto_bp
+
     # Import dei blueprint extended domains (Phase 3)
     from .challenge import challenge_bp
     from .exam import exam_bp
@@ -45,6 +49,7 @@ def register_blueprints(app):
     # Segnalazioni (issue #255): il prefisso /segnalazioni lo dichiara il
     # blueprint. Non sta sotto /admin perché chi segnala è un giocatore.
     app.register_blueprint(feedback_bp)
+    app.register_blueprint(riscatto_bp)
 
     # Registrazione blueprints extended domains
     app.register_blueprint(challenge_bp, url_prefix="/challenges")

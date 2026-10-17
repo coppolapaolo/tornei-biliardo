@@ -23,7 +23,23 @@ Un **direttore** (o l'admin) e un **istruttore** possono creare un giocatore che
 - Accanto al suo nome, negli iscritti, nelle classifiche e nel profilo, c'è il segno **«non registrato»**.
 - Chi poi si registra lo **riscatta**: le partite passano al nuovo account con la conferma di chi l'ha creato, o dell'admin per i giocatori senza creatore.
 
-_Regola nuova del 2026-10-17, decisa dall'utente (ADR-085). Il riscatto arriva con una modifica successiva._
+_Regola nuova del 2026-10-17, decisa dall'utente (ADR-085)._
+
+##### Il riscatto
+
+Chi si registra e si riconosce in un giocatore non registrato lo **riscatta**: chiede di prenderne le partite, e qualcuno conferma che è proprio lui.
+
+- Nelle pagine pubbliche, accanto al nome di un giocatore non registrato, c'è **«Sei tu? Riscatta»**. Lo vede chiunque, anche senza account, tranne il giocatore stesso e chi l'ha creato; sparisce quando una richiesta è già in attesa.
+- Chi non ha un account sceglie **Accedi** o **Crea un account**: la richiesta parte **da sola appena entra**, senza un secondo gesto.
+- Decide **chi ha creato il giocatore**, che lo conosce di persona. Per un giocatore **senza creatore** — quelli presenti prima di questa regola — o col creatore cancellato decide **solo l'amministratore**.
+- C'è **una sola richiesta in attesa** per giocatore. Dopo un rifiuto se ne può fare un'altra.
+- Non lo riscatta chi l'ha creato, né l'amministratore, né un altro giocatore non registrato. Un giocatore si riscatta **una volta sola**.
+- **Non serve l'email verificata**: chi decide vede nome utente ed email di chi chiede, e se l'email è verificata.
+- Se chi decide **conferma**, tutto passa all'account di chi l'ha chiesto: iscrizioni, partite, classifiche ed ELO. Se i due si sono affrontati in una partita, il riscatto si ferma e non sposta niente.
+- Chi chiede riceve l'esito; chi decide riceve la richiesta. Le notifiche arrivano nella lingua di chi le legge.
+- Nell'onboarding, chi scrive nome e cognome vede i giocatori non registrati che si chiamano come lui, accenti e maiuscole a parte.
+
+_Regola nuova del 2026-10-17, decisa dall'utente (ADR-086): conferma il creatore, l'amministratore per i giocatori senza creatore._
 
 ## Campionati
 

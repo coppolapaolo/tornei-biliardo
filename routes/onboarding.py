@@ -8,6 +8,8 @@ server-side dall'hook ``enforce_onboarding`` in ``app.py``: finché
 Step (design V3 §7, riconciliato ADR-033/034):
 1. *Dove*: città home (fallback prossimità) + selezione sale (disponibilità).
 2. *Cosa*: interessi (drill / match / tornei).
+3. *Chi*: nome e cognome, facoltativi. Se un giocatore non registrato si
+   chiama così, dopo l'onboarding si propone di riscattarlo (ADR-086).
 
 Tutti i campi sono opt-in; completare la pagina segna l'onboarding come fatto.
 """
@@ -40,14 +42,23 @@ def onboarding():
             i for i in request.form.getlist("interests") if i in VALID_INTERESTS
         ]
 
-        OnboardingService.complete_onboarding(
+        utente = OnboardingService.complete_onboarding(
             user_id=current_user.id,
             home_city=home_city,
             venue_ids=venue_ids,
             interests=interests,
+            first_name=request.form.get("first_name", ""),
+            last_name=request.form.get("last_name", ""),
         )
 
         flash(_("Tutto pronto! Buon divertimento."), "success")
+        # Chi ha già giocato in sala senza account può trovarsi fra i non
+        # registrati con il suo nome (ADR-086): prima della dashboard, glieli
+        # mostriamo. Nessuno con quel nome, nessun passo in più.
+        from models.user.claim_service import ClaimService
+
+        if ClaimService.omonimi(utente):
+            return redirect(url_for("riscatto.omonimi"))
         return redirect(url_for("dashboard.dashboard"))
 
     active_venues = (

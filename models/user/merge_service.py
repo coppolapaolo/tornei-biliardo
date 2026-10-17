@@ -57,6 +57,11 @@ logger = logging.getLogger(__name__)
 # dropping the source's encounters is safe.
 _DELETE_SOURCE_TABLES: Set[str] = {"player_encounter"}
 
+# Columns that keep pointing at the source after the merge. A ClaimRequest
+# says **who** was claimed (ADR-086): moved to the target it would say that the
+# claimant asked to claim himself, and the history of the claim would be lost.
+_KEEP_SOURCE_COLUMNS: Set[tuple] = {("claim_request", "placeholder_id")}
+
 
 class UserMergeService:
     """Merge a source user account into a target account."""
@@ -64,7 +69,11 @@ class UserMergeService:
     @staticmethod
     @transactional(domain="user")
     def merge_users(
-        source_id: int, target_id: int, performed_by_id: int
+        source_id: int,
+        target_id: int,
+        performed_by_id: int,
+        *,
+        riscatto_approvato: bool = False,
     ) -> Dict[str, object]:
         """Merge ``source_id`` into ``target_id``.
 
@@ -72,11 +81,18 @@ class UserMergeService:
         with per-row dedup on constrained columns) → drop source-only derived
         rows → recompute ELO + classifications + gamification → anonymize source.
 
+        ``riscatto_approvato`` is the only way for a non-admin to run a merge,
+        and only ``ClaimService.approve`` passes it (ADR-086): the creator of a
+        not-yet-registered player has confirmed that the claimant is that
+        person. It authorizes nothing else — the source must be a placeholder
+        not yet claimed, and every other guarantee of the merge still holds.
+
         Returns a report dict.
 
         Raises:
             NotFoundError: a user does not exist.
-            ValidationError: same user, an admin involved, or performer not admin.
+            ValidationError: same user, an admin involved, performer not admin
+                (outside a claim), or a claim whose source is not a placeholder.
             ConflictError: source and target played head-to-head.
         """
         # ---- FASE 0: validazioni (get by PK bypassa il filtro soft-delete) ----
@@ -98,7 +114,16 @@ class UserMergeService:
             )
 
         performer = db.session.get(User, performed_by_id)
-        if performer is None or performer.role != UserRole.ADMIN.value:
+        if riscatto_approvato:
+            # Il riscatto (ADR-086): chi decide non è l'admin ma il creatore,
+            # e l'autorizzazione vale solo per un non registrato da riscattare.
+            if performer is None:
+                raise ValidationError("Chi conferma il riscatto non esiste")
+            if not source.is_placeholder or source.claimed_at is not None:
+                raise ValidationError(
+                    "Si riscatta solo un giocatore non registrato, una volta sola"
+                )
+        elif performer is None or performer.role != UserRole.ADMIN.value:
             raise ValidationError("Solo un amministratore può unire gli account")
 
         # ---- FASE 1: rilevamento head-to-head ----
@@ -265,6 +290,8 @@ class UserMergeService:
                 reassigned += 1
                 continue
             if table.name == "user" or table.name in _DELETE_SOURCE_TABLES:
+                continue
+            if (table.name, col.name) in _KEEP_SOURCE_COLUMNS:
                 continue
             if UserMergeService._is_constrained(table, col):
                 UserMergeService._reassign_with_dedup(table, col, source_id, target_id)

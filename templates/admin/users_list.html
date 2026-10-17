@@ -1,6 +1,7 @@
 <!-- templates/admin/users_list.html - Lista utenti per admin -->
 {% extends "base.html" %}
 {% import "components/_role_grant_actions.html" as ruoli %}
+{% from "components/_nome_giocatore.html" import badge_non_registrato %}
 
 {% block title %}{{ _("Gestione Utenti - Admin") }}{% endblock %}
 
@@ -90,6 +91,15 @@
                     {{ ngettext("%(n)s email da confermare", "%(n)s email da confermare", non_confermate, n=non_confermate) }}
                 </button>
                 {% endif %}
+                {% if feature_visible('riscatto.richieste') %}
+                {# I giocatori storici senza creatore li riscatta solo
+                   l'admin (ADR-086): la coda sta accanto agli utenti. #}
+                {% set _riscatti = riscatti_da_decidere() %}
+                <a href="{{ url_for('riscatto.richieste') }}" class="btn {{ 'btn-warning' if _riscatti else 'btn-secondary' }} btn-sm">
+                    <i class="fas fa-user-check"></i>
+                    {{ ngettext("%(n)s riscatto da decidere", "%(n)s riscatti da decidere", _riscatti, n=_riscatti) if _riscatti else _("Riscatti") }}
+                </a>
+                {% endif %}
                 {% if feature_visible('admin.user.accessi') %}
                 <a href="{{ url_for('admin.user.accessi') }}" class="btn btn-secondary btn-sm">
                     <i class="fas fa-door-open"></i> {{ _("Accessi") }}
@@ -175,7 +185,7 @@
                             <a href="{{ url_for('admin.user.user_detail', user_id=user.id) }}"
                                class="fw-bold text-decoration-none">
                                 {{ user.username }}
-                            </a>
+                            </a>{{ badge_non_registrato(user) }}
                         </td>
                         <td data-label="{{ _("Email") }}">{{ user.email or '-' }}</td>
                         <td data-label="{{ _("Telefono") }}">{{ user.phone or '-' }}</td>

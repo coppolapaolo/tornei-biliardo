@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-10-17 21:33 UTC
+> Last updated: 2026-10-17 22:03 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -1926,6 +1926,41 @@
 **Foreign Keys:**
 - `challenge_id` → `challenge.id` (ON DELETE CASCADE)
 
+### claim_request
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `placeholder_id` | INTEGER | NO | FK→user.id |  |  |
+| `claimant_id` | INTEGER | NO | FK→user.id |  |  |
+| `status` | VARCHAR(20) | NO |  | pending |  |
+| `decided_by_id` | INTEGER | YES | FK→user.id |  |  |
+| `decided_at` | DATETIME | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `claimant_id` → `user.id` (ON DELETE NO ACTION)
+- `decided_by_id` → `user.id` (ON DELETE NO ACTION)
+- `placeholder_id` → `user.id` (ON DELETE NO ACTION)
+
+### claim_request_recipient
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `request_id` | INTEGER | NO | FK→claim_request.id |  |  |
+| `recipient_id` | INTEGER | NO | FK→user.id |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Constraints:**
+- UNIQUE(request_id, recipient_id)
+
+**Foreign Keys:**
+- `recipient_id` → `user.id` (ON DELETE NO ACTION)
+- `request_id` → `claim_request.id` (ON DELETE NO ACTION)
+
 ### config_preset
 
 | Column | Type | Nullable | Key | Default | Description |
@@ -2577,5 +2612,5 @@
 
 ## Summary
 
-- **Total tables**: 106
+- **Total tables**: 108
 - **Domains**: 13

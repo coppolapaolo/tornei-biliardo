@@ -82,6 +82,29 @@
             {% endfor %}
           </div>
 
+          {# ── Step 3: Chi (ADR-086) ── #}
+          <h5 class="mt-4">
+            <i class="fas fa-id-card text-primary"></i>
+            {{ _("Come ti chiami?") }}
+          </h5>
+          <div class="form-text text-muted mb-2">
+            {{ _("Facoltativo. Se hai già giocato in sala senza account, così ritroviamo le tue partite.") }}
+          </div>
+          <div class="row g-2 mb-4">
+            <div class="col-sm-6">
+              <label class="form-label" for="first_name">{{ _("Nome") }}</label>
+              <input id="first_name" name="first_name" type="text" class="form-control"
+                     maxlength="100" autocomplete="given-name"
+                     value="{{ current_user.first_name or '' }}">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label" for="last_name">{{ _("Cognome") }}</label>
+              <input id="last_name" name="last_name" type="text" class="form-control"
+                     maxlength="100" autocomplete="family-name"
+                     value="{{ current_user.last_name or '' }}">
+            </div>
+          </div>
+
           <button type="submit" class="btn btn-primary w-100">
             <i class="fas fa-check"></i> {{ _("Inizia a giocare") }}
           </button>
