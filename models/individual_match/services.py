@@ -58,6 +58,7 @@ class MatchProposalService:
         billiard_hall_id: Optional[int] = None,
         is_multi_set: bool = False,
         match_distance: Optional[int] = None,
+        match_description: Optional[str] = None,
     ) -> MatchProposal:
         """Create a match proposal with invitations if needed.
 
@@ -82,6 +83,7 @@ class MatchProposalService:
                 billiard_hall_id=billiard_hall_id,
                 is_multi_set=is_multi_set,
                 match_distance=match_distance,
+                match_description=match_description,
             )
         else:
             return ProposalService.create_open_proposal(
@@ -98,6 +100,7 @@ class MatchProposalService:
                 billiard_hall_id=billiard_hall_id,
                 is_multi_set=is_multi_set,
                 match_distance=match_distance,
+                match_description=match_description,
             )
 
     @staticmethod

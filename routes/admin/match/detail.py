@@ -146,6 +146,12 @@ def match_detail(match_id):
         not match.is_multi_set and match.is_at_distance
     )
 
+    from models.match.match_info_service import MatchInfoService
+
+    user_can_edit_video = MatchInfoService.can_edit_gara_match_video(
+        match, current_user
+    )
+
     return render_template(
         "match_detail.html",
         match=match,
@@ -160,7 +166,44 @@ def match_detail(match_id):
         match_can_correct=match_can_correct,
         match_correct_reason=match_correct_reason,
         score_is_final=score_is_final,
+        user_can_edit_video=user_can_edit_video,
     )
+
+
+@match_bp.route("/<int:match_id>/video", methods=["POST"])
+@login_required
+def update_match_video(match_id):
+    """Il link al video della partita di gara, in ogni stato.
+
+    Lo scrivono i giocatori della partita e i direttori della gara: il
+    permesso lo decide il servizio, non un decoratore, perché qui il
+    giocatore entra quanto il direttore.
+    """
+    from flask import flash, redirect, url_for
+    from flask_babel import gettext as _
+    from flask_login import current_user
+
+    from models.exceptions import DomainError, http_status_for_exception
+    from models.match.match_info_service import MatchInfoService
+
+    data = request.get_json() if request.is_json else request.form
+    try:
+        MatchInfoService.update_gara_match_video(
+            match_id, current_user, video_url=data.get("video_url")
+        )
+    except DomainError as exc:
+        if request.is_json:
+            return (
+                jsonify({"success": False, "error": str(exc)}),
+                http_status_for_exception(exc),
+            )
+        flash(str(exc), "danger")
+        return redirect(url_for("admin.match.match_detail", match_id=match_id))
+
+    if request.is_json:
+        return jsonify({"success": True})
+    flash(_("Video della partita salvato."), "success")
+    return redirect(url_for("admin.match.match_detail", match_id=match_id))
 
 
 @match_bp.route("/<int:match_id>/update-times", methods=["POST"])

@@ -182,6 +182,16 @@
       </div>
     </div>
 
+    {# ---------- Che partita sarà ----------
+       Diversa dal messaggio qui sotto: il messaggio parla all'invitato e resta
+       sulla proposta, la descrizione dice che partita è e passa alla sfida
+       quando viene accettata. #}
+    <div class="c7-card">
+      <label for="match_description" class="form-label">{{ _("Descrizione della partita (facoltativa)") }}</label>
+      <input type="text" class="form-control" id="match_description" name="match_description" maxlength="200"
+             placeholder="{{ _('Es. Finale della prima giornata, serie C') }}">
+    </div>
+
     {# ---------- Messaggio ---------- #}
     <div class="c7-card">
       <label for="description" class="form-label">{{ _("Messaggio (opzionale)") }}</label>

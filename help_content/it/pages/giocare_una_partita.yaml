@@ -343,6 +343,27 @@ blocks:
     shot: gara-turni
     caption: "Le partite del turno: quelle concluse mostrano il risultato con la coroncina accanto al vincitore."
 
+  - type: heading
+    id: video
+    title: "Il video della partita"
+
+  - type: text
+    text: >-
+      Se la partita è stata ripresa, nella pagina della partita c'è il
+      riquadro **Video della partita**: tocca **Aggiungi il video**, incolla il
+      link di YouTube — un video, una diretta o uno short — e tocca **Salva**.
+      Da lì in poi chi apre la pagina tocca **Guarda il video** e lo vede in
+      una scheda nuova.
+
+  - type: note
+    tone: info
+    title: "Chi può aggiungerlo, e quando"
+    text: >-
+      I giocatori della partita e i direttori della gara, in qualunque
+      momento: anche a partita chiusa, perché il video arriva spesso giorni
+      dopo. Per toglierlo si lascia il campo vuoto e si salva. Il video non
+      cambia il risultato.
+
   - type: faq
     items:
       - q: "Posso segnare i punti di una partita che non è la mia?"

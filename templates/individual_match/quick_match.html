@@ -226,6 +226,19 @@
       </p>
     </div>
     {% endif %}
+
+    {# ---------- Che partita è: facoltativo, quindi chiuso ----------
+       Serve quando la partita ha un nome — una finale, una giornata di
+       campionato — e chi la rivede deve capire di quale si tratta. Si
+       corregge anche dopo, dalla pagina della sfida. #}
+    <details class="c7-card">
+      <summary style="font-size:13px;font-weight:800;cursor:pointer">{{ _("Aggiungi una descrizione") }}</summary>
+      <div style="margin-top:12px">
+        <label for="description" class="c7-label">{{ _("Descrizione") }}</label>
+        <input type="text" class="form-control" id="description" name="description" maxlength="200"
+               placeholder="{{ _('Es. Finale della prima giornata, serie C') }}">
+      </div>
+    </details>
   </form>
 
   {# Barra d'azione in fondo, fuori dal form e agganciata con `form=`: dentro la

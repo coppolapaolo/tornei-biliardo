@@ -12,6 +12,7 @@
 {% block page_title %}{{ _('Referto TPA') }}{% endblock %}
 {% block page_sub %}
 {{ match.player1.username }} vs {{ match.player2.username if match.player2 else _('avversario') }}
+{%- if match.description %} <span class="c7-sep">·</span> {{ match.description }}{% endif %}
 <span class="c7-sep">·</span> {{ match.discipline|discipline_display }}
 {% endblock %}
 

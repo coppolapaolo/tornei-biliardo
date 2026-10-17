@@ -65,6 +65,12 @@
             {%- endif %}
           </dd>
         </div>
+        {% if proposal.match_description %}
+        <div class="d-flex justify-content-between gap-3" style="padding:8px 0">
+          <dt class="c7-label" style="margin:0">{{ _("Partita") }}</dt>
+          <dd class="mb-0" style="font-size:13px;font-weight:700;text-align:right;overflow-wrap:anywhere">{{ proposal.match_description }}</dd>
+        </div>
+        {% endif %}
         <div class="d-flex justify-content-between gap-3" style="padding:8px 0">
           <dt class="c7-label" style="margin:0">{{ _("Proposta da") }}</dt>
           <dd class="mb-0" style="font-size:13px;font-weight:700;text-align:right">{{ proposal.proposer.username }}</dd>

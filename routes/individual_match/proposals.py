@@ -275,6 +275,7 @@ def create_proposal():
             "break_rule": data.get("break_rule", DEFAULT_BREAK_RULE.value),
             "start_rule": data.get("start_rule", DEFAULT_START_RULE.value),
             "description": data.get("description"),
+            "match_description": data.get("match_description"),
             "invited_user_ids": (
                 [int(uid) for uid in data.getlist("invited_user_ids")]
                 if hasattr(data, "getlist")

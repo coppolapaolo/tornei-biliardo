@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% import "components/_match_status_labels.html" as st with context %}
 {% from "components/_form_macros.html" import toggle %}
+{% import "components/_match_video.html" as match_video with context %}
 
 {% block title %}
 {{- _("Sfida") }} {{ match.player1.username }} vs
@@ -17,6 +18,9 @@
 {{- match.player1.username }} vs {{ match.player2.username if match.player2 else _('avversario') }}
 {%- endblock %}
 {% block page_sub %}
+{#- La descrizione dice che partita è: sta prima di disciplina e sala, che
+    sono il come. Testo dell'utente, con l'escape automatico. #}
+{%- if match.description %}{{ match.description }} <span class="c7-sep">·</span> {% endif -%}
 {{ match.discipline|discipline_display }}
 {%- if match.location_display %} <span class="c7-sep">·</span> {{ match.location_display }}{% endif %}
 {% endblock %}
@@ -236,6 +240,13 @@
         {% endif %}
       </dl>
     </section>
+
+    {# Video e descrizione: si scrivono in ogni stato, il video arriva
+       spesso giorni dopo. Chi li scrive lo decide `can_edit_info`. #}
+    {{ match_video.card(match,
+                        url_for('individual_match.update_match_info', match_id=match.id),
+                        match.can_edit_info(current_user.id) and feature_visible('individual_match.update_match_info'),
+                        with_description=true) }}
 
     {# Azioni. Il ritorno non e' fra queste: vive nella testata (freccia su
        mobile, barra laterale su desktop), come in ogni altra pagina 7c. #}
