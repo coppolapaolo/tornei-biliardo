@@ -182,6 +182,14 @@ profilo, con al più una cache per processo.
   `TestIlTpaSegueLaCertificazione` in
   `tests/new/integration/test_tpa_referto.py`.
 
+## Emendamento (2026-10-17)
+
+Nella partita tenuta da un terzo il livello è **per giocatore**: chi conferma
+la vede *Confermata*, chi non ha ancora deciso *In attesa*, chi la rifiuta non
+la vede. `livello_di_sfida_per` e `sfide_della_vista(vista, user_id=…)`
+applicano la regola a una persona; senza persona la regola è di coppia ed è
+quella dell'ELO. Dettagli in [ADR-084](ADR-084-tpa-tenuto-da-un-terzo.md).
+
 ## Riferimenti
 
 - Casi d'uso: `docs/usecases/sfide-e-certificazione.md` (UC4–UC9)

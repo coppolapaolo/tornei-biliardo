@@ -79,6 +79,50 @@ class SfidaDriver:
     def crea_giocatori(self, quanti: int) -> list[Giocatore]:
         return [self.crea_giocatore() for _ in range(quanti)]
 
+    def crea_istruttore(self) -> Giocatore:
+        """Un giocatore col ruolo di istruttore (ADR-069), concesso dall'admin.
+
+        Il ruolo si concede come in produzione (`RoleGrantService.grant`): è
+        allestimento, come la creazione degli utenti.
+        """
+        from models.user.role_enum import GrantableRole
+        from models.user.role_grant_service import RoleGrantService
+
+        istruttore = self.crea_giocatore()
+        sigla = uuid.uuid4().hex[:8]
+        admin = User(
+            username=f"admin_{sigla}",
+            email=f"admin_{sigla}@example.test",
+            role=UserRole.ADMIN.value,
+        )
+        admin.set_password(PASSWORD)
+        db.session.add(admin)
+        db.session.commit()
+        RoleGrantService.grant(istruttore.id, GrantableRole.INSTRUCTOR, admin)
+        db.session.commit()
+        return istruttore
+
+    def segna_partita_di_altri(
+        self, giocatore_a: Giocatore, giocatore_b: Giocatore, **opzioni: Any
+    ) -> Any:
+        """Il modulo «Segna la partita di altri due» (ADR-084). La risposta."""
+        dati: dict[str, Any] = {
+            "player1_id": giocatore_a.id,
+            "player2_id": giocatore_b.id,
+            "discipline": Discipline.NINE_BALL.value,
+            "match_format": "single",
+            "distance": 3,
+            "is_race_to": "true",
+        }
+        dati.update(opzioni)
+        return self.client.post("/match/scored", data=dati)
+
+    def pagina_sfide(self) -> str:
+        """La dashboard delle sfide individuali, `/match/`."""
+        risposta = self.client.get("/match/")
+        assert risposta.status_code == 200, risposta.status_code
+        return risposta.get_data(as_text=True)
+
     # ── Sessione ────────────────────────────────────────────────────
 
     def entra(self, giocatore: Giocatore) -> None:

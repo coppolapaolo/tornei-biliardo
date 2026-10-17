@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% from "components/_form_macros.html" import choice, stepper, form_macros_scripts %}
+
+{% block title %}{{ _("Segna la partita di altri due") }} - {{ config.APP_NAME }}{% endblock %}
+
+{% block head_extra %}
+<!-- TomSelect: ricerca a completamento dei due giocatori -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet"
+      integrity="sha384-piG3EtH1fBnPi68q4spy+Qgpb0dHK1D1dwk0GaHwFkvmUxYi526bBlk3xJcjEBsD" crossorigin="anonymous">
+{% endblock %}
+
+{# La partita di altri due (ADR-084). La forma è quella dell'avvio rapido
+   (prototipo 9a·2): sezioni intitolate, barra d'azione in fondo con la frase
+   che dice cosa succede dopo. Cambia la prima domanda: non «chi hai davanti»,
+   ma «chi gioca». #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.dashboard') }}"
+   aria-label="{{ _('Chiudi') }}"><i class="fas fa-xmark"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Segna la partita di altri due") }}{% endblock %}
+{% block page_sub %}{{ _("Tieni tu il referto, loro confermano a fine partita") }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('individual_match.dashboard') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-xmark"></i>&nbsp;{{ _("Annulla") }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:720px">
+  <form id="scoredForm" method="POST" class="c7-stack" style="gap:16px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    {# ---------- Chi gioca ----------
+       I due giocatori sono utenti registrati. Il giocatore A è il posto 1
+       del referto, il B il posto 2: chi spacca si sceglie nel referto. #}
+    <div class="c7-card">
+      <div class="c7-sechead mb-3"><h2 data-help="partita-altri-due-chi-gioca">{{ _("Chi gioca") }}</h2></div>
+
+      <div class="mb-3">
+        <label for="player1Search" class="form-label">{{ _("Giocatore A") }}</label>
+        <select id="player1Search" name="player1_id" placeholder="{{ _('Cerca per nome...') }}" required></select>
+      </div>
+      <div>
+        <label for="player2Search" class="form-label">{{ _("Giocatore B") }}</label>
+        <select id="player2Search" name="player2_id" placeholder="{{ _('Cerca per nome...') }}" required></select>
+      </div>
+      <div class="form-text">{{ _("Devono avere un account: la partita finisce nel loro storico, se la confermano.") }}</div>
+    </div>
+
+    {# ---------- Che partita è ----------
+       Qui non è facoltativa per pigrizia di modulo: è la riga che i due
+       giocatori leggono nell'avviso, e senza non saprebbero di quale partita
+       si tratta. Resta facoltativa per il servizio. #}
+    <div class="c7-card">
+      <label for="description" class="c7-label">{{ _("Che partita è") }}</label>
+      <input type="text" class="form-control" id="description" name="description" maxlength="200"
+             placeholder="{{ _('Es. Finale della prima giornata, serie C') }}">
+      <div class="form-text">{{ _("La leggono i due giocatori nell'avviso e nella pagina della partita.") }}</div>
+    </div>
+
+    {# ---------- Come si gioca ----------
+       Solo ciò che il referto TPA copre: palla 8, 9 e 10, partita singola o
+       formato libero. Niente set. #}
+    <div class="c7-card">
+      <div class="c7-sechead mb-3"><h2>{{ _("Come si gioca") }}</h2></div>
+
+      <div class="mb-3">
+        <label for="discipline" class="form-label">{{ _("Disciplina") }}</label>
+        <select class="form-select" id="discipline" name="discipline">
+          {% for value, label in discipline_tpa %}
+          <option value="{{ value }}" {% if defaults.discipline == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {{ choice('match_format', _("Formato"), [
+           {'value': 'single', 'title': _("Alla distanza"), 'desc': _("Una partita sola, alla distanza scelta."), 'icon': 'fa-dice-one'},
+           {'value': 'free', 'title': _("Libero"), 'desc': _("Senza limite: il referto si chiude quando finisce."), 'icon': 'fa-infinity'}
+         ], selected='single') }}
+
+      <div id="singleSetConfig">
+        {{ stepper('distance', _("Distanza"), value=(defaults.distance or 5),
+             min=1, max=25, hint=_("triangoli per vincere")) }}
+        {{ choice('is_race_to', _("Come si chiude"), [
+             {'value': 'true', 'title': _("Al N"), 'desc': _("Vince chi arriva primo alla distanza.")},
+             {'value': 'false', 'title': _("Esattamente N"), 'desc': _("Si giocano tutti i triangoli: vince chi ne ha di più.")}
+           ], selected='true') }}
+      </div>
+
+      <div class="mb-3">
+        <label for="location" class="form-label">{{ _("Sala biliardo") }}</label>
+        <input type="text" class="form-control" id="location" name="location"
+               placeholder="{{ _('es. Sala Regina, Udine') }}" autocomplete="off">
+      </div>
+
+      <div class="mb-3">
+        <label for="start_rule" class="form-label">{{ _("Regola di inizio") }}</label>
+        <select class="form-select" id="start_rule" name="start_rule">
+          {% for rule in StartRule %}
+          <option value="{{ rule.value }}" {% if defaults.start_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="break_rule" class="form-label">{{ _("Chi spacca") }}</label>
+        <select class="form-select" id="break_rule" name="break_rule">
+          {% for rule in BreakRule %}
+          <option value="{{ rule.value }}" {% if defaults.break_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </form>
+
+  <div class="c7-actionbar c7-actionbar--stack">
+    <button type="submit" form="scoredForm" class="btn btn-primary w-100">
+      <i class="fas fa-pen-to-square"></i>&nbsp;{{ _("Inizia il referto") }}
+    </button>
+    <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+      {{ _("Nessuno firma al posto loro: chiuso il referto, ognuno dei due conferma o rifiuta.") }}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"
+        integrity="sha384-cnROoUgVILyibe3J0zhzWoJ9p2WmdnK7j/BOTSWqVDbC1pVw2d+i6Q/1ESKJKCYf" crossorigin="anonymous"></script>
+{{ form_macros_scripts() }}
+<script>
+    const i18nScored = {
+        searchPlaceholder: {{ _("Cerca per nome...")|tojson }},
+        noResults: {{ _("Nessun giocatore con questo nome.")|tojson }},
+        typeMore: {{ _("Scrivi almeno due lettere.")|tojson }},
+        samePlayer: {{ _("I due giocatori devono essere diversi.")|tojson }},
+        missing: {{ _("Scegli i due giocatori prima di iniziare.")|tojson }}
+    };
+    const searchUrl = {{ url_for("individual_match.search_players", ambito="altri_due")|tojson }};
+
+    function playerSearch(selector) {
+        if (typeof TomSelect === 'undefined') return null;
+        return new TomSelect(selector, {
+            valueField: 'id',
+            labelField: 'username',
+            searchField: ['username'],
+            maxItems: 1,
+            create: false,
+            placeholder: i18nScored.searchPlaceholder,
+            load: function (query, callback) {
+                if (query.length < 2) return callback();
+                fetch(searchUrl + '&q=' + encodeURIComponent(query))
+                    .then(r => r.json())
+                    .then(callback)
+                    .catch(() => callback());
+            },
+            render: {
+                option: function (data, escape) {
+                    return '<div class="py-2 px-3"><i class="fas fa-user me-2 text-muted"></i>' + escape(data.username) + '</div>';
+                },
+                item: function (data, escape) {
+                    return '<div><i class="fas fa-user me-1"></i>' + escape(data.username) + '</div>';
+                },
+                no_results: function () {
+                    return '<div class="no-results p-3 text-muted">' + i18nScored.noResults + '</div>';
+                },
+                not_loading: function (data) {
+                    return data.input.length ? '<div class="p-3 text-muted">' + i18nScored.typeMore + '</div>' : null;
+                }
+            }
+        });
+    }
+
+    function currentValue(name) {
+        const checked = document.querySelector('input[name="' + name + '"]:checked');
+        return checked ? checked.value : null;
+    }
+
+    function syncMatchFormat() {
+        const format = currentValue('match_format') || 'single';
+        document.getElementById('singleSetConfig').classList.toggle('d-none', format !== 'single');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('input[name="match_format"]').forEach(r =>
+            r.addEventListener('change', syncMatchFormat));
+        syncMatchFormat();
+        try {
+            playerSearch('#player1Search');
+            playerSearch('#player2Search');
+        } catch (e) {
+            console.error('Ricerca giocatori non disponibile:', e);
+        }
+    });
+
+    document.getElementById('scoredForm').addEventListener('submit', function (e) {
+        const a = document.getElementById('player1Search').value;
+        const b = document.getElementById('player2Search').value;
+        if (!a || !b) {
+            e.preventDefault();
+            showError(i18nScored.missing);
+        } else if (a === b) {
+            e.preventDefault();
+            showError(i18nScored.samePlayer);
+        }
+    });
+</script>
+{% endblock %}

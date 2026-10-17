@@ -159,6 +159,9 @@ class QuickMatchService:
         return (
             IndividualMatch.query.filter(
                 IndividualMatch.status == MatchStatus.IN_PROGRESS,
+                # Quella segnata da un terzo non è la «loro» partita in corso:
+                # l'avvio rapido non deve riportarli lì (ADR-084).
+                IndividualMatch.scorer_id.is_(None),
                 db.or_(
                     db.and_(
                         IndividualMatch.player1_id == user_id,

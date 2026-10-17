@@ -21,6 +21,10 @@ Regole, decise dall'utente il 2026-09-14 (``SPECIFICHE.md``, nota datata):
 l'avversario ha già confermato e X no. Una partita senza nessuna firma non
 aspetta nessuno in particolare: nel formato libero è «pronta» fin dal primo
 triangolo, mentre i due stanno ancora giocando.
+
+La **partita di altri due** (ADR-084) non entra in nessuna di queste regole:
+non l'hanno chiesta i giocatori, quindi non li blocca, e non aspetta una firma
+sola ma la decisione di ciascuno. L'avviso a fine referto va a **entrambi**.
 """
 
 from __future__ import annotations
@@ -70,6 +74,8 @@ class PendingConfirmationService:
         candidate = (
             IndividualMatch.query.filter(
                 IndividualMatch.status == MatchStatus.IN_PROGRESS,
+                # La partita di un terzo non blocca chi non l'ha chiesta.
+                IndividualMatch.scorer_id.is_(None),
                 or_(
                     and_(
                         IndividualMatch.player1_id == user_id,
@@ -137,31 +143,25 @@ def avvisa_chi_deve_firmare(match: IndividualMatch) -> None:
 
     Un avviso ancora da leggere basta: un rifiuto seguito da una nuova firma,
     o un triangolo tolto e rimesso, non ne accumulano altri.
+
+    Nella partita di altri due la chiama la chiusura del referto, e scrive a
+    **entrambi** i giocatori (ADR-084).
     """
     from flask_babel import lazy_gettext as _l
 
-    from models.notification.models import (
-        Notification,
-        NotificationPriority,
-        NotificationStatus,
-        NotificationType,
-    )
+    from models.notification.models import NotificationPriority, NotificationType
     from models.notification.services import NotificationService
+
+    if match.scorer_id is not None:
+        _avvisa_i_due_giocatori(match)
+        return
 
     destinatario_id = match.awaiting_confirmation_from_id
     if destinatario_id is None:
         return
 
     link = pagina_della_sfida(match)
-    gia_avvisato = Notification.query.filter(
-        Notification.user_id == destinatario_id,
-        Notification.notification_type == NotificationType.MATCH_RESULT_TO_CONFIRM,
-        Notification.action_url == link,
-        Notification.status.in_(  # type: ignore[attr-defined]
-            [NotificationStatus.PENDING, NotificationStatus.SENT]
-        ),
-    ).first()
-    if gia_avvisato is not None:
+    if _gia_avvisato(destinatario_id, link):
         return
 
     firmatario_id = (
@@ -183,6 +183,101 @@ def avvisa_chi_deve_firmare(match: IndividualMatch) -> None:
         action_url=link,
         action_text=_l("Apri la sfida"),
     )
+
+
+def _gia_avvisato(destinatario_id: int, link: str) -> bool:
+    """Un avviso «da firmare» ancora da leggere, per questa sfida."""
+    from models.notification.models import (
+        Notification,
+        NotificationStatus,
+        NotificationType,
+    )
+
+    return (
+        Notification.query.filter(
+            Notification.user_id == destinatario_id,
+            Notification.notification_type == NotificationType.MATCH_RESULT_TO_CONFIRM,
+            Notification.action_url == link,
+            Notification.status.in_(  # type: ignore[attr-defined]
+                [NotificationStatus.PENDING, NotificationStatus.SENT]
+            ),
+        ).first()
+        is not None
+    )
+
+
+def _avvisa_i_due_giocatori(match: IndividualMatch) -> None:
+    """Chi segna ha chiuso il referto: tocca ai due giocatori (ADR-084).
+
+    Uno per uno, a chi non ha ancora deciso, con la descrizione della partita:
+    non l'hanno chiesta loro, e senza la descrizione non saprebbero di quale
+    partita si tratta.
+    """
+    from flask_babel import lazy_gettext as _l
+
+    from models.notification.models import NotificationPriority, NotificationType
+    from models.notification.services import NotificationService
+
+    link = pagina_della_sfida(match)
+    chi_segna = match.scorer.username if match.scorer is not None else ""
+    descrizione = match.description or ""
+    for giocatore_id in (match.player1_id, match.player2_id):
+        if not match.awaits_decision_from(giocatore_id):
+            continue
+        if _gia_avvisato(giocatore_id, link):
+            continue
+        NotificationService.create_notification(
+            user_id=giocatore_id,
+            notification_type=NotificationType.MATCH_RESULT_TO_CONFIRM,
+            title=_l("Una partita aspetta la tua conferma"),
+            message=(
+                _l(
+                    "%(scorer)s ha chiuso il referto di «%(descrizione)s» "
+                    "(%(p1)s-%(p2)s): confermala o rifiutala.",
+                    scorer=chi_segna,
+                    descrizione=descrizione,
+                    p1=match.player1_score,
+                    p2=match.player2_score,
+                )
+                if descrizione
+                else _l(
+                    "%(scorer)s ha chiuso il referto della vostra partita "
+                    "(%(p1)s-%(p2)s): confermala o rifiutala.",
+                    scorer=chi_segna,
+                    p1=match.player1_score,
+                    p2=match.player2_score,
+                )
+            ),
+            priority=NotificationPriority.NORMAL,
+            related_entities={"individual_match_id": match.id},
+            action_url=link,
+            action_text=_l("Apri la partita"),
+        )
+
+
+def avvisa_annullata_da_chi_segna(match: IndividualMatch) -> None:
+    """Chi segna ha annullato la partita: lo si dice ai due giocatori."""
+    from flask_babel import lazy_gettext as _l
+
+    from models.notification.models import NotificationPriority, NotificationType
+    from models.notification.services import NotificationService
+
+    chi_segna = match.scorer.username if match.scorer is not None else ""
+    for giocatore_id in (match.player1_id, match.player2_id):
+        NotificationService.create_notification(
+            user_id=giocatore_id,
+            notification_type=NotificationType.MATCH_CANCELLED,
+            title=_l("Partita annullata"),
+            message=_l(
+                "%(scorer)s ha annullato la partita che stava segnando: non "
+                "conta per nessuno dei due.",
+                scorer=chi_segna,
+            ),
+            priority=NotificationPriority.NORMAL,
+            related_entities={"individual_match_id": match.id},
+            action_url=pagina_della_sfida(match),
+            action_text=_l("Apri la partita"),
+        )
 
 
 def avvisa_del_ritiro(
@@ -214,6 +309,7 @@ __all__ = [
     "DASHBOARD_GRACE",
     "PendingConfirmationError",
     "PendingConfirmationService",
+    "avvisa_annullata_da_chi_segna",
     "avvisa_chi_deve_firmare",
     "avvisa_del_ritiro",
     "pagina_della_sfida",

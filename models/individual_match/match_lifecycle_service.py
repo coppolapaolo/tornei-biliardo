@@ -60,10 +60,19 @@ class MatchLifecycleService:
     @staticmethod
     @transactional(domain="individual_match")
     def confirm_match_result(match_id: int, user_id: int) -> IndividualMatch:
-        """Confirm match result by a player (new UX)."""
+        """Confirm match result by a player (new UX).
+
+        Nella partita di altri due ognuno conferma per sé, a referto chiuso, e
+        nessuno viene avvisato: l'avviso della chiusura è già arrivato a tutti
+        e due (ADR-084).
+        """
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             raise ValueError("Match non trovato")
+
+        if match.is_scored_by_third_party:
+            match.confirm_as_player(user_id)
+            return match
 
         if not match.is_player(user_id):
             raise ValueError("Only match players can confirm the result")
@@ -80,10 +89,18 @@ class MatchLifecycleService:
     @staticmethod
     @transactional(domain="individual_match")
     def reject_match_result(match_id: int, user_id: int) -> IndividualMatch:
-        """Reject match result - removes last rack (new UX)."""
+        """Reject match result - removes last rack (new UX).
+
+        Nella partita di altri due il rifiuto è «non la riconosco», per sé:
+        non toglie triangoli e non tocca l'altro giocatore (ADR-084).
+        """
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             raise ValueError("Match non trovato")
+
+        if match.is_scored_by_third_party:
+            match.reject_as_player(user_id)
+            return match
 
         if not match.is_player(user_id):
             raise ValueError("Only match players can reject the result")
@@ -121,10 +138,21 @@ class MatchLifecycleService:
     def cancel_match(
         match_id: int, user_id: int, reason: Optional[str] = None
     ) -> IndividualMatch:
-        """Cancel a match (must be one of the players)."""
+        """Cancel a match (must be one of the players).
+
+        La partita di altri due la annulla solo chi la segna, finché nessuno
+        dei due l'ha confermata, e i giocatori ricevono un avviso (ADR-084).
+        """
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             raise ValueError("Match non trovato")
+
+        if match.is_scored_by_third_party:
+            from .pending_confirmation import avvisa_annullata_da_chi_segna
+
+            match.cancel_by_scorer(user_id)
+            avvisa_annullata_da_chi_segna(match)
+            return match
 
         if not match.is_player(user_id):
             raise ValueError("Only match players can cancel the match")

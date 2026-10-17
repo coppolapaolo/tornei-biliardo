@@ -485,6 +485,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.rematch": {"player", "director"},
     # Avvio rapido (issue #176): stessa platea del resto delle sfide individuali.
     "individual_match.quick_match": {"player", "director"},
+    # La partita di altri due (ADR-084): la vedono player e director perché
+    # gli istruttori hanno `role=player`; chi può davvero segnare lo decide
+    # `ScoredMatchService.can_score`.
+    "individual_match.scored_match": {"player", "director"},
     # Referto TPA (ADR-044). Visibile a player/director come il resto del
     # match individuale; a *sbloccarlo* e' pero' il gate gamification
     # 'tpa_scoresheet', applicato sulle route con @feature_required.

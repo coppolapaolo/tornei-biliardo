@@ -161,6 +161,13 @@ class DashboardSectionBuilder:
             sfida
             for sfida in sfide_in_corso
             if not PendingConfirmationService.is_hidden_from_dashboard(sfida, now)
+            # La partita di altri due resta finché la si segna o finché tocca a
+            # te decidere; deciso il tuo, non è più un'attività (ADR-084).
+            and (
+                not sfida.is_scored_by_third_party
+                or not sfida.is_declared_by_scorer
+                or sfida.awaits_decision_from(user_id)
+            )
         ]
 
         # Match opportunities: open proposals already filtered by eligibility

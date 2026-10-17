@@ -4,7 +4,7 @@ kind: tutorial
 audience: [giocatore]
 minutes: 8
 summary: "Nelle partite amichevoli puoi annotare tutta la partita, non solo chi vince i triangoli, e ottenere il TPA: la percentuale di azioni riuscite."
-screens: [individual_match.tpa_referto]
+screens: [individual_match.tpa_referto, individual_match.scored_match]
 related: [partite_amichevoli, profilo_e_statistiche]
 
 blocks:
@@ -348,6 +348,42 @@ blocks:
       Sotto c'è il referto turno per turno, con i triangoli **ripiegati**:
       ogni riga dice chi l'ha vinto e il punteggio a quel punto. Tocca un
       triangolo per aprirlo, o «Apri tutti».
+
+  - type: heading
+    id: altri-due
+    title: "Segnare la partita di altri due"
+
+  - type: text
+    text: >-
+      Se sei **istruttore** o **direttore di gara** puoi tenere il referto di
+      una partita che giocano altri due: una finale da guardare, la partita di
+      un tuo allievo. In **Sfide individuali** tocca **Segna la partita di
+      altri due**, scegli il giocatore A e il giocatore B, scrivi che partita
+      è, e tocca **Inizia il referto**. Tu non puoi essere uno dei due.
+
+  - type: steps
+    items:
+      - title: "Tieni il referto"
+        text: "La partita parte subito, col referto già aperto e tuo. I due giocatori ricevono un avviso con la descrizione: la vedono fra le loro sfide, ma non la segnano."
+      - title: "Chiudilo a fine partita"
+        text: "Si chiude solo alla distanza, o dopo almeno un triangolo nel formato libero. Nessuno firma al posto dei giocatori: chiuso il referto, tutti e due ricevono un avviso."
+      - title: "Ognuno decide per sé"
+        text: "Ciascun giocatore **conferma** o **rifiuta** la partita, una volta sola. Chi conferma se la tiene nelle sue statistiche; chi rifiuta non la vede più, e il suo rifiuto non toglie niente all'altro."
+
+  - type: list
+    title: "E l'ELO?"
+    items:
+      - "Confermata da tutti e due: conta come ogni sfida confermata."
+      - "Chiusa e non rifiutata da nessuno: conta nella vista **Tutte**."
+      - "Rifiutata anche da uno solo: non conta per l'ELO di nessuno dei due."
+
+  - type: note
+    tone: info
+    title: "Se la partita si ferma a metà"
+    text: >-
+      Finché nessuno dei due l'ha confermata, chi segna può **annullarla**
+      dalla pagina della partita, anche a triangoli segnati: i giocatori
+      ricevono un avviso. Dopo la prima conferma non si annulla più.
 
   - type: heading
     id: dove-si-vede

@@ -1044,6 +1044,15 @@ hints:
   - individual_match.quick_match
   page: partite_amichevoli
   section: avvio-rapido
+- id: sfida.altri_due_chi_gioca
+  label: Who plays
+  short: 'The two players of the match you score: they need an account, and you cannot be one of them.
+    When it ends, each confirms or rejects it for themselves.'
+  anchor: partita-altri-due-chi-gioca
+  screens:
+  - individual_match.scored_match
+  page: referto_tpa
+  section: altri-due
 - id: sfida.riepilogo_rapido
   label: How it is played
   short: Venue, discipline and distance are the ones from your last match. If they are fine you touch

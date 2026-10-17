@@ -146,6 +146,25 @@ Single rack result within a match.
 - `withdraw_match(match_id, user_id)` - Ritira una sfida firmata solo da `user_id` (2026-10-17): `CANCELLED`, avviso all'avversario; l'avversario non può, dopo la doppia firma nessuno
 - `send_match_reminders(hours_before, window_minutes)` - Send reminder notifications
 
+### ScoredMatchService (ADR-084)
+La partita di **altri due**, tenuta da un istruttore o da un direttore (anche
+admin). `scorer_id` presente = partita di un terzo.
+
+- `can_score(user)` - istruttore, direttore o admin
+- `start(scorer, player1_id, player2_id, config)` - nasce in corso col referto
+  già aperto (compilatore lo scorer). I giocatori li sceglie `_giocatore`, il
+  punto da estendere per i giocatori non registrati
+- nessuna firma d'ufficio; chiudere il referto la **dichiara**
+  (`is_declared_by_scorer`) e avvisa entrambi
+- ogni giocatore `confirm_as_player` / `reject_as_player` per sé, una volta;
+  `awaits_decision_from(user_id)` è la domanda unica «tocca a lui?» per i due
+  tipi di sfida. `awaiting_confirmation_from_id` resta `None`: non blocca
+  nessuno e non si ritira
+- `cancel_by_scorer` finché nessuno ha confermato
+- livello per giocatore: `livello_di_sfida_per`, `sfide_della_vista(vista,
+  user_id=…)` — le query sulle sfide di un giocatore passano **sempre** la
+  persona
+
 ### QuickMatchService (ADR-051)
 Avvio rapido: la partita fra due giocatori **già in sala**, senza proposta e
 senza accettazione.
@@ -189,6 +208,9 @@ Vedi `docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md`.
 | Avvio rapido: partita aperta con te | MATCH_ACCEPTED | Avversario |
 | Prima firma del risultato | MATCH_RESULT_TO_CONFIRM | Chi deve ancora firmare (una sola finché non la legge) |
 | Sfida ritirata da chi l'aveva firmata | MATCH_CANCELLED | Avversario |
+| Partita di altri due creata | MATCH_ACCEPTED | I due giocatori, con la descrizione |
+| Referto della partita di altri due chiuso | MATCH_RESULT_TO_CONFIRM | Ciascuno dei due che non ha ancora deciso |
+| Partita di altri due annullata da chi segna | MATCH_CANCELLED | I due giocatori |
 
 ---
 

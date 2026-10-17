@@ -178,6 +178,9 @@ def _own_matches_in_progress():
     return (
         IndividualMatch.query.filter(
             IndividualMatch.status == MatchStatus.IN_PROGRESS,
+            # La partita di altri due la segna un terzo: non c'è un segnapunti
+            # a cui tornare (ADR-084).
+            IndividualMatch.scorer_id.is_(None),
             db.or_(
                 IndividualMatch.player1_id == current_user.id,
                 IndividualMatch.player2_id == current_user.id,

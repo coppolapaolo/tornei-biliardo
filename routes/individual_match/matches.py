@@ -24,6 +24,7 @@ from utils.safe_redirect import safe_next_url
 from utils.status_ui import match_scoring_state
 
 from . import individual_match_bp
+from .scored import player_director_or_scorer
 from .tpa_choice import open_tpa_referto, wants_referto
 
 logger = logging.getLogger(__name__)
@@ -45,14 +46,16 @@ def match_list():
 
 
 @individual_match_bp.route("/matches/<int:match_id>")
-@RoleRequirement.player_or_director_required
+@player_director_or_scorer
 def match_detail(match_id):
     """View individual match details and submit results."""
     try:
         match = db.get_or_404(IndividualMatch, match_id)
 
-        # Verify user is part of this match
-        if current_user.id not in (match.player1_id, match.player2_id):
+        # I due giocatori, e chi segna la partita di altri due (ADR-084).
+        if not match.is_player(current_user.id) and (
+            match.scorer_id != current_user.id
+        ):
             flash(_("Accesso negato a questa sfida."), "danger")
             return redirect(url_for("individual_match.match_list"))
 
@@ -418,6 +421,8 @@ def confirm_result(match_id):
         else:
             if fully_confirmed:
                 flash(_("Sfida completata con successo!"), "success")
+            elif match.is_scored_by_third_party:
+                flash(_("Hai confermato la partita: per te conta."), "success")
             else:
                 flash(
                     _("Risultato confermato! In attesa dell'altro giocatore."), "info"
@@ -477,6 +482,13 @@ def reject_result(match_id):
                     "message": "Ultimo rack rimosso. Continua a giocare.",
                 }
             )
+        elif match.is_scored_by_third_party:
+            # Il rifiuto per sé (ADR-084): nessun triangolo tolto.
+            flash(
+                _("Hai rifiutato la partita: per te non conta, per l'altro sì."),
+                "warning",
+            )
+            return redirect(_after_result_url(match_id))
         else:
             flash(_("Risultato rifiutato. Ultimo triangolo rimosso."), "warning")
             return redirect(_after_result_url(match_id))
@@ -530,7 +542,7 @@ def complete_match(match_id):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/info", methods=["POST"])
-@RoleRequirement.player_or_director_required
+@player_director_or_scorer
 def update_match_info(match_id):
     """Video e descrizione della sfida, in ogni stato.
 
@@ -565,14 +577,23 @@ def update_match_info(match_id):
 
 
 @individual_match_bp.route("/matches/<int:match_id>/cancel", methods=["POST"])
-@RoleRequirement.player_or_director_required
+@player_director_or_scorer
 def cancel_match(match_id):
-    """Cancel an individual match."""
+    """Cancel an individual match.
+
+    Anche chi segna la partita di altri due, finché nessuno dei due l'ha
+    confermata (ADR-084): lui non ha un elenco «Le mie sfide» dove tornare.
+    """
     try:
-        IndividualMatchService.cancel_match(match_id, current_user.id)
+        match = IndividualMatchService.cancel_match(match_id, current_user.id)
 
         if request.is_json:
             return jsonify({"success": True, "message": "Match cancelled successfully"})
+        elif match is not None and match.scorer_id == current_user.id:
+            flash(
+                _("Partita annullata: i due giocatori ricevono un avviso."), "success"
+            )
+            return redirect(url_for("individual_match.dashboard"))
         else:
             flash(_("Sfida annullata con successo!"), "success")
             return redirect(url_for("individual_match.match_list"))

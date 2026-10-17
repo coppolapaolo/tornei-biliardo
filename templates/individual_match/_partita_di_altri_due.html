@@ -1,0 +1,100 @@
+{# La partita di altri due, nella pagina della sfida (ADR-084).
+
+   Tre persone guardano la stessa card e vedono tre cose:
+
+   * chi segna: a referto aperto il comando per tornarci, a referto chiuso le
+     decisioni dei due; e «Annulla la partita» finché nessuno ha confermato;
+   * il giocatore che deve decidere: Conferma o Rifiuta, **per sé**;
+   * il giocatore che ha deciso: cosa ha deciso, e cosa vuol dire.
+
+   Il rifiuto non si disfa e tocca i numeri di chi lo fa, quindi il foglio col
+   nome dell'azione (ADR-074). La conferma è il gesto atteso: niente foglio.
+
+   Richiede nel contesto: `match`, `sono_scorer`. #}
+{% set chi_segna = match.scorer.username if match.scorer else '' %}
+{% set dichiarata = match.is_declared_by_scorer %}
+{% set mia_decisione = match.decision_of(current_user.id) %}
+
+<section class="c7-card">
+  <div class="c7-kicker">{{ _('Segnata da %(name)s', name=chi_segna) }}</div>
+
+  {% if not dichiarata %}
+  <div class="c7-flash c7-flash--info" style="margin-top:10px">
+    <span class="c7-flash__ico"><i class="fas fa-pen-to-square"></i></span>
+    <span class="c7-flash__body">
+      <span class="c7-flash__title">{{ _('Il referto è aperto') }}</span>
+      <span class="c7-flash__text">
+        {%- if sono_scorer %}{{ _('Il punteggio viene dal referto. Chiudilo a fine partita: i due giocatori riceveranno un avviso per confermarla.') }}
+        {%- else %}{{ _('Il punteggio viene dal referto di %(name)s. A fine partita potrai confermarla o rifiutarla.', name=chi_segna) }}{% endif -%}
+      </span>
+    </span>
+  </div>
+
+  {% elif match.is_player(current_user.id) %}
+    {% if match.awaits_decision_from(current_user.id) %}
+    <p style="margin:10px 0 0;font-size:13px;font-weight:600;line-height:1.45;color:var(--c7-ink-soft)">
+      {{ _("%(name)s ha chiuso il referto. La riconosci? Ognuno decide per sé: la tua scelta non cambia quella dell'avversario.", name=chi_segna) }}
+    </p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <form method="POST" action="{{ url_for('individual_match.confirm_result', match_id=match.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-success w-100">
+          <i class="fas fa-check"></i>&nbsp;{{ _('Conferma') }}
+        </button>
+      </form>
+      <form method="POST" action="{{ url_for('individual_match.reject_result', match_id=match.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="button" class="btn btn-outline-danger w-100"
+                onclick='confirmSubmit(this.closest("form"), {{ _("Rifiutare la partita? Per te non conterà, in nessuna vista. Se l'avversario la conferma, per lui resta.")|tojson }}, {confirmText: {{ _("Rifiuta")|tojson }}, confirmClass: "btn-danger"})'>
+          {{ _('Rifiuta') }}
+        </button>
+      </form>
+    </div>
+    {% elif mia_decisione == 'confirmed' %}
+    <div class="c7-flash c7-flash--success" style="margin-top:10px">
+      <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
+      <span class="c7-flash__body">
+        <span class="c7-flash__title">{{ _('Hai confermato la partita') }}</span>
+        <span class="c7-flash__text">{{ _("Per te conta. L'avversario decide per sé.") }}</span>
+      </span>
+    </div>
+    {% elif mia_decisione == 'rejected' %}
+    <div class="c7-flash c7-flash--warning" style="margin-top:10px">
+      <span class="c7-flash__ico"><i class="fas fa-ban"></i></span>
+      <span class="c7-flash__body">
+        <span class="c7-flash__title">{{ _('Hai rifiutato la partita') }}</span>
+        <span class="c7-flash__text">{{ _("Per te non conta. Se l'avversario la conferma, per lui resta.") }}</span>
+      </span>
+    </div>
+    {% endif %}
+
+  {% else %}
+  {# Chi segna, a referto chiuso: cosa hanno deciso i due. #}
+  <div class="c7-rows" style="margin-top:10px">
+    {% for giocatore in [match.player1, match.player2] if giocatore %}
+    {% set decisione = match.decision_of(giocatore.id) %}
+    <div class="c7-rows__row">
+      <div class="c7-rows__main"><div class="c7-rows__title">{{ giocatore.username }}</div></div>
+      {% if decisione == 'confirmed' %}
+      <span class="c7-state c7-state--ok">{{ _('Confermata') }}</span>
+      {% elif decisione == 'rejected' %}
+      <span class="c7-state c7-state--err">{{ _('Rifiutata') }}</span>
+      {% else %}
+      <span class="c7-state c7-state--warn">{{ _('Da confermare') }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if sono_scorer and not match.player1_confirmed and not match.player2_confirmed
+        and feature_visible('individual_match.cancel_match') %}
+  <form method="POST" action="{{ url_for('individual_match.cancel_match', match_id=match.id) }}" style="margin-top:12px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="button" class="btn btn-outline-danger w-100"
+            onclick='confirmSubmit(this.closest("form"), {{ _("Annullare la partita? Non conterà per nessuno dei due, e i giocatori riceveranno un avviso.")|tojson }}, {confirmText: {{ _("Annulla la partita")|tojson }}, confirmClass: "btn-danger"})'>
+      <i class="fas fa-trash-can"></i>&nbsp;{{ _('Annulla la partita') }}
+    </button>
+  </form>
+  {% endif %}
+</section>

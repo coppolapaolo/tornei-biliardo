@@ -63,6 +63,42 @@ class TpaRefertoService:
         return GAME_TYPE_BY_DISCIPLINE.get(normalized.value)
 
     @staticmethod
+    def can_compile(match: IndividualMatch, user_id: Optional[int]) -> bool:
+        """Chi può **tenere** il referto di questa partita. Il permesso è uno.
+
+        Un giocatore della sfida (ADR-044) oppure, nella partita di altri due,
+        chi la segna e solo lui (ADR-084): lì i giocatori il referto lo
+        guardano. Il ruolo — istruttore o direttore — si guarda quando la
+        partita nasce (`ScoredMatchService.can_score`), non qui: una volta
+        scritto `scorer_id`, è lui.
+        """
+        if user_id is None:
+            return False
+        if match.scorer_id is not None:
+            return match.scorer_id == user_id
+        return match.is_player(user_id)
+
+    @staticmethod
+    def can_read(match: IndividualMatch, user) -> bool:
+        """Chi può **guardare** il referto: i due giocatori, chi lo tiene, e
+        gli istruttori a cui uno dei due ha aperto una scheda (ADR-069)."""
+        user_id = getattr(user, "id", None)
+        if user_id is None:
+            return False
+        if match.is_player(user_id) or TpaRefertoService.can_compile(match, user_id):
+            return True
+        from models.istruttore.viste import istruttori_di
+
+        for giocatore_id in (match.player1_id, match.player2_id):
+            if giocatore_id is None:
+                continue
+            if any(
+                legame.persona.id == user_id for legame in istruttori_di(giocatore_id)
+            ):
+                return True
+        return False
+
+    @staticmethod
     def blocking_reason(match: IndividualMatch, user_id: int) -> Optional[str]:
         """Perche' il referto **non** si puo' aprire su questo match, se non si puo'.
 
@@ -70,7 +106,9 @@ class TpaRefertoService:
         cui vivono queste condizioni, cosi' il pulsante nascosto e la POST
         rifiutata dicono sempre la stessa cosa.
         """
-        if user_id not in (match.player1_id, match.player2_id):
+        if not TpaRefertoService.can_compile(match, user_id):
+            if match.scorer_id is not None:
+                return _("Il referto lo tiene chi segna la partita.")
             return _("Il referto lo tiene uno dei due giocatori.")
 
         status = match.status.value if hasattr(match.status, "value") else match.status
@@ -119,7 +157,7 @@ class TpaRefertoService:
         sarebbe chiederla tardi — a segnapunti aperto la prima cosa che si fa
         e' segnare, e al primo triangolo il referto non si apre piu'.
         """
-        if user_id not in (match.player1_id, match.player2_id):
+        if not TpaRefertoService.can_compile(match, user_id):
             return False
         return TpaRefertoService._match_blocking_reason(match) is None
 
@@ -376,7 +414,13 @@ class TpaRefertoService:
     @staticmethod
     @transactional(domain="tpa")
     def close(referto_id: int, user_id: int) -> TpaReferto:
-        """Chiude il referto: da qui in poi si legge e basta."""
+        """Chiude il referto: da qui in poi si legge e basta.
+
+        Nella partita di altri due chiudere è **dichiarare** la partita
+        (ADR-084): si può solo a partita finita — distanza raggiunta, o almeno
+        un triangolo nel formato libero — e avvisa i due giocatori, che da qui
+        confermano o rifiutano. Una partita a metà non si dichiara: si annulla.
+        """
         referto = db.session.get(TpaReferto, referto_id)
         if referto is None:
             raise NotFoundError(_("Referto non trovato"))
@@ -386,7 +430,22 @@ class TpaRefertoService:
             )
         if referto.is_closed:
             return referto
+        match = referto.match
+        di_un_terzo = match is not None and match.scorer_id is not None
+        if di_un_terzo and not match.is_ready_for_validation():
+            raise ConflictError(
+                _(
+                    "La partita non è ancora finita: il referto si chiude alla "
+                    "distanza. Se la partita si è fermata, annullala."
+                )
+            )
         referto.close()
+        if di_un_terzo:
+            from models.individual_match.pending_confirmation import (
+                avvisa_chi_deve_firmare,
+            )
+
+            avvisa_chi_deve_firmare(match)
         return referto
 
     # ------------------------------------------------------------------
@@ -416,6 +475,9 @@ class TpaRefertoService:
             and not referto.is_closed
         )
         payload["compiler_id"] = referto.compiler_id
+        payload["scorer_name"] = (
+            match.scorer.username if match is not None and match.scorer else None
+        )
         payload["players"] = {
             1: {
                 "user_id": match.player1_id if match else None,
@@ -475,6 +537,10 @@ class TpaRefertoService:
             return
 
         match.reset_confirmations()
+        # Nella partita di altri due nessuno firma d'ufficio: i giocatori
+        # decidono per sé quando chi segna chiude il referto (ADR-084).
+        if match.scorer_id is not None:
+            return
         # Stessa regola del segnapunti normale: chi e' avanti conferma da solo
         # e l'avversario deve accettare. In parita' conferma chi tiene il referto.
         if match.is_ready_for_validation():

@@ -41,7 +41,8 @@ class TpaStatsService:
     ) -> List[TpaReferto]:
         """I referti delle partite giocate da un utente, dal piu' recente.
 
-        Solo quelli delle sfide che la ``vista`` comprende (ADR-083).
+        Solo quelli delle sfide che la ``vista`` comprende (ADR-083), **per
+        questo utente**: nella partita di altri due il livello è suo (ADR-084).
         """
         return (
             TpaReferto.query.join(
@@ -52,7 +53,7 @@ class TpaStatsService:
                     IndividualMatch.player1_id == user_id,
                     IndividualMatch.player2_id == user_id,
                 ),
-                sfide_della_vista(vista),
+                sfide_della_vista(vista, user_id=user_id),
             )
             .order_by(TpaReferto.created_at.desc())
             .all()
