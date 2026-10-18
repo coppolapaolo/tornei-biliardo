@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.83.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.83.0...v1.83.1) (2026-10-18)
+
+
+### Correzioni
+
+* la sfida confermata non si tocca più, gli avvisi superati si ritirano, la revisione mostra solo le partite riscattate ([#717](https://github.com/coppolapaolo/tornei-biliardo/issues/717)) ([86669b8](https://github.com/coppolapaolo/tornei-biliardo/commit/86669b83b299ab68643efa68da06dd244fb71c9f))
+
 ## [1.83.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.82.0...v1.83.0) (2026-10-18)
 
 
