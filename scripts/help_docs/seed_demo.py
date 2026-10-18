@@ -2382,6 +2382,131 @@ def _create_preset(db, director, gara, campionato, serata_campionato) -> None:
     log("preset: due di Luca Bianchi e uno ricevuto da Franco Galli")
 
 
+#: Il giocatore che si registra e chiede il riscatto di «Roberto Villa».
+DEMO_CLAIMANT = ("RobiVilla", "roberto.villa@example.com")
+
+
+def _sfide_terzi_e_riscatti(db, players) -> dict:
+    """Sfide a una firma, partite di altri due, non registrati e riscatti.
+
+    Le figure di cinque funzioni (ADR-084/085/086 e il ritiro della sfida)
+    vogliono stati che il resto del dataset non produce. Tutto passa da
+    giocatori che le altre figure non fotografano come utente — Davide Moro,
+    Chiara Fabbri, Paolo Greco — e da Andrea Ferri, l'istruttore, di cui la
+    guida mostra solo le pagine da istruttore: una sfida di Marco Rossi in più
+    cambierebbe profilo, statistiche ed elenco delle sfide.
+
+    Restituisce gli id che il manifest cita, per il log.
+    """
+    from models import User
+    from models.base import utc_now
+    from models.individual_match.match_lifecycle_service import (
+        MatchLifecycleService,
+    )
+    from models.individual_match.match_models import IndividualMatch
+    from models.individual_match.quick_match_service import QuickMatchService
+    from models.individual_match.scored_match_service import (
+        NuovoGiocatore,
+        ScoredMatchService,
+    )
+    from models.match.match_info_service import MatchInfoService
+    from models.status_enum import Discipline, MatchStatus
+    from models.user.claim_service import ClaimService
+    from models.user.role_enum import UserRole
+
+    andrea, paolo, davide, chiara = players[2], players[4], players[6], players[7]
+    ids: dict = {}
+
+    # 1. Una sfida finita 3-1 e firmata solo da Davide: il dettaglio gli
+    #    mostra «Ritira la sfida», e il riquadro «Video e descrizione» pieno.
+    sfida = IndividualMatch(
+        player1_id=davide.id,
+        player2_id=chiara.id,
+        location="Biliardo Centrale",
+        scheduled_at=utc_now(),
+        status=MatchStatus.IN_PROGRESS,
+        discipline=Discipline.EIGHT_BALL.value,
+        distance=3,
+        is_race_to=True,
+        player1_score=3,
+        player2_score=1,
+        started_at=utc_now(),
+    )
+    db.session.add(sfida)
+    db.session.commit()
+    MatchInfoService.update_individual_match_info(
+        sfida.id,
+        davide,
+        video_url="https://www.youtube.com/watch?v=Biliardo001",
+        description="Rivincita del giovedì, palla 8",
+    )
+    MatchLifecycleService.confirm_match_result(sfida.id, davide.id)
+    db.session.commit()
+    ids["sfida_a_una_firma"] = sfida.id
+
+    # 2. L'avvio rapido di Andrea contro chi non ha un account: nasce
+    #    «Stefano Gallo», non registrato, e la sfida resta in attesa del
+    #    riscatto dopo la sola firma di Andrea.
+    contro_nonreg = QuickMatchService.start(
+        andrea.id,
+        NuovoGiocatore("Stefano", "Gallo"),
+        {"description": "Partita del venerdì al Centrale"},
+    )
+    contro_nonreg.player1_score, contro_nonreg.player2_score = 5, 3
+    db.session.commit()
+    MatchLifecycleService.confirm_match_result(contro_nonreg.id, andrea.id)
+    db.session.commit()
+    ids["sfida_contro_non_registrato"] = contro_nonreg.id
+    ids["stefano_gallo"] = (
+        contro_nonreg.player2_id
+        if contro_nonreg.player1_id == andrea.id
+        else contro_nonreg.player1_id
+    )
+
+    # 3. La partita di altri due: Andrea segna Paolo Greco contro «Roberto
+    #    Villa», che nasce non registrato dal modulo stesso.
+    segnata = ScoredMatchService.start(
+        andrea,
+        paolo.id,
+        NuovoGiocatore("Roberto", "Villa"),
+        {
+            "description": "Allenamento del martedì",
+            "discipline": Discipline.NINE_BALL.value,
+            "distance": 3,
+        },
+    )
+    db.session.commit()
+    ids["partita_di_altri_due"] = segnata.id
+    roberto_id = segnata.player2_id
+
+    # 4. Roberto si registra e chiede il riscatto: decide Andrea, che l'ha
+    #    creato.
+    claimant = User.query.filter_by(username=DEMO_CLAIMANT[0]).first()
+    if claimant is None:
+        claimant = User(
+            username=DEMO_CLAIMANT[0],
+            email=DEMO_CLAIMANT[1],
+            role=UserRole.PLAYER.value,
+        )
+        claimant.set_password(DEMO_PASSWORD)
+        claimant.is_verified = True
+        claimant.onboarding_completed = True
+        claimant.first_name = "Roberto"
+        claimant.last_name = "Villa"
+        db.session.add(claimant)
+        db.session.commit()
+    richiesta = ClaimService.richiedi(roberto_id, claimant)
+    db.session.commit()
+    ids["richiesta_di_riscatto"] = richiesta.id
+    ids["roberto_villa"] = roberto_id
+
+    log(
+        "sfide e riscatti: "
+        + ", ".join(f"{chiave} #{valore}" for chiave, valore in ids.items())
+    )
+    return ids
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -2457,6 +2582,7 @@ def main() -> int:
         serate = _create_serate_a_gironi(db, venue)
         _create_listino(db, gara_tabellone)
         _create_preset(db, director, gara_conclusa, campionato, serate)
+        _sfide_terzi_e_riscatti(db, players)
 
         print("\nFatto. Credenziali dimostrative:")
         print(f"  direttore: {DEMO_DIRECTOR[0]} / {DEMO_PASSWORD}")

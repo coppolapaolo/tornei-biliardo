@@ -177,6 +177,9 @@ blocks:
           You get a notification with the outcome. If it's confirmed, that
           player's registrations, matches, standings and ELO are yours.
 
+  - type: shot
+    shot: riscatto-giocatore
+
   - type: note
     tone: info
     title: "Made a mistake? Withdraw the request"
@@ -187,6 +190,9 @@ blocks:
       do, and the player is free again: you or someone else can claim it once
       more. A request that has already been confirmed or rejected can no
       longer be withdrawn.
+
+  - type: shot
+    shot: riscatto-ritira
 
   - type: note
     tone: tip

@@ -907,3 +907,55 @@ shots:
     route: /admin/preset/
     as: Luca Bianchi
     caption: "«I miei preset»: i preset della gara e del campionato in un elenco solo, con quando sono stati aggiornati o da chi sono arrivati, e i comandi per rinominare, duplicare, condividere e cancellare."
+
+  # --- Sfide a una firma, partite di altri due, non registrati e riscatti
+  # Gli id vengono da `_sfide_terzi_e_riscatti` in seed_demo.py: sfida 3
+  # (firmata solo da Davide Moro), sfida 4 (Andrea Ferri contro il non
+  # registrato Stefano Gallo, utente 54), richiesta di riscatto 1 (RobiVilla
+  # chiede «Roberto Villa», creato da Andrea Ferri).
+  - id: sfida-ritira
+    route: /match/matches/3
+    as: Davide Moro
+    caption: "Una sfida firmata solo da chi l'ha chiusa: il risultato in attesa della firma dell'avversario, il riquadro «Video e descrizione» già compilato e il pulsante «Ritira la sfida»."
+    full_page: true
+
+  - id: sfida-in-attesa-riscatto
+    route: /match/matches/4
+    as: Andrea Ferri
+    caption: "Una sfida contro un giocatore non registrato, firmata da chi l'ha giocata: il riquadro «In attesa del riscatto» spiega che conta come «in attesa» finché qualcuno non lo riscatta, e che intanto si possono giocare altre partite."
+    full_page: true
+
+  - id: avvio-rapido-non-registrato
+    route: /match/quick
+    as: Andrea Ferri
+    caption: "L'avvio rapido visto da un istruttore: sotto la ricerca dell'avversario si apre «Non ha un account? Aggiungilo», con nome e cognome."
+    click: ['details[data-nuovo="opponent"] summary']
+
+  - id: partita-altri-due
+    route: /match/scored
+    as: Andrea Ferri
+    caption: "Il modulo «Segna la partita di altri due»: il giocatore A e il giocatore B, ciascuno con la ricerca e con «Non ha un account? Aggiungilo», poi la descrizione e come si gioca."
+    click: ['details[data-nuovo="player2"] summary']
+
+  - id: gara-iscrivi-non-registrato
+    route: /admin/gara/3
+    as: Luca Bianchi
+    caption: "«Nuovo giocatore non registrato», sotto la ricerca degli iscritti, aperto: nome, cognome e il pulsante «Crea e iscrivi»."
+    click: ['summary[data-help="gara-iscrivi-non-registrato"]']
+    clip: "details.c7-nonreg-crea"
+
+  - id: riscatto-giocatore
+    route: /giocatori/54/riscatta
+    as: anonimo
+    caption: "La pagina «Sei tu?» di un giocatore non registrato: cosa vuol dire riscattarlo, chi lo conferma e i due pulsanti per creare un account o accedere."
+
+  - id: riscatto-richiesta
+    route: /riscatti/1
+    as: Andrea Ferri
+    caption: "Una richiesta di riscatto vista da chi ha creato il giocatore: chi la chiede, con nome utente ed email, e i pulsanti «Conferma il riscatto» e «Non è lui: rifiuta»."
+    full_page: true
+
+  - id: riscatto-ritira
+    route: /riscatti/1
+    as: RobiVilla
+    caption: "La stessa richiesta vista da chi l'ha fatta: aspetta la risposta di chi ha creato il giocatore, e sotto c'è «Ritira la richiesta»."

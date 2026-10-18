@@ -365,6 +365,9 @@ blocks:
       giocatore non registrato. Non riceve avvisi e non può confermare, quindi
       per lui la partita resta *in attesa* finché non si registra.
 
+  - type: shot
+    shot: partita-altri-due
+
   - type: steps
     items:
       - title: "Tieni il referto"

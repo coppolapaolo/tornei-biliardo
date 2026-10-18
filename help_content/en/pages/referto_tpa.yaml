@@ -365,6 +365,9 @@ blocks:
       is created. They get no notices and cannot confirm, so for them the
       match stays *pending* until they sign up.
 
+  - type: shot
+    shot: partita-altri-due
+
   - type: steps
     items:
       - title: "Keep the scoresheet"
