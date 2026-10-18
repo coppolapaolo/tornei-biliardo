@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.82.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.81.0...v1.82.0) (2026-10-18)
+
+
+### Funzioni nuove
+
+* chi ha chiesto un riscatto può ritirare la richiesta ([#709](https://github.com/coppolapaolo/tornei-biliardo/issues/709)) ([a4f5404](https://github.com/coppolapaolo/tornei-biliardo/commit/a4f5404bbdeebb2ebaa155eebf4205c4b423db01))
+* l'avversario di una sfida può essere un giocatore non registrato ([#712](https://github.com/coppolapaolo/tornei-biliardo/issues/712)) ([a811d89](https://github.com/coppolapaolo/tornei-biliardo/commit/a811d8969ab07ddf041d8cfde35ef316165e025f))
+* nella partita di un terzo vale il rifiuto, e chi l'ha segnata la corregge o la cancella ([#710](https://github.com/coppolapaolo/tornei-biliardo/issues/710)) ([2336e1e](https://github.com/coppolapaolo/tornei-biliardo/commit/2336e1eee40ef233618a4f0664946ea3b3bd0560))
+
 ## [1.81.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.80.0...v1.81.0) (2026-10-17)
 
 
