@@ -44,6 +44,22 @@
   </a>
   {% endif %}
 
+  {# Dopo un riscatto (2026-10-18): le partite registrate contro il giocatore
+     non registrato aspettano di essere riconosciute o contestate. Non è un
+     blocco: è un invito, e resta finché non lo si raccoglie. #}
+  {% if da_rivedere and feature_visible('individual_match.review_matches') %}
+  <a class="c7-card c7-card--warn d-flex align-items-center gap-3 text-decoration-none"
+     href="{{ url_for('individual_match.review_matches') }}" data-help="sfida-revisione">
+    <i class="fas fa-list-check"></i>
+    <span class="flex-fill" style="font-size:14px;font-weight:700">
+      {{ ngettext("Una partita registrata contro di te prima che avessi un account aspetta che tu la riconosca o la contesti.",
+                  "%(num)d partite registrate contro di te prima che avessi un account aspettano che tu le riconosca o le contesti.",
+                  da_rivedere) }}
+    </span>
+    <i class="fas fa-chevron-right"></i>
+  </a>
+  {% endif %}
+
   {# ---------- Filtri ---------- #}
   <div class="c7-stack" style="gap:10px">
     {# Si filtra per **gruppo**, non per valore di stato: "giocati" comprende
@@ -116,10 +132,6 @@
     {% if di_un_terzo %}
       {% set waiting_for = current_user.id if match.awaits_decision_from(current_user.id)
                            else (match.opponent_of(current_user.id) if match.is_awaiting_decisions else none) %}
-    {% elif match.aspetta_il_riscatto %}
-      {# Aspetta un non registrato (ADR-085, 2026-10-18): non c'è una firma
-         da sollecitare, per chi l'ha firmata è giocata. #}
-      {% set waiting_for = none %}
     {% else %}
       {% set waiting_for = match.awaiting_confirmation_from_id %}
     {% endif %}
@@ -127,7 +139,7 @@
     {% set decisa = di_un_terzo and match.is_declared_by_scorer and not waiting_for and state == MatchStatus.IN_PROGRESS.value %}
     {% set mia_decisione = match.decision_of(current_user.id) %}
     {% set group = 'annullati' if state == MatchStatus.CANCELLED.value
-                   else ('giocati' if is_finished or decisa or match.aspetta_il_riscatto
+                   else ('giocati' if is_finished or decisa
                    else ('da_confermare' if waiting_for
                    else ('in_corso' if state == MatchStatus.IN_PROGRESS.value else 'da_giocare'))) %}
     <article class="c7-card match-card {{ 'c7-dim' if state == MatchStatus.CANCELLED.value }}"
@@ -140,8 +152,14 @@
           <span class="c7-state {{ 'c7-state--muted' if mia_decisione == 'rejected' else 'c7-state--ok' }}">
             {{ _('Rifiutata da te') if mia_decisione == 'rejected' else _('Confermata da te') }}
           </span>
-          {%- elif match.aspetta_il_riscatto %}
-          <span class="c7-state c7-state--muted">{{ _('In attesa del riscatto') }}</span>
+          {#- La sfida contro un non registrato è chiusa con una firma sola
+              (2026-10-18): lo si dice, invece di sembrare confermata. #}
+          {%- elif match.is_contested %}
+          <span class="c7-state c7-state--warn">{{ _('Contestata') }}</span>
+          {%- elif match.awaits_review_from(current_user.id) %}
+          <span class="c7-state c7-state--warn">{{ _('Da rivedere') }}</span>
+          {%- elif match.is_recorded_by_one %}
+          <span class="c7-state c7-state--muted">{{ _('Registrata da te') }}</span>
           {%- elif in_lavorazione %}
           <span class="c7-state c7-state--info">{{ _('La segna %(name)s', name=match.scorer.username if match.scorer else '') }}</span>
           {%- elif waiting_for %}

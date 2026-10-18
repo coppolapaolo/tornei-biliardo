@@ -6,7 +6,8 @@ minutes: 4
 summary: "Outside official competitions you can propose a match to another player, agree on where and when, and record the result."
 screens: [individual_match.dashboard, individual_match.quick_match, individual_match.create_proposal,
   individual_match.match_list, individual_match.match_detail, individual_match.proposal_list,
-  individual_match.proposal_detail, individual_match.rematch, individual_match.user_statistics]
+  individual_match.proposal_detail, individual_match.rematch, individual_match.user_statistics,
+  individual_match.review_matches]
 related: [giocare_una_partita, profilo_e_statistiche]
 
 blocks:
@@ -77,19 +78,58 @@ blocks:
     tone: info
     title: "Against someone without an account"
     text: >-
-      An unregistered player gets no notifications and does not sign: only
-      you sign the match, even if they win, and it stays **waiting to be
-      claimed**. It does not block you: you can play other matches right away,
-      even against them, and you can withdraw it if needed. Once they sign up
-      and claim it, the match waits for their signature as with anyone else.
-      A proposal for another evening cannot be sent to them, though: with
-      them you play through the quick start.
+      An unregistered player gets no notifications and does not sign. When
+      the match ends — at the distance, or when you tap **End the match** —
+      it closes with your signature, even if they win: it is **recorded by
+      you**, and it counts in «All», not in «Confirmed». It waits for nothing
+      and does not block you: you can play other matches right away, even
+      against them, and you can withdraw it if needed. If they sign up one
+      day and claim it, they can recognise it — and then it becomes confirmed
+      — or dispute it. A proposal for another evening cannot be sent to them,
+      though: with them you play through the quick start.
 
   - type: shot
     shot: avvio-rapido-non-registrato
 
   - type: shot
-    shot: sfida-in-attesa-riscatto
+    shot: sfida-registrata-da-uno
+
+  - type: heading
+    id: revisione
+    title: "After a claim: reviewing the matches"
+
+  - type: text
+    text: >-
+      If you played at the venue before having an account, someone may have
+      recorded the matches against you while you were «not registered». As
+      soon as the claim is confirmed, those matches are yours and you get a
+      notification: **Review the matches**. The page lists them all, with the
+      score and who recorded them, and gives you three choices.
+
+  - type: shot
+    shot: sfide-da-rivedere
+
+  - type: list
+    items:
+      - "**I recognise them all**: they become confirmed by both, and count towards the rating like any match signed by two."
+      - "**I dispute them all**: they stay with whoever recorded them, marked «disputed», and count only in «All». They disappear from your matches and your statistics. Whoever recorded them gets a notification."
+      - "**I dispute only the ticked ones**: tick **I dispute it** on the matches that are wrong; you recognise the others."
+
+  - type: text
+    text: >-
+      You find the same two choices on the page of each match, with **I
+      recognise it** and **I dispute it**. If the match was kept by an
+      instructor for you and another player, recognising it means confirming
+      it and disputing it means rejecting it, as always for those matches.
+
+  - type: note
+    tone: tip
+    title: "No hurry"
+    text: >-
+      The review has no deadline and does not block you: you can play and
+      propose matches before it. Until you decide, the matches stay as they
+      are and count only in «All». In «My matches» a notice at the top
+      reminds you how many are left.
 
   - type: heading
     id: proporre
@@ -391,6 +431,6 @@ blocks:
       - q: "Why can't I start or accept a match?"
         a: "You have at least one match waiting for your confirmation. Confirm or reject it from the page the app offers you, or from My matches: once the last one is closed, you can start again."
       - q: "Can I propose a match to someone who is not on the app?"
-        a: "No, your opponent needs an account. You can invite them to sign up: it is free."
+        a: "Not a proposal: they could not accept it. But if they are at the venue with you, you can play them through the quick start, choosing them among the unregistered players (instructors and directors can also add them). The match closes with your signature and counts in «All». You can also invite them to sign up: it is free."
       - q: "What is the difference from a competition?"
         a: "A friendly is a single match, with no rounds, no standings and no director. A competition is an organised event with several rounds and final standings."

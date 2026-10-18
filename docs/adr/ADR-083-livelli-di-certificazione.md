@@ -190,6 +190,27 @@ la vede. `livello_di_sfida_per` e `sfide_della_vista(vista, user_id=…)`
 applicano la regola a una persona; senza persona la regola è di coppia ed è
 quella dell'ELO. Dettagli in [ADR-084](ADR-084-tpa-tenuto-da-un-terzo.md).
 
+## Emendamento (2026-10-18): la sfida registrata da uno, e la contestata
+
+La sfida contro un giocatore non registrato si chiude con una firma sola
+(ADR-085, emendamento della sera) ed è **conclusa**, ma il livello resta
+*In attesa*: a garantirla è uno solo. Lo stato è `CLOSED_UNILATERALLY`, come
+il forfait; `recorded_by_id` li distingue. Quindi:
+
+- `livello_di_sfida`: conclusa e registrata da uno → *In attesa*; il forfait
+  resta *Confermata*;
+- `sfida_conta_per_elo`: la registrata da uno conta (pool ``ELO_ALL``), il
+  forfait no;
+- `sfide_della_vista`: in SQL le concluse a garanzia piena sono la doppia
+  conferma e la chiusura senza `recorded_by_id`; la registrata da uno sta fra
+  le *In attesa*.
+
+Dopo il riscatto (ADR-086, emendamento) la sfida **riconosciuta** diventa
+*Confermata*; quella **contestata** resta *In attesa* per chi l'ha registrata
+e non ha livello per chi l'ha contestata (`livello_di_sfida_per`,
+`sfide_della_vista(…, user_id=…)`). Senza persona — l'ELO — resta *In attesa*:
+contestata, conta solo nel calcolo più generale, come vuole la regola.
+
 ## Riferimenti
 
 - Casi d'uso: `docs/usecases/sfide-e-certificazione.md` (UC4–UC9)

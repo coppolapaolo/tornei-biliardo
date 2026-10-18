@@ -2385,6 +2385,9 @@ def _create_preset(db, director, gara, campionato, serata_campionato) -> None:
 #: Il giocatore che si registra e chiede il riscatto di «Roberto Villa».
 DEMO_CLAIMANT = ("RobiVilla", "roberto.villa@example.com")
 
+#: Chi riscatta «Luigi Neri» e trova le sue partite da rivedere.
+DEMO_REVIEWER = ("LuigiNeri", "luigi.neri@example.com")
+
 
 def _sfide_terzi_e_riscatti(db, players) -> dict:
     """Sfide a una firma, partite di altri due, non registrati e riscatti.
@@ -2445,8 +2448,8 @@ def _sfide_terzi_e_riscatti(db, players) -> dict:
     ids["sfida_a_una_firma"] = sfida.id
 
     # 2. L'avvio rapido di Andrea contro chi non ha un account: nasce
-    #    «Stefano Gallo», non registrato, e la sfida resta in attesa del
-    #    riscatto dopo la sola firma di Andrea.
+    #    «Stefano Gallo», non registrato, e alla firma di Andrea la sfida si
+    #    chiude, registrata da lui (2026-10-18).
     contro_nonreg = QuickMatchService.start(
         andrea.id,
         NuovoGiocatore("Stefano", "Gallo"),
@@ -2499,6 +2502,39 @@ def _sfide_terzi_e_riscatti(db, players) -> dict:
     db.session.commit()
     ids["richiesta_di_riscatto"] = richiesta.id
     ids["roberto_villa"] = roberto_id
+
+    # 5. La revisione dopo il riscatto (2026-10-18): Andrea registra due
+    #    sfide contro «Luigi Neri», non registrato; Luigi si registra, Andrea
+    #    conferma il riscatto, e a Luigi restano due partite da rivedere.
+    luigi_id = None
+    for punteggio in ((5, 2), (3, 5)):
+        sfida_luigi = QuickMatchService.start(
+            andrea.id,
+            luigi_id if luigi_id is not None else NuovoGiocatore("Luigi", "Neri"),
+            {"description": "Allenamento del mercoledì"},
+        )
+        sfida_luigi.player1_score, sfida_luigi.player2_score = punteggio
+        db.session.commit()
+        MatchLifecycleService.confirm_match_result(sfida_luigi.id, andrea.id)
+        db.session.commit()
+        luigi_id = sfida_luigi.player2_id
+    luigi = User.query.filter_by(username=DEMO_REVIEWER[0]).first()
+    if luigi is None:
+        luigi = User(
+            username=DEMO_REVIEWER[0],
+            email=DEMO_REVIEWER[1],
+            role=UserRole.PLAYER.value,
+        )
+        luigi.set_password(DEMO_PASSWORD)
+        luigi.is_verified = True
+        luigi.onboarding_completed = True
+        db.session.add(luigi)
+        db.session.commit()
+    riscatto_luigi = ClaimService.richiedi(luigi_id, luigi)
+    db.session.commit()
+    ClaimService.approve(riscatto_luigi.id, andrea)
+    db.session.commit()
+    ids["revisione_di"] = luigi.id
 
     log(
         "sfide e riscatti: "

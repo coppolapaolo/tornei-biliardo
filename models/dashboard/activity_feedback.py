@@ -125,6 +125,8 @@ def _individual_match_activities(user_id: int) -> List[Activity]:
             IndividualMatch.status.in_(
                 [MatchStatus.CLOSED_UNILATERALLY, MatchStatus.CONFIRMED_BY_BOTH]
             ),
+            # La sfida contestata non è più sua (2026-10-18, ADR-086).
+            IndividualMatch.non_contestate_da(user_id),
         )
         .order_by(
             IndividualMatch.ended_at.desc().nullslast(), IndividualMatch.id.desc()
@@ -1027,6 +1029,7 @@ def activities_since(user_id: int, since: datetime) -> int:
                 [MatchStatus.CLOSED_UNILATERALLY, MatchStatus.CONFIRMED_BY_BOTH]
             ),
             IndividualMatch.ended_at >= since,
+            IndividualMatch.non_contestate_da(user_id),
         )
         .scalar()
         or 0

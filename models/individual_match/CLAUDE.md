@@ -194,9 +194,26 @@ senza accettazione.
   `can_create_opponent(user)` - direttori e istruttori, mai l'admin
 - l'avversario non registrato non firma: `IndividualMatch.firma_d_ufficio`
   passa la firma alla distanza a chi ha aperto la sfida, e
-  `aspetta_il_riscatto` dice all'interfaccia che la firma mancante arriva solo
-  col riscatto (niente blocco, niente sollecito; dopo il riscatto
-  `ClaimService.approve` avvisa chi l'ha riscattato)
+  `IndividualMatch.confirm_result` (ridefinito) **chiude** la sfida alla
+  prima firma contro un non registrato (`record_alone`, regola del
+  2026-10-18 sera): `CLOSED_UNILATERALLY` + `recorded_by_id` =
+  *registrata da uno* (`is_recorded_by_one`), livello *In attesa*, solo
+  `ELO_ALL`. Il forfait sta nello stesso stato ma senza `recorded_by_id`.
+  Un punteggio che cambia la riapre (`reset_confirmations` ridefinito); chi
+  l'ha registrata la ritira (`can_withdraw`)
+
+### RevisioneService (`revisione.py`, ADR-086 emendamento 2026-10-18)
+Dopo il riscatto, chi l'ha riscattato rivede le partite registrate contro il
+non registrato. `ClaimService.approve` manda **un** invito (`/match/revisione`).
+
+- `da_rivedere(user_id)` - sfide `awaits_review_from(user_id)` e partite di
+  altri due che aspettano la sua decisione; mai le partite di gara
+- `rivedi(user_id, rivedute, contestate)` - i tre esiti in una chiamata.
+  Sfida normale: `recognize_by` (→ `CONFIRMED_BY_BOTH` + evento ELO globale)
+  o `contest_by` (`contested_at`: resta al registrante, *In attesa*, sparisce
+  per chi contesta via `is_hidden_from` / `non_contestate_da`). Partita di un
+  terzo: `confirm_as_player` / `reject_as_player`
+- facoltativa, senza scadenza, non blocca niente
 
 L'accettazione non è saltata: è la doppia conferma di fine partita
 (`CONFIRMED_BY_BOTH`), che è anche l'unica condizione che muove l'ELO globale.
@@ -229,6 +246,8 @@ Vedi `docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md`.
 | Referto della partita di altri due chiuso | MATCH_RESULT_TO_CONFIRM | Ciascuno dei due che non ha ancora deciso |
 | Partita di altri due annullata da chi segna | MATCH_CANCELLED | I due giocatori |
 | Partita di altri due rifiutata | MATCH_CANCELLED | L'altro giocatore e chi l'ha segnata |
+| Riscatto approvato con partite da rivedere | MATCH_RESULT_TO_CONFIRM | Chi ha riscattato (uno solo, link `/match/revisione`) |
+| Sfida registrata da uno contestata | MATCH_CANCELLED | Chi l'ha registrata |
 
 ---
 

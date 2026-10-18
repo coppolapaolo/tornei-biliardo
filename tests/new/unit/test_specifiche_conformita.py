@@ -4110,20 +4110,10 @@ class TestAvversarioNonRegistrato:
         assert not QuickMatchService.can_create_opponent(utente())
         assert not QuickMatchService.can_create_opponent(utente(is_admin=True))
 
-    @pytest.mark.parametrize("vince_il_non_registrato", [True, False])
-    def test_firma_solo_chi_ha_aperto_la_sfida(
-        self, db_session, vince_il_non_registrato
-    ):
-        """«Nella sfida contro di lui firma solo chi l'ha aperta — anche quando
-        alla distanza vince il non registrato, la firma d'ufficio va a chi ha
-        aperto la sfida —, e la sfida resta *In attesa* finché qualcuno non lo
-        riscatta»."""
+    def _sfida_alla_distanza(self, db_session, vince_il_non_registrato=False):
+        """Creatore contro Gino, non registrato, «al 3», alla distanza."""
         from models.base import utc_now
-        from models.certificazione import Livello, livello_di_sfida
         from models.individual_match.match_models import IndividualMatch
-        from models.individual_match.pending_confirmation import (
-            PendingConfirmationService,
-        )
         from models.user.services import UserService
 
         creatore = self._utente(db_session, UserRole.DIRECTOR.value)
@@ -4142,15 +4132,154 @@ class TestAvversarioNonRegistrato:
         )
         db_session.add(sfida)
         db_session.flush()
-
         sfida.firma_d_ufficio(avversario.id if vince_il_non_registrato else creatore.id)
+        return creatore, avversario, sfida
 
+    @pytest.mark.parametrize("vince_il_non_registrato", [True, False])
+    def test_alla_fine_si_chiude_con_la_firma_di_chi_l_ha_aperta(
+        self, db_session, vince_il_non_registrato
+    ):
+        """«Quando un match con giocatore aggiunto finisce non deve aspettare
+        la conferma da parte del giocatore aggiunto» (decisione dell'utente
+        del 2026-10-18 sera, che sostituisce «la sfida resta *In attesa*
+        finché qualcuno non lo riscatta»). SPECIFICHE.md, «Giocatori non
+        ancora registrati»: «la sfida contro di lui si chiude con la firma di
+        chi l'ha aperta […] è *registrata da un solo giocatore* e sta nella
+        vista *Tutte*»."""
+        from models.certificazione import (
+            Livello,
+            Vista,
+            livello_di_sfida,
+            sfida_conta_per_elo,
+        )
+        from models.individual_match.pending_confirmation import (
+            PendingConfirmationService,
+        )
+
+        creatore, avversario, sfida = self._sfida_alla_distanza(
+            db_session, vince_il_non_registrato
+        )
+
+        assert sfida.status == MatchStatus.CLOSED_UNILATERALLY
+        assert sfida.is_recorded_by_one and sfida.recorded_by_id == creatore.id
         assert sfida.player1_confirmed and not sfida.player2_confirmed
-        assert sfida.aspetta_il_riscatto
+        assert sfida.winner_id == (
+            avversario.id if vince_il_non_registrato else creatore.id
+        )
         assert livello_di_sfida(sfida) is Livello.IN_ATTESA
-        # «non blocca chi l'ha firmata … può ritirarla»
+        assert Vista.TUTTE.comprende(livello_di_sfida(sfida))
+        assert not Vista.CONFERMATE.comprende(livello_di_sfida(sfida))
+        # «conta come oggi conta una sfida in attesa»: solo ELO_ALL.
+        assert sfida_conta_per_elo(sfida)
+        # Non aspetta nessuno, non blocca nessuno, e chi l'ha registrata la ritira.
+        assert sfida.awaiting_confirmation_from_id is None
         assert PendingConfirmationService.pending_for(creatore.id) == []
-        assert sfida.signed_and_waiting(creatore.id)
+        assert sfida.can_withdraw(creatore.id)
+
+    def test_il_forfait_resta_fuori_dall_elo(self, db_session):
+        """Il forfait sta nello stesso stato, e resta escluso dall'ELO: la
+        sfida registrata da uno si distingue per chi l'ha registrata."""
+        from models.base import utc_now
+        from models.certificazione import Livello, livello_di_sfida, sfida_conta_per_elo
+        from models.individual_match.match_models import IndividualMatch
+
+        a, b = self._utente(db_session), self._utente(db_session)
+        sfida = IndividualMatch(
+            player1_id=a.id,
+            player2_id=b.id,
+            scheduled_at=utc_now(),
+            status=MatchStatus.IN_PROGRESS,
+            distance=3,
+            is_race_to=True,
+        )
+        db_session.add(sfida)
+        db_session.flush()
+        sfida.forfeit_match(a.id)
+        assert not sfida.is_recorded_by_one
+        assert livello_di_sfida(sfida) is Livello.CONFERMATA
+        assert not sfida_conta_per_elo(sfida)
+
+
+class TestRevisioneDopoIlRiscatto:
+    """SPECIFICHE.md, «Il riscatto» → «La revisione delle partite»,
+    emendamento del 2026-10-18 (ADR-086), dalla decisione dell'utente: «se
+    qualcuno riscatta l'utente, allora gli si può chiedere se vuole rivedere
+    tutti i match passati ed eventualmente contestarne alcuni oppure
+    riconoscerli tutti oppure contestarli tutti. I match contestati rimangono
+    all'utente che li ha registrati come contestati e contribuiscono a ELO
+    solo nel calcolo più generale»."""
+
+    @staticmethod
+    def _registrata_e_riscattata(db_session):
+        """Marco registra una sfida contro Gino; Gino diventa Luca (simulato:
+        dopo l'unione la riga punta all'account vero)."""
+        from models.base import utc_now
+        from models.individual_match.match_models import IndividualMatch
+
+        def utente(role=UserRole.PLAYER.value):
+            s = uuid.uuid4().hex[:8]
+            u = User(username=f"rev_{s}", email=f"rev_{s}@test.com", role=role)
+            u.set_password("test1234")
+            db_session.add(u)
+            db_session.flush()
+            return u
+
+        marco, luca = utente(UserRole.DIRECTOR.value), utente()
+        sfida = IndividualMatch(
+            player1_id=marco.id,
+            player2_id=luca.id,
+            scheduled_at=utc_now(),
+            status=MatchStatus.CLOSED_UNILATERALLY,
+            player1_score=3,
+            player2_score=1,
+            distance=3,
+            is_race_to=True,
+            player1_confirmed=True,
+            player1_confirmed_at=utc_now(),
+            recorded_by_id=marco.id,
+            winner_id=marco.id,
+            ended_at=utc_now(),
+        )
+        db_session.add(sfida)
+        db_session.flush()
+        return marco, luca, sfida
+
+    def test_riconoscerla_la_rende_confermata(self, db_session):
+        """«riconoscerli»: la sfida diventa confermata da entrambi."""
+        from models.certificazione import Livello, livello_di_sfida
+
+        _marco, luca, sfida = self._registrata_e_riscattata(db_session)
+        assert sfida.awaits_review_from(luca.id)
+        sfida.recognize_by(luca.id)
+        assert sfida.status == MatchStatus.CONFIRMED_BY_BOTH
+        assert livello_di_sfida(sfida) is Livello.CONFERMATA
+
+    def test_la_contestata_resta_a_chi_l_ha_registrata(self, db_session):
+        """«I match contestati rimangono all'utente che li ha registrati come
+        contestati e contribuiscono a ELO solo nel calcolo più generale»; per
+        chi l'ha contestata spariscono (default scelto il 2026-10-18)."""
+        from models.certificazione import (
+            Livello,
+            livello_di_sfida,
+            livello_di_sfida_per,
+            sfida_conta_per_elo,
+        )
+
+        marco, luca, sfida = self._registrata_e_riscattata(db_session)
+        sfida.contest_by(luca.id)
+
+        assert sfida.is_contested
+        assert livello_di_sfida_per(sfida, marco.id) is Livello.IN_ATTESA
+        assert livello_di_sfida_per(sfida, luca.id) is None
+        assert sfida.is_hidden_from(luca.id) and not sfida.is_hidden_from(marco.id)
+        # L'ELO è di coppia: resta nel solo pool più generale.
+        assert livello_di_sfida(sfida) is Livello.IN_ATTESA
+        assert sfida_conta_per_elo(sfida)
+
+    def test_chi_l_ha_registrata_non_la_rivede(self, db_session):
+        """La rivede chi ha riscattato l'avversario, non chi l'ha registrata."""
+        marco, _luca, sfida = self._registrata_e_riscattata(db_session)
+        assert not sfida.awaits_review_from(marco.id)
 
 
 class TestRiscattoDeiNonRegistrati:

@@ -923,19 +923,27 @@ hints:
 
   - id: sfida.avversario_non_registrato
     label: "Avversario senza account"
-    short: "Se non è registrato la partita la firmi solo tu, e resta in attesa finché qualcuno non lo riscatta. Istruttori e direttori lo aggiungono qui, con nome e cognome."
+    short: "Se non è registrato la sfida si chiude con la tua firma e conta fra «Tutte». Istruttori e direttori lo aggiungono qui, con nome e cognome."
     anchor: sfida-avversario-non-registrato
     screens: [individual_match.quick_match]
     page: partite_amichevoli
     section: avvio-rapido
 
-  - id: sfida.in_attesa_del_riscatto
-    label: "In attesa del riscatto"
-    short: "L'avversario non ha un account e non firma. La partita conta come «in attesa» e non ti blocca: quando qualcuno lo riscatta, sarà lui a confermarla o rifiutarla."
-    anchor: sfida-in-attesa-del-riscatto
+  - id: sfida.registrata_da_uno
+    label: "Registrata da te"
+    short: "L'avversario non è registrato e non firma: la sfida è chiusa con la tua firma e conta fra «Tutte». Chi lo riscatta potrà riconoscerla o contestarla."
+    anchor: sfida-registrata-da-uno
     screens: [individual_match.match_detail]
     page: partite_amichevoli
     section: avvio-rapido
+
+  - id: sfida.revisione
+    label: "Partite da rivedere"
+    short: "Partite registrate contro di te prima che avessi un account. Riconoscile e diventano confermate; contestale e restano a chi le ha registrate. Non c'è fretta."
+    anchor: sfida-revisione
+    screens: [individual_match.match_detail, individual_match.match_list, individual_match.review_matches]
+    page: partite_amichevoli
+    section: revisione
 
   - id: sfida.altri_due_chi_gioca
     label: "Chi gioca"

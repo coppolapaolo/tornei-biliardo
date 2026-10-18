@@ -42,7 +42,11 @@ suo emendamento del 2026-10-18 (anche `test_partita_di_altri_due_e2e.py`).
 UC13, la sfida contro un giocatore non registrato, è realizzato con
 l'emendamento del 2026-10-18 all'ADR-085
 (`test_avversario_non_registrato.py` di integrazione,
-`test_sfida_avversario_non_registrato_e2e.py`).
+`test_sfida_avversario_non_registrato_e2e.py`), e riscritto col secondo
+emendamento dello stesso giorno: la sfida si chiude da sola, registrata da
+uno. UC14, la revisione dopo il riscatto, è realizzato con l'emendamento del
+2026-10-18 all'ADR-086 (`test_revisione_dopo_il_riscatto.py` di
+integrazione, lo stesso e2e).
 
 ## Use case 1 — Avvio rapido dal telefono
 
@@ -279,26 +283,64 @@ quella di altri due non va, perché chi segna non gioca (UC12).
   arriva al referto.
 - Gino non riceve niente: non ha un account.
 - Marco annota la partita. Al terzo triangolo vince Gino: **firma Marco**,
-  perché Gino non firma. La sfida è *In attesa* e conta per l'ELO di *Tutte*.
-  Marco chiude il referto.
-- Nella pagina della sfida Marco legge **«In attesa del riscatto»**: niente
+  perché Gino non firma, e la sfida **si chiude**: è *registrata da un solo
+  giocatore*, livello *In attesa*, e conta per l'ELO di *Tutte*. Marco
+  chiude il referto.
+- Nella pagina della sfida Marco legge **«Registrata da te»**: niente
   «manca la conferma», nessun promemoria. In `/match/` la sfida sta fra le
-  giocate, con lo stesso stato; in dashboard non è fra le sfide in corso.
+  giocate, con lo stato «Registrata da te»; in dashboard non è fra le sfide
+  in corso.
 - Marco **non è bloccato**: apre subito un'altra sfida, anche contro Gino.
 - Il giorno dopo Gino si registra e tocca «Sei tu? Riscatta»; Marco, che l'ha
-  creato, conferma. La sfida passa all'account di Gino, che riceve l'avviso
-  «Una sfida aspetta la tua firma» e la conferma: è *Confermata*, e si muove
-  l'ELO di *Confermate*.
-- _(variante: Gino rifiuta → come per qualunque sfida, l'ultimo triangolo si
-  toglie e le firme si azzerano)_
+  creato, conferma. La sfida passa all'account di Gino, che la rivede (UC14).
+- _(variante: la sfida è a distanza libera → la chiude Marco con «Termina la
+  sfida», e la sua firma basta)_
+- _(variante: Marco toglie un triangolo dal referto ancora aperto → la sfida
+  torna in corso, e si richiude alla firma successiva)_
 - _(variante: Paolo, giocatore senza ruolo, non vede «Non ha un account?»: un
   modulo mandato a mano viene rifiutato. Può però cercare e scegliere un
   giocatore non registrato che esiste già, col segno «non registrato»)_
 - _(variante: l'admin non apre l'avvio rapido, e non crea giocatori da qui)_
-- _(variante: prima del riscatto Marco **ritira** la sfida → annullata, e
-  nessuno riceve avvisi)_
+- _(variante: Marco **ritira** la sfida → annullata; prima del riscatto
+  nessuno riceve avvisi, durante la revisione Gino sì)_
 - _(variante: dalla pagina della sfida Marco cerca «Proponi un'altra data» →
   non c'è: a Gino una proposta non arriverebbe. «Rigioca adesso» apre
   l'avvio rapido con Gino già scelto)_
 - _(variante: Marco prova a mandare a Gino una proposta di sfida → rifiutata,
   con l'indicazione di usare l'avvio rapido)_
+
+## Use case 14 — Gino, appena registrato, rivede le partite che Marco aveva segnato contro di lui
+
+Regola del 2026-10-18 (ADR-086, emendamento): «se qualcuno riscatta l'utente,
+allora gli si può chiedere se vuole rivedere tutti i match passati ed
+eventualmente contestarne alcuni oppure riconoscerli tutti oppure contestarli
+tutti».
+
+- Marco ha registrato tre sfide contro Gino quando Gino non aveva un account.
+  Gino si registra e riscatta il suo giocatore; Marco conferma.
+- A Gino arriva **un** avviso: «Rivedi le partite di Gino». In «Le mie sfide»
+  un riquadro in cima gli ricorda quante ne restano.
+- La pagina «Partite da rivedere» elenca le tre sfide, ciascuna con chi l'ha
+  registrata, il punteggio e la casella «La contesto». Sotto, tre comandi.
+- Gino spunta la seconda — quella sera non c'era — e tocca **«Contesto solo
+  quelle spuntate»**. Le altre due sono riconosciute: diventano *Confermate*
+  e muovono l'ELO globale.
+- La seconda resta a Marco, **contestata**: nella sua pagina il riquadro
+  «Contestata», nell'elenco lo stato «Contestata», nel profilo la riga
+  segnata così. Conta solo fra *Tutte* e nell'ELO di *Tutte*. Marco riceve
+  l'avviso «Sfida contestata».
+- Per Gino la seconda sparisce: non è in «Le mie sfide», non nel profilo,
+  non nelle statistiche; aprendone l'indirizzo torna alla dashboard con un
+  avviso.
+- _(variante: «Le riconosco tutte» → tutte *Confermate*)_
+- _(variante: «Le contesto tutte» → tutte a Marco, contestate)_
+- _(variante: Gino riconosce o contesta dalla pagina della singola sfida,
+  con «La riconosco» o «La contesto»)_
+- _(variante: Gino non rivede niente → le sfide restano registrate da
+  Marco, *In attesa*, senza scadenza; Gino gioca e propone sfide lo stesso)_
+- _(variante: Gino era uno dei due giocatori di una partita che Lucia,
+  istruttrice, aveva segnato per lui e Paolo → compare fra quelle da
+  rivedere; riconoscerla è confermarla per sé, contestarla è rifiutarla, e il
+  rifiuto la toglie a tutti e due, come in UC12)_
+- _(variante: una partita di gara contro Gino → non si rivede: la certifica
+  il torneo)_

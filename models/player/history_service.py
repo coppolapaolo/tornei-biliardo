@@ -132,6 +132,10 @@ class MatchEntry:
     #: Che partita era, quando chi l'ha giocata l'ha scritto: esiste solo
     #: sulle sfide individuali (la partita di gara ha già `competition`).
     description: Optional[str] = None
+    #: La sfida contro un non registrato chiusa con una firma sola
+    #: (2026-10-18): ``"registrata"``, ``"contestata"`` o ``None``. Il
+    #: livello è *In attesa* in tutti e due i casi; la riga dice perché.
+    firma: Optional[str] = None
 
     @property
     def in_attesa(self) -> bool:
@@ -638,6 +642,11 @@ class PlayerHistoryService:
                     is_trio=False,
                     livello=livello_di_sfida_per(im, user_id),
                     description=im.description,
+                    firma=(
+                        "contestata"
+                        if im.is_contested
+                        else ("registrata" if im.is_recorded_by_one else None)
+                    ),
                 )
             )
         return voci

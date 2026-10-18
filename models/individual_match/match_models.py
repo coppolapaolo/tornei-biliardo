@@ -159,6 +159,20 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
     player1_rejected_at = db.Column(db.DateTime, nullable=True)
     player2_rejected_at = db.Column(db.DateTime, nullable=True)
 
+    # La sfida contro un giocatore non registrato (ADR-085, emendamento del
+    # 2026-10-18 sera). Il non registrato non firma: alla fine la sfida si
+    # chiude con la sola firma di chi l'ha giocata contro di lui, che è
+    # `recorded_by_id`, e sta in `CLOSED_UNILATERALLY` — chiusa **senza** la
+    # doppia conferma, che è proprio quel che il nome dello stato dice. La
+    # colonna la distingue dal forfait, che sta nello stesso stato.
+    # Dopo il riscatto chi l'ha riscattato la riconosce (→ `CONFIRMED_BY_BOTH`,
+    # `recorded_by_id` resta come storia) o la contesta (`contested_at`): la
+    # contestata resta di chi l'ha registrata e conta solo fra «Tutte».
+    recorded_by_id = db.Column(
+        db.Integer, db.ForeignKey("user.id"), nullable=True, index=True
+    )
+    contested_at = db.Column(db.DateTime, nullable=True)
+
     # Relationships
     proposal = db.relationship("MatchProposal", back_populates="individual_match")
     billiard_hall = db.relationship("BilliardHall", foreign_keys=[billiard_hall_id])
@@ -168,6 +182,7 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
     lag_winner = db.relationship("User", foreign_keys=[lag_winner_id])
     first_break_player = db.relationship("User", foreign_keys=[first_break_player_id])
     scorer = db.relationship("User", foreign_keys=[scorer_id])
+    recorded_by = db.relationship("User", foreign_keys=[recorded_by_id])
 
     # UNIQUE on proposal_id prevents double-accept of same proposal (TOCTOU guard).
     # SQLite allows multiple NULLs → matches without proposal remain valid.
@@ -404,17 +419,181 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         giocatore = self._giocatore(user_id)
         return bool(giocatore is not None and giocatore.is_placeholder)
 
-    @property
-    def aspetta_il_riscatto(self) -> bool:
-        """Se la sfida aspetta la firma di un giocatore non registrato.
+    def confirm_result(self, user_id: int) -> bool:
+        """La conferma del risultato, e la chiusura contro un non registrato.
 
-        Quella firma non arriva finché qualcuno non lo riscatta (ADR-086):
-        per chi ha firmato la sfida è chiusa, al livello *In attesa*, e non
-        gli si mostra come una firma da sollecitare. Dopo il riscatto il
-        giocatore è un account vero, e la sfida aspetta lui come qualunque
-        altra.
+        Contro un giocatore non registrato la sfida **non aspetta** la sua
+        firma: si chiude con quella di chi l'ha giocata contro di lui
+        (`record_alone`). Regola del 2026-10-18 decisa dall'utente: «quando un
+        match con giocatore aggiunto finisce non deve aspettare la conferma
+        da parte del giocatore aggiunto». Vale per ogni strada che firma —
+        la firma d'ufficio alla distanza, il referto TPA, «Termina la sfida»
+        nel formato libero — perché passano tutte di qui.
+
+        Restituisce ``True`` solo per la doppia conferma, come prima: la
+        sfida registrata da uno solo non è confermata da entrambi.
         """
-        return self.is_placeholder_player(self.awaiting_confirmation_from_id)
+        confermata = super().confirm_result(user_id)
+        if not confermata and self._si_chiude_da_sola(user_id):
+            self.record_alone(user_id)
+        return confermata
+
+    def _si_chiude_da_sola(self, user_id: int) -> bool:
+        """Se la firma di ``user_id`` basta a chiudere la sfida.
+
+        Solo nella sfida normale (la partita di un terzo ha le sue regole,
+        ADR-084), ancora in corso, e solo se l'avversario di chi firma è non
+        registrato: lui una firma non la può dare.
+        """
+        return (
+            not self.is_scored_by_third_party
+            and self.status == MatchStatus.IN_PROGRESS
+            and not self.is_placeholder_player(user_id)
+            and self.is_placeholder_player(self.opponent_of(user_id))
+        )
+
+    def record_alone(self, user_id: int) -> None:
+        """Chiude la sfida con la sola firma di ``user_id``: *registrata da uno*.
+
+        Lo stato è `CLOSED_UNILATERALLY` — chiusa senza la doppia conferma —
+        e `recorded_by_id` dice chi l'ha registrata: è ciò che la distingue
+        da un forfait. Il livello è *In attesa* (vista «Tutte», pool
+        ``ELO_ALL``), perché a garantirla è uno solo (`models/certificazione`).
+        Il vincitore lo dice il punteggio, la data è adesso.
+        """
+        self.status = MatchStatus.CLOSED_UNILATERALLY
+        self.recorded_by_id = user_id
+        self.contested_at = None
+        self.winner_id = self._winner_from_score()
+        if self.ended_at is None:
+            self.ended_at = utc_now()
+
+    @property
+    def is_recorded_by_one(self) -> bool:
+        """Chiusa con la sola firma di chi l'ha giocata contro un non registrato.
+
+        Riconosciuta da chi poi l'ha riscattato è ``CONFIRMED_BY_BOTH`` e non
+        lo è più: `recorded_by_id` resta scritto, come storia.
+        """
+        return (
+            self.status == MatchStatus.CLOSED_UNILATERALLY
+            and self.recorded_by_id is not None
+        )
+
+    @property
+    def is_contested(self) -> bool:
+        """Registrata da uno e contestata da chi ha riscattato l'avversario."""
+        return self.is_recorded_by_one and self.contested_at is not None
+
+    @property
+    def contested_by_id(self) -> Optional[int]:
+        """Chi l'ha contestata: l'altro rispetto a chi l'ha registrata."""
+        if not self.is_contested:
+            return None
+        return self.opponent_of(self.recorded_by_id)
+
+    def awaits_review_from(self, user_id: Optional[int]) -> bool:
+        """Se ``user_id`` può riconoscere o contestare questa sfida.
+
+        È la sfida registrata da uno contro un non registrato che ``user_id``
+        ha poi riscattato: ora è sua, e dice lui se la riconosce. Finché non
+        lo fa resta com'è, *In attesa* — la revisione è facoltativa e non ha
+        scadenza (emendamento del 2026-10-18 all'ADR-086).
+        """
+        return bool(
+            user_id is not None
+            and self.is_recorded_by_one
+            and self.contested_at is None
+            and self.is_player(user_id)
+            and user_id != self.recorded_by_id
+            and not self.is_placeholder_player(user_id)
+        )
+
+    def recognize_by(self, user_id: int) -> None:
+        """«La riconosco»: la sfida diventa confermata da entrambi.
+
+        È la seconda firma arrivata tardi: `CONFIRMED_BY_BOTH`, livello
+        *Confermata*, e l'evento della doppia conferma che muove l'ELO
+        globale. Vincitore e data restano quelli di quando è stata giocata.
+        """
+        from ..exceptions import ConflictError
+
+        if not self.awaits_review_from(user_id):
+            raise ConflictError("Questa sfida non aspetta la tua revisione")
+        ora = utc_now()
+        if user_id == self.player1_id:
+            self.player1_confirmed, self.player1_confirmed_at = True, ora
+        else:
+            self.player2_confirmed, self.player2_confirmed_at = True, ora
+        self.status = MatchStatus.CONFIRMED_BY_BOTH
+        self._emit_individual_match_completed_event()
+
+    def contest_by(self, user_id: int) -> None:
+        """«Non la riconosco»: la sfida resta di chi l'ha registrata.
+
+        Resta `CLOSED_UNILATERALLY`, *In attesa* per chi l'ha registrata —
+        vista «Tutte» e ``ELO_ALL`` — e sparisce per chi l'ha contestata
+        (`is_hidden_from`, `livello_di_sfida_per`).
+        """
+        from ..exceptions import ConflictError
+
+        if not self.awaits_review_from(user_id):
+            raise ConflictError("Questa sfida non aspetta la tua revisione")
+        self.contested_at = utc_now()
+
+    def reset_confirmations(self) -> None:
+        """Le firme si azzerano; la sfida registrata da uno torna in corso.
+
+        Succede quando cambia il punteggio: un triangolo tolto dal referto TPA
+        ancora aperto dopo la distanza. Una sfida *chiusa* col punteggio
+        cambiato sarebbe una sfida che nessuno ha mai registrato così: torna
+        in corso, e si richiude da sola alla prossima firma.
+        """
+        if self.is_recorded_by_one:
+            self.status = MatchStatus.IN_PROGRESS
+            self.recorded_by_id = None
+            self.contested_at = None
+            self.winner_id = None
+            self.ended_at = None
+        super().reset_confirmations()
+
+    def can_withdraw(self, user_id: Optional[int]) -> bool:
+        """Se ``user_id`` può ritirare la sfida (`withdraw_by_signer`)."""
+        if user_id is None or self.is_scored_by_third_party:
+            return False
+        if self.is_recorded_by_one:
+            return user_id == self.recorded_by_id
+        return self.signed_and_waiting(user_id)
+
+    @classmethod
+    def non_contestate_da(cls, user_id: int):
+        """Condizione SQL: le sfide che ``user_id`` non ha contestato.
+
+        La contestata sparisce dalle liste di chi l'ha contestata, e resta
+        in quelle di chi l'ha registrata.
+        """
+        from sqlalchemy import and_, not_, or_
+
+        return not_(
+            and_(
+                cls.contested_at.isnot(None),
+                cls.recorded_by_id != user_id,
+                or_(cls.player1_id == user_id, cls.player2_id == user_id),
+            )
+        )
+
+    def _winner_from_score(self) -> Optional[int]:
+        """Il vincitore secondo il punteggio, ``None`` per un pareggio."""
+        if self.distance is not None and self.rack_score is not None:
+            numero = self.rack_score.get_winner()
+            if numero is None:
+                return None
+            return self.player1_id if numero == 1 else self.player2_id
+        if self.player1_score > self.player2_score:
+            return self.player1_id
+        if self.player2_score > self.player1_score:
+            return self.player2_id
+        return None
 
     def firma_d_ufficio(self, user_id: int) -> None:
         """La firma automatica alla distanza, che un non registrato non dà.
@@ -550,7 +729,13 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         nessuno dei due, e tenerla in vista sarebbe un «in attesa» che non
         aspetta più niente da loro. La vede solo chi l'ha segnata, che la
         corregge o la cancella.
+
+        La sfida **contestata** sparisce per chi l'ha contestata, e resta a
+        chi l'ha registrata (emendamento del 2026-10-18 all'ADR-086).
         """
+        if self.is_contested and user_id is not None:
+            if user_id == self.contested_by_id:
+                return True
         return self.is_rejected and (user_id is None or user_id != self.scorer_id)
 
     def reopen_by_scorer(self, user_id: int) -> None:
@@ -927,6 +1112,19 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if self.signed_and_waiting(user_id):
             self.status = MatchStatus.CANCELLED
             return
+
+        # La sfida registrata da uno contro un non registrato (2026-10-18): è
+        # chiusa, ma con una firma sola, e la ritira chi l'ha registrata —
+        # finché chi ha riscattato l'avversario non l'ha riconosciuta. Anche
+        # contestata: resta sua, e toglierla è affar suo.
+        if self.is_recorded_by_one:
+            if user_id == self.recorded_by_id:
+                self.status = MatchStatus.CANCELLED
+                return
+            raise PermissionDeniedError(
+                "La sfida la ritira chi l'ha registrata: tu puoi riconoscerla "
+                "o contestarla"
+            )
 
         if self.awaiting_confirmation_from_id == user_id:
             raise PermissionDeniedError(

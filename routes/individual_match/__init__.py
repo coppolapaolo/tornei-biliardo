@@ -16,5 +16,6 @@ from . import views  # noqa: E402, F401
 from . import tpa  # noqa: E402, F401
 from . import pending  # noqa: E402, F401
 from . import scored  # noqa: E402, F401
+from . import revisione  # noqa: E402, F401
 
 __all__ = ["individual_match_bp"]

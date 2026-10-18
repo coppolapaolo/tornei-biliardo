@@ -6,7 +6,8 @@ minutes: 4
 summary: "Fuori dalle gare ufficiali puoi proporre una partita a un altro giocatore, accordarvi su luogo e ora, e registrare il risultato."
 screens: [individual_match.dashboard, individual_match.quick_match, individual_match.create_proposal,
   individual_match.match_list, individual_match.match_detail, individual_match.proposal_list,
-  individual_match.proposal_detail, individual_match.rematch, individual_match.user_statistics]
+  individual_match.proposal_detail, individual_match.rematch, individual_match.user_statistics,
+  individual_match.review_matches]
 related: [giocare_una_partita, profilo_e_statistiche]
 
 blocks:
@@ -77,19 +78,59 @@ blocks:
     tone: info
     title: "Contro chi non ha un account"
     text: >-
-      Un giocatore non registrato non riceve avvisi e non firma: la partita la
-      firmi solo tu, anche se vince lui, e resta **in attesa del riscatto**.
-      Non ti blocca: puoi giocare subito altre partite, anche con lui, e se
-      serve puoi ritirarla. Quando si registra e la riscatta, la partita
-      aspetta la sua firma come con chiunque altro. Una proposta per un'altra
-      sera, invece, non gli si può mandare: con lui si gioca con l'avvio
-      rapido.
+      Un giocatore non registrato non riceve avvisi e non firma. Quando la
+      partita finisce — alla distanza, o quando tocchi **Termina la sfida** —
+      si chiude con la tua firma, anche se vince lui: è **registrata da te**,
+      e conta fra «Tutte», non fra le «Confermate». Non aspetta niente e non
+      ti blocca: puoi giocare subito altre partite, anche con lui, e se serve
+      puoi ritirarla. Se un giorno si registra e la riscatta, potrà
+      riconoscerla — e allora diventa confermata — o contestarla. Una
+      proposta per un'altra sera, invece, non gli si può mandare: con lui si
+      gioca con l'avvio rapido.
 
   - type: shot
     shot: avvio-rapido-non-registrato
 
   - type: shot
-    shot: sfida-in-attesa-riscatto
+    shot: sfida-registrata-da-uno
+
+  - type: heading
+    id: revisione
+    title: "Dopo il riscatto: rivedere le partite"
+
+  - type: text
+    text: >-
+      Se hai giocato in sala prima di avere un account, qualcuno può aver
+      registrato le partite contro di te quando eri «non registrato». Appena il
+      riscatto è confermato, quelle partite sono tue e ricevi un avviso:
+      **Rivedi le partite**. La pagina le elenca tutte, col punteggio e chi le
+      ha registrate, e ti lascia tre scelte.
+
+  - type: shot
+    shot: sfide-da-rivedere
+
+  - type: list
+    items:
+      - "**Le riconosco tutte**: diventano confermate da entrambi, ed entrano nel rating come ogni partita firmata in due."
+      - "**Le contesto tutte**: restano a chi le ha registrate, segnate «contestate», e contano solo fra «Tutte». Dalle tue partite e dalle tue statistiche spariscono. Chi le ha registrate riceve un avviso."
+      - "**Contesto solo quelle spuntate**: spunta **La contesto** sulle partite che non tornano; le altre le riconosci."
+
+  - type: text
+    text: >-
+      Le stesse due scelte le trovi anche nella pagina di ciascuna partita,
+      con **La riconosco** e **La contesto**. Se la partita l'aveva segnata un
+      istruttore per te e un altro giocatore, riconoscerla vuol dire
+      confermarla e contestarla vuol dire rifiutarla, come sempre in quelle
+      partite.
+
+  - type: note
+    tone: tip
+    title: "Non c'è fretta"
+    text: >-
+      La revisione non ha scadenza e non ti blocca: puoi giocare e proporre
+      sfide anche prima. Finché non decidi, le partite restano come sono e
+      contano solo fra «Tutte». In «Le mie sfide» un avviso in cima ti
+      ricorda quante ne restano.
 
   - type: heading
     id: proporre
@@ -415,6 +456,6 @@ blocks:
       - q: "Perché non riesco a lanciare o accettare una sfida?"
         a: "Hai almeno una partita che aspetta la tua conferma. Confermala o rifiutala dalla pagina che l'app ti propone, o da Le mie sfide: chiusa l'ultima, puoi ripartire."
       - q: "Posso proporre una partita a chi non è iscritto all'app?"
-        a: "No, l'avversario deve avere un account. Puoi invitarlo a registrarsi: è gratuito."
+        a: "Una proposta no: non potrebbe accettarla. Ma se è in sala con te puoi giocarci con l'avvio rapido, scegliendolo fra i giocatori non registrati (istruttori e direttori lo possono anche aggiungere). La partita si chiude con la tua firma e conta fra «Tutte». Puoi anche invitarlo a registrarsi: è gratuito."
       - q: "Che differenza c'è con una gara?"
         a: "Un'amichevole è una partita sola, senza turni, senza classifica e senza direttore. Una gara è un evento organizzato con più turni e una classifica finale."

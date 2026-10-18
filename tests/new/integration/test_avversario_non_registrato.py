@@ -7,10 +7,11 @@ iscritto». Il percorso intero, dalle route:
 * l'avvio rapido trova i non registrati e, per direttori e istruttori, ne
   crea uno nuovo con nome e cognome; un giocatore senza ruolo sceglie solo
   quelli che esistono già, l'admin non entra;
-* il non registrato non firma e non riceve niente; chi ha aperto la sfida la
-  firma e non resta bloccato, e può ancora ritirarla;
-* dopo il riscatto chi lo ha riscattato trova la sfida da confermare, come un
-  avversario qualunque.
+* il non registrato non firma e non riceve niente; la sfida si chiude con la
+  firma di chi l'ha aperta, *registrata da uno*, e conta solo fra «Tutte»
+  (regola del 2026-10-18 sera, che sostituisce l'attesa del riscatto);
+* dopo il riscatto chi lo ha riscattato è invitato a rivederla, senza blocchi
+  (il resto della revisione in `test_revisione_dopo_il_riscatto.py`).
 """
 
 from __future__ import annotations
@@ -21,13 +22,13 @@ import pytest
 from flask import g
 
 from models import User, db
-from models.certificazione import Livello, livello_di_sfida
+from models.certificazione import Livello, Vista, livello_di_sfida
 from models.individual_match.individual_rack_service import IndividualRackService
 from models.individual_match.models import IndividualMatch
 from models.individual_match.pending_confirmation import PendingConfirmationService
 from models.individual_match.quick_match_service import QuickMatchService
 from models.individual_match.scored_match_service import NuovoGiocatore
-from models.notification.models import Notification, NotificationType
+from models.notification.models import Notification
 from models.exceptions import PermissionDeniedError
 from models.status_enum import MatchStatus
 from models.user.claim_service import ClaimService
@@ -219,9 +220,16 @@ class TestCreazioneDallAvvioRapido:
 
 
 @pytest.mark.integration
-class TestFirmeEBlocco:
+class TestChiusuraSenzaLaSuaFirma:
+    """Regola del 2026-10-18 sera, decisa dall'utente: «quando un match con
+    giocatore aggiunto finisce non deve aspettare la conferma da parte del
+    giocatore aggiunto». Sostituisce la regola di mezzogiorno (PR #712), in
+    cui la sfida restava «in attesa del riscatto»."""
+
     @pytest.mark.parametrize("vince_il_creatore", [True, False])
-    def test_firma_il_creatore_e_non_resta_bloccato(self, app, vince_il_creatore):
+    def test_alla_distanza_si_chiude_registrata_da_chi_l_ha_aperta(
+        self, app, vince_il_creatore
+    ):
         creatore = _user(UserRole.DIRECTOR.value)
         client = _client_for(app, creatore)
         match_id = _avvio_con_nuovo(client).get_json()["match_id"]
@@ -231,11 +239,18 @@ class TestFirmeEBlocco:
             match_id, creatore, creatore.id if vince_il_creatore else avversario_id
         )
 
-        # Anche quando vince lui, il non registrato non firma: firma chi segna.
+        # Chiusa, con la sola firma di chi l'ha aperta — anche se vince lui.
+        assert match.status == MatchStatus.CLOSED_UNILATERALLY
+        assert match.is_recorded_by_one
+        assert match.recorded_by_id == creatore.id
         assert match.player1_confirmed and not match.player2_confirmed
-        assert match.awaiting_confirmation_from_id == avversario_id
-        assert match.aspetta_il_riscatto
+        assert match.winner_id == (creatore.id if vince_il_creatore else avversario_id)
+        assert match.ended_at is not None
+        assert match.awaiting_confirmation_from_id is None
+        # Livello: solo nella vista «Tutte».
         assert livello_di_sfida(match) is Livello.IN_ATTESA
+        assert Vista.TUTTE.comprende(livello_di_sfida(match))
+        assert not Vista.CONFERMATE.comprende(livello_di_sfida(match))
         assert PendingConfirmationService.pending_for(creatore.id) == []
 
         # Nessun blocco: si apre subito un'altra sfida, anche con lui.
@@ -243,16 +258,53 @@ class TestFirmeEBlocco:
         assert _avvio_con(client, altro).status_code == 200
         assert _avvio_con(client, match.player2).status_code == 200
 
-        # La pagina non sollecita una firma che non può arrivare.
+        # La pagina e l'elenco lo dicono: registrata da te, niente firma attesa.
         pagina = _get(client, f"/match/matches/{match_id}").get_data(as_text=True)
-        assert "In attesa del riscatto" in pagina
+        assert "Registrata da te" in pagina
         assert "Manca la conferma" not in pagina
+        assert "In attesa del riscatto" not in pagina
         elenco = _get(client, "/match/matches").get_data(as_text=True)
-        assert "In attesa del riscatto" in elenco
-        # Fra le sfide da sollecitare dell'elenco «In attesa di conferma» no.
-        dashboard = _get(client, "/match/").get_data(as_text=True)
-        assert "Manca la firma dell&#39;avversario" not in dashboard
+        assert "Registrata da te" in elenco
         assert _notifiche_di(avversario_id) == []
+
+    def test_conta_per_l_elo_di_tutte_e_non_per_quello_globale(self, app):
+        from models.rating.models import MatchRatingHistory, RatingSystem
+
+        creatore = _user(UserRole.DIRECTOR.value)
+        match_id = _avvio_con_nuovo(_client_for(app, creatore)).get_json()["match_id"]
+        _alla_distanza(match_id, creatore, creatore.id)
+
+        assert MatchRatingHistory.exists_for_individual_match(
+            match_id, RatingSystem.ELO_ALL
+        )
+        assert not MatchRatingHistory.exists_for_individual_match(
+            match_id, RatingSystem.ELO_GLOBAL
+        )
+
+    def test_formato_libero_si_chiude_con_termina(self, app):
+        creatore = _user(UserRole.DIRECTOR.value)
+        client = _client_for(app, creatore)
+        risposta = _post(
+            client,
+            "/match/quick",
+            json={
+                "opponent_new_first_name": "Gino",
+                "opponent_new_last_name": f"Libero{uuid.uuid4().hex[:5]}",
+                "match_format": "free",
+            },
+        )
+        match_id = risposta.get_json()["match_id"]
+        assert db.session.get(IndividualMatch, match_id).distance is None
+        IndividualRackService.add_rack_for_player(match_id, creatore.id, creatore.id)
+        db.session.commit()
+
+        assert _post(client, f"/match/matches/{match_id}/confirm").status_code in (
+            200,
+            302,
+        )
+        match = db.session.get(IndividualMatch, match_id)
+        assert match.is_recorded_by_one
+        assert match.winner_id == creatore.id
 
     def test_dashboard_non_la_mostra_fra_le_sfide_in_corso(self, app):
         from models.dashboard.section_builders import DashboardSectionBuilder
@@ -264,11 +316,14 @@ class TestFirmeEBlocco:
         sezione = DashboardSectionBuilder.build_individual_match_sections(creatore.id)
         assert match_id not in {m.id for m in sezione["sfide_in_corso"]}
 
-    def test_chi_ha_firmato_la_ritira(self, app):
+    def test_chi_l_ha_registrata_la_ritira(self, app):
         creatore = _user(UserRole.DIRECTOR.value)
         client = _client_for(app, creatore)
         match_id = _avvio_con_nuovo(client).get_json()["match_id"]
         avversario_id = _alla_distanza(match_id, creatore, creatore.id).player2_id
+        assert "Ritira la sfida" in _get(client, f"/match/matches/{match_id}").get_data(
+            as_text=True
+        )
 
         risposta = _post(client, f"/match/matches/{match_id}/withdraw")
 
@@ -279,7 +334,7 @@ class TestFirmeEBlocco:
 
 @pytest.mark.integration
 class TestDopoIlRiscatto:
-    def test_chi_ha_riscattato_conferma_la_sfida(self, app):
+    def test_chi_ha_riscattato_e_invitato_a_rivedere_e_non_e_bloccato(self, app):
         creatore = _user(UserRole.DIRECTOR.value)
         client = _client_for(app, creatore)
         match_id = _avvio_con_nuovo(client).get_json()["match_id"]
@@ -293,21 +348,15 @@ class TestDopoIlRiscatto:
 
         match = db.session.get(IndividualMatch, match_id)
         assert match.player2_id == luca.id
-        assert not match.aspetta_il_riscatto
-        assert match.awaiting_confirmation_from_id == luca.id
-        # Come un avversario qualunque: la trova da firmare, ed è avvisato.
-        assert [m.id for m in PendingConfirmationService.pending_for(luca.id)] == [
-            match_id
+        # Resta com'è: registrata da uno, In attesa, e aspetta la sua revisione.
+        assert match.is_recorded_by_one
+        assert livello_di_sfida(match) is Livello.IN_ATTESA
+        assert match.awaits_review_from(luca.id)
+        # Nessuna firma da dare, quindi nessun blocco.
+        assert PendingConfirmationService.pending_for(luca.id) == []
+        assert _avvio_con(_client_for(app, luca), _user()).status_code == 200
+        # L'invito alla revisione, uno solo.
+        inviti = [
+            n for n in _notifiche_di(luca.id) if n.action_url == "/match/revisione"
         ]
-        assert any(
-            n.notification_type == NotificationType.MATCH_RESULT_TO_CONFIRM
-            and n.action_url == f"/match/matches/{match_id}"
-            for n in _notifiche_di(luca.id)
-        )
-
-        risposta = _post(_client_for(app, luca), f"/match/matches/{match_id}/confirm")
-
-        assert risposta.status_code in (200, 302)
-        match = db.session.get(IndividualMatch, match_id)
-        assert match.status == MatchStatus.CONFIRMED_BY_BOTH
-        assert livello_di_sfida(match) is Livello.CONFERMATA
+        assert len(inviti) == 1

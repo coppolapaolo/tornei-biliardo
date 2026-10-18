@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{# Le partite da rivedere dopo il riscatto (emendamento del 2026-10-18 agli
+   ADR-085 e ADR-086). Chi ha riscattato un giocatore non registrato trova le
+   partite che altri avevano registrato contro di lui: le riconosce tutte, le
+   contesta tutte, o spunta quelle da contestare e riconosce le altre.
+
+   Stessa card di «Partite da confermare» (prototipo 9a): kicker, nomi,
+   punteggio col proprio a sinistra. Qui al posto dei due pulsanti per card
+   c'è una casella, perché il gesto è uno solo per tutte. #}
+
+{% block title %}{{ _("Partite da rivedere") }} - {{ config.APP_NAME }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.match_list') }}"
+   aria-label="{{ _('Torna alle sfide') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Partite da rivedere") }}{% endblock %}
+
+{% block content %}
+{% if matches %}
+<form method="POST" action="{{ url_for('individual_match.review_matches') }}" class="c7-stack c7-sections" id="reviewForm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="azione" value="{{ SCEGLI }}" id="reviewAction">
+
+  <p style="margin:0;font-size:14px;font-weight:600;color:var(--c7-ink-muted)" data-help="sfida-revisione">
+    {{ _("Queste partite le ha registrate qualcun altro mentre non avevi un account, o le ha segnate un istruttore. Riconoscile se il risultato è giusto: diventano confermate. Quelle che contesti restano a chi le ha registrate e spariscono dalle tue. Non c'è fretta: finché non decidi contano solo fra «Tutte» e non ti bloccano.") }}
+  </p>
+
+  <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    {% for match in matches %}
+    {% set sono_p1 = match.player1_id == current_user.id %}
+    {% set opponent = match.player2 if sono_p1 else match.player1 %}
+    {% set my_score = match.player1_score if sono_p1 else match.player2_score %}
+    {% set their_score = match.player2_score if sono_p1 else match.player1_score %}
+    <article class="c7-card">
+      <input type="hidden" name="partite" value="{{ match.id }}">
+      <div class="d-flex align-items-center gap-2">
+        <span class="c7-kicker">
+          {{ match.discipline|discipline_display }}
+          {%- if match.location_display %} <span class="c7-sep">·</span> {{ match.location_display }}{% endif %}
+        </span>
+        <span style="margin-left:auto">
+          {% if match.is_scored_by_third_party %}
+          <span class="c7-state c7-state--info">{{ _('La segnava %(name)s', name=match.scorer.username if match.scorer else '') }}</span>
+          {% else %}
+          <span class="c7-state c7-state--warn">{{ _('Registrata da %(name)s', name=match.recorded_by.username if match.recorded_by else '') }}</span>
+          {% endif %}
+        </span>
+      </div>
+
+      <div class="d-flex align-items-center gap-3" style="margin-top:14px">
+        <div class="flex-fill" style="min-width:0">
+          <div style="font-size:14px;font-weight:800">{{ current_user.username }}</div>
+          <div style="margin-top:3px;font-size:14px;font-weight:800;color:var(--c7-ink-muted)">
+            {{ opponent.username if opponent else _('Avversario') }}
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="c7-num-lg">{{ my_score or 0 }}</div>
+          <div class="c7-num-lg" style="color:var(--c7-ink-muted)">{{ their_score or 0 }}</div>
+        </div>
+      </div>
+
+      {% if match.description or match.ended_at %}
+      <div class="c7-rows__sub" style="margin-top:12px">
+        {%- if match.description %}{{ match.description }}{% endif -%}
+        {%- if match.description and match.ended_at %} <span class="c7-sep">·</span> {% endif -%}
+        {%- if match.ended_at %}<span class="c7-num">{{ match.ended_at|datetime_local }}</span>{% endif -%}
+      </div>
+      {% endif %}
+
+      {# Dentro la card la scelta sta sul fondo affossato, come i campi. #}
+      <label class="c7-choice" style="margin-top:14px;background:var(--c7-sunken)">
+        <input type="checkbox" name="contesta" value="{{ match.id }}" class="form-check-input">
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ _("La contesto") }}</span>
+          <span class="c7-choice__desc d-block">{{ _("Il risultato non è giusto, o la partita non l'ho giocata.") }}</span>
+        </span>
+      </label>
+
+      <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="btn btn-secondary w-100" style="margin-top:10px">
+        {{ _("Apri la partita") }}
+      </a>
+    </article>
+    {% endfor %}
+  </div>
+
+  {# I tre esiti. Toccano anche chi le ha registrate e non si disfano: il
+     foglio col nome dell'azione (ADR-074). #}
+  <div class="c7-stack" style="gap:10px">
+    <button type="button" class="btn btn-success btn-lg w-100"
+            onclick='rivedi({{ RICONOSCI_TUTTE|tojson }}, {{ _("Riconoscere tutte le partite? Diventano confermate da entrambi.")|tojson }}, {{ _("Riconosci tutte")|tojson }}, "btn-success")'>
+      <i class="fas fa-check"></i>&nbsp;{{ _("Le riconosco tutte") }}
+    </button>
+    <button type="button" class="btn btn-secondary w-100"
+            onclick='rivedi({{ SCEGLI|tojson }}, {{ _("Contestare le partite spuntate e riconoscere le altre?")|tojson }}, {{ _("Conferma la scelta")|tojson }}, "btn-primary")'>
+      {{ _("Contesto solo quelle spuntate") }}
+    </button>
+    <button type="button" class="btn btn-outline-danger w-100"
+            onclick='rivedi({{ CONTESTA_TUTTE|tojson }}, {{ _("Contestare tutte le partite? Restano a chi le ha registrate e spariscono dalle tue.")|tojson }}, {{ _("Contesta tutte")|tojson }}, "btn-danger")'>
+      {{ _("Le contesto tutte") }}
+    </button>
+  </div>
+</form>
+<script>
+function rivedi(azione, domanda, comando, classe) {
+    const form = document.getElementById('reviewForm');
+    document.getElementById('reviewAction').value = azione;
+    confirmSubmit(form, domanda, {confirmText: comando, confirmClass: classe});
+}
+</script>
+{% else %}
+<div class="c7-empty">
+  <div class="c7-empty__ico"><i class="fas fa-check"></i></div>
+  <div class="c7-empty__title">{{ _("Nessuna partita da rivedere") }}</div>
+  <p class="c7-empty__text">{{ _("Le partite registrate contro di te prima che avessi un account sono tutte decise.") }}</p>
+  <div class="c7-empty__actions">
+    <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-secondary">
+      {{ _("Le mie sfide") }}
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

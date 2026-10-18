@@ -20,15 +20,19 @@ Un **direttore** (o l'admin) e un **istruttore** possono creare un giocatore che
 - **Gioca davvero**: le sue partite contano per classifiche ed ELO come quelle di chiunque. Non è un giocatore fittizio di una prova.
 - **Non riceve niente**: né notifiche, né proposte di sfida.
 - **Si sfida con l'avvio rapido**: chiunque giochi lo trova fra gli avversari dell'avvio rapido, col segno «non registrato». **Direttori e istruttori — non l'admin —** lo possono anche creare da lì, con nome e cognome; chi non ha uno di questi ruoli sceglie solo un giocatore non registrato che esiste già. La proposta di sfida a lui non si fa: non la potrebbe accettare, e la rivincita con lui è un avvio rapido.
-- **Non firma**: nella partita di altri due la sua conferma resta assente, quindi per lui la partita è *In attesa* (vedi «Livelli di certificazione»). Nella sfida contro di lui firma solo chi l'ha aperta — anche quando alla distanza vince il non registrato, la firma d'ufficio va a chi ha aperto la sfida —, e la sfida resta *In attesa* finché qualcuno non lo riscatta.
-- La sfida che aspetta la sua firma **non blocca** chi l'ha firmata: può aprire altre sfide, anche con lui, e può ritirarla. Non gli si mostra come una firma da sollecitare, ma come una sfida **in attesa del riscatto**.
-- Dopo il riscatto la sfida aspetta la firma di chi l'ha riscattato, che riceve l'avviso e la conferma o la rifiuta come un avversario qualunque; finché non lo fa, non apre altre sfide.
+- **Non firma**: nella partita di altri due la sua conferma resta assente, quindi per lui la partita è *In attesa* (vedi «Livelli di certificazione»).
+- **La sfida contro di lui si chiude da sola alla fine.** Quando arriva alla distanza — o, nel formato libero, quando chi l'ha aperta tocca «Termina la sfida» — la sfida è **conclusa con la sola firma di chi l'ha aperta**, anche se vince il non registrato: è **registrata da un solo giocatore**, e lo si legge così nella sua pagina, nell'elenco delle sfide e nel profilo. Non aspetta nessuna firma e non blocca nessuno.
+- La sfida registrata da uno ha il livello **In attesa**: sta nella vista *Tutte* e non in *Confermate*, perché a garantirla è uno solo, e muove l'ELO di *Tutte* e non quello globale (vedi «Livelli di certificazione»).
+- Chi l'ha registrata la può **ritirare** finché nessuno l'ha riconosciuta. Se il punteggio cambia — un triangolo tolto dal referto TPA ancora aperto — torna in corso, e si richiude alla firma successiva.
+- Dopo il riscatto, chi l'ha riscattato la **rivede** (vedi «La revisione delle partite»).
 - Accanto al suo nome, negli iscritti, nelle classifiche e nel profilo, c'è il segno **«non registrato»**.
 - Chi poi si registra lo **riscatta**: le partite passano al nuovo account con la conferma di chi l'ha creato, o dell'admin per i giocatori senza creatore.
 
 _Regola nuova del 2026-10-17, decisa dall'utente (ADR-085)._
 
 _Emendamento del 2026-10-18, deciso dall'utente («l'aggiunta dell'esterno deve essere possibile anche dai match singoli», ADR-085): fino a questa data il giocatore non registrato non era un avversario delle sfide individuali, e chi voleva segnare la propria partita contro di lui non aveva una strada._
+
+_Secondo emendamento del 2026-10-18, deciso dall'utente («quando un match con giocatore aggiunto finisce non deve aspettare la conferma da parte del giocatore aggiunto», ADR-085): fino a questa data la sfida contro un non registrato restava «in attesa del riscatto», e dopo il riscatto aspettava la firma di chi l'aveva riscattato, bloccandolo sulle sfide nuove._
 
 ##### Il riscatto
 
@@ -48,6 +52,21 @@ Chi si registra e si riconosce in un giocatore non registrato lo **riscatta**: c
 _Regola nuova del 2026-10-17, decisa dall'utente (ADR-086): conferma il creatore, l'amministratore per i giocatori senza creatore._
 
 _Emendamento del 2026-10-18, deciso dall'utente (ADR-086): la richiesta si ritira. Prima una richiesta sbagliata teneva fermo il giocatore finché chi decide non la rifiutava._
+
+##### La revisione delle partite
+
+Chi ha riscattato un giocatore non registrato può **rivedere** le partite che altri avevano registrato contro di lui.
+
+- Approvato il riscatto, riceve un invito — **uno solo**, nella sua lingua — a rivedere le partite. Se non ce n'è nessuna l'invito non parte.
+- Da rivedere sono le **sfide individuali registrate da un solo giocatore** contro il non registrato, e le **partite di altri due** in cui il non registrato era uno dei giocatori e che aspettano ancora la sua decisione. Le **partite di gara** restano fuori: le certifica il torneo.
+- Nella pagina della revisione sceglie fra tre esiti: **riconoscerle tutte**, **contestarle tutte**, o **contestare solo quelle spuntate** e riconoscere le altre. Le stesse due scelte, una partita per volta, stanno nella pagina di ciascuna sfida.
+- Una sfida **riconosciuta** diventa confermata da entrambi: livello *Confermata*, ELO globale.
+- Una sfida **contestata resta a chi l'ha registrata**, segnata «contestata»: nelle sue liste e nel suo profilo, al livello *In attesa*, e conta **solo nel calcolo più generale** — vista *Tutte* ed ELO di *Tutte*. Chi l'ha registrata riceve un avviso.
+- Per chi l'ha contestata la sfida **sparisce**: dalle sue liste, dal suo profilo e dalle sue statistiche. L'ELO di *Tutte* è una misura a coppie e la conta per tutti e due.
+- Nella **partita di altri due** valgono le regole già in vigore: riconoscere è **confermarla per sé**, contestare è **rifiutarla** — e un rifiuto basta, per tutti e due.
+- La revisione è **facoltativa e senza scadenza**, e **non blocca** niente: chi non la fa può giocare e proporre sfide. Le partite non rivedute restano come sono, *In attesa*. In «Le mie sfide» un avviso ricorda quante ne restano.
+
+_Regola nuova del 2026-10-18, decisa dall'utente: «se qualcuno riscatta l'utente, allora gli si può chiedere se vuole rivedere tutti i match passati ed eventualmente contestarne alcuni oppure riconoscerli tutti oppure contestarli tutti. I match contestati rimangono all'utente che li ha registrati come contestati e contribuiscono a ELO solo nel calcolo più generale» (ADR-086). Che la contestata sparisca per chi l'ha contestata, e che le non rivedute restino come sono senza scadenza, sono scelte di default prese nell'implementazione: la regola non lo diceva._
 
 ## Campionati
 
@@ -405,6 +424,8 @@ Un risultato vale quanto chi lo garantisce. Ogni partita ha un **livello di cert
 | Sfida confermata da entrambi i giocatori | **Confermata** | sì, se non è un pareggio |
 | Sfida chiusa con un forfait | **Confermata** — chi abbandona ammette la sconfitta | **no**, come il walkover nei tornei |
 | Sfida firmata da un solo giocatore, in attesa dell'altro | **In attesa** | sì, se non è un pareggio |
+| Sfida contro un non registrato, **registrata da un solo giocatore** (anche contestata, per chi l'ha registrata) | **In attesa** | sì, se non è un pareggio — anche contestata |
+| Sfida contestata, per chi l'ha **contestata** | nessuno | (l'ELO di *Tutte* è di coppia: la conta) |
 | Sfida senza firme, programmata, annullata o ritirata | nessuno | no |
 | Sfida di un terzo, per il giocatore che l'ha **confermata** | **Confermata** | solo se l'hanno confermata **entrambi** |
 | Sfida di un terzo, dichiarata, per il giocatore che non ha **ancora deciso** | **In attesa** | nella vista *Tutte* |

@@ -38,7 +38,15 @@ def match_list():
         matches = IndividualMatchService.get_user_matches(current_user.id)
         from flask import render_template
 
-        return render_template("individual_match/matches.html", matches=matches)
+        from models.individual_match.revisione import RevisioneService
+
+        return render_template(
+            "individual_match/matches.html",
+            matches=matches,
+            # Dopo un riscatto, le partite da riconoscere o contestare
+            # (2026-10-18): un avviso in cima, che non blocca niente.
+            da_rivedere=len(RevisioneService.da_rivedere(current_user.id)),
+        )
     except Exception as e:
         logger.error("Error loading matches: %s", e, exc_info=True)
         flash(_("Errore interno del server"), "danger")
@@ -61,11 +69,16 @@ def match_detail(match_id):
 
         # La partita di altri due rifiutata non si mostra più ai due
         # giocatori: la vede solo chi l'ha segnata (2026-10-18).
+        # Lo stesso per la sfida contestata, a chi l'ha contestata: resta a
+        # chi l'ha registrata (2026-10-18, ADR-086).
         if match.is_hidden_from(current_user.id):
-            flash(
-                _("Questa partita è stata rifiutata: non conta per nessuno dei due."),
-                "info",
-            )
+            if match.is_contested:
+                messaggio = _("Hai contestato questa sfida: non è più fra le tue.")
+            else:
+                messaggio = _(
+                    "Questa partita è stata rifiutata: non conta per nessuno dei due."
+                )
+            flash(messaggio, "info")
             return redirect(url_for("individual_match.dashboard"))
 
         from flask import render_template
@@ -81,9 +94,12 @@ def match_detail(match_id):
         # che si offre a partita ancora da cominciare. Le condizioni sono le
         # stesse meno lo stato — piu' lo sblocco, che il servizio non guarda
         # perche' il gate della gamification sta sull'apertura.
+        from .revisione import CONTESTA_TUTTE, RICONOSCI_TUTTE
+
         return render_template(
             "individual_match/match_detail.html",
             match=match,
+            revisione_azioni={"riconosci": RICONOSCI_TUTTE, "contesta": CONTESTA_TUTTE},
             tpa_can_open=TpaRefertoService.can_open(match, current_user.id),
             tpa_alla_partenza=(
                 TpaRefertoService.can_open_once_started(match, current_user.id)
@@ -428,7 +444,16 @@ def confirm_result(match_id):
                 }
             )
         else:
-            if fully_confirmed:
+            if match.is_recorded_by_one:
+                # Contro un non registrato la firma basta (2026-10-18).
+                flash(
+                    _(
+                        "Sfida registrata: il tuo avversario non è registrato, "
+                        "quindi è chiusa con la tua firma."
+                    ),
+                    "success",
+                )
+            elif fully_confirmed:
                 flash(_("Sfida completata con successo!"), "success")
             elif match.is_scored_by_third_party:
                 flash(_("Hai confermato la partita: per te conta."), "success")

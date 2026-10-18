@@ -188,6 +188,11 @@ class MatchLifecycleService:
             raise NotFoundError("Sfida non trovata")
 
         avversario_id = match.awaiting_confirmation_from_id
+        # La sfida registrata da uno (2026-10-18): l'avviso va a chi l'ha
+        # riscattato e la sta ancora rivedendo. Al non registrato no — non
+        # riceve niente —, e a chi l'ha contestata nemmeno: per lui non c'è più.
+        if match.awaits_review_from(match.opponent_of(user_id)):
+            avversario_id = match.opponent_of(user_id)
         match.withdraw_by_signer(user_id)
         if avversario_id is not None:
             avvisa_del_ritiro(match, ritirata_da=user_id, avversario_id=avversario_id)

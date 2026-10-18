@@ -161,10 +161,6 @@ class DashboardSectionBuilder:
             sfida
             for sfida in sfide_in_corso
             if not PendingConfirmationService.is_hidden_from_dashboard(sfida, now)
-            # Firmata, e in attesa di un giocatore non registrato: per chi
-            # l'ha firmata è chiusa, e l'altro non ha un account con cui
-            # firmare finché qualcuno non lo riscatta (ADR-085, 2026-10-18).
-            and not sfida.aspetta_il_riscatto
             # La partita di altri due resta finché la si segna o finché tocca a
             # te decidere; deciso il tuo, non è più un'attività (ADR-084).
             and (

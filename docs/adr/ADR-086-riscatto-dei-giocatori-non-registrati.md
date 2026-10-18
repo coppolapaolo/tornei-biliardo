@@ -181,6 +181,66 @@ giusta poteva chiederlo.
 - Test: `tests/new/integration/test_riscatto_giocatori.py::TestRitiro`,
   `test_specifiche_conformita.py::TestRiscattoDeiNonRegistrati`.
 
+## Emendamento 2026-10-18 (sera) — la revisione delle partite
+
+**Decisione dell'utente**: «se qualcuno riscatta l'utente, allora gli si può
+chiedere se vuole rivedere tutti i match passati ed eventualmente contestarne
+alcuni oppure riconoscerli tutti oppure contestarli tutti. I match contestati
+rimangono all'utente che li ha registrati come contestati e contribuiscono a
+ELO solo nel calcolo più generale.»
+
+- **L'invito.** `ClaimService.approve` chiama `_invita_a_rivedere`, che
+  sostituisce `_avvisa_delle_sfide_da_firmare`: **una** notifica
+  (`MATCH_RESULT_TO_CONFIRM`, link `/match/revisione`), composta nella lingua
+  di chi la riceve (ADR-062: titolo `lazy_gettext`, testo una funzione con
+  `ngettext`), e solo se c'è qualcosa da rivedere.
+- **Cosa si rivede** (`models/individual_match/revisione.py`,
+  `RevisioneService.da_rivedere`): le sfide *registrate da uno* in cui l'utente
+  è l'altro giocatore (`IndividualMatch.awaits_review_from`), e le partite di
+  altri due che aspettano la sua decisione. Le partite di gara no: le
+  certifica il torneo. Dopo l'unione non resta traccia di quali partite di
+  altri due venissero dal non registrato, quindi la pagina mostra tutte quelle
+  che aspettano la decisione dell'utente: per un utente appena registrato
+  sono le stesse.
+- **I tre esiti** sono una chiamata sola, `RevisioneService.rivedi(user_id,
+  rivedute, contestate)`: riconoscere tutte è `contestate` vuota, contestare
+  tutte è `contestate == rivedute`, la scelta è a metà. La route
+  `individual_match.review_matches` (`/match/revisione`, GET e POST, in
+  `ENDPOINT_ROLES` per giocatori e direttori) traduce i tre pulsanti; la
+  pagina di ogni sfida manda la stessa richiesta con una partita sola. I
+  pulsanti passano da `confirmSubmit` (ADR-074): toccano chi l'ha registrata e
+  non si disfano.
+- **Riconosciuta** (`recognize_by`): la seconda firma arrivata tardi.
+  `CONFIRMED_BY_BOTH`, livello *Confermata*, l'evento della doppia conferma
+  che muove l'ELO globale; vincitore e data restano quelli della partita, e
+  `recorded_by_id` resta scritto come storia.
+- **Contestata** (`contest_by`): `contested_at`, stato invariato. Per chi l'ha
+  registrata resta *In attesa* — vista *Tutte*, ``ELO_ALL`` — ed è segnata
+  «Contestata» nella pagina, nell'elenco e nel profilo; riceve l'avviso «Sfida
+  contestata» (`MATCH_CANCELLED`, nella sua lingua).
+- **Default scelto: per chi l'ha contestata sparisce.** La regola non lo
+  diceva; sparisce da liste, profilo, statistiche e pagina
+  (`is_hidden_from`, `livello_di_sfida_per`, `sfide_della_vista(…,
+  user_id=…)`, `IndividualMatch.non_contestate_da` nelle query delle
+  statistiche e delle attività). L'ELO di *Tutte* resta di coppia, come
+  dice l'ADR-083: la conta per tutti e due. È la scelta più semplice che
+  rispetta «contribuiscono a ELO solo nel calcolo più generale»; separare
+  l'ELO del solo registrante vorrebbe un motore a una gamba sola.
+- **Partita di altri due** (ADR-084): riconoscere è `confirm_as_player`,
+  contestare è `reject_as_player` con `avvisa_del_rifiuto` — le regole già in
+  vigore, compreso il rifiuto che basta per tutti e due.
+- **Default scelto: niente scadenza.** Le partite non rivedute restano come
+  sono, *In attesa*, e la revisione non blocca niente: `PendingConfirmationService`
+  guarda solo le sfide in corso. «Le mie sfide» mostra in cima quante ne
+  restano. Una scadenza che le riconoscesse da sola sarebbe una firma data a
+  nome di chi non l'ha data.
+- **Ritiro durante la revisione.** Chi l'ha registrata può ritirarla finché
+  non è riconosciuta; chi la stava rivedendo riceve l'avviso del ritiro.
+- Test: `tests/new/integration/test_revisione_dopo_il_riscatto.py`,
+  `test_specifiche_conformita.py::TestRevisioneDopoIlRiscatto`, l'e2e
+  `test_sfida_avversario_non_registrato_e2e.py` (UC14 di
+  `docs/usecases/sfide-e-certificazione.md`).
+
 ## Riferimenti
 
 - ADR-035 (onboarding), ADR-041 (richieste con destinatari), ADR-062

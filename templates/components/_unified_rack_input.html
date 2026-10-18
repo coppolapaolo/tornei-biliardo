@@ -190,7 +190,7 @@ Parametri:
         {% else %}
         <div class="c7-flash c7-flash--info">
             <span class="c7-flash__ico"><i class="fas fa-hourglass-half"></i></span>
-            <span class="c7-flash__body">{% if match.aspetta_il_riscatto is defined and match.aspetta_il_riscatto %}{{ _('Hai confermato. L\'avversario non è registrato: la sfida resta in attesa finché qualcuno non lo riscatta.') }}{% else %}{{ _('Hai confermato. Manca la conferma dell\'avversario.') }}{% endif %}</span>
+            <span class="c7-flash__body">{{ _('Hai confermato. Manca la conferma dell\'avversario.') }}</span>
         </div>
         {% endif %}
         {% endif %}

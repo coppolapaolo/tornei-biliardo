@@ -235,3 +235,62 @@ che sostituisce il test della regola vecchia;
 `tests/new/integration/test_avversario_non_registrato.py`;
 `tests/new/e2e/test_sfida_avversario_non_registrato_e2e.py`, UC13 di
 `docs/usecases/sfide-e-certificazione.md`.
+
+## Emendamento (2026-10-18, sera): la sfida contro di lui si chiude da sola
+
+**Decisione dell'utente.** «Quando un match con giocatore aggiunto finisce
+non deve aspettare la conferma da parte del giocatore aggiunto. Eventualmente,
+se qualcuno riscatta l'utente, allora gli si può chiedere se vuole rivedere
+tutti i match passati […]» (la seconda metà è l'emendamento dello stesso giorno
+all'ADR-086).
+
+Sostituisce le righe «Nessun blocco» e «Dopo il riscatto» dell'emendamento di
+mezzogiorno: la sfida non resta più «in attesa del riscatto», e dopo il
+riscatto non aspetta la firma di chi l'ha riscattato — che la bloccava sulle
+sfide nuove.
+
+- **Si chiude alla prima firma.** `IndividualMatch.confirm_result` è
+  ridefinito: se chi firma ha davanti un non registrato, in una sfida normale
+  ancora in corso, la sfida si chiude subito (`record_alone`). Passano di lì
+  tutte le firme — la firma d'ufficio alla distanza (`firma_d_ufficio`, che
+  resta e porta la firma a chi ha aperto la sfida anche quando vince il non
+  registrato), il referto TPA, «Termina la sfida» nel formato libero —, quindi
+  nessun chiamante va toccato.
+- **Come si rappresenta.** Stato `CLOSED_UNILATERALLY` — chiusa *senza* la
+  doppia conferma, che è proprio quel che il nome dice — più la colonna nuova
+  `individual_match.recorded_by_id`, chi l'ha registrata. La colonna è ciò che
+  la distingue dal forfait, che sta nello stesso stato. Vincitore dal
+  punteggio, `ended_at` all'ora della firma. In interfaccia è **«Registrata da
+  un solo giocatore»** (la pastiglia di stato, `StatusPresenter.match`),
+  **«Registrata da te»** (riquadro nella pagina, stato nell'elenco) e
+  **«Registrata da uno»** (riga del profilo, `MatchEntry.firma`).
+  Alternativa scartata: uno stato nuovo di `MatchStatus`. Non sarebbe stato fra
+  `finished_values()`, e ogni elenco di partite giocate — profilo, storico,
+  statistiche, attività in dashboard — avrebbe smesso di vederla.
+- **Livello e ELO** (ADR-083, emendamento dello stesso giorno): *In attesa*,
+  quindi vista *Tutte* e pool ``ELO_ALL``, come la sfida firmata da uno solo.
+  `sfida_conta_per_elo` la distingue dal forfait con `recorded_by_id`.
+- **Correggerla.** Chi l'ha registrata la **ritira** (`withdraw_by_signer`,
+  `can_withdraw`) finché nessuno l'ha riconosciuta, anche contestata. Se il
+  punteggio cambia — un triangolo tolto dal referto TPA ancora aperto — la
+  sfida torna in corso (`reset_confirmations` ridefinito) e si richiude alla
+  firma successiva: una sfida chiusa con un punteggio che nessuno ha
+  registrato non deve esistere.
+- **Niente blocco, niente avvisi.** Non aspetta nessuna firma
+  (`awaiting_confirmation_from_id` è `None` a partita chiusa), quindi
+  `PendingConfirmationService` non la vede. `aspetta_il_riscatto` è tolta, con
+  i testi «In attesa del riscatto».
+- **Dati già scritti.** `migrations/20261018_sfide_registrate_da_uno.py`
+  aggiunge `recorded_by_id` e `contested_at` e chiude le sfide normali ancora
+  `in_progress` firmate da uno solo e in attesa di un non registrato,
+  datandole alla firma. Le sfide di quella mezza giornata già riscattate non
+  si riconoscono più — il riscatto ha spostato la partita — e restano da
+  firmare come una sfida qualunque.
+
+**Presidi.** `test_specifiche_conformita.py::TestAvversarioNonRegistrato`
+(`test_alla_fine_si_chiude_con_la_firma_di_chi_l_ha_aperta`, che sostituisce
+`test_firma_solo_chi_ha_aperto_la_sfida`, e `test_il_forfait_resta_fuori_dall_elo`);
+`tests/new/integration/test_avversario_non_registrato.py::TestChiusuraSenzaLaSuaFirma`;
+`tests/new/unit/test_sfide_registrate_da_uno_migration.py`; l'e2e
+`test_sfida_avversario_non_registrato_e2e.py`, UC13 riscritto.
+

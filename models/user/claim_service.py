@@ -387,7 +387,7 @@ class ClaimService:
 
         ClaimService._risolvi_avvisi_ai_destinatari(richiesta)
         ClaimService._avvisa_chi_ha_chiesto(richiesta, approvata=True)
-        ClaimService._avvisa_delle_sfide_da_firmare(claimant_id)
+        ClaimService._invita_a_rivedere(claimant_id, richiesta)
         logger.info(
             "Riscatto %s: giocatore %s → account %s, confermato da %s",
             request_id,
@@ -583,24 +583,54 @@ class ClaimService:
         )
 
     @staticmethod
-    def _avvisa_delle_sfide_da_firmare(claimant_id: int) -> None:
-        """Le sfide che aspettavano la firma del non registrato, ora sue.
+    def _invita_a_rivedere(claimant_id: int, richiesta: ClaimRequest) -> None:
+        """L'invito a rivedere le partite del giocatore appena riscattato.
 
-        Un avversario non registrato non firma (ADR-085, emendamento del
-        2026-10-18): la sfida aperta contro di lui restava *In attesa*. Dopo
-        l'unione la firma che manca è quella di chi l'ha riscattato, e da qui
-        la sfida è come qualunque altra — lo blocca sulle sfide nuove finché
-        non la conferma o la rifiuta. L'avviso «Una sfida aspetta la tua
-        firma» non gli era mai arrivato: la notifica al non registrato non
-        nasce. Gli arriva adesso.
+        La sfida contro un non registrato si chiude con la firma di chi l'ha
+        giocata contro di lui (emendamento del 2026-10-18 all'ADR-085): è
+        *registrata da uno*, e conta solo fra «Tutte». Dopo l'unione quelle
+        partite sono di chi l'ha riscattato, che può riconoscerle tutte,
+        contestarle tutte o sceglierne alcune da contestare
+        (`RevisioneService`). Lo stesso vale per le partite di altri due in
+        cui il non registrato era uno dei giocatori: aspettano la sua
+        decisione.
+
+        La revisione è facoltativa e non blocca niente: l'invito è uno, e se
+        non c'è niente da rivedere non parte. Nella lingua di chi lo riceve
+        (ADR-062): il testo è una funzione, composta da lì.
         """
-        from models.individual_match.pending_confirmation import (
-            PendingConfirmationService,
-            avvisa_chi_deve_firmare,
-        )
+        from flask_babel import lazy_gettext as _l
+        from flask_babel import ngettext
 
-        for sfida in PendingConfirmationService.pending_for(claimant_id):
-            avvisa_chi_deve_firmare(sfida)
+        from models.individual_match.revisione import RevisioneService
+        from models.notification.models import NotificationPriority, NotificationType
+
+        quante = len(RevisioneService.da_rivedere(claimant_id))
+        if not quante:
+            return
+        giocatore = richiesta.nome_giocatore
+
+        def messaggio() -> str:
+            return ngettext(
+                "Una partita di %(giocatore)s registrata da un altro giocatore "
+                "ora è tua: riconoscila, o contestala se non torna. Finché non "
+                "lo fai conta solo fra «Tutte».",
+                "%(num)d partite di %(giocatore)s registrate da altri giocatori "
+                "ora sono tue: riconoscile tutte, o contesta quelle che non "
+                "tornano. Finché non lo fai contano solo fra «Tutte».",
+                quante,
+                giocatore=giocatore,
+            )
+
+        ClaimService._notifica(
+            [claimant_id],
+            notification_type=NotificationType.MATCH_RESULT_TO_CONFIRM,
+            title=_l("Rivedi le partite di %(giocatore)s", giocatore=giocatore),
+            message=messaggio,
+            priority=NotificationPriority.NORMAL,
+            action_url="/match/revisione",
+            action_text=_l("Rivedi le partite"),
+        )
 
     @staticmethod
     def _avvisa_chi_ha_chiesto(richiesta: ClaimRequest, approvata: bool) -> None:
