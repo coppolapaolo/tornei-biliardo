@@ -85,6 +85,12 @@ blocks:
       sera, invece, non gli si può mandare: con lui si gioca con l'avvio
       rapido.
 
+  - type: shot
+    shot: avvio-rapido-non-registrato
+
+  - type: shot
+    shot: sfida-in-attesa-riscatto
+
   - type: heading
     id: proporre
     title: "Proporre una partita"
@@ -187,6 +193,9 @@ blocks:
       ha **Rifiuto il risultato**. Quando avete firmato tutti e due, la sfida
       non si ritira più. Le sfide in attesa le trovi nella pagina Sfide, nella
       sezione **In attesa di conferma**.
+
+  - type: shot
+    shot: sfida-ritira
 
   - type: heading
     id: chi-apre

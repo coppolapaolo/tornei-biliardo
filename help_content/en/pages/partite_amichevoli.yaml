@@ -85,6 +85,12 @@ blocks:
       A proposal for another evening cannot be sent to them, though: with
       them you play through the quick start.
 
+  - type: shot
+    shot: avvio-rapido-non-registrato
+
+  - type: shot
+    shot: sfida-in-attesa-riscatto
+
   - type: heading
     id: proporre
     title: "Proposing a match"
@@ -189,6 +195,9 @@ blocks:
       still has to sign has **I reject the result**. Once you have both
       signed, the match can no longer be withdrawn. Matches waiting for a
       signature are in the Matches page, under **Awaiting confirmation**.
+
+  - type: shot
+    shot: sfida-ritira
 
   - type: heading
     id: chi-apre

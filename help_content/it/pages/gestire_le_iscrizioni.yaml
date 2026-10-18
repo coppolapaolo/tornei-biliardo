@@ -92,6 +92,9 @@ blocks:
           **Chiudi iscrizioni** blocca l'elenco senza aspettare la scadenza.
           Utile quando il gruppo è completo e volete cominciare.
 
+  - type: shot
+    shot: gara-iscrivi-non-registrato
+
   - type: heading
     id: lista_attesa
     title: "La lista d'attesa"
@@ -193,6 +196,9 @@ blocks:
           l'ELO del giocatore passano al suo account, e non si torna indietro.
           **Non è lui: rifiuta**: il giocatore resta com'era, e qualcun altro
           potrà chiederlo.
+
+  - type: shot
+    shot: riscatto-richiesta
 
   - type: text
     text: >-

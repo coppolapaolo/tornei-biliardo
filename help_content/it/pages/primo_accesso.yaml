@@ -176,6 +176,9 @@ blocks:
           Ti arriva una notifica con l'esito. Se è confermato, iscrizioni,
           partite, classifiche ed ELO di quel giocatore sono tuoi.
 
+  - type: shot
+    shot: riscatto-giocatore
+
   - type: note
     tone: info
     title: "Ti sei sbagliato? Ritira la richiesta"
@@ -185,6 +188,9 @@ blocks:
       Chi doveva decidere riceve un avviso e non trova più niente da fare, e
       il giocatore torna libero: tu o qualcun altro potete chiederlo di nuovo.
       Una richiesta già confermata o rifiutata non si ritira più.
+
+  - type: shot
+    shot: riscatto-ritira
 
   - type: note
     tone: tip

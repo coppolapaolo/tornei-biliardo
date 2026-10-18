@@ -95,6 +95,9 @@ blocks:
           **Close registrations** locks the list without waiting for the
           deadline. Useful when the group is complete and you want to begin.
 
+  - type: shot
+    shot: gara-iscrivi-non-registrato
+
   - type: heading
     id: lista_attesa
     title: "The waitlist"
@@ -196,6 +199,9 @@ blocks:
           **Confirm the claim**: the player's registrations, matches, standings
           and ELO move to their account, and this can't be undone. **Not them:
           reject**: the player stays as it was, and someone else can claim it.
+
+  - type: shot
+    shot: riscatto-richiesta
 
   - type: text
     text: >-
