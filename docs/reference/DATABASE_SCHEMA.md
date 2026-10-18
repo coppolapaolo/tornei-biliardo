@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-10-18 18:41 UTC
+> Last updated: 2026-10-18 20:00 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -1947,6 +1947,23 @@
 - `decided_by_id` → `user.id` (ON DELETE NO ACTION)
 - `placeholder_id` → `user.id` (ON DELETE NO ACTION)
 
+### claim_request_match
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `request_id` | INTEGER | NO | FK→claim_request.id |  |  |
+| `individual_match_id` | INTEGER | NO | FK→individual_match.id |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Constraints:**
+- UNIQUE(request_id, individual_match_id)
+
+**Foreign Keys:**
+- `individual_match_id` → `individual_match.id` (ON DELETE CASCADE)
+- `request_id` → `claim_request.id` (ON DELETE NO ACTION)
+
 ### claim_request_recipient
 
 | Column | Type | Nullable | Key | Default | Description |
@@ -2615,5 +2632,5 @@
 
 ## Summary
 
-- **Total tables**: 108
+- **Total tables**: 109
 - **Domains**: 13

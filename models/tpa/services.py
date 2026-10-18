@@ -235,6 +235,12 @@ class TpaRefertoService:
             )
         if referto.is_closed:
             raise ConflictError(_("Il referto e' chiuso."))
+        # Un referto rimasto aperto su una sfida conclusa — nel formato libero
+        # si chiude a mano, e i due possono firmare prima — non riscrive più
+        # niente: annullare toglierebbe un triangolo a una sfida confermata
+        # (2026-10-18).
+        if referto.match is not None:
+            referto.match.ensure_score_can_change()
 
     @staticmethod
     @transactional(domain="tpa")
@@ -314,12 +320,9 @@ class TpaRefertoService:
             return False
         if not referto.is_closed or not referto.comandi or match is None:
             return False
-        registrata_da_uno_aperta = match.is_recorded_by_one and (
-            match.is_placeholder_player(match.opponent_of(match.recorded_by_id))
-        )
-        if match.is_rejected or (
-            match.status != MatchStatus.IN_PROGRESS and not registrata_da_uno_aperta
-        ):
+        # Conclusa — confermata da entrambi, riscattata, rifiutata — non si
+        # riapre: la stessa domanda del segnapunti (`score_can_change`).
+        if not match.score_can_change:
             return False
         return TpaRefertoService.distanza_raggiunta(match)
 
@@ -364,6 +367,19 @@ class TpaRefertoService:
         # rendere definitivo.
         if TpaRefertoService.can_undo_closing(referto, user_id):
             referto.closed_at = None
+            # La richiesta «conferma il risultato» partita alla chiusura non
+            # vale più: la partita è di nuovo in corso, e alla prossima
+            # chiusura ne parte una nuova (2026-10-18). Il triangolo tolto la
+            # ritira già, da `reset_confirmations`; qui vale anche per una
+            # riapertura che il punteggio non lo muove.
+            from models.individual_match.pending_confirmation import (
+                ritira_gli_avvisi_in_sospeso,
+            )
+            from models.notification.models import NotificationType
+
+            ritira_gli_avvisi_in_sospeso(
+                referto.match, tipi=(NotificationType.MATCH_RESULT_TO_CONFIRM,)
+            )
         TpaRefertoService._require_compiler(referto, user_id)
 
         comandi: List[TpaComando] = list(referto.comandi)
@@ -550,6 +566,7 @@ class TpaRefertoService:
             viewer_id is not None
             and viewer_id == referto.compiler_id
             and not referto.is_closed
+            and (match is None or match.score_can_change)
         )
         payload["compiler_id"] = referto.compiler_id
         payload["scorer_name"] = (

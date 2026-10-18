@@ -127,6 +127,13 @@ Actual match created when proposal is accepted.
 - `is_ready_for_validation()` - True when distance reached
 - `confirm_result(user_id)` - Confirm result (returns True if both confirmed)
 - `reject_result(user_id)` - Undo last rack, reset confirmations
+- `score_can_change` / `ensure_score_can_change()` - il punteggio si tocca
+  solo a sfida in corso, o registrata da uno contro un non registrato ancora
+  da riscattare; conclusa → `ConflictError` (2026-10-18). Lo chiedono
+  segnapunti, referto TPA e `match_scoring_state` (`board.can_undo`)
+- `reset_confirmations()` - azzera le firme **e ritira** gli avvisi
+  `MATCH_RESULT_TO_CONFIRM` ancora da leggere (`ritira_gli_avvisi_in_sospeso`
+  con `tipi=`): ogni strada che azzera passa di qui
 
 ### IndividualRack
 Single rack result within a match.
@@ -210,8 +217,11 @@ senza accettazione.
 Dopo il riscatto, chi l'ha riscattato rivede le partite registrate contro il
 non registrato. `ClaimService.approve` manda **un** invito (`/match/revisione`).
 
-- `da_rivedere(user_id)` - sfide `awaits_review_from(user_id)` e partite di
-  altri due che aspettano la sua decisione; mai le partite di gara
+- `da_rivedere(user_id, richiesta_id=None)` - sfide `awaits_review_from(user_id)`
+  e partite di altri due che aspettano la sua decisione **e** che erano del
+  non registrato: `ClaimService.approve` le annota prima dell'unione in
+  `ClaimRequestMatch` (`riscattate`). Senza traccia (riscatti prima del
+  2026-10-18 notte) solo le registrate da uno; mai le partite di gara
 - `rivedi(user_id, rivedute, contestate)` - i tre esiti in una chiamata.
   Sfida normale: `recognize_by` (→ `CONFIRMED_BY_BOTH` + evento ELO globale)
   o `contest_by` (`contested_at`: resta al registrante, *In attesa*, sparisce
@@ -244,7 +254,7 @@ Vedi `docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md`.
 | Direct invitation | MATCH_PROPOSAL | Invited player |
 | Proposal accepted | MATCH_ACCEPTED | Proposer |
 | Avvio rapido: partita aperta con te | MATCH_ACCEPTED | Avversario |
-| Prima firma del risultato | MATCH_RESULT_TO_CONFIRM | Chi deve ancora firmare (una sola finché non la legge) |
+| Prima firma del risultato | MATCH_RESULT_TO_CONFIRM | Chi deve ancora firmare (una sola finché non la legge; **scade** quando le firme si azzerano, 2026-10-18) |
 | Sfida ritirata da chi l'aveva firmata | MATCH_CANCELLED | Avversario |
 | Partita di altri due creata | MATCH_ACCEPTED | I due giocatori, con la descrizione |
 | Referto della partita di altri due chiuso | MATCH_RESULT_TO_CONFIRM | Ciascuno dei due che non ha ancora deciso |

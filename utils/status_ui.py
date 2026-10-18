@@ -325,7 +325,8 @@ def match_scoring_state(match: Any, user: Any) -> Dict[str, Any]:
     ``you_confirmed``          il lettore ha già confermato il risultato
     ``opponent_confirmed``     l'avversario ha già confermato
     ``awaiting_you``           tocca al lettore accettare o rifiutare
-    ``closed_by_players``      chiusa con la doppia conferma (reversibile)
+    ``closed_by_players``      chiusa con la doppia conferma
+    ``can_undo``               si può togliere l'ultimo triangolo
     ``finished``               in uno dei due stati finali
     ``winner_id``              vincitore, se determinato dal punteggio
     ``is_player``              il lettore è uno dei due giocatori
@@ -384,9 +385,19 @@ def match_scoring_state(match: Any, user: Any) -> Dict[str, Any]:
         elif p2 > p1:
             winner_id = getattr(match, "player2_id", None)
 
+    # Tornare indietro: nelle partite di gara anche dalla doppia conferma, che
+    # `ScoringService` riapre; la sfida individuale invece lo dice da sé, e
+    # confermata da entrambi è conclusa (2026-10-18, `score_can_change`).
+    score_can_change = getattr(match, "score_can_change", None)
+    if score_can_change is None:
+        can_undo = in_progress or closed_by_players
+    else:
+        can_undo = bool(score_can_change)
+
     return {
         "in_progress": in_progress,
         "at_distance": at_distance,
+        "can_undo": can_undo,
         "can_add": can_add,
         "you_confirmed": you_confirmed,
         "opponent_confirmed": opponent_confirmed,

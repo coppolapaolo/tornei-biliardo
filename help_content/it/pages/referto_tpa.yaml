@@ -349,7 +349,9 @@ blocks:
       finita. Sul referto chiuso trovi **Annulla l'ultima e riapri il
       referto**: l'ultimo tocco sparisce, il triangolo torna indietro e
       riprendi ad annotare. Si può finché la partita non è stata confermata
-      da tutti e due.
+      da tutti e due. La richiesta di conferma già arrivata all'avversario
+      sparisce dalle sue notifiche: alla nuova chiusura ne riceve una col
+      punteggio giusto.
 
   - type: text
     text: >-

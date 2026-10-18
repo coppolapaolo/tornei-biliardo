@@ -121,6 +121,9 @@ blocks:
       recognise it** and **I dispute it**. If the match was kept by an
       instructor for you and another player, recognising it means confirming
       it and disputing it means rejecting it, as always for those matches.
+      Only the matches that belonged to the unregistered player show up here:
+      the ones you were already playing with your account you confirm or
+      reject from their own page, as always.
 
   - type: note
     tone: tip
@@ -235,7 +238,9 @@ blocks:
       match is cancelled, no longer counts for either of you, and your
       opponent is notified. Only the player who signed can do it: the one who
       still has to sign has **I reject the result**. Once you have both
-      signed, the match can no longer be withdrawn. Matches waiting for a
+      signed, the match is over: it can no longer be withdrawn, and its score
+      can no longer be changed, neither from the scoreboard nor from the TPA
+      scoresheet. Matches waiting for a
       signature are in the Matches page, under **Awaiting confirmation**.
 
   - type: shot

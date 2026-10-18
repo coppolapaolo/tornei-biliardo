@@ -211,6 +211,26 @@ e non ha livello per chi l'ha contestata (`livello_di_sfida_per`,
 `sfide_della_vista(…, user_id=…)`). Senza persona — l'ELO — resta *In attesa*:
 contestata, conta solo nel calcolo più generale, come vuole la regola.
 
+## Emendamento (2026-10-18, notte): la sfida confermata non si tocca più
+
+Difetto trovato dall'utente: togliere un triangolo da una sfida
+`CONFIRMED_BY_BOTH` — dal segnapunti, o annullando da un referto TPA rimasto
+aperto — azzerava le firme e lasciava lo stato confermato. Il livello diceva
+*Confermata* e l'ELO globale contava un punteggio che non c'era più.
+
+La specifica non prevede correzioni dopo la doppia firma: nemmeno il ritiro
+(«Dopo la conferma di entrambi la sfida non si ritira più»), e la PR #703 lo
+aveva scritto come «dopo la doppia firma nessuno». Quindi la correzione è
+**impedita**, non resa possibile: una domanda sola,
+`IndividualMatch.score_can_change`, vera a sfida in corso o registrata da uno
+contro un non registrato ancora da riscattare; `ensure_score_can_change`
+solleva `ConflictError`. La chiedono `IndividualRackService` (aggiungere e
+togliere), `TpaRefertoService._require_compiler` (tocco, annulla, cancella,
+riparti), `can_undo_closing`, e le due viste del segnapunti (`board.can_undo`,
+`match_scoring_state`), che non mostrano più il pulsante. Le partite di gara
+non cambiano: lì la doppia conferma si riapre, e il rating si disfa
+(`ScoringService.remove_rack_for_player`).
+
 ## Riferimenti
 
 - Casi d'uso: `docs/usecases/sfide-e-certificazione.md` (UC4–UC9)

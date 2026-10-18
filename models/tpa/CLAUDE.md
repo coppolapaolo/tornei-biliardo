@@ -53,6 +53,9 @@ state = TpaRefertoService.press(referto.id, user_id, "end")   # passa il tavolo
 TpaRefertoService.undo(referto.id, user_id)     # «Annulla l'ultima», o il tocco sulla casella;
                                                 # sul referto chiuso alla distanza lo riapre
 TpaRefertoService.can_undo_closing(referto, user_id)  # ...finche' la partita non e' conclusa
+# A sfida conclusa (`match.score_can_change` falso) il referto, anche se
+# aperto, non si riscrive: `_require_compiler` solleva ConflictError, e
+# riaprendo scadono le richieste di conferma gia' partite (2026-10-18).
 TpaRefertoService.distanza_raggiunta(match)     # dal VO Distance: «al N» o «esattamente N»
 TpaRefertoService.clear_turn(referto.id, user_id)  # «cancella»: via l'annotazione del turno in corso
 TpaRefertoService.restart_from_turn(referto.id, user_id, rack, turn)  # «riparti da questo turno…»

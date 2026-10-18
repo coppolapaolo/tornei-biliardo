@@ -379,3 +379,102 @@ class TestNonBlocca:
         _marco, luca, (match_id,) = _scenario(1)
         _post(_client_for(app, luca), f"/match/matches/{match_id}/withdraw")
         assert db.session.get(IndividualMatch, match_id).is_recorded_by_one
+
+
+@pytest.mark.integration
+class TestSoloLePartiteRiscattate:
+    """La revisione mostra solo le partite che erano del non registrato
+    (emendamento del 2026-10-18 sera all'ADR-086).
+
+    Fino a questa data compariva ogni partita di altri due che aspettava una
+    decisione di chi aveva riscattato, anche quelle in cui era un giocatore
+    dall'inizio: dopo l'unione non restava traccia di quali fossero di Gino.
+    Ora `ClaimService.approve` lo annota prima dell'unione.
+    """
+
+    @staticmethod
+    def _istruttore():
+        admin = _user(UserRole.ADMIN.value)
+        istruttore = _user()
+        RoleGrantService.grant(istruttore.id, GrantableRole.INSTRUCTOR, admin)
+        db.session.commit()
+        return istruttore
+
+    @staticmethod
+    def _dichiarata(istruttore, player1_id, player2_id) -> int:
+        match = ScoredMatchService.start(
+            istruttore,
+            player1_id,
+            player2_id,
+            {"discipline": Discipline.NINE_BALL.value, "distance": 3},
+        )
+        referto = TpaRefertoService.get_for_match(match.id)
+        for _ in range(3):
+            for comando in ("seat:1", "1", "9", "end"):
+                TpaRefertoService.press(referto.id, istruttore.id, comando)
+        TpaRefertoService.close(referto.id, istruttore.id)
+        db.session.commit()
+        return match.id
+
+    def _scenario(self):
+        """Luca, già registrato, ha una partita sua segnata da un istruttore
+        e ancora da decidere; poi riscatta Gino, che ne aveva una sua e una
+        sfida registrata da Marco."""
+        istruttore = self._istruttore()
+        marco = _user(UserRole.DIRECTOR.value)
+        anna, luca = _user(), _user()
+        gino = _placeholder(istruttore)
+        sua = self._dichiarata(istruttore, luca.id, anna.id)
+        di_gino = self._dichiarata(istruttore, anna.id, gino.id)
+        registrata = _registrata(marco, gino).id
+
+        richiesta = ClaimService.richiedi(gino.id, luca)
+        db.session.commit()
+        ClaimService.approve(richiesta.id, istruttore)
+        db.session.commit()
+        return luca, richiesta.id, sua, di_gino, registrata
+
+    def test_la_partita_che_era_gia_sua_non_si_rivede(self, app):
+        luca, _richiesta, sua, di_gino, registrata = self._scenario()
+
+        da_rivedere = {m.id for m in RevisioneService.da_rivedere(luca.id)}
+        assert da_rivedere == {di_gino, registrata}
+        # Resta da decidere, dalla sua pagina, come sempre.
+        assert db.session.get(IndividualMatch, sua).awaits_decision_from(luca.id)
+
+        pagina = _get(_client_for(app, luca), "/match/revisione").get_data(as_text=True)
+        assert f'name="partite" value="{di_gino}"' in pagina
+        assert f'name="partite" value="{sua}"' not in pagina
+
+    def test_la_traccia_si_scrive_prima_dell_unione(self):
+        from models.user.claim_request import ClaimRequestMatch
+
+        _luca, richiesta_id, sua, di_gino, registrata = self._scenario()
+
+        annotate = {
+            riga.individual_match_id
+            for riga in ClaimRequestMatch.query.filter_by(request_id=richiesta_id)
+        }
+        assert annotate == {di_gino, registrata}
+        assert sua not in annotate
+
+    def test_l_invito_conta_solo_le_partite_del_riscatto(self):
+        luca, _richiesta, _sua, _di_gino, _registrata = self._scenario()
+
+        (invito,) = Notification.query.filter_by(
+            user_id=luca.id, action_url="/match/revisione"
+        ).all()
+        assert "2 partite" in invito.message
+
+    def test_riscatto_senza_traccia_valgono_le_registrate_da_uno(self):
+        """I riscatti approvati prima della traccia: le partite di altri due
+        non si sa più di chi fossero, quindi non compaiono; le registrate da
+        uno vengono per forza da un non registrato, e restano."""
+        from models.user.claim_request import ClaimRequestMatch
+
+        luca, richiesta_id, _sua, di_gino, registrata = self._scenario()
+        ClaimRequestMatch.query.filter_by(request_id=richiesta_id).delete()
+        db.session.commit()
+
+        assert {m.id for m in RevisioneService.da_rivedere(luca.id)} == {registrata}
+        assert db.session.get(IndividualMatch, di_gino).awaits_decision_from(luca.id)

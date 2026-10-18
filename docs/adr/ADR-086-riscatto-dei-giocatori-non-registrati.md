@@ -201,7 +201,8 @@ ELO solo nel calcolo più generale.»
   certifica il torneo. Dopo l'unione non resta traccia di quali partite di
   altri due venissero dal non registrato, quindi la pagina mostra tutte quelle
   che aspettano la decisione dell'utente: per un utente appena registrato
-  sono le stesse.
+  sono le stesse. _(Superato dall'emendamento della notte: ora la traccia si
+  scrive all'approvazione.)_
 - **I tre esiti** sono una chiamata sola, `RevisioneService.rivedi(user_id,
   rivedute, contestate)`: riconoscere tutte è `contestate` vuota, contestare
   tutte è `contestate == rivedute`, la scelta è a metà. La route
@@ -240,6 +241,45 @@ ELO solo nel calcolo più generale.»
   `test_specifiche_conformita.py::TestRevisioneDopoIlRiscatto`, l'e2e
   `test_sfida_avversario_non_registrato_e2e.py` (UC14 di
   `docs/usecases/sfide-e-certificazione.md`).
+
+## Emendamento 2026-10-18 (notte) — quali partite erano del non registrato
+
+**Difetto trovato dall'utente**: la pagina della revisione mostrava tutte le
+partite di altri due che aspettavano una decisione di chi aveva riscattato,
+non solo quelle che erano del giocatore riscattato. Dopo l'unione non restava
+traccia di quali fossero: l'emendamento della sera lo aveva messo in conto
+(«per un utente appena registrato sono le stesse»), ma chi riscatta può
+essere registrato da tempo, e avere partite sue segnate da un istruttore.
+
+- **La traccia.** Tabella nuova `claim_request_match` (`ClaimRequestMatch`:
+  `request_id`, `individual_match_id`, unicità sulla coppia, `created_at` e
+  `updated_at` di `BaseModel`), migration
+  `migrations/20261018_partite_del_riscatto.py`. `ClaimService.approve` la
+  scrive con `_annota_le_partite` **prima** di `UserMergeService`: le sfide
+  *registrate da uno* contro il giocatore e le partite di altri due in cui
+  era un giocatore, in qualunque stato. È la storia di cosa ha portato il
+  riscatto; che una vada ancora rivista lo dice la sfida.
+- **Scartata la colonna sulla sfida** (`riscattata_con_richiesta_id`): una
+  partita di altri due fra **due** non registrati, riscattati da due persone,
+  ne vorrebbe due, e la seconda approvazione cancellerebbe la prima.
+- **La revisione** (`RevisioneService.da_rivedere`): le partite di altri due
+  compaiono solo se sono annotate sotto un riscatto approvato dell'utente
+  (`RevisioneService.riscattate`). Le registrate da uno restano tutte quelle
+  che aspettano la sua revisione: si chiudono così solo contro un non
+  registrato, quindi per un utente registrato vengono per forza da un
+  riscatto o da un'unione dell'admin. Con `richiesta_id` la domanda è
+  ristretta a un riscatto: è quella dell'invito, che conta le partite di quel
+  giocatore e non di eventuali riscatti precedenti.
+- **Default scelto per i riscatti approvati prima di questa correzione**: la
+  traccia non si ricostruisce, perché l'unione ha già spostato le partite.
+  Valgono le sole sfide registrate da uno; le partite di altri due non
+  compaiono più nella revisione e si decidono dalla pagina di ciascuna, con
+  conferma e rifiuto, come ogni partita di un terzo. È la scelta sicura: una
+  partita di altri due mostrata per sbaglio si poteva rifiutare in blocco con
+  «contesta tutte», e un rifiuto basta per tutti e due.
+- Test: `tests/new/integration/test_revisione_dopo_il_riscatto.py::TestSoloLePartiteRiscattate`,
+  `test_specifiche_conformita.py::TestRevisioneSoloDellePartiteRiscattate`,
+  `tests/new/unit/test_migration_partite_del_riscatto.py`.
 
 ## Riferimenti
 

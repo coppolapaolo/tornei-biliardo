@@ -191,6 +191,13 @@ _Regola del 2026-10-17, decisa dall'utente (`SPECIFICHE.md`, nota datata)._
   la sfida»: per lui ci sono conferma e rifiuto)_
 - _(variante: Pietro firma prima che Paolo la ritiri → la sfida è
   confermata da entrambi e non si ritira più)_
+- _(variante: a sfida confermata da entrambi Paolo cerca di togliere
+  l'ultimo triangolo, dal segnapunti o dal referto TPA → il pulsante non c'è,
+  e il server rifiuta: la sfida è conclusa, 2026-10-18)_
+- _(variante: Paolo tiene il referto, l'ultimo tocco porta alla distanza per
+  sbaglio e Pietro riceve «Una sfida aspetta la tua firma»; Paolo annulla e
+  il referto si riapre → la notifica di Pietro scade, e alla nuova chiusura
+  ne riceve una col punteggio giusto)_
 - _(variante: una sfida senza firme, con dei triangoli segnati → non si
   ritira: i due la stanno ancora giocando)_
 
@@ -342,5 +349,9 @@ tutti».
   istruttrice, aveva segnato per lui e Paolo → compare fra quelle da
   rivedere; riconoscerla è confermarla per sé, contestarla è rifiutarla, e il
   rifiuto la toglie a tutti e due, come in UC12)_
+- _(variante: a riscattare Gino è Luca, registrato da tempo, che ha una
+  partita sua con Anna segnata da Lucia e ancora da confermare → non compare
+  fra quelle da rivedere: non era del giocatore riscattato, e Luca la decide
+  dalla sua pagina, 2026-10-18)_
 - _(variante: una partita di gara contro Gino → non si rivede: la certifica
   il torneo)_

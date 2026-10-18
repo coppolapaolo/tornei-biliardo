@@ -27,7 +27,7 @@ blocks:
       - name: "Il tuo avversario del turno"
         text: "Appena il direttore avvia un turno, ricevi il nome di chi affronterai e il tavolo assegnato."
       - name: "Risultati da confermare"
-        text: "Quando una partita richiede la tua conferma prima di diventare definitiva. Per le sfide a due arriva alla prima firma dell'avversario, e ti arriva un avviso anche se la ritira."
+        text: "Quando una partita richiede la tua conferma prima di diventare definitiva. Per le sfide a due arriva alla prima firma dell'avversario, e ti arriva un avviso anche se la ritira. Se il punteggio cambia prima che tu firmi, la richiesta vecchia sparisce e ne arriva una nuova."
       - name: "Proposte di partita"
         text: "Quando qualcuno ti propone un'amichevole, e quando risponde a una tua proposta."
       - name: "Movimenti nelle iscrizioni"

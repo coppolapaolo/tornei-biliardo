@@ -121,7 +121,9 @@ blocks:
       con **La riconosco** e **La contesto**. Se la partita l'aveva segnata un
       istruttore per te e un altro giocatore, riconoscerla vuol dire
       confermarla e contestarla vuol dire rifiutarla, come sempre in quelle
-      partite.
+      partite. Qui compaiono solo le partite che erano del giocatore non
+      registrato: quelle che giocavi già col tuo account le confermi o le
+      rifiuti dalla loro pagina, come sempre.
 
   - type: note
     tone: tip
@@ -233,7 +235,8 @@ blocks:
       sfida è annullata, non conta più per nessuno dei due, e l'avversario
       riceve un avviso. Può farlo solo chi ha firmato: chi deve ancora firmare
       ha **Rifiuto il risultato**. Quando avete firmato tutti e due, la sfida
-      non si ritira più. Le sfide in attesa le trovi nella pagina Sfide, nella
+      è conclusa: non si ritira più, e il punteggio non si cambia più, né dal
+      segnapunti né dal referto TPA. Le sfide in attesa le trovi nella pagina Sfide, nella
       sezione **In attesa di conferma**.
 
   - type: shot

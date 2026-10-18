@@ -36,7 +36,7 @@ quello del rifiuto all'altro giocatore e a chi l'ha segnata (2026-10-18).
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Any, Iterable, List, Optional
 
 from flask_babel import ngettext
 from sqlalchemy import and_, or_
@@ -147,8 +147,10 @@ def avvisa_chi_deve_firmare(match: IndividualMatch) -> None:
     in tre posti — la conferma, la firma d'ufficio alla distanza, il referto
     TPA — e ognuno chiama questa funzione dopo ``confirm_result``.
 
-    Un avviso ancora da leggere basta: un rifiuto seguito da una nuova firma,
-    o un triangolo tolto e rimesso, non ne accumulano altri.
+    Un avviso ancora da leggere basta, e ce n'è sempre uno solo: quando le
+    firme si azzerano — un rifiuto, un triangolo tolto, il referto riaperto —
+    quello vecchio scade (`IndividualMatch.reset_confirmations`), e alla firma
+    successiva ne parte uno col punteggio nuovo (2026-10-18).
 
     Nella partita di altri due la chiama la chiusura del referto, e scrive a
     **entrambi** i giocatori (ADR-084).
@@ -286,7 +288,9 @@ def avvisa_annullata_da_chi_segna(match: IndividualMatch) -> None:
         )
 
 
-def ritira_gli_avvisi_in_sospeso(match: IndividualMatch) -> None:
+def ritira_gli_avvisi_in_sospeso(
+    match: IndividualMatch, tipi: Optional[Iterable[Any]] = None
+) -> None:
     """Gli avvisi ancora da leggere che portano a questa partita scadono.
 
     Dopo il rifiuto della partita di altri due nessuno dei due ha più niente
@@ -295,6 +299,11 @@ def ritira_gli_avvisi_in_sospeso(match: IndividualMatch) -> None:
     mostra più. Scaduti e non cancellati: la storia delle notifiche resta
     com'era. Toglierli serve anche alla correzione: `_gia_avvisato` non
     salterebbe la richiesta nuova.
+
+    ``tipi`` restringe i tipi che scadono. Quando le firme si azzerano
+    (`IndividualMatch.reset_confirmations`, 2026-10-18) scadono solo le
+    richieste «conferma il risultato»: la partita è di nuovo in corso, e
+    l'avviso che la annuncia resta vero.
     """
     from models.notification.models import (
         Notification,
@@ -302,12 +311,15 @@ def ritira_gli_avvisi_in_sospeso(match: IndividualMatch) -> None:
         NotificationType,
     )
 
+    if tipi is None:
+        tipi = (
+            NotificationType.MATCH_RESULT_TO_CONFIRM,
+            NotificationType.MATCH_ACCEPTED,
+        )
     link = pagina_della_sfida(match)
     for avviso in Notification.query.filter(
         Notification.user_id.in_([match.player1_id, match.player2_id]),
-        Notification.notification_type.in_(  # type: ignore[attr-defined]
-            [NotificationType.MATCH_RESULT_TO_CONFIRM, NotificationType.MATCH_ACCEPTED]
-        ),
+        Notification.notification_type.in_(list(tipi)),  # type: ignore[attr-defined]
         Notification.action_url == link,
         Notification.status.in_(  # type: ignore[attr-defined]
             [NotificationStatus.PENDING, NotificationStatus.SENT]
