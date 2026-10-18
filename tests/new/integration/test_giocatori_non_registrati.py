@@ -19,11 +19,7 @@ from flask import g
 from models import User, db
 from models.base import utc_now
 from models.competition.models import Gara, Inscription
-from models.exceptions import (
-    ConflictError,
-    PermissionDeniedError,
-    ValidationError,
-)
+from models.exceptions import PermissionDeniedError, ValidationError
 from models.notification.models import Notification, NotificationType
 from models.notification.services import NotificationService
 from models.status_enum import Discipline, GaraStatus, MatchStatus
@@ -238,13 +234,19 @@ class TestCosaNonRiceve:
                 scheduled_at=utc_now() + timedelta(days=2),
             )
 
-    def test_non_si_sfida_con_l_avvio_rapido(self):
+    def test_si_sfida_con_l_avvio_rapido_senza_avvisi(self):
+        """Emendamento del 2026-10-18 all'ADR-085: fino a quella data l'avvio
+        rapido lo rifiutava (`ConflictError`). Ora lo accetta, e non lo
+        avvisa: non ha un account con cui leggere."""
         from models.individual_match.quick_match_service import QuickMatchService
 
         direttore = _user(UserRole.DIRECTOR.value)
         giocatore = UserService.create_placeholder(*_nome(), direttore)
-        with pytest.raises(ConflictError):
-            QuickMatchService.start(_user().id, giocatore.id)
+        partita = QuickMatchService.start(_user().id, giocatore.id)
+        db.session.commit()
+
+        assert partita.player2_id == giocatore.id
+        assert Notification.query.filter_by(user_id=giocatore.id).count() == 0
 
     def test_la_ricerca_degli_avversari_non_lo_trova(self, app):
         direttore = _user(UserRole.DIRECTOR.value)

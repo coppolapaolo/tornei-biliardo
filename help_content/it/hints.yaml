@@ -907,9 +907,25 @@ hints:
 
   - id: sfida.chi_hai_davanti
     label: "Chi hai davanti"
-    short: "Gli avversari con cui giochi più spesso sono già in elenco. Per gli altri, cerca per nome: deve avere un account."
+    short: "Gli avversari con cui giochi più spesso sono già in elenco. Per gli altri, cerca per nome: trovi anche chi non è registrato."
     anchor: sfida-chi-hai-davanti
     screens: [individual_match.quick_match]
+    page: partite_amichevoli
+    section: avvio-rapido
+
+  - id: sfida.avversario_non_registrato
+    label: "Avversario senza account"
+    short: "Se non è registrato la partita la firmi solo tu, e resta in attesa finché qualcuno non lo riscatta. Istruttori e direttori lo aggiungono qui, con nome e cognome."
+    anchor: sfida-avversario-non-registrato
+    screens: [individual_match.quick_match]
+    page: partite_amichevoli
+    section: avvio-rapido
+
+  - id: sfida.in_attesa_del_riscatto
+    label: "In attesa del riscatto"
+    short: "L'avversario non ha un account e non firma. La partita conta come «in attesa» e non ti blocca: quando qualcuno lo riscatta, sarà lui a confermarla o rifiutarla."
+    anchor: sfida-in-attesa-del-riscatto
+    screens: [individual_match.match_detail]
     page: partite_amichevoli
     section: avvio-rapido
 

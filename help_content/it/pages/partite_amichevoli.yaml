@@ -42,7 +42,11 @@ blocks:
       - title: "Scegli chi hai davanti"
         text: >-
           Gli avversari con cui giochi più spesso sono già in elenco: un tocco
-          e sono scelti. Per tutti gli altri c'è la ricerca per nome.
+          e sono scelti. Per tutti gli altri c'è la ricerca per nome, che trova
+          anche i giocatori **non registrati**, col loro segno accanto al nome.
+          Se chi hai davanti non ha un account e sei **istruttore** o
+          **direttore di gara**, tocca **Non ha un account? Aggiungilo** sotto
+          la ricerca e scrivi nome e cognome.
       - title: "Se serve, cambia come si gioca"
         text: >-
           Sotto «Come si gioca» c'è il riepilogo di sala, disciplina e distanza.
@@ -68,6 +72,18 @@ blocks:
       La conferma non sparisce, si sposta alla fine — dove la domanda ha una
       risposta che l'avversario conosce davvero: il punteggio. Finché non
       confermate entrambi, la partita non entra nel rating.
+
+  - type: note
+    tone: info
+    title: "Contro chi non ha un account"
+    text: >-
+      Un giocatore non registrato non riceve avvisi e non firma: la partita la
+      firmi solo tu, anche se vince lui, e resta **in attesa del riscatto**.
+      Non ti blocca: puoi giocare subito altre partite, anche con lui, e se
+      serve puoi ritirarla. Quando si registra e la riscatta, la partita
+      aspetta la sua firma come con chiunque altro. Una proposta per un'altra
+      sera, invece, non gli si può mandare: con lui si gioca con l'avvio
+      rapido.
 
   - type: heading
     id: proporre

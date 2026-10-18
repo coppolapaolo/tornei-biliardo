@@ -875,6 +875,20 @@ def rematch(match_id):
         match.player2_id if current_user.id == match.player1_id else match.player1_id
     )
 
+    # Un non registrato non riceve proposte (ADR-085): con lui si gioca
+    # adesso, con l'avvio rapido.
+    if match.is_placeholder_player(opponent_id):
+        flash(
+            _(
+                "Il tuo avversario non è ancora registrato: non può ricevere "
+                "proposte. Puoi aprire la partita adesso, con l'avvio rapido."
+            ),
+            "info",
+        )
+        return redirect(
+            url_for("individual_match.quick_match", opponent_id=opponent_id)
+        )
+
     # Build pre-fill parameters
     params = {
         "rematch": "true",

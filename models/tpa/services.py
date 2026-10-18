@@ -553,12 +553,14 @@ class TpaRefertoService:
         # Stessa regola del segnapunti normale: chi e' avanti conferma da solo
         # e l'avversario deve accettare. In parita' conferma chi tiene il referto.
         if match.is_ready_for_validation():
+            # Un avversario non registrato non firma: firma chi tiene il
+            # referto (ADR-085, emendamento del 2026-10-18).
             if match.player1_score > match.player2_score:
-                match.confirm_result(match.player1_id)
+                match.firma_d_ufficio(match.player1_id)
             elif match.player2_score > match.player1_score:
-                match.confirm_result(match.player2_id)
+                match.firma_d_ufficio(match.player2_id)
             else:
-                match.confirm_result(referto.compiler_id)
+                match.firma_d_ufficio(referto.compiler_id)
 
             from models.individual_match.pending_confirmation import (
                 avvisa_chi_deve_firmare,

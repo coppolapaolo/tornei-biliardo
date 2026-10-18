@@ -368,7 +368,9 @@
         {# Niente da confermare (ha gia' risposto, o la partita e' chiusa):
            resta la sola via d'uscita per il rack segnato per sbaglio. #}
         <span class="c7-board__note">
-            {%- if board.you_confirmed and not board.opponent_confirmed -%}
+            {%- if board.you_confirmed and not board.opponent_confirmed and match.aspetta_il_riscatto is defined and match.aspetta_il_riscatto -%}
+            {{ _('Hai confermato. L\'avversario non è registrato: la sfida resta in attesa finché qualcuno non lo riscatta.') }}
+            {%- elif board.you_confirmed and not board.opponent_confirmed -%}
             {{ _('Hai confermato. Manca la conferma dell\'avversario.') }}
             {%- elif board.closed_by_players -%}
             {{ _('Risultato confermato da entrambi.') }}

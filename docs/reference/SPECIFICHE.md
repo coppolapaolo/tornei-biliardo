@@ -13,17 +13,22 @@ Ci sono tre tipologie di utenti:
 
 #### Giocatori non ancora registrati
 
-Un **direttore** (o l'admin) e un **istruttore** possono creare un giocatore che non ha un account, scrivendone **nome e cognome**: è chi arriva in sala per giocare senza essersi mai registrato. Lo si crea dall'iscrizione a una gara, accanto alla ricerca, o dal modulo della partita di altri due.
+Un **direttore** (o l'admin) e un **istruttore** possono creare un giocatore che non ha un account, scrivendone **nome e cognome**: è chi arriva in sala per giocare senza essersi mai registrato. Lo si crea dall'iscrizione a una gara, accanto alla ricerca, dal modulo della partita di altri due o dall'avvio rapido di una sfida.
 
 - Lo **username** è il nome e cognome; se è già preso si aggiunge un numero: «Mario Rossi (2)».
 - **Non entra nell'app**: non ha email né password, e il login lo rifiuta comunque.
 - **Gioca davvero**: le sue partite contano per classifiche ed ELO come quelle di chiunque. Non è un giocatore fittizio di una prova.
-- **Non riceve niente**: né notifiche, né proposte di sfida; non compare fra gli avversari delle sfide individuali e non si sfida con l'avvio rapido.
-- **Non firma**: nella partita di altri due la sua conferma resta assente, quindi per lui la partita è *In attesa* (vedi «Livelli di certificazione»).
+- **Non riceve niente**: né notifiche, né proposte di sfida.
+- **Si sfida con l'avvio rapido**: chiunque giochi lo trova fra gli avversari dell'avvio rapido, col segno «non registrato». **Direttori e istruttori — non l'admin —** lo possono anche creare da lì, con nome e cognome; chi non ha uno di questi ruoli sceglie solo un giocatore non registrato che esiste già. La proposta di sfida a lui non si fa: non la potrebbe accettare, e la rivincita con lui è un avvio rapido.
+- **Non firma**: nella partita di altri due la sua conferma resta assente, quindi per lui la partita è *In attesa* (vedi «Livelli di certificazione»). Nella sfida contro di lui firma solo chi l'ha aperta — anche quando alla distanza vince il non registrato, la firma d'ufficio va a chi ha aperto la sfida —, e la sfida resta *In attesa* finché qualcuno non lo riscatta.
+- La sfida che aspetta la sua firma **non blocca** chi l'ha firmata: può aprire altre sfide, anche con lui, e può ritirarla. Non gli si mostra come una firma da sollecitare, ma come una sfida **in attesa del riscatto**.
+- Dopo il riscatto la sfida aspetta la firma di chi l'ha riscattato, che riceve l'avviso e la conferma o la rifiuta come un avversario qualunque; finché non lo fa, non apre altre sfide.
 - Accanto al suo nome, negli iscritti, nelle classifiche e nel profilo, c'è il segno **«non registrato»**.
 - Chi poi si registra lo **riscatta**: le partite passano al nuovo account con la conferma di chi l'ha creato, o dell'admin per i giocatori senza creatore.
 
 _Regola nuova del 2026-10-17, decisa dall'utente (ADR-085)._
+
+_Emendamento del 2026-10-18, deciso dall'utente («l'aggiunta dell'esterno deve essere possibile anche dai match singoli», ADR-085): fino a questa data il giocatore non registrato non era un avversario delle sfide individuali, e chi voleva segnare la propria partita contro di lui non aveva una strada._
 
 ##### Il riscatto
 

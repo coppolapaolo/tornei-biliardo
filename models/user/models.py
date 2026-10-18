@@ -667,8 +667,10 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         """
         # Un giocatore non registrato non usa niente da sé (ADR-085): non entra
         # nell'app. Chi lo interroga sono gli altri — l'elenco degli avversari,
-        # la ricerca, l'avvio rapido — e per tutti la risposta è no: non può
-        # ricevere una sfida a cui non saprebbe rispondere.
+        # la ricerca, la proposta — e per tutti la risposta è no: non può
+        # ricevere una proposta a cui non saprebbe rispondere. L'avvio rapido
+        # lo accetta come avversario lo stesso, passando da
+        # `QuickMatchService.can_be_opponent` (emendamento del 2026-10-18).
         if self.is_placeholder:
             return False
 

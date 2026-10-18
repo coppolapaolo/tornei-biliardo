@@ -387,6 +387,7 @@ class ClaimService:
 
         ClaimService._risolvi_avvisi_ai_destinatari(richiesta)
         ClaimService._avvisa_chi_ha_chiesto(richiesta, approvata=True)
+        ClaimService._avvisa_delle_sfide_da_firmare(claimant_id)
         logger.info(
             "Riscatto %s: giocatore %s → account %s, confermato da %s",
             request_id,
@@ -580,6 +581,26 @@ class ClaimService:
             action_url=f"/riscatti/{richiesta.id}",
             action_text=_l("Vedi la richiesta"),
         )
+
+    @staticmethod
+    def _avvisa_delle_sfide_da_firmare(claimant_id: int) -> None:
+        """Le sfide che aspettavano la firma del non registrato, ora sue.
+
+        Un avversario non registrato non firma (ADR-085, emendamento del
+        2026-10-18): la sfida aperta contro di lui restava *In attesa*. Dopo
+        l'unione la firma che manca è quella di chi l'ha riscattato, e da qui
+        la sfida è come qualunque altra — lo blocca sulle sfide nuove finché
+        non la conferma o la rifiuta. L'avviso «Una sfida aspetta la tua
+        firma» non gli era mai arrivato: la notifica al non registrato non
+        nasce. Gli arriva adesso.
+        """
+        from models.individual_match.pending_confirmation import (
+            PendingConfirmationService,
+            avvisa_chi_deve_firmare,
+        )
+
+        for sfida in PendingConfirmationService.pending_for(claimant_id):
+            avvisa_chi_deve_firmare(sfida)
 
     @staticmethod
     def _avvisa_chi_ha_chiesto(richiesta: ClaimRequest, approvata: bool) -> None:

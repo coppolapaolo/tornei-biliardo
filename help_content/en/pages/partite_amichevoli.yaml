@@ -41,7 +41,11 @@ blocks:
       - title: "Pick who you are playing"
         text: >-
           The opponents you play most often are already listed: one tap and they
-          are chosen. For everyone else there is the search by name.
+          are chosen. For everyone else there is the search by name, which also
+          finds **unregistered** players, with their mark next to the name. If
+          the person in front of you has no account and you are an
+          **instructor** or a **competition director**, tap **No account? Add
+          them** under the search and write first and last name.
       - title: "Change how you play, if you need to"
         text: >-
           Under «How it is played» you get a summary of venue, discipline and
@@ -68,6 +72,18 @@ blocks:
       The confirmation does not disappear, it moves to the end — where the
       question has an answer your opponent actually knows: the score. Until you
       both confirm, the match does not count towards the rating.
+
+  - type: note
+    tone: info
+    title: "Against someone without an account"
+    text: >-
+      An unregistered player gets no notifications and does not sign: only
+      you sign the match, even if they win, and it stays **waiting to be
+      claimed**. It does not block you: you can play other matches right away,
+      even against them, and you can withdraw it if needed. Once they sign up
+      and claim it, the match waits for their signature as with anyone else.
+      A proposal for another evening cannot be sent to them, though: with
+      them you play through the quick start.
 
   - type: heading
     id: proporre

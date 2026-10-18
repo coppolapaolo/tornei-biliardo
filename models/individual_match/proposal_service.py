@@ -112,7 +112,8 @@ class ProposalService:
                 raise ValidationError(
                     _(
                         "%(nome)s non è ancora registrato: non può ricevere "
-                        "proposte di sfida.",
+                        "proposte di sfida. Se state giocando adesso, apri la "
+                        "partita con l'avvio rapido.",
                         nome=invitato.username,
                     )
                 )

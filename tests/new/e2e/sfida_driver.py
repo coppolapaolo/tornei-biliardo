@@ -152,6 +152,27 @@ class SfidaDriver:
         dati.update(opzioni)
         return self.client.post("/match/quick", json=dati)
 
+    def avvio_rapido_con_nuovo(self, nome: str, cognome: str, **opzioni: Any) -> Any:
+        """L'avvio rapido contro chi non ha un account: «Non ha un account?
+        Aggiungilo», con nome e cognome (ADR-085, emendamento del 2026-10-18).
+        """
+        dati: dict[str, Any] = {
+            "opponent_new_first_name": nome,
+            "opponent_new_last_name": cognome,
+        }
+        dati.update(opzioni)
+        return self.client.post("/match/quick", json=dati)
+
+    def chiedi_riscatto(self, giocatore_id: int) -> Any:
+        """«Sei tu? Riscatta», da chi è entrato (ADR-086)."""
+        return self.client.post(f"/giocatori/{giocatore_id}/riscatta")
+
+    def decidi_riscatto(self, request_id: int, approva: bool = True) -> Any:
+        return self.client.post(
+            f"/riscatti/{request_id}/decidi",
+            data={"decisione": "approva" if approva else "rifiuta"},
+        )
+
     def apri_partita(self, avversario: Giocatore, **opzioni: Any) -> int:
         """Avvio rapido riuscito: restituisce l'id della partita."""
         risposta = self.avvio_rapido(avversario, **opzioni)

@@ -62,7 +62,8 @@ Due ingressi:
 - **non riceve notifiche**: `NotificationService.create_notification`
   restituisce `None` prima di tutto il resto — non solo perché non le
   leggerebbe, ma perché al riscatto passerebbero al nuovo account;
-- **non è un avversario delle sfide**: `User.can_access` gli dice sempre di
+- **non è un avversario delle sfide** _(superato in parte dall'emendamento
+  del 2026-10-18: lo è nell'avvio rapido)_: `User.can_access` gli dice sempre di
   no, quindi la ricerca normale, l'elenco degli avversari e l'avvio rapido lo
   escludono; `ProposalService.create_direct_proposal` rifiuta l'invito con un
   `ValidationError`. Lo trova solo la ricerca `ambito=altri_due`, che
@@ -164,3 +165,73 @@ Riscatta» dentro `nome_giocatore` (macro `riscatta`), la conferma del creatore
 o dell'admin per i giocatori senza creatore. `merge_users` non è più solo
 dell'admin: lo è ancora, tranne quando lo chiama `ClaimService.approve` con
 `riscatto_approvato=True`.
+
+## Emendamento (2026-10-18): l'avversario di una sfida
+
+**La segnalazione.** «Non posso prendere il TPA di una mia partita che vedo
+su YouTube con un altro giocatore che non è iscritto. Se scrivo che voglio
+prenderla per altri due non mi trovo, mentre se dico che è una mia partita
+non posso aggiungere un esterno.» La regola del 2026-10-17 — *non è un
+avversario delle sfide* — chiudeva l'unica strada: la partita di altri due
+esclude chi segna, e l'avvio rapido escludeva il non registrato.
+
+**Decisione.** Nell'**avvio rapido** l'avversario può essere un giocatore
+non registrato.
+
+- **Chi lo sceglie.** Chiunque possa aprire una sfida, se il giocatore esiste
+  già: `QuickMatchService.can_be_opponent` accetta chi ha sbloccato le sfide
+  **oppure** è non registrato (non i fittizi dell'ADR-058). La regola del
+  2026-10-17 lo negava a tutti per una ragione sola — «non può ricevere una
+  sfida a cui non saprebbe rispondere» — che con l'avvio rapido non vale: la
+  partita nasce in corso e non va accettata. Nel codice nessun'altra regola
+  distingueva un giocatore senza ruolo da un direttore per questa scelta.
+- **Chi lo crea.** «Non ha un account? Aggiungilo» sotto la ricerca, con nome
+  e cognome, solo per `QuickMatchService.can_create_opponent`:
+  `can_create_placeholder` **meno l'admin**, che comunque non entra
+  nell'avvio rapido (`player_or_director_required`). Il posto arriva al
+  servizio come `NuovoGiocatore`, come nella partita di altri due, e
+  `QuickMatchService.start` lo crea nella stessa transazione della partita;
+  il blocco di `ensure_none_pending` si controlla **prima**, così un giocatore
+  non nasce per una sfida che non parte.
+- **La ricerca.** `search_players?ambito=sfida` restituisce anche i non
+  registrati, con `is_placeholder`; il modulo li segna «non registrato», come
+  la ricerca `ambito=altri_due`. Gli avversari abituali e il preselezionato di
+  «Rigioca adesso» passano dallo stesso `can_be_opponent`.
+- **La proposta no.** `ProposalService.create_direct_proposal` continua a
+  rifiutare l'invito: una proposta si accetta, e da un non registrato la
+  risposta non arriva. La ricerca senza `ambito` resta senza non registrati,
+  «Proponi un'altra data» sparisce dalla sfida contro di lui e `rematch`
+  porta all'avvio rapido.
+- **Le firme.** Il non registrato non firma: `IndividualMatch.firma_d_ufficio`
+  sostituisce `confirm_result` nelle due firme automatiche alla distanza
+  (segnapunti e referto TPA) e, se toccava a lui, firma l'altro — chi ha
+  aperto la sfida e la segna. La sfida resta allora *In attesa*
+  (`livello_di_sfida`, ADR-083) e conta per l'ELO di *Tutte* come ogni sfida
+  in attesa che non sia un pareggio: nessuna regola nuova.
+- **Nessun blocco.** La sfida aspetta la firma del non registrato
+  (`awaiting_confirmation_from_id`): il blocco di `PendingConfirmationService`
+  guarda solo chi deve firmare, quindi chi l'ha aperta gioca ancora — anche
+  contro di lui — e la può ritirare (`withdraw_by_signer`). Per l'interfaccia
+  la sfida è `aspetta_il_riscatto`: fuori subito dalle sfide in corso della
+  dashboard e dalla sezione «In attesa di conferma» di `/match/`, fra le
+  giocate dell'elenco con lo stato «In attesa del riscatto», e nella sua
+  pagina un riquadro che lo spiega al posto di «manca la conferma».
+- **Le notifiche.** Nessuna al non registrato: `create_notification` le
+  scartava già, e `QuickMatchService` non chiama nemmeno l'avviso di
+  apertura.
+- **Dopo il riscatto.** `UserMergeService` sposta la partita sull'account di
+  chi ha riscattato: la firma che manca è la sua, e la sfida è come qualunque
+  altra — lo blocca finché non la conferma o la rifiuta. `ClaimService.approve`
+  gli manda l'avviso «Una sfida aspetta la tua firma» per ciascuna
+  (`_avvisa_delle_sfide_da_firmare`), che al non registrato non era mai
+  arrivato. Il giorno di grazia della dashboard (`DASHBOARD_GRACE`) si conta
+  ancora dalla firma di chi l'ha aperta: una sfida riscattata dopo più di un
+  giorno non torna fra le sfide in corso della dashboard, e si trova nella
+  sezione «In attesa di conferma» di `/match/` e nell'avviso.
+
+**Presidi.** `tests/new/unit/test_specifiche_conformita.py::TestAvversarioNonRegistrato`
+e `TestGiocatoriNonRegistrati::test_non_riceve_proposte_ma_si_sfida_con_l_avvio_rapido`,
+che sostituisce il test della regola vecchia;
+`tests/new/integration/test_avversario_non_registrato.py`;
+`tests/new/e2e/test_sfida_avversario_non_registrato_e2e.py`, UC13 di
+`docs/usecases/sfide-e-certificazione.md`.

@@ -188,6 +188,15 @@ senza accettazione.
 - `start(user_id, opponent_id, config=None)` - crea la partita **già
   `IN_PROGRESS`**; le chiavi assenti in `config` vengono dai default. Se una
   partita fra i due è in corso e `user_id` non l'ha firmata, restituisce quella.
+  `opponent_id` può essere un `NuovoGiocatore` (nome e cognome): nasce lì un
+  non registrato (ADR-085, emendamento 2026-10-18)
+- `can_be_opponent(user)` - chi ha sbloccato le sfide **o** è non registrato;
+  `can_create_opponent(user)` - direttori e istruttori, mai l'admin
+- l'avversario non registrato non firma: `IndividualMatch.firma_d_ufficio`
+  passa la firma alla distanza a chi ha aperto la sfida, e
+  `aspetta_il_riscatto` dice all'interfaccia che la firma mancante arriva solo
+  col riscatto (niente blocco, niente sollecito; dopo il riscatto
+  `ClaimService.approve` avvisa chi l'ha riscattato)
 
 L'accettazione non è saltata: è la doppia conferma di fine partita
 (`CONFIRMED_BY_BOTH`), che è anche l'unica condizione che muove l'ELO globale.

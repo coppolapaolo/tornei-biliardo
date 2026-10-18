@@ -4049,9 +4049,16 @@ class TestGiocatoriNonRegistrati:
             is None
         )
 
-    def test_non_e_un_avversario_delle_sfide(self, db_session):
-        """«non compare fra gli avversari delle sfide individuali e non si
-        sfida con l'avvio rapido»: il permesso delle sfide gli è negato."""
+    def test_non_riceve_proposte_ma_si_sfida_con_l_avvio_rapido(self, db_session):
+        """«Non riceve niente: né notifiche, né proposte di sfida»; «Si sfida
+        con l'avvio rapido: chiunque giochi lo trova fra gli avversari
+        dell'avvio rapido» (emendamento del 2026-10-18).
+
+        Fino al 2026-10-18 la specifica diceva «non compare fra gli avversari
+        delle sfide individuali e non si sfida con l'avvio rapido», e questo
+        test lo difendeva: è cambiata la regola, non il codice sotto la regola.
+        """
+        from models.individual_match.quick_match_service import QuickMatchService
         from models.user.services import UserService
 
         giocatore = UserService.create_placeholder(
@@ -4059,6 +4066,91 @@ class TestGiocatoriNonRegistrati:
         )
         giocatore.gamification_override = True
         assert giocatore.can_access("create_match_direct") is False
+        assert QuickMatchService.can_be_opponent(giocatore) is True
+
+
+class TestAvversarioNonRegistrato:
+    """SPECIFICHE.md, «Tipologie di utenti» → «Giocatori non ancora
+    registrati», emendamento del 2026-10-18 (ADR-085): l'avversario di una
+    sfida può essere un giocatore non registrato."""
+
+    @staticmethod
+    def _utente(db_session, role=UserRole.PLAYER.value):
+        s = uuid.uuid4().hex[:8]
+        u = User(
+            username=f"avv_{s}",
+            email=f"avv_{s}@test.com",
+            role=role,
+            gamification_override=True,
+        )
+        u.set_password("test1234")
+        db_session.add(u)
+        db_session.flush()
+        return u
+
+    def test_lo_creano_direttori_e_istruttori_non_l_admin(self):
+        """«Direttori e istruttori — non l'admin — lo possono anche creare da
+        lì, con nome e cognome; chi non ha uno di questi ruoli sceglie solo un
+        giocatore non registrato che esiste già»."""
+        from types import SimpleNamespace
+
+        from models.individual_match.quick_match_service import QuickMatchService
+
+        def utente(**ruoli):
+            base = dict(
+                is_admin=False,
+                is_director=False,
+                is_instructor=False,
+                is_placeholder=False,
+            )
+            return SimpleNamespace(**{**base, **ruoli})
+
+        assert QuickMatchService.can_create_opponent(utente(is_director=True))
+        assert QuickMatchService.can_create_opponent(utente(is_instructor=True))
+        assert not QuickMatchService.can_create_opponent(utente())
+        assert not QuickMatchService.can_create_opponent(utente(is_admin=True))
+
+    @pytest.mark.parametrize("vince_il_non_registrato", [True, False])
+    def test_firma_solo_chi_ha_aperto_la_sfida(
+        self, db_session, vince_il_non_registrato
+    ):
+        """«Nella sfida contro di lui firma solo chi l'ha aperta — anche quando
+        alla distanza vince il non registrato, la firma d'ufficio va a chi ha
+        aperto la sfida —, e la sfida resta *In attesa* finché qualcuno non lo
+        riscatta»."""
+        from models.base import utc_now
+        from models.certificazione import Livello, livello_di_sfida
+        from models.individual_match.match_models import IndividualMatch
+        from models.individual_match.pending_confirmation import (
+            PendingConfirmationService,
+        )
+        from models.user.services import UserService
+
+        creatore = self._utente(db_session, UserRole.DIRECTOR.value)
+        avversario = UserService.create_placeholder(
+            "Gino", f"Verdi{uuid.uuid4().hex[:4]}", creatore
+        )
+        sfida = IndividualMatch(
+            player1_id=creatore.id,
+            player2_id=avversario.id,
+            scheduled_at=utc_now(),
+            status=MatchStatus.IN_PROGRESS,
+            player1_score=1 if vince_il_non_registrato else 3,
+            player2_score=3 if vince_il_non_registrato else 1,
+            distance=3,
+            is_race_to=True,
+        )
+        db_session.add(sfida)
+        db_session.flush()
+
+        sfida.firma_d_ufficio(avversario.id if vince_il_non_registrato else creatore.id)
+
+        assert sfida.player1_confirmed and not sfida.player2_confirmed
+        assert sfida.aspetta_il_riscatto
+        assert livello_di_sfida(sfida) is Livello.IN_ATTESA
+        # «non blocca chi l'ha firmata … può ritirarla»
+        assert PendingConfirmationService.pending_for(creatore.id) == []
+        assert sfida.signed_and_waiting(creatore.id)
 
 
 class TestRiscattoDeiNonRegistrati:
