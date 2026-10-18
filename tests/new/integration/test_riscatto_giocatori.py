@@ -19,7 +19,11 @@ from models import User, db
 from models.base import utc_now
 from models.competition.models import Gara, Inscription
 from models.exceptions import ConflictError, PermissionDeniedError, ValidationError
-from models.notification.models import Notification, NotificationType
+from models.notification.models import (
+    Notification,
+    NotificationPriority,
+    NotificationType,
+)
 from models.status_enum import ClaimRequestStatus, Discipline, GaraStatus, MatchStatus
 from models.user.claim_request import ClaimRequest
 from models.user.claim_service import ClaimService
@@ -623,6 +627,157 @@ class TestApprovazione:
             ).count()
             == 1
         )
+
+
+def _avvisi(user_id: int, tipo: NotificationType):
+    return Notification.query.filter_by(user_id=user_id, notification_type=tipo).all()
+
+
+class TestRitiro:
+    """Chi ha chiesto il riscatto lo ritira finché aspetta (ADR-086, 2026-10-18).
+
+    Senza ritiro, una richiesta sbagliata teneva fermo il giocatore finché chi
+    decide non la rifiutava: l'indice parziale ne ammette una sola in attesa.
+    """
+
+    def _in_attesa(self):
+        direttore = _user(UserRole.DIRECTOR.value)
+        giocatore = _placeholder(direttore)
+        chi = _user()
+        richiesta = ClaimService.richiedi(giocatore.id, chi)
+        db.session.commit()
+        return direttore, giocatore, chi, richiesta
+
+    def test_chi_l_ha_chiesta_la_ritira(self, app):
+        direttore, giocatore, chi, richiesta = self._in_attesa()
+
+        risposta = _post(_client_for(app, chi), f"/riscatti/{richiesta.id}/ritira")
+
+        assert risposta.status_code == 302
+        ritirata = db.session.get(ClaimRequest, richiesta.id)
+        assert ritirata.status == ClaimRequestStatus.WITHDRAWN.value
+        assert not ritirata.is_pending
+        assert ritirata.decided_at is not None
+        assert ClaimService.richiesta_in_attesa(giocatore.id) is None
+        assert ClaimService.da_decidere_per(direttore) == []
+
+    def test_chi_decideva_non_la_trova_piu_da_decidere(self):
+        direttore, _giocatore, chi, richiesta = self._in_attesa()
+        (ricevuta,) = _avvisi(direttore.id, NotificationType.CLAIM_REQUEST_RECEIVED)
+        assert ricevuta.read_at is None
+
+        ClaimService.withdraw(richiesta.id, chi)
+        db.session.commit()
+
+        ricevuta = db.session.get(Notification, ricevuta.id)
+        assert ricevuta.read_at is not None
+        # Più un avviso leggero, che punta alla richiesta.
+        (avviso,) = _avvisi(direttore.id, NotificationType.CLAIM_REQUEST_WITHDRAWN)
+        assert avviso.priority == NotificationPriority.LOW
+        assert avviso.action_url == f"/riscatti/{richiesta.id}"
+
+    def test_la_decisione_risolve_l_avviso_di_chi_decide(self):
+        direttore, _giocatore, _chi, richiesta = self._in_attesa()
+
+        ClaimService.reject(richiesta.id, direttore)
+        db.session.commit()
+
+        (ricevuta,) = _avvisi(direttore.id, NotificationType.CLAIM_REQUEST_RECEIVED)
+        assert ricevuta.read_at is not None
+
+    @pytest.mark.parametrize("chi_ritira", ["terzo", "creatore", "admin"])
+    def test_nessun_altro_la_ritira(self, app, chi_ritira):
+        direttore, _giocatore, _chi, richiesta = self._in_attesa()
+        if chi_ritira == "terzo":
+            altro = _user()
+        elif chi_ritira == "creatore":
+            altro = direttore
+        else:
+            altro = _admin()
+
+        with pytest.raises(PermissionDeniedError):
+            ClaimService.withdraw(richiesta.id, altro)
+        db.session.rollback()
+
+        _post(_client_for(app, altro), f"/riscatti/{richiesta.id}/ritira")
+        assert db.session.get(ClaimRequest, richiesta.id).is_pending
+
+    @pytest.mark.parametrize("decisione", ["approva", "rifiuta"])
+    def test_una_richiesta_decisa_non_si_ritira(self, app, decisione):
+        direttore, _giocatore, chi, richiesta = self._in_attesa()
+        if decisione == "approva":
+            ClaimService.approve(richiesta.id, direttore)
+        else:
+            ClaimService.reject(richiesta.id, direttore)
+        db.session.commit()
+        stato = db.session.get(ClaimRequest, richiesta.id).status
+
+        with pytest.raises(ConflictError):
+            ClaimService.withdraw(richiesta.id, chi)
+        db.session.rollback()
+
+        risposta = _post(_client_for(app, chi), f"/riscatti/{richiesta.id}/ritira")
+        assert risposta.status_code == 302
+        assert db.session.get(ClaimRequest, richiesta.id).status == stato
+
+    def test_dopo_il_ritiro_si_chiede_di_nuovo_anche_la_stessa_persona(self):
+        _direttore, giocatore, chi, richiesta = self._in_attesa()
+        ClaimService.withdraw(richiesta.id, chi)
+        db.session.commit()
+
+        di_nuovo = ClaimService.richiedi(giocatore.id, chi)
+        db.session.commit()
+        assert di_nuovo.id != richiesta.id and di_nuovo.is_pending
+
+        ClaimService.withdraw(di_nuovo.id, chi)
+        db.session.commit()
+        altro = ClaimService.richiedi(giocatore.id, _user())
+        db.session.commit()
+        assert altro.is_pending
+
+    def test_ritirata_non_si_decide(self, app):
+        direttore, giocatore, chi, richiesta = self._in_attesa()
+        ClaimService.withdraw(richiesta.id, chi)
+        db.session.commit()
+
+        with pytest.raises(ConflictError):
+            ClaimService.approve(richiesta.id, direttore)
+        db.session.rollback()
+        with pytest.raises(ConflictError):
+            ClaimService.reject(richiesta.id, direttore)
+        db.session.rollback()
+
+        risposta = _post(
+            _client_for(app, direttore),
+            f"/riscatti/{richiesta.id}/decidi",
+            data={"decisione": "approva"},
+        )
+        assert risposta.status_code == 302
+        assert db.session.get(ClaimRequest, richiesta.id).status == (
+            ClaimRequestStatus.WITHDRAWN.value
+        )
+        rimasto = db.session.get(User, giocatore.id)
+        assert rimasto.is_placeholder and not rimasto.is_deleted
+
+    def test_il_pulsante_lo_vede_solo_chi_l_ha_chiesta(self, app):
+        direttore, _giocatore, chi, richiesta = self._in_attesa()
+        azione = f"/riscatti/{richiesta.id}/ritira"
+
+        pagina = _get(_client_for(app, chi), f"/riscatti/{richiesta.id}")
+        assert azione in pagina.get_data(as_text=True)
+        elenco = _get(_client_for(app, chi), "/riscatti")
+        assert azione in elenco.get_data(as_text=True)
+
+        di_chi_decide = _get(_client_for(app, direttore), f"/riscatti/{richiesta.id}")
+        assert azione not in di_chi_decide.get_data(as_text=True)
+
+        ClaimService.withdraw(richiesta.id, chi)
+        db.session.commit()
+        testo = _get(_client_for(app, chi), f"/riscatti/{richiesta.id}").get_data(
+            as_text=True
+        )
+        assert azione not in testo
+        assert "ritirata" in testo
 
 
 class TestUnioneDaAdminInvariata:

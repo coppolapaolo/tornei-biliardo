@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-18 10:06+0200\n"
+"POT-Creation-Date: 2026-10-18 18:48+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -42,35 +42,35 @@ msgstr ""
 msgid "Tiro non valido"
 msgstr ""
 
-#: models/status_enum.py:453
+#: models/status_enum.py:457
 msgid "Palla 7"
 msgstr ""
 
-#: models/status_enum.py:454
+#: models/status_enum.py:458
 msgid "Palla 8"
 msgstr ""
 
-#: models/status_enum.py:455
+#: models/status_enum.py:459
 msgid "Palla 9"
 msgstr ""
 
-#: models/status_enum.py:456
+#: models/status_enum.py:460
 msgid "Palla 10"
 msgstr ""
 
-#: models/status_enum.py:457
+#: models/status_enum.py:461
 msgid "One Pocket"
 msgstr ""
 
-#: models/status_enum.py:458
+#: models/status_enum.py:462
 msgid "Straight Pool"
 msgstr ""
 
-#: models/status_enum.py:459
+#: models/status_enum.py:463
 msgid "Bank Pool"
 msgstr ""
 
-#: models/status_enum.py:460
+#: models/status_enum.py:464
 msgid "Rotation"
 msgstr ""
 
@@ -3095,8 +3095,9 @@ msgstr ""
 msgid "Richiesta d'esame"
 msgstr ""
 
-#: models/exam/request_service.py:659 models/user/claim_service.py:520
-#: templates/exam/detail.html:153 templates/riscatto/giocatore.html:39
+#: models/exam/request_service.py:659 models/user/claim_service.py:581
+#: models/user/claim_service.py:612 templates/exam/detail.html:153
+#: templates/riscatto/giocatore.html:39
 msgid "Vedi la richiesta"
 msgstr ""
 
@@ -3508,7 +3509,7 @@ msgid ""
 msgstr ""
 
 #: models/individual_match/pending_confirmation.py:185
-#: models/individual_match/pending_confirmation.py:406
+#: models/individual_match/pending_confirmation.py:408
 #: templates/components/_history_matches_tab.html:103
 #: templates/components/_player_recent_matches.html:75
 #: templates/components/_sfide_in_corso.html:85
@@ -3536,7 +3537,7 @@ msgstr ""
 
 #: models/individual_match/pending_confirmation.py:255
 #: models/individual_match/pending_confirmation.py:280
-#: models/individual_match/pending_confirmation.py:381
+#: models/individual_match/pending_confirmation.py:383
 #: models/individual_match/scored_match_service.py:265
 #: templates/components/_history_matches_tab.html:108
 #: templates/components/_match_result_row.html:184
@@ -3558,45 +3559,45 @@ msgid ""
 "nessuno dei due."
 msgstr ""
 
-#: models/individual_match/pending_confirmation.py:339
+#: models/individual_match/pending_confirmation.py:341
 #, python-format
 msgid ""
 "%(nome)s ha rifiutato la partita «%(descrizione)s»: non conta per nessuno"
 " dei due."
 msgstr ""
 
-#: models/individual_match/pending_confirmation.py:345
+#: models/individual_match/pending_confirmation.py:347
 #, python-format
 msgid ""
 "%(nome)s ha rifiutato la vostra partita segnata da un terzo: non conta "
 "per nessuno dei due."
 msgstr ""
 
-#: models/individual_match/pending_confirmation.py:353
+#: models/individual_match/pending_confirmation.py:355
 #, python-format
 msgid ""
 "%(nome)s ha rifiutato la partita «%(descrizione)s»: puoi correggerla o "
 "cancellarla."
 msgstr ""
 
-#: models/individual_match/pending_confirmation.py:359
+#: models/individual_match/pending_confirmation.py:361
 #, python-format
 msgid ""
 "%(nome)s ha rifiutato la partita che hai segnato: puoi correggerla o "
 "cancellarla."
 msgstr ""
 
-#: models/individual_match/pending_confirmation.py:367
-#: models/individual_match/pending_confirmation.py:376
+#: models/individual_match/pending_confirmation.py:369
+#: models/individual_match/pending_confirmation.py:378
 #, python-format
 msgid "Partita rifiutata"
 msgstr ""
 
-#: models/individual_match/pending_confirmation.py:397
+#: models/individual_match/pending_confirmation.py:399
 msgid "Sfida ritirata"
 msgstr ""
 
-#: models/individual_match/pending_confirmation.py:399
+#: models/individual_match/pending_confirmation.py:401
 #, python-format
 msgid ""
 "%(nome)s ha ritirato la sfida che aspettava la tua firma: non conta più "
@@ -6216,49 +6217,76 @@ msgstr ""
 msgid "Non c'è nessuno che possa confermare il riscatto, per ora."
 msgstr ""
 
-#: models/user/claim_service.py:335
+#: models/user/claim_service.py:335 models/user/claim_service.py:432
 msgid "Richiesta non trovata."
 msgstr ""
 
 #: models/user/claim_service.py:337
+msgid "Questa richiesta l'ha ritirata chi l'aveva fatta."
+msgstr ""
+
+#: models/user/claim_service.py:339
 msgid "Questa richiesta ha già avuto una risposta."
 msgstr ""
 
-#: models/user/claim_service.py:340
+#: models/user/claim_service.py:342
 msgid "Questa richiesta la decide chi ha creato il giocatore."
 msgstr ""
 
-#: models/user/claim_service.py:371
+#: models/user/claim_service.py:373
 msgid ""
 "Chi chiede ha giocato contro questo giocatore: le partite fra i due non "
 "si possono unire. Rifiuta la richiesta, o chiedi all'amministratore di "
 "sistemarle prima."
 msgstr ""
 
-#: models/user/claim_service.py:481
+#: models/user/claim_service.py:439
+msgid "Una richiesta di riscatto la ritira solo chi l'ha fatta."
+msgstr ""
+
+#: models/user/claim_service.py:442
+msgid "Hai già ritirato questa richiesta."
+msgstr ""
+
+#: models/user/claim_service.py:445
+msgid "Questa richiesta ha già avuto una risposta: non si ritira più."
+msgstr ""
+
+#: models/user/claim_service.py:530
 msgid "Richiesta di riscatto"
 msgstr ""
 
-#: models/user/claim_service.py:483
+#: models/user/claim_service.py:532
 #, python-format
 msgid "%(chi)s dice di essere %(giocatore)s e chiede le sue partite."
 msgstr ""
 
-#: models/user/claim_service.py:489
+#: models/user/claim_service.py:538
 msgid "Decidi"
 msgstr ""
 
-#: models/user/claim_service.py:505
+#: models/user/claim_service.py:572
+msgid "Riscatto ritirato"
+msgstr ""
+
+#: models/user/claim_service.py:574
+#, python-format
+msgid ""
+"%(chi)s ha ritirato la richiesta di riscatto di %(giocatore)s: non c'è "
+"più niente da decidere."
+msgstr ""
+
+#: models/user/claim_service.py:597
 #, python-format
 msgid "Riscatto confermato: le partite di %(giocatore)s ora sono tue."
 msgstr ""
 
-#: models/user/claim_service.py:510
+#: models/user/claim_service.py:602
 #, python-format
 msgid "Il riscatto di %(giocatore)s non è stato confermato."
 msgstr ""
 
-#: models/user/claim_service.py:516
+#: models/user/claim_service.py:608
 msgid "Esito del riscatto"
 msgstr ""
 
@@ -7027,12 +7055,18 @@ msgid ""
 "tuo account."
 msgstr ""
 
-#: routes/riscatto.py:210
+#: routes/riscatto.py:211
 msgid "Riscatto confermato: le partite sono passate al suo account."
 msgstr ""
 
-#: routes/riscatto.py:215
+#: routes/riscatto.py:216
 msgid "Riscatto rifiutato."
+msgstr ""
+
+#: routes/riscatto.py:234
+msgid ""
+"Richiesta ritirata: il giocatore torna libero, e puoi chiederlo di nuovo "
+"quando vuoi."
 msgstr ""
 
 #: routes/role_grant.py:62
@@ -10778,7 +10812,7 @@ msgstr ""
 #: templates/individual_match/match_detail.html:133
 #: templates/individual_match/proposal_detail.html:138
 #: templates/individual_match/proposals.html:109
-#: templates/riscatto/richiesta.html:86 templates/roles/requests.html:48
+#: templates/riscatto/richiesta.html:102 templates/roles/requests.html:48
 msgid "Rifiuta"
 msgstr ""
 
@@ -24181,7 +24215,9 @@ msgid "%(who)s non ha risposto"
 msgstr ""
 
 #: templates/exam/request_detail.html:145
-#: templates/exam/request_detail.html:169
+#: templates/exam/request_detail.html:169 templates/riscatto/richiesta.html:59
+#: templates/riscatto/richiesta.html:60 templates/riscatto/richieste.html:59
+#: templates/riscatto/richieste.html:60
 msgid "Ritira la richiesta"
 msgstr ""
 
@@ -28689,7 +28725,7 @@ msgid ""
 "profilo pubblico né nelle classifiche, dove resti il tuo username."
 msgstr ""
 
-#: templates/player/profile_edit.html:44 templates/riscatto/richiesta.html:63
+#: templates/player/profile_edit.html:44 templates/riscatto/richiesta.html:79
 msgid "Email verificata"
 msgstr ""
 
@@ -29444,70 +29480,86 @@ msgid "confermata"
 msgstr ""
 
 #: templates/riscatto/richiesta.html:29 templates/riscatto/richieste.html:24
+msgid "ritirata"
+msgstr ""
+
+#: templates/riscatto/richiesta.html:31 templates/riscatto/richieste.html:26
 msgid "rifiutata"
 msgstr ""
 
-#: templates/riscatto/richiesta.html:33
+#: templates/riscatto/richiesta.html:35
 #, python-format
 msgid "%(chi)s dice di essere %(giocatore)s."
 msgstr ""
 
-#: templates/riscatto/richiesta.html:39
+#: templates/riscatto/richiesta.html:41
 #, python-format
 msgid "%(giocatore)s è iscritto a %(n)s gara."
 msgid_plural "%(giocatore)s è iscritto a %(n)s gare."
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/riscatto/richiesta.html:43
+#: templates/riscatto/richiesta.html:45
 #, python-format
 msgid "La decide %(chi)s."
 msgstr ""
 
-#: templates/riscatto/richiesta.html:45
+#: templates/riscatto/richiesta.html:47
+#, python-format
+msgid "Ritirata da chi l'aveva fatta il %(data)s."
+msgstr ""
+
+#: templates/riscatto/richiesta.html:49
 #, python-format
 msgid "Decisa da %(chi)s il %(data)s."
 msgstr ""
 
-#: templates/riscatto/richiesta.html:51
-msgid "Chi chiede"
-msgstr ""
-
-#: templates/riscatto/richiesta.html:63
-msgid "Email non ancora verificata"
+#: templates/riscatto/richiesta.html:59
+#, python-format
+msgid ""
+"La richiesta di riscatto di %(giocatore)s non arriverà più a %(chi)s. "
+"Potrai chiederla di nuovo."
 msgstr ""
 
 #: templates/riscatto/richiesta.html:67
+msgid "Chi chiede"
+msgstr ""
+
+#: templates/riscatto/richiesta.html:79
+msgid "Email non ancora verificata"
+msgstr ""
+
+#: templates/riscatto/richiesta.html:83
 msgid "verificata"
 msgstr ""
 
-#: templates/riscatto/richiesta.html:69
+#: templates/riscatto/richiesta.html:85
 msgid "da verificare"
 msgstr ""
 
-#: templates/riscatto/richiesta.html:73
+#: templates/riscatto/richiesta.html:89
 msgid ""
 "Conferma solo se sei sicuro che sia la persona che hai aggiunto: le "
 "partite passano al suo account e non tornano indietro."
 msgstr ""
 
-#: templates/riscatto/richiesta.html:78
+#: templates/riscatto/richiesta.html:94
 #, python-format
 msgid ""
 "Le partite di %(giocatore)s passano all'account di %(chi)s, e non si "
 "torna indietro."
 msgstr ""
 
-#: templates/riscatto/richiesta.html:78 templates/riscatto/richiesta.html:79
+#: templates/riscatto/richiesta.html:94 templates/riscatto/richiesta.html:95
 msgid "Conferma il riscatto"
 msgstr ""
 
-#: templates/riscatto/richiesta.html:86
+#: templates/riscatto/richiesta.html:102
 #, python-format
 msgid "%(chi)s non riceverà le partite di %(giocatore)s."
 msgstr ""
 
-#: templates/riscatto/richiesta.html:87
+#: templates/riscatto/richiesta.html:103
 msgid "Non è lui: rifiuta"
 msgstr ""
 
@@ -29519,25 +29571,32 @@ msgstr ""
 msgid "Chi dice di essere un giocatore non registrato"
 msgstr ""
 
-#: templates/riscatto/richieste.html:34
+#: templates/riscatto/richieste.html:36
 msgid "Da decidere"
 msgstr ""
 
-#: templates/riscatto/richieste.html:38
+#: templates/riscatto/richieste.html:40
 #, python-format
 msgid "lo chiede %(chi)s"
 msgstr ""
 
-#: templates/riscatto/richieste.html:42
+#: templates/riscatto/richieste.html:44
 msgid "Nessuna richiesta aspetta una tua decisione."
 msgstr ""
 
-#: templates/riscatto/richieste.html:48
+#: templates/riscatto/richieste.html:50
 msgid "Le tue richieste"
 msgstr ""
 
-#: templates/riscatto/richieste.html:51
+#: templates/riscatto/richieste.html:53
 msgid "chiesto da te"
+msgstr ""
+
+#: templates/riscatto/richieste.html:59
+#, python-format
+msgid ""
+"La richiesta di riscatto di %(giocatore)s non aspetterà più una risposta."
+" Potrai chiederla di nuovo."
 msgstr ""
 
 #: templates/roles/holders.html:17

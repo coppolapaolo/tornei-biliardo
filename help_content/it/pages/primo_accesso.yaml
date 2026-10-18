@@ -177,6 +177,16 @@ blocks:
           partite, classifiche ed ELO di quel giocatore sono tuoi.
 
   - type: note
+    tone: info
+    title: "Ti sei sbagliato? Ritira la richiesta"
+    text: >-
+      Finché nessuno ha risposto, puoi ritirarla: apri **Riscatti** nel menu,
+      oppure la richiesta dalla notifica, e tocca **Ritira la richiesta**.
+      Chi doveva decidere riceve un avviso e non trova più niente da fare, e
+      il giocatore torna libero: tu o qualcun altro potete chiederlo di nuovo.
+      Una richiesta già confermata o rifiutata non si ritira più.
+
+  - type: note
     tone: tip
     title: "Se scrivi nome e cognome all'inizio"
     text: >-

@@ -333,6 +333,8 @@ class ClaimService:
         richiesta = db.session.get(ClaimRequest, request_id)
         if richiesta is None:
             raise NotFoundError(_("Richiesta non trovata."))
+        if richiesta.status == ClaimRequestStatus.WITHDRAWN.value:
+            raise ConflictError(_("Questa richiesta l'ha ritirata chi l'aveva fatta."))
         if not richiesta.is_pending:
             raise ConflictError(_("Questa richiesta ha già avuto una risposta."))
         if not ClaimService.puo_decidere(richiesta, decider):
@@ -383,6 +385,7 @@ class ClaimService:
         richiesta = db.session.get(ClaimRequest, request_id) or richiesta
         db.session.flush()
 
+        ClaimService._risolvi_avvisi_ai_destinatari(richiesta)
         ClaimService._avvisa_chi_ha_chiesto(richiesta, approvata=True)
         logger.info(
             "Riscatto %s: giocatore %s → account %s, confermato da %s",
@@ -402,7 +405,53 @@ class ClaimService:
         richiesta.decided_by_id = decider.id
         richiesta.decided_at = utc_now()
         db.session.flush()
+        ClaimService._risolvi_avvisi_ai_destinatari(richiesta)
         ClaimService._avvisa_chi_ha_chiesto(richiesta, approvata=False)
+        return richiesta
+
+    # ---------------------------------------------------------------- ritirare
+
+    @staticmethod
+    @transactional(domain="user")
+    def withdraw(request_id: int, user: Any) -> ClaimRequest:
+        """Chi ha chiesto il riscatto lo ritira, finché nessuno ha deciso.
+
+        Lo ritira **solo** chi l'ha fatta: chi decide ha già «rifiuta». La
+        richiesta resta come storia, con ``decided_by`` uguale a chi chiedeva e
+        ``decided_at`` al momento del ritiro; non essendo più ``pending``, il
+        giocatore torna libero per una nuova richiesta, anche della stessa
+        persona (emendamento all'ADR-086 del 2026-10-18).
+
+        Raises:
+            NotFoundError: la richiesta non esiste.
+            PermissionDeniedError: non l'ha fatta ``user``.
+            ConflictError: qualcuno l'ha già decisa, o è già ritirata.
+        """
+        richiesta = db.session.get(ClaimRequest, request_id)
+        if richiesta is None:
+            raise NotFoundError(_("Richiesta non trovata."))
+        if (
+            user is None
+            or not getattr(user, "is_authenticated", True)
+            or user.id != richiesta.claimant_id
+        ):
+            raise PermissionDeniedError(
+                _("Una richiesta di riscatto la ritira solo chi l'ha fatta.")
+            )
+        if richiesta.status == ClaimRequestStatus.WITHDRAWN.value:
+            raise ConflictError(_("Hai già ritirato questa richiesta."))
+        if not richiesta.is_pending:
+            raise ConflictError(
+                _("Questa richiesta ha già avuto una risposta: non si ritira più.")
+            )
+
+        richiesta.status = ClaimRequestStatus.WITHDRAWN.value
+        richiesta.decided_by_id = user.id
+        richiesta.decided_at = utc_now()
+        db.session.flush()
+
+        ClaimService._risolvi_avvisi_ai_destinatari(richiesta)
+        ClaimService._avvisa_del_ritiro(richiesta)
         return richiesta
 
     # ------------------------------------------------------------------- code
@@ -487,6 +536,49 @@ class ClaimService:
             priority=NotificationPriority.NORMAL,
             action_url=f"/riscatti/{richiesta.id}",
             action_text=_l("Decidi"),
+        )
+
+    @staticmethod
+    def _risolvi_avvisi_ai_destinatari(richiesta: ClaimRequest) -> None:
+        """L'avviso «Decidi» ai destinatari non chiede più niente: si segna letto.
+
+        Vale per ogni chiusura — conferma, rifiuto, ritiro — e per **tutti** i
+        destinatari, anche quelli che non hanno deciso: con più admin, uno
+        decide e gli altri non devono trovarsi un «Decidi» ancora acceso.
+        """
+        from models.notification.models import Notification, NotificationType
+
+        avvisi = Notification.query.filter(
+            Notification.user_id.in_(  # type: ignore[attr-defined]
+                [r.recipient_id for r in richiesta.recipients]
+            ),
+            Notification.notification_type == NotificationType.CLAIM_REQUEST_RECEIVED,
+            Notification.action_url == f"/riscatti/{richiesta.id}",
+        ).all()
+        for avviso in avvisi:
+            avviso.mark_as_read()
+        db.session.flush()
+
+    @staticmethod
+    def _avvisa_del_ritiro(richiesta: ClaimRequest) -> None:
+        """Un avviso leggero a chi doveva decidere: non c'è più niente da fare."""
+        from flask_babel import lazy_gettext as _l
+        from models.notification.models import NotificationPriority, NotificationType
+
+        claimant = db.session.get(User, richiesta.claimant_id)
+        ClaimService._notifica(
+            [r.recipient_id for r in richiesta.recipients],
+            notification_type=NotificationType.CLAIM_REQUEST_WITHDRAWN,
+            title=_l("Riscatto ritirato"),
+            message=_l(
+                "%(chi)s ha ritirato la richiesta di riscatto di %(giocatore)s: "
+                "non c'è più niente da decidere.",
+                chi=claimant.username if claimant else "",
+                giocatore=richiesta.nome_giocatore,
+            ),
+            priority=NotificationPriority.LOW,
+            action_url=f"/riscatti/{richiesta.id}",
+            action_text=_l("Vedi la richiesta"),
         )
 
     @staticmethod

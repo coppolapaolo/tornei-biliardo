@@ -64,6 +64,7 @@ class NotificationType(Enum):
     # Riscatto di un giocatore non registrato (ADR-086)
     CLAIM_REQUEST_RECEIVED = "claim_request_received"  # Qualcuno dice di essere lui
     CLAIM_REQUEST_PROCESSED = "claim_request_processed"  # Esito del tuo riscatto
+    CLAIM_REQUEST_WITHDRAWN = "claim_request_withdrawn"  # Chi chiedeva l'ha ritirata
 
     # Istruttori e allievi (ADR-069). I due avvisi non sono simmetrici di
     # proposito: chi **toglie** un istruttore non deve annunciarglielo — è una

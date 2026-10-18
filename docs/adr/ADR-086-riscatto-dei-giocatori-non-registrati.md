@@ -18,7 +18,7 @@ fare con i giocatori già presenti in produzione, che un creatore non l'hanno.
 
 **La richiesta.** `ClaimRequest` (`models/user/claim_request.py`), sullo schema
 di `RoleRequest` (ADR-041): `placeholder_id`, `claimant_id`, `status`
-(`ClaimRequestStatus`: pending/approved/rejected), `decided_by_id`,
+(`ClaimRequestStatus`: pending/approved/rejected, più withdrawn dall'emendamento del 2026-10-18), `decided_by_id`,
 `decided_at`, più `created_at`/`updated_at`. I destinatari stanno in
 `ClaimRequestRecipient`. Un indice UNIQUE **parziale**
 `uq_claim_request_pending (placeholder_id) WHERE status = 'pending'` tiene
@@ -147,6 +147,39 @@ serve a chi decide un riscatto, che guarda se l'email è verificata.
   `tests/new/unit/test_specifiche_conformita.py::TestRiscattoDeiNonRegistrati`.
 - Regola in `docs/reference/SPECIFICHE.md`, «Giocatori non ancora
   registrati» → «Il riscatto», nota del 2026-10-17.
+
+## Emendamento 2026-10-18 — la richiesta si ritira
+
+**Decisione dell'utente**: «la richiesta deve poter essere ritirata». Senza
+ritiro, una richiesta sbagliata — il giocatore sbagliato, o un omonimo —
+teneva fermo quel giocatore finché il creatore o l'admin non la rifiutava:
+l'indice parziale ne ammette una sola in attesa, quindi nemmeno la persona
+giusta poteva chiederlo.
+
+- **Stato nuovo** `ClaimRequestStatus.WITHDRAWN` (`"withdrawn"`). La colonna è
+  `String(20)`, non `db.Enum`, e l'indice `uq_claim_request_pending` guarda
+  solo `status = 'pending'`: **nessuna migration**. Una richiesta ritirata
+  esce dall'indice e il giocatore torna libero, anche per la stessa persona.
+- **Chi ritira**: solo `claimant_id`, e solo finché è `pending`
+  (`ClaimService.withdraw`). Il creatore e l'admin no: per loro c'è «rifiuta».
+  Ritirata, la richiesta registra `decided_by_id = claimant_id` e
+  `decided_at` al momento del ritiro: resta come storia.
+- **Gli incroci**: ritirare una richiesta decisa → `ConflictError`; decidere
+  una ritirata → `ConflictError` con un messaggio suo («l'ha ritirata chi
+  l'aveva fatta»). La route `riscatto.decidi` lo mostra come flash.
+- **Notifiche**: l'avviso `CLAIM_REQUEST_RECEIVED` di ogni destinatario si
+  **segna letto** (`_risolvi_avvisi_ai_destinatari`). Il meccanismo non
+  esisteva: lo stesso aiuto vale ora anche per conferma e rifiuto, perché con
+  più admin uno decide e gli altri restavano con un «Decidi» acceso. In più
+  ai destinatari arriva un avviso a priorità bassa,
+  `CLAIM_REQUEST_WITHDRAWN`, composto con `lazy_gettext` nella lingua di chi
+  riceve (ADR-062).
+- **Interfaccia**: `POST /riscatti/<id>/ritira` (`riscatto.ritira`, in
+  `ENDPOINT_ROLES` come le route sorelle). Il pulsante «Ritira la richiesta»
+  sta nella pagina della richiesta e sotto ciascuna richiesta in attesa di
+  «Le tue richieste», con `confirmSubmit` (ADR-074): tocca qualcun altro.
+- Test: `tests/new/integration/test_riscatto_giocatori.py::TestRitiro`,
+  `test_specifiche_conformita.py::TestRiscattoDeiNonRegistrati`.
 
 ## Riferimenti
 

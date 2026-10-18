@@ -33,6 +33,7 @@ Chi si registra e si riconosce in un giocatore non registrato lo **riscatta**: c
 - Chi non ha un account sceglie **Accedi** o **Crea un account**: la richiesta parte **da sola appena entra**, senza un secondo gesto.
 - Decide **chi ha creato il giocatore**, che lo conosce di persona. Per un giocatore **senza creatore** — quelli presenti prima di questa regola — o col creatore cancellato decide **solo l'amministratore**.
 - C'è **una sola richiesta in attesa** per giocatore. Dopo un rifiuto se ne può fare un'altra.
+- Chi ha chiesto può **ritirare** la richiesta finché aspetta una risposta; nessun altro la ritira (chi decide ha già «rifiuta»). Dopo il ritiro se ne può fare un'altra, anche dalla stessa persona, e chi doveva decidere riceve un avviso. Una richiesta già decisa non si ritira, e una ritirata non si decide.
 - Non lo riscatta chi l'ha creato, né l'amministratore, né un altro giocatore non registrato. Un giocatore si riscatta **una volta sola**.
 - **Non serve l'email verificata**: chi decide vede nome utente ed email di chi chiede, e se l'email è verificata.
 - Se chi decide **conferma**, tutto passa all'account di chi l'ha chiesto: iscrizioni, partite, classifiche ed ELO. Se i due si sono affrontati in una partita, il riscatto si ferma e non sposta niente.
@@ -40,6 +41,8 @@ Chi si registra e si riconosce in un giocatore non registrato lo **riscatta**: c
 - Nell'onboarding, chi scrive nome e cognome vede i giocatori non registrati che si chiamano come lui, accenti e maiuscole a parte.
 
 _Regola nuova del 2026-10-17, decisa dall'utente (ADR-086): conferma il creatore, l'amministratore per i giocatori senza creatore._
+
+_Emendamento del 2026-10-18, deciso dall'utente (ADR-086): la richiesta si ritira. Prima una richiesta sbagliata teneva fermo il giocatore finché chi decide non la rifiutava._
 
 ## Campionati
 

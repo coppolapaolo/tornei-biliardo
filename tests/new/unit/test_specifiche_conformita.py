@@ -4114,6 +4114,22 @@ class TestRiscattoDeiNonRegistrati:
         with pytest.raises(ConflictError):
             ClaimService.richiedi(giocatore.id, self._utente(db_session))
 
+    def test_chi_ha_chiesto_ritira_e_si_chiede_di_nuovo(self, db_session):
+        """«Chi ha chiesto può ritirare la richiesta finché aspetta […]; nessun
+        altro la ritira […]. Dopo il ritiro se ne può fare un'altra, anche
+        dalla stessa persona», emendamento del 2026-10-18."""
+        from models.exceptions import PermissionDeniedError
+        from models.user.claim_service import ClaimService
+
+        direttore = self._utente(db_session, UserRole.DIRECTOR.value)
+        giocatore = self._giocatore(db_session, direttore)
+        chi = self._utente(db_session)
+        richiesta = ClaimService.richiedi(giocatore.id, chi)
+        with pytest.raises(PermissionDeniedError):
+            ClaimService.withdraw(richiesta.id, direttore)
+        ClaimService.withdraw(richiesta.id, chi)
+        assert ClaimService.richiedi(giocatore.id, chi).is_pending
+
     def test_non_lo_riscatta_chi_l_ha_creato_ne_l_admin(self, db_session):
         """«Non lo riscatta chi l'ha creato, né l'amministratore»."""
         from models.exceptions import ValidationError

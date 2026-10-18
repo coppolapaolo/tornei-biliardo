@@ -514,6 +514,7 @@ cosa che il rating decide da solo è **quali partite entrano nell'Elo**:
 | `/riscatti` | GET | `riscatto.richieste` | `@login_required` | UI page | Richieste di riscatto da decidere (creatore, o admin per gli storici) e fatte da me (ADR-086) |
 | `/riscatti/<int:request_id>` | GET | `riscatto.richiesta` | `@login_required` | UI page | Una richiesta di riscatto: la leggono chi l'ha fatta, chi la decide e l'admin |
 | `/riscatti/<int:request_id>/decidi` | POST | `riscatto.decidi` | `@login_required` | action | Conferma (unione degli account) o rifiuta un riscatto; chi può lo decide `ClaimService` |
+| `/riscatti/<int:request_id>/ritira` | POST | `riscatto.ritira` | `@login_required` | action | Chi ha chiesto il riscatto lo ritira finché aspetta; nessun altro (`ClaimService.withdraw`) |
 | `/riscatti/sei-tu` | GET | `riscatto.omonimi` | `@login_required` | UI page | Passo dell'onboarding: i non registrati con il tuo nome e cognome |
 | `/campionato/<int:campionato_id>/public` | GET | `main.campionato_detail_public` | None (public) | UI page | Dettaglio campionato pubblico |
 | `/garas` | GET | `main.public_garas_list` | None (public) | UI page | Lista gare standalone pubbliche |

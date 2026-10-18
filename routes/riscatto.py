@@ -188,6 +188,7 @@ def richiesta(request_id: int):
         claimant=claimant,
         puo_decidere=richiesta.is_pending
         and ClaimService.puo_decidere(richiesta, user),
+        puo_ritirare=richiesta.is_pending and richiesta.claimant_id == user.id,
         a_chi=ClaimService.a_chi(richiesta),
         n_gare=(
             len([i for i in placeholder.inscriptions if not i.is_withdrawn])
@@ -216,6 +217,25 @@ def decidi(request_id: int):
     except DomainError as exc:
         flash(str(exc), "warning")
         return redirect(url_for("riscatto.richiesta", request_id=request_id))
+    return redirect(url_for("riscatto.richieste"))
+
+
+@riscatto_bp.route("/riscatti/<int:request_id>/ritira", methods=["POST"])
+@login_required
+def ritira(request_id: int):
+    """Chi ha chiesto il riscatto lo ritira, finché nessuno ha deciso."""
+    try:
+        ClaimService.withdraw(request_id, _utente())
+    except DomainError as exc:
+        flash(str(exc), "warning")
+        return redirect(url_for("riscatto.richiesta", request_id=request_id))
+    flash(
+        _(
+            "Richiesta ritirata: il giocatore torna libero, e puoi chiederlo "
+            "di nuovo quando vuoi."
+        ),
+        "info",
+    )
     return redirect(url_for("riscatto.richieste"))
 
 

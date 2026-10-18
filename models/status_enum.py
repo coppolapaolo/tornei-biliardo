@@ -292,13 +292,17 @@ class RoleRequestRecipientStatus(_StrEnum):
 
 # ──────────────────────────────────────────────────────────────────────────────
 # CLAIM REQUEST (riscatto di un giocatore non registrato, ADR-086)
-# Persistito: `claim_request.status` → {pending, approved, rejected}
+# Persistito: `claim_request.status` → {pending, approved, rejected, withdrawn}
+# `withdrawn` = ritirata da chi l'aveva fatta prima che qualcuno decidesse
+# (emendamento del 2026-10-18). Colonna String: un membro nuovo non tocca lo
+# schema, e l'indice parziale guarda solo `pending`.
 # Fonte: models/user/claim_request.py (ClaimRequest)
 # ──────────────────────────────────────────────────────────────────────────────
 class ClaimRequestStatus(_StrEnum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
+    WITHDRAWN = "withdrawn"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
