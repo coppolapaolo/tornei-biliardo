@@ -389,7 +389,7 @@ Questa unificazione permette di tracciare le statistiche e gestire i risultati i
 
 Una sfida a due si chiude con la **conferma di entrambi i giocatori** (ADR-051). Raggiunta la distanza chi vince conferma d'ufficio; nel formato libero conferma chi dichiara finita la partita. Da quel momento la partita è **in attesa di conferma** dell'altro giocatore.
 
-- Passato **un giorno** dalla prima conferma, la partita non compare più nella dashboard, né per chi deve confermare né per chi aspetta. Resta nell'elenco delle sfide con lo stato «In attesa di conferma».
+- La partita in attesa di conferma è **giocata, non in corso**: non compare e non si etichetta mai come «in corso» — né fra le sfide della dashboard, né in «Stai già giocando» dell'avvio rapido, né fra le partite da giocare di `/match/`, né nell'elenco delle sfide, né nella sua pagina. Il suo stato è «In attesa di conferma». Nell'elenco delle sfide sta fra le **giocate** per chi aspetta e fra le **da confermare** per chi deve firmare. Lo stesso vale per la partita di altri due già dichiarata, che aspetta le decisioni dei giocatori. _(Modificato il 2026-10-18 su richiesta dell'utente: fino ad allora la partita restava in dashboard per **un giorno** dalla prima conferma, e in alcuni posti si leggeva «In corso».)_
 - Chi ha almeno una partita in attesa della **propria** conferma non può lanciare una nuova sfida (proposta, avvio rapido, richiesta da disponibilità) né accettarne una ricevuta, finché non la conferma o la rifiuta. Il blocco vale da subito, non dopo il giorno. Invece di un errore il sistema gli propone le partite da chiudere, ognuna con conferma e rifiuto, e chiusa l'ultima lo riporta a quello che stava facendo. Chi aspetta la conferma dell'avversario non è bloccato.
 - Chi ha confermato ha chiuso la sua parte: può aprire **un'altra sfida con lo stesso avversario**, anche se quello non conferma mai la precedente. Le sfide in attesa si accumulano, e all'avversario si chiedono tutte. Finché nessuno dei due ha confermato, invece, i due stanno ancora giocando quella partita: un secondo avvio rapido fra loro riporta a lei, e lo stesso vale per chi deve confermare.
 - Chi ha confermato può **ritirare** la sfida finché l'avversario non la conferma: la sfida è annullata, non conta per nessuno dei due in nessuna vista né per l'ELO, e l'avversario riceve un avviso. Lo può fare **solo chi ha firmato**: chi deve ancora firmare ha già il rifiuto. Dopo la conferma di entrambi la sfida non si ritira più, e una sfida senza firme si annulla, come prima, solo finché non è stato segnato niente.
@@ -654,6 +654,8 @@ Le iscrizioni a nuove gare che non sono ancora iniziate vengono cancellate. Se l
 La home mostra le attività in corso: campionati in corso, gare standalone in corso, match singoli programmati, proposte di match da parte di altri utenti.
 
 _Nota del 2026-09-14: un match singolo in attesa di conferma da più di un giorno non è più un'attività in corso e non compare nella home; resta fra le sfide. Vedi «Ciclo di vita dei Match»._
+
+_Nota del 2026-10-18: non compare nella home nemmeno nel primo giorno. Una sfida giocata fino alla fine che aspetta solo una firma non è in corso (richiesta dell'utente)._
 
 ##### Vista Campionato
 

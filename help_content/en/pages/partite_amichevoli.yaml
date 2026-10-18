@@ -210,9 +210,11 @@ blocks:
 
   - type: text
     text: >-
-      A match **awaiting confirmation** for more than a day leaves the
-      dashboard and stays among your matches, with the status **Awaiting
-      confirmation**. And while a match is waiting for **your** confirmation
+      A match **awaiting confirmation** has been played, it is not in
+      progress: it leaves the dashboard straight away and stays among your
+      matches, with the status **Awaiting confirmation** — among the played
+      ones if you are the one waiting, among those to confirm if the
+      signature is yours to give. And while a match is waiting for **your** confirmation
       you cannot start or accept other matches: when you try, the app shows
       you the matches to close, with **I confirm the result** and **I reject
       the result**, and once the last one is closed it takes you back where
@@ -427,7 +429,7 @@ blocks:
       - q: "I cannot see the Matches section."
         a: "It is a feature that unlocks as you use the platform. If it is not there yet, play a few more competitions and it will appear."
       - q: "My opponent does not confirm the result."
-        a: "The match stays pending: after a day it leaves the dashboard, but you will find it among your matches. Nudge them: without both confirmations the result does not go into the statistics. Until they confirm, they cannot start or accept other matches; you can, even against them. If they never confirm it, you can withdraw it: open the match and tap Withdraw the match."
+        a: "The match stays pending: it is not on the dashboard, but you will find it among your matches. Nudge them: without both confirmations the result does not go into the statistics. Until they confirm, they cannot start or accept other matches; you can, even against them. If they never confirm it, you can withdraw it: open the match and tap Withdraw the match."
       - q: "Why can't I start or accept a match?"
         a: "You have at least one match waiting for your confirmation. Confirm or reject it from the page the app offers you, or from My matches: once the last one is closed, you can start again."
       - q: "Can I propose a match to someone who is not on the app?"

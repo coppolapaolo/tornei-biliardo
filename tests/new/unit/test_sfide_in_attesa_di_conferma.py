@@ -162,12 +162,18 @@ class TestDashboard:
     def test_il_giorno_vale_ventiquattro_ore(self):
         assert DASHBOARD_GRACE == timedelta(hours=24)
 
-    def test_prima_di_un_giorno_si_vede_ancora(self, coppia):
+    def test_nemmeno_prima_di_un_giorno_e_fra_le_sfide_in_corso(self, coppia):
+        """Richiesta dell'utente del 2026-10-18: «le sfide individuali in
+        attesa di conferma non devono comparire né essere etichettate come in
+        corso». Sostituisce `test_prima_di_un_giorno_si_vede_ancora`: fino ad
+        allora il primo giorno la partita restava in dashboard."""
         vincitore, perdente = coppia
-        match = _sfida_firmata_da(vincitore, perdente, ore_fa=23)
+        match = _sfida_firmata_da(vincitore, perdente, ore_fa=1)
 
-        assert match.id in self._in_dashboard(perdente.id)
-        assert match.id in self._in_dashboard(vincitore.id)
+        assert match.is_played_awaiting_confirmation
+        assert not match.is_being_played
+        assert match.id not in self._in_dashboard(perdente.id)
+        assert match.id not in self._in_dashboard(vincitore.id)
 
     def test_dopo_un_giorno_sparisce_per_chi_deve_confermare(self, coppia):
         vincitore, perdente = coppia

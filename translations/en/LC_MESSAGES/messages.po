@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-18 20:46+0200\n"
+"POT-Creation-Date: 2026-10-18 20:54+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -162,14 +162,14 @@ msgstr "Winner: %(nome)s"
 #: templates/components/_match_status_labels.html:23
 #: templates/components/_multi_set_score_display.html:90
 #: templates/components/_round_navigation.html:26
-#: templates/components/_sfide_in_corso.html:72
+#: templates/components/_sfide_in_corso.html:65
 #: templates/components/_tessera_gara.html:38
 #: templates/direttore/_card_partita.html:213
 #: templates/direttore/_menu_turno.html:24 templates/direttore/_partite.html:91
 #: templates/individual_match/dashboard.html:125
 #: templates/individual_match/dashboard.html:182
 #: templates/individual_match/matches.html:73
-#: templates/individual_match/matches.html:168
+#: templates/individual_match/matches.html:171
 #: templates/individual_match/quick_match.html:61
 #: templates/istruttore/gruppi.html:54
 #: templates/player/challenge_attempt_detail.html:24
@@ -204,7 +204,7 @@ msgstr "%(n)s registered"
 #: templates/direttore/_partite.html:93
 #: templates/individual_match/dashboard.html:167
 #: templates/individual_match/matches.html:72
-#: templates/individual_match/matches.html:176 utils/status_ui.py:188
+#: templates/individual_match/matches.html:179 utils/status_ui.py:192
 msgid "Da giocare"
 msgstr "To play"
 
@@ -3651,7 +3651,7 @@ msgstr "Your match is scheduled for %(when)s%(location)s"
 msgid "Visualizza"
 msgstr "View"
 
-#: models/individual_match/pending_confirmation.py:60
+#: models/individual_match/pending_confirmation.py:65
 #, python-format
 msgid ""
 "Hai una partita che aspetta la tua conferma: confermala o rifiutala prima"
@@ -3666,11 +3666,11 @@ msgstr[1] ""
 "You have %(num)d matches waiting for your confirmation: confirm or reject"
 " them before other challenges."
 
-#: models/individual_match/pending_confirmation.py:174
+#: models/individual_match/pending_confirmation.py:179
 msgid "Una sfida aspetta la tua firma"
 msgstr "A match is waiting for your signature"
 
-#: models/individual_match/pending_confirmation.py:176
+#: models/individual_match/pending_confirmation.py:181
 #, python-format
 msgid ""
 "%(nome)s ha firmato il risultato della vostra sfida (%(p1)s-%(p2)s): "
@@ -3679,21 +3679,21 @@ msgstr ""
 "%(nome)s signed the result of your match (%(p1)s-%(p2)s): confirm or "
 "reject it."
 
-#: models/individual_match/pending_confirmation.py:185
-#: models/individual_match/pending_confirmation.py:408
+#: models/individual_match/pending_confirmation.py:190
+#: models/individual_match/pending_confirmation.py:413
 #: models/individual_match/revisione.py:166
 #: templates/components/_history_matches_tab.html:103
 #: templates/components/_player_recent_matches.html:77
-#: templates/components/_sfide_in_corso.html:85
+#: templates/components/_sfide_in_corso.html:78
 #: templates/individual_match/dashboard.html:242
 msgid "Apri la sfida"
 msgstr "Open the match"
 
-#: models/individual_match/pending_confirmation.py:233
+#: models/individual_match/pending_confirmation.py:238
 msgid "Una partita aspetta la tua conferma"
 msgstr "A match is waiting for your confirmation"
 
-#: models/individual_match/pending_confirmation.py:236
+#: models/individual_match/pending_confirmation.py:241
 #, python-format
 msgid ""
 "%(scorer)s ha chiuso il referto di «%(descrizione)s» (%(p1)s-%(p2)s): "
@@ -3702,7 +3702,7 @@ msgstr ""
 "%(scorer)s closed the scoresheet of “%(descrizione)s” (%(p1)s-%(p2)s): "
 "confirm or reject it."
 
-#: models/individual_match/pending_confirmation.py:245
+#: models/individual_match/pending_confirmation.py:250
 #, python-format
 msgid ""
 "%(scorer)s ha chiuso il referto della vostra partita (%(p1)s-%(p2)s): "
@@ -3711,25 +3711,25 @@ msgstr ""
 "%(scorer)s closed the scoresheet of your match (%(p1)s-%(p2)s): confirm "
 "or reject it."
 
-#: models/individual_match/pending_confirmation.py:255
-#: models/individual_match/pending_confirmation.py:280
-#: models/individual_match/pending_confirmation.py:383
+#: models/individual_match/pending_confirmation.py:260
+#: models/individual_match/pending_confirmation.py:285
+#: models/individual_match/pending_confirmation.py:388
 #: models/individual_match/scored_match_service.py:265
 #: templates/components/_history_matches_tab.html:108
 #: templates/components/_match_result_row.html:184
 #: templates/components/_player_recent_matches.html:82
 #: templates/individual_match/dashboard.html:200
-#: templates/individual_match/matches.html:206
+#: templates/individual_match/matches.html:209
 #: templates/individual_match/pending_confirmations.html:80
 #: templates/individual_match/revisione.html:83
 msgid "Apri la partita"
 msgstr "Open the match"
 
-#: models/individual_match/pending_confirmation.py:271
+#: models/individual_match/pending_confirmation.py:276
 msgid "Partita annullata"
 msgstr "Match cancelled"
 
-#: models/individual_match/pending_confirmation.py:273
+#: models/individual_match/pending_confirmation.py:278
 #, python-format
 msgid ""
 "%(scorer)s ha annullato la partita che stava segnando: non conta per "
@@ -3738,7 +3738,7 @@ msgstr ""
 "%(scorer)s cancelled the match they were scoring: it does not count for "
 "either of you."
 
-#: models/individual_match/pending_confirmation.py:341
+#: models/individual_match/pending_confirmation.py:346
 #, python-format
 msgid ""
 "%(nome)s ha rifiutato la partita «%(descrizione)s»: non conta per nessuno"
@@ -3747,7 +3747,7 @@ msgstr ""
 "%(nome)s rejected the match “%(descrizione)s”: it does not count for "
 "either of you."
 
-#: models/individual_match/pending_confirmation.py:347
+#: models/individual_match/pending_confirmation.py:352
 #, python-format
 msgid ""
 "%(nome)s ha rifiutato la vostra partita segnata da un terzo: non conta "
@@ -3756,7 +3756,7 @@ msgstr ""
 "%(nome)s rejected your match scored by someone else: it does not count "
 "for either of you."
 
-#: models/individual_match/pending_confirmation.py:355
+#: models/individual_match/pending_confirmation.py:360
 #, python-format
 msgid ""
 "%(nome)s ha rifiutato la partita «%(descrizione)s»: puoi correggerla o "
@@ -3765,23 +3765,23 @@ msgstr ""
 "%(nome)s rejected the match “%(descrizione)s”: you can correct it or "
 "delete it."
 
-#: models/individual_match/pending_confirmation.py:361
+#: models/individual_match/pending_confirmation.py:366
 #, python-format
 msgid ""
 "%(nome)s ha rifiutato la partita che hai segnato: puoi correggerla o "
 "cancellarla."
 msgstr "%(nome)s rejected the match you scored: you can correct it or delete it."
 
-#: models/individual_match/pending_confirmation.py:369
-#: models/individual_match/pending_confirmation.py:378
+#: models/individual_match/pending_confirmation.py:374
+#: models/individual_match/pending_confirmation.py:383
 msgid "Partita rifiutata"
 msgstr "Match rejected"
 
-#: models/individual_match/pending_confirmation.py:399
+#: models/individual_match/pending_confirmation.py:404
 msgid "Sfida ritirata"
 msgstr "Match withdrawn"
 
-#: models/individual_match/pending_confirmation.py:401
+#: models/individual_match/pending_confirmation.py:406
 #, python-format
 msgid ""
 "%(nome)s ha ritirato la sfida che aspettava la tua firma: non conta più "
@@ -5060,7 +5060,7 @@ msgstr ""
 "You've qualified for %(nome)s in the championship %(campionato)s. Confirm"
 " or decline your participation."
 
-#: models/playoff/services.py:1398 templates/individual_match/matches.html:207
+#: models/playoff/services.py:1398 templates/individual_match/matches.html:210
 msgid "Conferma o rifiuta"
 msgstr "Confirm or decline"
 
@@ -6026,7 +6026,7 @@ msgstr ""
 msgid "Il referto di questa partita e' gia' aperto."
 msgstr "This match already has an open scoresheet."
 
-#: models/tpa/services.py:234 models/tpa/services.py:483
+#: models/tpa/services.py:234 models/tpa/services.py:494
 #, python-format
 msgid "Il referto lo tiene %(name)s."
 msgstr "%(name)s is keeping the scoresheet."
@@ -6035,52 +6035,52 @@ msgstr "%(name)s is keeping the scoresheet."
 msgid "Il referto e' chiuso."
 msgstr "The scoresheet is closed."
 
-#: models/tpa/services.py:250 models/tpa/services.py:350
-#: models/tpa/services.py:400 models/tpa/services.py:434
-#: models/tpa/services.py:480 routes/individual_match/tpa.py:192
+#: models/tpa/services.py:250 models/tpa/services.py:361
+#: models/tpa/services.py:411 models/tpa/services.py:445
+#: models/tpa/services.py:491 routes/individual_match/tpa.py:192
 #: routes/individual_match/tpa.py:219 routes/individual_match/tpa.py:252
 #: routes/individual_match/tpa.py:275 routes/individual_match/tpa.py:306
 #: routes/individual_match/tpa.py:316
 msgid "Referto non trovato"
 msgstr "Scoresheet not found"
 
-#: models/tpa/services.py:320
+#: models/tpa/services.py:331
 msgid "Prima di passare il tavolo manca il perche' il turno e' finito."
 msgstr "Before handing over the table, record why the inning ended."
 
-#: models/tpa/services.py:327
+#: models/tpa/services.py:338
 msgid "Giocatore non valido."
 msgstr "Invalid player."
 
-#: models/tpa/services.py:330
+#: models/tpa/services.py:341
 msgid "Chi spacca si sceglie prima di annotare la spaccata."
 msgstr "Who breaks is chosen before the break is recorded."
 
-#: models/tpa/services.py:335
+#: models/tpa/services.py:346
 msgid "Comando di referto sconosciuto."
 msgstr "Unknown scoresheet entry."
 
-#: models/tpa/services.py:337
+#: models/tpa/services.py:348
 msgid "Questo comando non e' possibile adesso."
 msgstr "That entry is not possible right now."
 
-#: models/tpa/services.py:360
+#: models/tpa/services.py:371
 msgid "Non c'e' niente da annullare."
 msgstr "There is nothing to undo."
 
-#: models/tpa/services.py:405
+#: models/tpa/services.py:416
 msgid "In questo turno non c'e' niente da cancellare."
 msgstr "There is nothing to clear in this turn."
 
-#: models/tpa/services.py:453
+#: models/tpa/services.py:464
 msgid "Questo e' il turno in corso: per riscriverlo c'e' «cancella»."
 msgstr "This is the current turn: use “clear” to rewrite it."
 
-#: models/tpa/services.py:456
+#: models/tpa/services.py:467
 msgid "Questo turno nel referto non c'e'."
 msgstr "This turn is not in the scoresheet."
 
-#: models/tpa/services.py:492
+#: models/tpa/services.py:503
 msgid ""
 "La partita non è ancora finita: il referto si chiude alla distanza. Se la"
 " partita si è fermata, annullala."
@@ -6088,7 +6088,7 @@ msgstr ""
 "The match is not over yet: the scoresheet closes at the distance. If the "
 "match stopped, cancel it."
 
-#: models/tpa/services.py:598
+#: models/tpa/services.py:609
 msgid ""
 "La partita ha raggiunto la distanza: prima di continuare il risultato va "
 "confermato o rifiutato."
@@ -10057,8 +10057,8 @@ msgstr "Group %(nome)s"
 #: templates/gamification/dashboard.html:51 templates/gara_detail.html:18
 #: templates/individual_match/dashboard.html:156
 #: templates/individual_match/dashboard.html:338
-#: templates/individual_match/matches.html:208
 #: templates/individual_match/matches.html:211
+#: templates/individual_match/matches.html:214
 #: templates/player/challenge_attempt_detail.html:165
 #: templates/player/venues.html:44
 msgid "Dettagli"
@@ -11402,13 +11402,13 @@ msgid "Riconferma %(nome)s"
 msgstr "Reconfirm %(nome)s"
 
 #: templates/admin/campionato_detail.html:289
-#: templates/components/_unified_match_score.html:88
-#: templates/components/_unified_match_score.html:99
-#: templates/exam/requests.html:28 utils/status_ui.py:235
+#: templates/components/_unified_match_score.html:93
+#: templates/components/_unified_match_score.html:104
+#: templates/exam/requests.html:28 utils/status_ui.py:239
 msgid "Confermato"
 msgstr "Confirmed"
 
-#: templates/admin/campionato_detail.html:290 utils/status_ui.py:236
+#: templates/admin/campionato_detail.html:290 utils/status_ui.py:240
 msgid "Rifiutato"
 msgstr "Declined"
 
@@ -14198,13 +14198,13 @@ msgstr "DISPUTED"
 msgid "Admin:"
 msgstr "Admin:"
 
-#: templates/admin/venue_manager_requests.html:73 utils/status_ui.py:180
-#: utils/status_ui.py:234
+#: templates/admin/venue_manager_requests.html:73 utils/status_ui.py:184
+#: utils/status_ui.py:238
 msgid "In Attesa"
 msgstr "Pending"
 
 #: templates/admin/venue_manager_requests.html:77
-#: templates/player/my_venue_requests.html:43 utils/status_ui.py:217
+#: templates/player/my_venue_requests.html:43 utils/status_ui.py:221
 msgid "Approvata"
 msgstr "Approved"
 
@@ -14212,7 +14212,7 @@ msgstr "Approved"
 #: templates/components/_match_status_labels.html:27
 #: templates/components/_proposal_labels.html:20
 #: templates/individual_match/dashboard.html:121
-#: templates/player/my_venue_requests.html:45 utils/status_ui.py:192
+#: templates/player/my_venue_requests.html:45 utils/status_ui.py:196
 msgid "Rifiutata"
 msgstr "Declined"
 
@@ -15351,7 +15351,7 @@ msgstr "Free line"
 #: templates/components/_bye_challenges.html:52
 #: templates/components/_player_challenges.html:47
 #: templates/individual_match/dashboard.html:200
-#: templates/individual_match/matches.html:210
+#: templates/individual_match/matches.html:213
 msgid "Continua"
 msgstr "Solid"
 
@@ -17023,7 +17023,7 @@ msgstr "New competition"
 
 #: templates/components/_campionato_gare.html:31
 #: templates/components/_proposal_labels.html:22
-#: templates/player/my_venue_requests.html:47 utils/status_ui.py:190
+#: templates/player/my_venue_requests.html:47 utils/status_ui.py:194
 msgid "Annullata"
 msgstr "Cancelled"
 
@@ -17697,7 +17697,7 @@ msgstr "View All"
 #: templates/components/_player_dashboard_content.html:41
 #: templates/individual_match/match_detail.html:275
 #: templates/individual_match/match_detail.html:278
-#: templates/individual_match/matches.html:198
+#: templates/individual_match/matches.html:201
 #: templates/individual_match/proposals.html:37
 #: templates/individual_match/proposals.html:40
 #: templates/istruttore/gruppi.html:96 templates/istruttore/gruppo.html:218
@@ -18470,7 +18470,7 @@ msgstr "Result"
 #: templates/components/_match_status_labels.html:24
 #: templates/direttore/_partite.html:92
 #: templates/individual_match/match_detail.html:301
-#: templates/individual_match/matches.html:171
+#: templates/individual_match/matches.html:174
 #: templates/public/schermo_sala.html:325
 msgid "Concluso"
 msgstr "Completed"
@@ -18805,7 +18805,7 @@ msgstr "Where from"
 #: templates/individual_match/dashboard.html:39
 #: templates/individual_match/dashboard.html:298
 #: templates/individual_match/match_detail.html:153
-#: templates/individual_match/matches.html:186
+#: templates/individual_match/matches.html:189
 #: templates/individual_match/pending_confirmations.html:47
 #: templates/individual_match/pending_confirmations.html:58
 #: templates/individual_match/quick_match.html:55
@@ -18951,7 +18951,7 @@ msgstr "Choose from the tournaments with open entries."
 
 #: templates/components/_index_registration_info.html:30
 #: templates/components/_match_card.html:239
-#: templates/components/_sfide_in_corso.html:85
+#: templates/components/_sfide_in_corso.html:78
 msgid "Gioca"
 msgstr "Play"
 
@@ -19371,7 +19371,7 @@ msgid "Interrotta dal direttore prima della distanza"
 msgstr "Stopped by the director before the distance"
 
 #: templates/components/_match_result_row.html:80
-#: templates/components/_unified_match_score.html:114
+#: templates/components/_unified_match_score.html:119
 #: templates/direttore/_card_partita.html:221
 msgid "a tempo"
 msgstr "on time"
@@ -19465,7 +19465,6 @@ msgid "Chiudi il tabellone"
 msgstr "Close the scoreboard"
 
 #: templates/components/_match_scoreboard.html:260
-#: templates/components/_sfide_in_corso.html:64
 #: templates/individual_match/_partita_di_altri_due.html:113
 #: templates/individual_match/matches.html:74
 msgid "Da confermare"
@@ -19539,15 +19538,36 @@ msgstr "A table must be assigned before starting."
 msgid "Annulla il triangolo"
 msgstr "Undo the rack"
 
-#: templates/components/_match_status_labels.html:25 utils/status_ui.py:200
+#: templates/components/_match_status_labels.html:25 utils/status_ui.py:204
 msgid "Confermato dai giocatori"
 msgstr "Confirmed by players"
 
 #: templates/components/_match_status_labels.html:26
 #: templates/components/_proposal_labels.html:37
-#: templates/individual_match/matches.html:174
+#: templates/individual_match/matches.html:177
 msgid "Annullato"
 msgstr "Cancelled"
+
+#: templates/components/_match_status_labels.html:48
+#: templates/components/_player_recent_matches.html:66
+#: templates/individual_match/match_detail.html:82
+#: templates/individual_match/matches.html:161 utils/status_ui.py:175
+msgid "Contestata"
+msgstr "Disputed"
+
+#: templates/components/_match_status_labels.html:50 utils/status_ui.py:177
+msgid "Registrata da un solo giocatore"
+msgstr "Recorded by one player only"
+
+#: templates/components/_match_status_labels.html:52
+#: templates/individual_match/dashboard.html:123
+#: templates/individual_match/dashboard.html:215
+#: templates/individual_match/dashboard.html:223
+#: templates/individual_match/matches.html:169
+#: templates/individual_match/pending_confirmations.html:39
+#: utils/status_ui.py:181
+msgid "In attesa di conferma"
+msgstr "Awaiting confirmation"
 
 #: templates/components/_match_video.html:26
 msgid "Video e descrizione"
@@ -19640,7 +19660,7 @@ msgstr "Save the dates"
 #: templates/direttore/_modali_gioco.html:50
 #: templates/individual_match/match_detail.html:275
 #: templates/individual_match/match_detail.html:278
-#: templates/individual_match/matches.html:198
+#: templates/individual_match/matches.html:201
 #: templates/individual_match/proposals.html:40
 msgid "Esattamente"
 msgstr "Exactly"
@@ -20162,12 +20182,6 @@ msgid "Storico"
 msgstr "History"
 
 #: templates/components/_player_recent_matches.html:66
-#: templates/individual_match/match_detail.html:82
-#: templates/individual_match/matches.html:158 utils/status_ui.py:175
-msgid "Contestata"
-msgstr "Disputed"
-
-#: templates/components/_player_recent_matches.html:66
 msgid "Registrata da uno"
 msgstr "Recorded by one"
 
@@ -20574,7 +20588,7 @@ msgstr "Matches can be played in any order. The standings update in real time."
 
 #: templates/components/_round_navigation.html:24
 #: templates/components/_ssr_section.html:19 utils/status_ui.py:160
-#: utils/status_ui.py:193
+#: utils/status_ui.py:197
 msgid "Completato"
 msgstr "Completed"
 
@@ -20706,23 +20720,14 @@ msgstr "vs"
 msgid "In attesa di un avversario"
 msgstr "Waiting for an opponent"
 
-#: templates/components/_sfide_in_corso.html:66
+#: templates/components/_sfide_in_corso.html:62
 #: templates/individual_match/dashboard.html:181
-#: templates/individual_match/matches.html:164
+#: templates/individual_match/matches.html:167
 #, python-format
 msgid "La segna %(name)s"
 msgstr "Scored by %(name)s"
 
-#: templates/components/_sfide_in_corso.html:69
-#: templates/individual_match/dashboard.html:123
-#: templates/individual_match/dashboard.html:215
-#: templates/individual_match/dashboard.html:223
-#: templates/individual_match/matches.html:166
-#: templates/individual_match/pending_confirmations.html:39
-msgid "In attesa di conferma"
-msgstr "Awaiting confirmation"
-
-#: templates/components/_sfide_in_corso.html:72
+#: templates/components/_sfide_in_corso.html:65
 msgid "Fissata"
 msgstr "Scheduled"
 
@@ -21812,30 +21817,30 @@ msgstr "Create a tournament"
 msgid "Crea sfida"
 msgstr "Create Match"
 
-#: templates/components/_unified_match_score.html:63
+#: templates/components/_unified_match_score.html:68
 msgid "un giro"
 msgstr "one lap"
 
-#: templates/components/_unified_match_score.html:63
+#: templates/components/_unified_match_score.html:68
 #, python-format
 msgid "%(n)s giri"
 msgstr "%(n)s laps"
 
-#: templates/components/_unified_match_score.html:65
+#: templates/components/_unified_match_score.html:70
 msgid "vince chi fa più triangoli"
 msgstr "whoever wins more racks takes it"
 
-#: templates/components/_unified_match_score.html:108
+#: templates/components/_unified_match_score.html:113
 #, python-format
 msgid "%(n)s set giocati"
 msgstr "%(n)s sets played"
 
-#: templates/components/_unified_match_score.html:110
+#: templates/components/_unified_match_score.html:115
 #, python-format
 msgid "%(n)s triangoli giocati"
 msgstr "%(n)s racks played"
 
-#: templates/components/_unified_match_score.html:131
+#: templates/components/_unified_match_score.html:136
 msgid "ha vinto"
 msgstr "won"
 
@@ -27776,7 +27781,7 @@ msgid "Data confermata"
 msgstr "Date confirmed"
 
 #: templates/individual_match/dashboard.html:199
-#: templates/individual_match/matches.html:209
+#: templates/individual_match/matches.html:212
 msgid "Segui la partita"
 msgstr "Follow the match"
 
@@ -27825,12 +27830,12 @@ msgid "senza vincitore"
 msgstr "no winner"
 
 #: templates/individual_match/dashboard.html:318
-#: templates/individual_match/matches.html:227
+#: templates/individual_match/matches.html:230
 msgid "Nessuna sfida ancora"
 msgstr "No match yet"
 
 #: templates/individual_match/dashboard.html:320
-#: templates/individual_match/matches.html:229
+#: templates/individual_match/matches.html:232
 msgid ""
 "Proponi una data a un altro giocatore: quando accetta, la sfida compare "
 "qui."
@@ -27839,12 +27844,12 @@ msgstr ""
 "here."
 
 #: templates/individual_match/dashboard.html:324
-#: templates/individual_match/matches.html:233
+#: templates/individual_match/matches.html:236
 msgid "Sto giocando adesso"
 msgstr "I'm playing right now"
 
 #: templates/individual_match/dashboard.html:327
-#: templates/individual_match/matches.html:236
+#: templates/individual_match/matches.html:239
 msgid "Proponi una data"
 msgstr "Propose a date"
 
@@ -27999,7 +28004,7 @@ msgid "Torna alle sfide"
 msgstr "Back to the matches"
 
 #: templates/individual_match/match_detail.html:82
-#: templates/individual_match/matches.html:162
+#: templates/individual_match/matches.html:165
 msgid "Registrata da te"
 msgstr "Recorded by you"
 
@@ -28033,7 +28038,7 @@ msgstr ""
 "recognise it, it becomes confirmed."
 
 #: templates/individual_match/match_detail.html:98
-#: templates/individual_match/matches.html:160
+#: templates/individual_match/matches.html:163
 msgid "Da rivedere"
 msgstr "To review"
 
@@ -28337,27 +28342,27 @@ msgstr "Filter by opponent"
 msgid "Tutti gli avversari"
 msgstr "All opponents"
 
-#: templates/individual_match/matches.html:153
+#: templates/individual_match/matches.html:156
 msgid "Rifiutata da te"
 msgstr "Rejected by you"
 
-#: templates/individual_match/matches.html:153
+#: templates/individual_match/matches.html:156
 msgid "Confermata da te"
 msgstr "Confirmed by you"
 
-#: templates/individual_match/matches.html:171
+#: templates/individual_match/matches.html:174
 msgid "Hai vinto"
 msgstr "You won"
 
-#: templates/individual_match/matches.html:171
+#: templates/individual_match/matches.html:174
 msgid "Hai perso"
 msgstr "You lost"
 
-#: templates/individual_match/matches.html:220
+#: templates/individual_match/matches.html:223
 msgid "Nessuna sfida trovata"
 msgstr "No matches found"
 
-#: templates/individual_match/matches.html:221
+#: templates/individual_match/matches.html:224
 msgid "Prova a togliere qualche filtro."
 msgstr "Try removing a filter or two."
 
@@ -32237,14 +32242,14 @@ msgstr "Competition Completed"
 msgid "Setup"
 msgstr "Setup"
 
-#: utils/status_ui.py:100 utils/status_ui.py:148 utils/status_ui.py:181
-#: utils/status_ui.py:189
+#: utils/status_ui.py:100 utils/status_ui.py:148 utils/status_ui.py:185
+#: utils/status_ui.py:193
 msgid "In Corso"
 msgstr "In Progress"
 
 #: utils/status_ui.py:104 utils/status_ui.py:116 utils/status_ui.py:137
-#: utils/status_ui.py:204 utils/status_ui.py:222 utils/status_ui.py:240
-#: utils/status_ui.py:279
+#: utils/status_ui.py:208 utils/status_ui.py:226 utils/status_ui.py:244
+#: utils/status_ui.py:283
 msgid "Sconosciuto"
 msgstr "Unknown"
 
@@ -32252,15 +32257,11 @@ msgstr "Unknown"
 msgid "In attesa di chiusura"
 msgstr "Awaiting closure"
 
-#: utils/status_ui.py:177
-msgid "Registrata da un solo giocatore"
-msgstr "Recorded by one player only"
-
-#: utils/status_ui.py:216
+#: utils/status_ui.py:220
 msgid "In Valutazione"
 msgstr "Under Review"
 
-#: utils/status_ui.py:218
+#: utils/status_ui.py:222
 msgid "Respinta"
 msgstr "Rejected"
 

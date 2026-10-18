@@ -11,7 +11,12 @@ Regole, decise dall'utente il 2026-09-14 (``SPECIFICHE.md``, nota datata):
 * **dashboard** — passato un giorno dalla prima firma
   (:data:`DASHBOARD_GRACE`), la partita non compare più fra le sfide in corso
   della dashboard, né per chi deve firmare né per chi aspetta. Resta
-  nell'elenco delle sfide con lo stato «In attesa di conferma»;
+  nell'elenco delle sfide con lo stato «In attesa di conferma».
+  *Superata il 2026-10-18*, su richiesta dell'utente: la partita che aspetta
+  una firma è giocata e non «in corso», quindi dalle sfide in corso della
+  dashboard esce **subito** (`IndividualMatch.is_played_awaiting_confirmation`).
+  `is_hidden_from_dashboard` resta come regola dichiarata del giorno di
+  grazia, ma la dashboard non la chiede più;
 * **blocco** — chi ha almeno una partita che aspetta la **sua** firma non può
   lanciare né accettare altre sfide individuali finché non la conferma o la
   rifiuta. Il blocco scatta subito, non dopo un giorno: il giorno riguarda

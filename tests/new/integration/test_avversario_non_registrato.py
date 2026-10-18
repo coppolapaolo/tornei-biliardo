@@ -360,3 +360,72 @@ class TestDopoIlRiscatto:
             n for n in _notifiche_di(luca.id) if n.action_url == "/match/revisione"
         ]
         assert len(inviti) == 1
+
+
+@pytest.mark.integration
+class TestColRefertoTpa:
+    """Il referto si chiude da solo alla distanza (#714): la sfida contro il
+    non registrato si chiude con lui, e annullare l'ultimo tocco riapre
+    entrambi."""
+
+    def _al_tre_col_referto(self, creatore):
+        from models.status_enum import Discipline
+        from models.tpa.services import TpaRefertoService
+
+        match = QuickMatchService.start(
+            creatore.id,
+            NuovoGiocatore("Gino", f"Tpa{uuid.uuid4().hex[:5]}"),
+            {
+                "match_format": "single",
+                "distance": 3,
+                "discipline": Discipline.NINE_BALL.value,
+            },
+        )
+        db.session.commit()
+        TpaRefertoService.open_referto(match.id, creatore.id)
+        db.session.commit()
+        for _ in range(3):
+            for comando in ("seat:1", "1", "9", "end"):
+                referto = TpaRefertoService.get_for_match(match.id)
+                assert referto is not None
+                if referto.is_closed:
+                    break
+                TpaRefertoService.press(referto.id, creatore.id, comando)
+        db.session.commit()
+        sfida = db.session.get(IndividualMatch, match.id)
+        assert sfida is not None
+        return sfida
+
+    def test_alla_distanza_si_chiudono_referto_e_sfida(self, app):
+        from models.tpa.services import TpaRefertoService
+
+        creatore = _user(UserRole.DIRECTOR.value)
+        match = self._al_tre_col_referto(creatore)
+
+        referto = TpaRefertoService.get_for_match(match.id)
+        assert referto is not None and referto.is_closed
+        assert match.is_recorded_by_one
+        assert match.recorded_by_id == creatore.id
+
+    def test_annullare_riapre_referto_e_sfida(self, app):
+        from models.tpa.services import TpaRefertoService
+
+        creatore = _user(UserRole.DIRECTOR.value)
+        match_id = self._al_tre_col_referto(creatore).id
+        referto = TpaRefertoService.get_for_match(match_id)
+        assert referto is not None
+        assert TpaRefertoService.can_undo_closing(referto, creatore.id)
+
+        for _ in range(4):
+            sfida = db.session.get(IndividualMatch, match_id)
+            if sfida.player1_score < 3:
+                break
+            TpaRefertoService.undo(referto.id, creatore.id)
+            db.session.commit()
+
+        sfida = db.session.get(IndividualMatch, match_id)
+        referto = TpaRefertoService.get_for_match(match_id)
+        assert referto is not None and not referto.is_closed
+        assert sfida.status == MatchStatus.IN_PROGRESS
+        assert not sfida.is_recorded_by_one
+        assert sfida.winner_id is None

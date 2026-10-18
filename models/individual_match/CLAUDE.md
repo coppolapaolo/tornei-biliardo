@@ -77,8 +77,12 @@ SCHEDULED → IN_PROGRESS → (distance reached) → is_ready_for_validation() =
 - `match.awaiting_confirmation_from_id` / `awaiting_confirmation_since`: una
   firma c'è, l'altra manca (a distanza raggiunta chi vince firma d'ufficio).
   Senza nessuna firma la partita non aspetta nessuno.
-- Dopo `DASHBOARD_GRACE` (24 h dalla prima firma) esce dalla dashboard di
-  entrambi; resta in «Le mie sfide» con lo stato «In attesa di conferma».
+- **Giocata, non in corso** (2026-10-18): `is_played_awaiting_confirmation`
+  (anche la partita di un terzo dichiarata) / `is_being_played`. Esce
+  **subito** dalle sfide in corso della dashboard e da «Stai già giocando»;
+  stato «In attesa di conferma» (`status_text`, `st.pastiglia`), fra le
+  giocate di «Le mie sfide» per chi aspetta. `DASHBOARD_GRACE` (24 h) non lo
+  chiede più nessuno.
 - `PendingConfirmationService.ensure_none_pending(user_id)` blocca proposte
   (dirette e aperte), accettazioni e avvio rapido di chi deve firmare
   (`PendingConfirmationError`, un `ConflictError`). Le route rispondono con

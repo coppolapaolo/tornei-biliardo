@@ -138,8 +138,11 @@
     {% set in_lavorazione = di_un_terzo and not match.is_declared_by_scorer and state == MatchStatus.IN_PROGRESS.value %}
     {% set decisa = di_un_terzo and match.is_declared_by_scorer and not waiting_for and state == MatchStatus.IN_PROGRESS.value %}
     {% set mia_decisione = match.decision_of(current_user.id) %}
-    {% set group = 'annullati' if state == MatchStatus.CANCELLED.value
-                   else ('giocati' if is_finished or decisa
+    {# Giocata fino alla fine e in attesa della firma **dell'altro**: è fra
+       le giocate, non fra quelle in corso (2026-10-18). «Da confermare» resta
+       a chi la firma la deve dare. #}
+    {% set group ='annullati' if state == MatchStatus.CANCELLED.value
+                   else ('giocati' if is_finished or decisa or (waiting_for and waiting_for != current_user.id)
                    else ('da_confermare' if waiting_for
                    else ('in_corso' if state == MatchStatus.IN_PROGRESS.value else 'da_giocare'))) %}
     <article class="c7-card match-card {{ 'c7-dim' if state == MatchStatus.CANCELLED.value }}"

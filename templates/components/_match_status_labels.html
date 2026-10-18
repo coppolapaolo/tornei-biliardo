@@ -35,3 +35,22 @@
   MatchStatus.CANCELLED.value: 'muted',
   MatchStatus.REJECTED.value: 'err'
 } %}
+
+{# La pastiglia di **una sfida**, non di uno stato: la sfida giocata fino alla
+   fine che aspetta solo una firma è `IN_PROGRESS` ma non «in corso»
+   (richiesta del 2026-10-18), e quella contro un non registrato chiusa con
+   una firma sola si dice per quello che è. Uso:
+
+     {{ st.pastiglia(match) }} #}
+{% macro pastiglia(match) -%}
+{%- set state = match.status.value -%}
+{%- if match.is_contested -%}
+<span class="c7-state c7-state--warn">{{ _('Contestata') }}</span>
+{%- elif match.is_recorded_by_one -%}
+<span class="c7-state c7-state--ok">{{ _('Registrata da un solo giocatore') }}</span>
+{%- elif match.is_played_awaiting_confirmation -%}
+<span class="c7-state c7-state--warn">{{ _('In attesa di conferma') }}</span>
+{%- else -%}
+<span class="c7-state c7-state--{{ tone.get(state, 'muted') }}">{{ labels.get(state, state) }}</span>
+{%- endif -%}
+{%- endmacro %}

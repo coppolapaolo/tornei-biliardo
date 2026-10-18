@@ -4403,3 +4403,49 @@ class TestRiscattoDeiNonRegistrati:
         nuovo.last_name = cognome.upper().replace("Ò", "O")
         db_session.flush()
         assert giocatore.id in {u.id for u in ClaimService.omonimi(nuovo)}
+
+
+class TestSfidaInAttesaNonEInCorso:
+    """SPECIFICHE.md, «Ciclo di vita dei Match»: «La partita in attesa di
+    conferma è **giocata, non in corso**: non compare e non si etichetta mai
+    come "in corso"» (modificato il 2026-10-18 su richiesta dell'utente: prima
+    restava un giorno in dashboard)."""
+
+    def test_in_attesa_di_conferma_non_e_in_corso_nemmeno_il_primo_giorno(
+        self, db_session
+    ):
+        from models.base import utc_now
+        from models.dashboard.section_builders import DashboardSectionBuilder
+        from models.individual_match.match_models import IndividualMatch
+        from utils.status_ui import filter_status_text
+
+        utenti = []
+        for _ in range(2):
+            s = uuid.uuid4().hex[:8]
+            u = User(username=f"iac_{s}", email=f"iac_{s}@test.com")
+            u.set_password("test1234")
+            db_session.add(u)
+            utenti.append(u)
+        db_session.flush()
+        a, b = utenti
+        sfida = IndividualMatch(
+            player1_id=a.id,
+            player2_id=b.id,
+            scheduled_at=utc_now(),
+            status=MatchStatus.IN_PROGRESS,
+            distance=3,
+            is_race_to=True,
+            player1_score=3,
+            player2_score=0,
+            player1_confirmed=True,
+            player1_confirmed_at=utc_now(),
+        )
+        db_session.add(sfida)
+        db_session.flush()
+
+        assert sfida.is_played_awaiting_confirmation
+        assert not sfida.is_being_played
+        assert filter_status_text(sfida) == "In attesa di conferma"
+        for user in (a, b):
+            sezioni = DashboardSectionBuilder.build_individual_match_sections(user.id)
+            assert sfida.id not in {m.id for m in sezioni["sfide_in_corso"]}

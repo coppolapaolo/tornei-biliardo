@@ -175,6 +175,10 @@ class StatusPresenter:
                 return ("bg-warning", _("Contestata"))
             if getattr(o, "is_recorded_by_one", False):
                 return ("bg-success", _("Registrata da un solo giocatore"))
+            # Giocata fino alla fine, aspetta solo una firma: non è «in
+            # corso» (richiesta del 2026-10-18).
+            if getattr(o, "is_played_awaiting_confirmation", False):
+                return ("bg-warning", _("In attesa di conferma"))
         s = getattr(s, "value", s)
         mapping: Dict[str, Tuple[str, str]] = {
             MatchStatus.PENDING.value: ("bg-secondary", _("In Attesa")),
@@ -393,6 +397,11 @@ def match_scoring_state(match: Any, user: Any) -> Dict[str, Any]:
         and at_distance
         and not you_confirmed,
         "closed_by_players": closed_by_players,
+        # Giocata, aspetta una firma (anche nel formato libero, dove una
+        # distanza non c'è): il tabellone non la chiama «in corso».
+        "awaiting_signature": bool(
+            getattr(match, "is_played_awaiting_confirmation", False)
+        ),
         "finished": MatchStatus.is_finished(status_str),
         "winner_id": winner_id,
         "is_player": is_p1 or is_p2,

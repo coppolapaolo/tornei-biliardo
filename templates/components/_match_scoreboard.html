@@ -256,7 +256,7 @@
         {% endif %}
         {% if board.finished %}
         <span class="c7-board__live c7-board__live--done">{{ _('Conclusa') }}</span>
-        {% elif board.at_distance %}
+        {% elif board.at_distance or board.awaiting_signature %}
         <span class="c7-board__live c7-board__live--wait">{{ _('Da confermare') }}</span>
         {% else %}
         <span class="c7-board__live">{{ _('In corso') }}</span>

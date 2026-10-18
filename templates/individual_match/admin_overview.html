@@ -83,7 +83,7 @@
             {{ match.created_at|datetime_local }}
           </div>
         </div>
-        <span class="c7-state c7-state--{{ st.tone.get(state, 'muted') }}">{{ st.labels.get(state, state) }}</span>
+        {{ st.pastiglia(match) }}
         <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
       </a>
       {% endfor %}

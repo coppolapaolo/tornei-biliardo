@@ -419,6 +419,34 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         giocatore = self._giocatore(user_id)
         return bool(giocatore is not None and giocatore.is_placeholder)
 
+    @property
+    def is_played_awaiting_confirmation(self) -> bool:
+        """Giocata fino alla fine, e aspetta solo una firma: **non** è in corso.
+
+        Richiesta dell'utente del 2026-10-18: una sfida così va fra le
+        giocate, con lo stato «In attesa di conferma», e non si mostra né si
+        etichetta come «in corso» — dashboard, «Stai già giocando», elenchi,
+        stato della pagina. È la sfida normale con una firma e l'altra che
+        manca (`awaiting_confirmation_from_id`), e la partita di un terzo già
+        dichiarata da chi la segna, che aspetta le decisioni dei giocatori.
+
+        Lo stato resta `IN_PROGRESS`: il ritiro e il blocco di chi deve
+        firmare (`PendingConfirmationService`) non cambiano.
+        """
+        if self.status != MatchStatus.IN_PROGRESS:
+            return False
+        if self.is_scored_by_third_party:
+            return self.is_declared_by_scorer
+        return self.awaiting_confirmation_from_id is not None
+
+    @property
+    def is_being_played(self) -> bool:
+        """In corso davvero: iniziata e non ancora arrivata alla firma."""
+        return (
+            self.status == MatchStatus.IN_PROGRESS
+            and not self.is_played_awaiting_confirmation
+        )
+
     def confirm_result(self, user_id: int) -> bool:
         """La conferma del risultato, e la chiusura contro un non registrato.
 

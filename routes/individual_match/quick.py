@@ -199,7 +199,10 @@ def _own_matches_in_progress():
     from models.base import db
     from models.individual_match.models import IndividualMatch
 
-    return (
+    # Solo quelle in corso davvero: una partita giocata fino alla fine che
+    # aspetta una firma non è «in corso», e non c'è un segnapunti a cui
+    # tornare (2026-10-18).
+    candidate = (
         IndividualMatch.query.filter(
             IndividualMatch.status == MatchStatus.IN_PROGRESS,
             # La partita di altri due la segna un terzo: non c'è un segnapunti
@@ -213,3 +216,4 @@ def _own_matches_in_progress():
         .order_by(IndividualMatch.created_at.desc())
         .all()
     )
+    return [m for m in candidate if m.is_being_played]

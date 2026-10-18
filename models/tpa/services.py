@@ -302,13 +302,24 @@ class TpaRefertoService:
         ha portato la partita alla distanza. Vale finché la partita non è
         conclusa — una firma sola non la conclude, le due sì — e non è stata
         rifiutata, perché lì chi segna ha già la sua strada (la correzione).
+
+        La sfida contro un non registrato si chiude alla prima firma
+        (*registrata da uno*, 2026-10-18): anche quella vale come «non
+        conclusa», finché nessuno ha riscattato l'avversario. Annullare riapre
+        il referto, e il triangolo tolto rimette la sfida in corso
+        (`IndividualMatch.reset_confirmations`).
         """
         match = referto.match
         if user_id is None or referto.compiler_id != user_id:
             return False
         if not referto.is_closed or not referto.comandi or match is None:
             return False
-        if match.status != MatchStatus.IN_PROGRESS or match.is_rejected:
+        registrata_da_uno_aperta = match.is_recorded_by_one and (
+            match.is_placeholder_player(match.opponent_of(match.recorded_by_id))
+        )
+        if match.is_rejected or (
+            match.status != MatchStatus.IN_PROGRESS and not registrata_da_uno_aperta
+        ):
             return False
         return TpaRefertoService.distanza_raggiunta(match)
 

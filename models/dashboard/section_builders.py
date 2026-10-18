@@ -12,7 +12,7 @@ from typing import Any, List, Optional
 from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
 
-from models.base import db, utc_now
+from models.base import db
 from models.campionato.models import Campionato
 from models.competition.models import Gara, Inscription
 from models.match.models import Match as TournamentMatch
@@ -149,25 +149,16 @@ class DashboardSectionBuilder:
             .all()
         )
 
-        # Una partita che aspetta una firma da più di un giorno non è più
-        # un'attività in corso, per nessuno dei due: resta fra le sfide con lo
-        # stato «In attesa di conferma» (richiesta del 2026-09-14).
-        from ..individual_match.pending_confirmation import (
-            PendingConfirmationService,
-        )
-
-        now = utc_now()
+        # Una partita giocata fino alla fine che aspetta solo una firma — o la
+        # decisione dei giocatori, se l'ha segnata un terzo — non è in corso
+        # e qui non compare, nemmeno nel suo primo giorno (richiesta del
+        # 2026-10-18). Fino ad allora restava un giorno con lo stato «In
+        # attesa di conferma» (`DASHBOARD_GRACE`, 2026-09-14): sta in «Le mie
+        # sfide», e chi deve firmare ha l'avviso e il blocco.
         sfide_in_corso = [
             sfida
             for sfida in sfide_in_corso
-            if not PendingConfirmationService.is_hidden_from_dashboard(sfida, now)
-            # La partita di altri due resta finché la si segna o finché tocca a
-            # te decidere; deciso il tuo, non è più un'attività (ADR-084).
-            and (
-                not sfida.is_scored_by_third_party
-                or not sfida.is_declared_by_scorer
-                or sfida.awaits_decision_from(user_id)
-            )
+            if not sfida.is_played_awaiting_confirmation
         ]
 
         # Match opportunities: open proposals already filtered by eligibility
