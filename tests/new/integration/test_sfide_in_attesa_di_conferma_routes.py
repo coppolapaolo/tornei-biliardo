@@ -121,12 +121,105 @@ class TestElencoEDashboard:
             html = _get(_client_for(app, user), "/dashboard").get_data(as_text=True)
             assert "Sala Conferme" not in html
 
-    def test_la_dashboard_la_mostra_prima_di_un_giorno(self, app):
+    def test_la_dashboard_non_la_mostra_nemmeno_prima_di_un_giorno(self, app):
+        """Richiesta dell'utente del 2026-10-18: una sfida giocata che aspetta
+        solo una firma non è «in corso». Sostituisce
+        `test_la_dashboard_la_mostra_prima_di_un_giorno`."""
         vincitore, perdente = _player(), _player()
-        _in_attesa(vincitore, perdente, ore_fa=3)
+        _in_attesa(vincitore, perdente, ore_fa=1)
 
-        html = _get(_client_for(app, perdente), "/dashboard").get_data(as_text=True)
-        assert "Sala Conferme" in html
+        for user in (vincitore, perdente):
+            html = _get(_client_for(app, user), "/dashboard").get_data(as_text=True)
+            assert "Sala Conferme" not in html
+
+
+@pytest.mark.integration
+class TestNonEInCorso:
+    """Richiesta dell'utente del 2026-10-18: «le sfide individuali in attesa
+    di conferma non devono comparire né essere etichettate come in corso».
+    Una per ogni posto in cui succedeva."""
+
+    def test_avvio_rapido_non_la_mette_fra_stai_gia_giocando(self, app):
+        vincitore, perdente = _player(), _player()
+        _in_attesa(vincitore, perdente, ore_fa=1)
+
+        html = _get(_client_for(app, vincitore), "/match/quick").get_data(as_text=True)
+        assert "Stai già giocando" not in html
+
+    def test_la_pagina_della_sfida_dice_in_attesa_di_conferma(self, app):
+        vincitore, perdente = _player(), _player()
+        match = _in_attesa(vincitore, perdente, ore_fa=1)
+
+        for user in (vincitore, perdente):
+            html = _get(_client_for(app, user), f"/match/matches/{match.id}").get_data(
+                as_text=True
+            )
+            assert "In attesa di conferma" in html
+            assert "c7-score__state--live" not in html
+
+    def test_l_elenco_la_mette_fra_le_giocate_per_chi_aspetta(self, app):
+        vincitore, perdente = _player(), _player()
+        _in_attesa(vincitore, perdente, ore_fa=1)
+
+        html_v = _get(_client_for(app, vincitore), "/match/matches").get_data(
+            as_text=True
+        )
+        html_p = _get(_client_for(app, perdente), "/match/matches").get_data(
+            as_text=True
+        )
+        assert 'data-group="giocati"' in html_v
+        assert 'data-group="da_confermare"' in html_p
+        for html in (html_v, html_p):
+            assert 'data-group="in_corso"' not in html
+
+    def test_la_dashboard_delle_sfide_non_la_mette_fra_quelle_da_giocare(self, app):
+        vincitore, perdente = _player(), _player()
+        match = _in_attesa(vincitore, perdente, ore_fa=1)
+
+        from models.individual_match.statistics_service import (
+            IndividualMatchStatisticsService,
+        )
+
+        for user in (vincitore, perdente):
+            dati = IndividualMatchStatisticsService.get_user_dashboard_data(user.id)
+            assert match.id not in {m.id for m in dati["active_matches"]}
+            assert match.id in {m.id for m in dati["awaiting_matches"]}
+
+    def test_l_etichetta_di_stato(self, app):
+        from utils.status_ui import filter_status_text, match_scoring_state
+
+        vincitore, perdente = _player(), _player()
+        match = _in_attesa(vincitore, perdente, ore_fa=1)
+
+        assert filter_status_text(match) == "In attesa di conferma"
+        assert match_scoring_state(match, vincitore)["awaiting_signature"]
+
+    def test_lo_storico_non_la_dice_in_corso(self, app):
+        from models.certificazione import Vista
+        from models.player.history_service import HistoryFilters, PlayerHistoryService
+
+        vincitore, perdente = _player(), _player()
+        match = _in_attesa(vincitore, perdente, ore_fa=1)
+
+        storico, _stats = PlayerHistoryService.get_unified_match_history(
+            vincitore.id, HistoryFilters(), vista=Vista.TUTTE
+        )
+        voce = next(v for v in storico.items if v.match_id == match.id)
+        assert voce.in_attesa
+
+    def test_una_sfida_in_corso_davvero_resta_in_corso(self, app):
+        a, b = _player(), _player()
+        match = _in_attesa(a, b, ore_fa=1)
+        match.player1_score, match.player1_confirmed = 1, False
+        match.player1_confirmed_at = None
+        db.session.commit()
+
+        assert match.is_being_played
+        html = _get(_client_for(app, a), "/match/quick").get_data(as_text=True)
+        assert "Stai già giocando" in html
+        assert 'data-group="in_corso"' in _get(
+            _client_for(app, a), "/match/matches"
+        ).get_data(as_text=True)
 
 
 @pytest.mark.integration

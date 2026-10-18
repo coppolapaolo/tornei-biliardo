@@ -168,6 +168,18 @@ class StatusPresenter:
             s = o
         elif hasattr(o, "status"):
             s = getattr(o, "status")
+            # La sfida contro un non registrato, chiusa con una firma sola
+            # (2026-10-18): non è un forfait né una conferma dei due, e lo
+            # stato lo dice.
+            if getattr(o, "is_contested", False):
+                return ("bg-warning", _("Contestata"))
+            if getattr(o, "is_recorded_by_one", False):
+                return ("bg-success", _("Registrata da un solo giocatore"))
+            # Giocata fino alla fine, aspetta solo una firma: non è «in
+            # corso» (richiesta del 2026-10-18).
+            if getattr(o, "is_played_awaiting_confirmation", False):
+                return ("bg-warning", _("In attesa di conferma"))
+        s = getattr(s, "value", s)
         mapping: Dict[str, Tuple[str, str]] = {
             MatchStatus.PENDING.value: ("bg-secondary", _("In Attesa")),
             MatchStatus.PLAYING.value: ("bg-primary", _("In Corso")),
@@ -378,8 +390,18 @@ def match_scoring_state(match: Any, user: Any) -> Dict[str, Any]:
         "can_add": can_add,
         "you_confirmed": you_confirmed,
         "opponent_confirmed": opponent_confirmed,
-        "awaiting_you": (is_p1 or is_p2) and at_distance and not you_confirmed,
+        # Solo a partita in corso: chiusa — un forfait, o la sfida registrata
+        # da uno contro un non registrato — non c'è più niente da accettare.
+        "awaiting_you": (is_p1 or is_p2)
+        and in_progress
+        and at_distance
+        and not you_confirmed,
         "closed_by_players": closed_by_players,
+        # Giocata, aspetta una firma (anche nel formato libero, dove una
+        # distanza non c'è): il tabellone non la chiama «in corso».
+        "awaiting_signature": bool(
+            getattr(match, "is_played_awaiting_confirmation", False)
+        ),
         "finished": MatchStatus.is_finished(status_str),
         "winner_id": winner_id,
         "is_player": is_p1 or is_p2,

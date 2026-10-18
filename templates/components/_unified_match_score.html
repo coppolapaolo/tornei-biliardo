@@ -38,6 +38,11 @@ Parametri:
    nello stesso identico punto. #}
 {% set is_completed = MatchStatus.is_finished(status_str) %}
 {% set is_in_progress = MatchStatus.is_active(status_str) %}
+{# La sfida giocata che aspetta solo una firma non è «in corso»: niente
+   pallino acceso, e l'etichetta la dà `status_text` (2026-10-18). #}
+{% if match.is_played_awaiting_confirmation is defined and match.is_played_awaiting_confirmation %}
+{% set is_in_progress = false %}
+{% endif %}
 
 {# === TRIO: tre punteggi === #}
 {% if trio_mode and match.trio_match is defined and match.trio_match %}

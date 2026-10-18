@@ -39,6 +39,9 @@ class IndividualMatchStatisticsService:
         ogni elenco perché da qui passano tutti — «Le mie sfide», la
         dashboard delle sfide, le statistiche. La vede solo chi l'ha
         segnata, che non è uno dei due giocatori.
+
+        Senza nemmeno la sfida che ``user_id`` ha **contestato** dopo un
+        riscatto: resta a chi l'ha registrata (2026-10-18, ADR-086).
         """
         query = IndividualMatch.query.filter(
             db.or_(
@@ -46,6 +49,7 @@ class IndividualMatchStatisticsService:
                 IndividualMatch.player2_id == user_id,
             ),
             IndividualMatch.status != MatchStatus.REJECTED,
+            IndividualMatch.non_contestate_da(user_id),
         )
 
         if status_filter:
@@ -324,9 +328,6 @@ class IndividualMatchStatisticsService:
             or (
                 not m.is_scored_by_third_party
                 and m.awaiting_confirmation_from_id is not None
-                # In attesa di un non registrato non c'è niente da sollecitare:
-                # la firma arriva solo col riscatto (ADR-085, 2026-10-18).
-                and not m.aspetta_il_riscatto
             )
         ]
         active_matches = [

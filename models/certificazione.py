@@ -26,6 +26,14 @@ funzioni che ricevono una persona (`livello_di_sfida_per`,
 regola è **di coppia**, ed è quella dell'ELO, che misura una partita fra due e
 non si divide.
 
+La sfida contro un giocatore **non registrato** (emendamento del 2026-10-18
+all'ADR-085) si chiude con la firma di chi l'ha giocata contro di lui: è
+*registrata da uno* (`IndividualMatch.is_recorded_by_one`), conclusa ma di
+livello *In attesa*, perché a garantirla è uno solo. Chi riscatta il non
+registrato la **riconosce** (diventa *Confermata*) o la **contesta**: la
+contestata resta *In attesa* per chi l'ha registrata e non ha livello per chi
+l'ha contestata. Per la coppia — l'ELO — resta *In attesa*.
+
 Il rifiuto invece non è per giocatore (emendamento del 2026-10-18): ne basta
 uno e la partita va a ``MatchStatus.REJECTED``, che non è né conclusa né in
 corso, quindi non ha livello per nessuno dei due e nessuna vista la comprende.
@@ -126,6 +134,8 @@ def livello_di_sfida(sfida: "IndividualMatch") -> Optional[Livello]:
     """
     stato = _valore(sfida.status)
     if MatchStatus.is_finished(stato):
+        if _registrata_da_uno(sfida):
+            return Livello.IN_ATTESA
         return Livello.CONFERMATA
     if getattr(sfida, "scorer_id", None) is not None:
         # Partita di un terzo (ADR-084): dichiarata e nessuno l'ha rifiutata.
@@ -152,8 +162,18 @@ def livello_di_sfida_per(sfida: "IndividualMatch", user_id: int) -> Optional[Liv
     confermata la vede *Confermata*, chi non ha ancora deciso *In attesa*
     (purché chi la segna l'abbia dichiarata chiudendo il referto). Rifiutata
     da uno dei due, non ha livello per nessuno (``REJECTED``, 2026-10-18).
+
+    La sfida registrata da uno e **contestata** non ha livello per chi l'ha
+    contestata: resta di chi l'ha registrata (2026-10-18).
     """
     if getattr(sfida, "scorer_id", None) is None:
+        if (
+            _registrata_da_uno(sfida)
+            and getattr(sfida, "contested_at", None) is not None
+            and user_id != sfida.recorded_by_id
+            and sfida.is_player(user_id)
+        ):
+            return None
         return livello_di_sfida(sfida)
     if not sfida.is_player(user_id):
         return None
@@ -191,9 +211,13 @@ def sfida_conta_per_elo(sfida: "IndividualMatch") -> bool:
     """Se la sfida muove l'ELO delle viste che la comprendono.
 
     Il forfait no, come nei tornei: un risultato certo che non misura la
-    forza. I pareggi nemmeno, come è sempre stato per le sfide.
+    forza. I pareggi nemmeno, come è sempre stato per le sfide. La sfida
+    registrata da uno contro un non registrato sta nello stesso stato del
+    forfait, ma è giocata: conta, al suo livello (*In attesa*, ``ELO_ALL``),
+    anche se poi viene contestata.
     """
-    if _valore(sfida.status) == MatchStatus.CLOSED_UNILATERALLY.value:
+    forfait = _valore(sfida.status) == MatchStatus.CLOSED_UNILATERALLY.value
+    if forfait and not _registrata_da_uno(sfida):
         return False
     return livello_di_sfida(sfida) is not None and esito_dichiarato(sfida) is not None
 
@@ -212,8 +236,20 @@ def sfide_della_vista(vista: Vista, user_id: Optional[int] = None) -> Any:
     from models.individual_match.match_models import IndividualMatch
     from models.tpa.models import TpaReferto
 
-    concluse = IndividualMatch.status.in_(
-        [MatchStatus.CLOSED_UNILATERALLY, MatchStatus.CONFIRMED_BY_BOTH]
+    # Le concluse a garanzia piena: la doppia conferma, e la chiusura senza
+    # firme dei giocatori che non sia una registrazione di uno solo (il
+    # forfait). La sfida *registrata da uno* contro un non registrato è
+    # conclusa ma vale *In attesa* (2026-10-18).
+    registrata = and_(
+        IndividualMatch.status == MatchStatus.CLOSED_UNILATERALLY,
+        IndividualMatch.recorded_by_id.isnot(None),
+    )
+    concluse = or_(
+        IndividualMatch.status == MatchStatus.CONFIRMED_BY_BOTH,
+        and_(
+            IndividualMatch.status == MatchStatus.CLOSED_UNILATERALLY,
+            IndividualMatch.recorded_by_id.is_(None),
+        ),
     )
     normale = IndividualMatch.scorer_id.is_(None)
     in_attesa_normale = and_(
@@ -238,6 +274,7 @@ def sfide_della_vista(vista: Vista, user_id: Optional[int] = None) -> Any:
     )
 
     if user_id is None:
+        registrata_per = registrata
         confermate_di_un_terzo = false()
         in_attesa_di_un_terzo = and_(
             dichiarata,
@@ -256,6 +293,14 @@ def sfide_della_vista(vista: Vista, user_id: Optional[int] = None) -> Any:
             and_(come_secondo, IndividualMatch.player2_rejected_at.isnot(None)),
         )
         confermate_di_un_terzo = and_(dichiarata, ha_confermato)
+        # La contestata la tiene solo chi l'ha registrata.
+        registrata_per = and_(
+            registrata,
+            or_(
+                IndividualMatch.contested_at.is_(None),
+                IndividualMatch.recorded_by_id == user_id,
+            ),
+        )
         in_attesa_di_un_terzo = and_(
             dichiarata,
             or_(come_primo, come_secondo),
@@ -267,10 +312,18 @@ def sfide_della_vista(vista: Vista, user_id: Optional[int] = None) -> Any:
     if Livello.CONFERMATA in vista.livelli:
         condizioni.extend([concluse, confermate_di_un_terzo])
     if Livello.IN_ATTESA in vista.livelli:
-        condizioni.extend([in_attesa_normale, in_attesa_di_un_terzo])
+        condizioni.extend([in_attesa_normale, in_attesa_di_un_terzo, registrata_per])
     if not condizioni:
         return false()
     return or_(*condizioni)
+
+
+def _registrata_da_uno(sfida: Any) -> bool:
+    """Chiusa con la sola firma di chi l'ha giocata contro un non registrato."""
+    return (
+        _valore(sfida.status) == MatchStatus.CLOSED_UNILATERALLY.value
+        and getattr(sfida, "recorded_by_id", None) is not None
+    )
 
 
 def _valore(status: Any) -> str:

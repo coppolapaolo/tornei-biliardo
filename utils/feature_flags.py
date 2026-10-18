@@ -493,6 +493,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.cancel_match": {"player", "director"},
     # Ritiro di una sfida firmata da te e non dall'avversario (2026-10-17).
     "individual_match.withdraw_match": {"player", "director"},
+    # Dopo il riscatto, le partite registrate contro il giocatore non
+    # registrato si riconoscono o si contestano (2026-10-18, ADR-086).
+    "individual_match.review_matches": {"player", "director"},
     "individual_match.edit_match": {"player", "director"},
     "individual_match.update_match_info": {"player", "director"},
     "individual_match.update_match_times": {"player", "director"},

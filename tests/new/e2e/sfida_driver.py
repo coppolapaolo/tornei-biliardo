@@ -173,6 +173,22 @@ class SfidaDriver:
             data={"decisione": "approva" if approva else "rifiuta"},
         )
 
+    def pagina_revisione(self) -> str:
+        """Le partite da rivedere dopo il riscatto (2026-10-18)."""
+        risposta = self.client.get("/match/revisione")
+        assert risposta.status_code == 200, risposta.status_code
+        return risposta.get_data(as_text=True)
+
+    def rivedi(
+        self, partite: list[int], azione: str, contesta: tuple[int, ...] = ()
+    ) -> Any:
+        """Il modulo della revisione: ``riconosci_tutte``, ``contesta_tutte``
+        o ``scegli`` con le partite spuntate in ``contesta``."""
+        return self.client.post(
+            "/match/revisione",
+            data={"partite": partite, "azione": azione, "contesta": list(contesta)},
+        )
+
     def apri_partita(self, avversario: Giocatore, **opzioni: Any) -> int:
         """Avvio rapido riuscito: restituisce l'id della partita."""
         risposta = self.avvio_rapido(avversario, **opzioni)

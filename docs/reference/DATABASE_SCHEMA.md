@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-10-17 22:03 UTC
+> Last updated: 2026-10-18 18:41 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -1359,6 +1359,8 @@
 | `scorer_id` | INTEGER | YES | FK→user.id |  |  |
 | `player1_rejected_at` | DATETIME | YES |  |  |  |
 | `player2_rejected_at` | DATETIME | YES |  |  |  |
+| `recorded_by_id` | INTEGER | YES | FK→user.id |  |  |
+| `contested_at` | DATETIME | YES |  |  |  |
 | `created_at` | DATETIME | NO |  | func |  |
 | `updated_at` | DATETIME | NO |  | func |  |
 
@@ -1372,6 +1374,7 @@
 - `player1_id` → `user.id` (ON DELETE CASCADE)
 - `player2_id` → `user.id` (ON DELETE CASCADE)
 - `proposal_id` → `match_proposal.id` (ON DELETE NO ACTION)
+- `recorded_by_id` → `user.id` (ON DELETE NO ACTION)
 - `scorer_id` → `user.id` (ON DELETE NO ACTION)
 - `winner_id` → `user.id` (ON DELETE NO ACTION)
 

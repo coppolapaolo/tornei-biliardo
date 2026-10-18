@@ -55,18 +55,11 @@
             <span class="c7-num" style="font-size:12px">{{ sfida.scheduled_at|datetime_local }}</span>
           </div>
         </div>
-        {# Nel suo primo giorno la partita che aspetta una firma si vede qui
-           con lo stato giusto; dopo esce dalla dashboard (2026-09-14). #}
-        {# La partita di altri due (ADR-084): la segna un terzo; a referto
-           chiuso tocca a te confermarla o rifiutarla. #}
+        {# Qui ci sono solo partite da giocare o in corso: quella che aspetta
+           una firma è giocata e sta in «Le mie sfide» (2026-10-18). La
+           partita di altri due (ADR-084) la segna un terzo. #}
         {% if sfida.is_scored_by_third_party %}
-        {% if sfida.awaits_decision_from(current_user.id) %}
-        <span class="c7-state c7-state--warn">{{ _('Da confermare') }}</span>
-        {% else %}
         <span class="c7-state c7-state--info">{{ _('La segna %(name)s', name=sfida.scorer.username if sfida.scorer else '') }}</span>
-        {% endif %}
-        {% elif sfida.awaiting_confirmation_from_id %}
-        <span class="c7-state c7-state--warn">{{ _('In attesa di conferma') }}</span>
         {% else %}
         <span class="c7-state {{ 'c7-state--err' if iniziata else 'c7-state--info' }}">
           {{ _('In corso') if iniziata else _('Fissata') }}

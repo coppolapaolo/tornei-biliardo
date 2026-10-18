@@ -919,10 +919,18 @@ shots:
     caption: "Una sfida firmata solo da chi l'ha chiusa: il risultato in attesa della firma dell'avversario, il riquadro «Video e descrizione» già compilato e il pulsante «Ritira la sfida»."
     full_page: true
 
-  - id: sfida-in-attesa-riscatto
+  - id: sfida-registrata-da-uno
     route: /match/matches/4
     as: Andrea Ferri
-    caption: "Una sfida contro un giocatore non registrato, firmata da chi l'ha giocata: il riquadro «In attesa del riscatto» spiega che conta come «in attesa» finché qualcuno non lo riscatta, e che intanto si possono giocare altre partite."
+    caption: "Una sfida contro un giocatore non registrato, chiusa con la firma di chi l'ha giocata: il riquadro «Registrata da te» spiega che conta fra «Tutte» e che chi lo riscatta potrà riconoscerla o contestarla."
+    full_page: true
+
+  # LuigiNeri ha riscattato «Luigi Neri», contro cui Andrea Ferri aveva
+  # registrato due sfide (`_sfide_terzi_e_riscatti`, punto 5).
+  - id: sfide-da-rivedere
+    route: /match/revisione
+    as: LuigiNeri
+    caption: "Le partite da rivedere dopo il riscatto: per ciascuna chi l'ha registrata, il punteggio e la casella «La contesto»; sotto, «Le riconosco tutte», «Contesto solo quelle spuntate» e «Le contesto tutte»."
     full_page: true
 
   - id: avvio-rapido-non-registrato

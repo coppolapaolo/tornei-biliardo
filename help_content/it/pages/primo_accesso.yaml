@@ -181,6 +181,16 @@ blocks:
 
   - type: note
     tone: info
+    title: "Poi rivedi le partite"
+    text: >-
+      Se qualcuno aveva registrato delle sfide contro di te prima che ti
+      registrassi, dopo il riscatto ricevi l'avviso **Rivedi le partite**:
+      puoi riconoscerle tutte, contestarle tutte o contestare solo quelle che
+      non tornano. Non c'è fretta. Vedi [Dopo il riscatto: rivedere le
+      partite](/aiuto/giocare/partite_amichevoli#revisione).
+
+  - type: note
+    tone: info
     title: "Ti sei sbagliato? Ritira la richiesta"
     text: >-
       Finché nessuno ha risposto, puoi ritirarla: apri **Riscatti** nel menu,

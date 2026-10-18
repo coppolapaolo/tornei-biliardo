@@ -256,7 +256,7 @@
         {% endif %}
         {% if board.finished %}
         <span class="c7-board__live c7-board__live--done">{{ _('Conclusa') }}</span>
-        {% elif board.at_distance %}
+        {% elif board.at_distance or board.awaiting_signature %}
         <span class="c7-board__live c7-board__live--wait">{{ _('Da confermare') }}</span>
         {% else %}
         <span class="c7-board__live">{{ _('In corso') }}</span>
@@ -368,8 +368,9 @@
         {# Niente da confermare (ha gia' risposto, o la partita e' chiusa):
            resta la sola via d'uscita per il rack segnato per sbaglio. #}
         <span class="c7-board__note">
-            {%- if board.you_confirmed and not board.opponent_confirmed and match.aspetta_il_riscatto is defined and match.aspetta_il_riscatto -%}
-            {{ _('Hai confermato. L\'avversario non è registrato: la sfida resta in attesa finché qualcuno non lo riscatta.') }}
+            {#- Contro un non registrato la firma basta (2026-10-18). #}
+            {%- if match.is_recorded_by_one is defined and match.is_recorded_by_one -%}
+            {{ _('Registrata da un solo giocatore: l\'avversario non è registrato.') }}
             {%- elif board.you_confirmed and not board.opponent_confirmed -%}
             {{ _('Hai confermato. Manca la conferma dell\'avversario.') }}
             {%- elif board.closed_by_players -%}

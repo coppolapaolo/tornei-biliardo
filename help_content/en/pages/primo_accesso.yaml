@@ -182,6 +182,16 @@ blocks:
 
   - type: note
     tone: info
+    title: "Then review the matches"
+    text: >-
+      If someone had recorded matches against you before you signed up, after
+      the claim you get the **Review the matches** notification: you can
+      recognise them all, dispute them all, or dispute only the wrong ones.
+      There is no hurry. See [After a claim: reviewing the
+      matches](/aiuto/giocare/partite_amichevoli#revisione).
+
+  - type: note
+    tone: info
     title: "Made a mistake? Withdraw the request"
     text: >-
       As long as nobody has answered, you can withdraw it: open **Claims** in
