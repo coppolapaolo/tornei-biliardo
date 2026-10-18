@@ -622,6 +622,14 @@ hints:
     page: referto_tpa
     section: rileggere-e-ripartire
 
+  - id: referto.annulla
+    label: "Annulla l'ultima"
+    short: "Toglie l'ultimo tocco, anche il tavolo passato. Lo stesso fa toccare l'ultima annotazione, quella con la freccia. Per tre secondi puoi rimetterlo."
+    anchor: referto-annulla
+    screens: [individual_match.tpa_referto]
+    page: referto_tpa
+    section: se-sbagli
+
   # --- Catalogo e creazione degli esercizi --------------------------------------
   - id: challenge.ricerca
     label: "Cerca nel titolo o nelle istruzioni…"
@@ -1308,6 +1316,7 @@ tours:
       - hint: referto.passa_tavolo
       - hint: referto.annotazioni_piccole
       - hint: referto.rileggi
+      - hint: referto.annulla
 
   - screen: feedback.nuova_segnalazione
     title: "Segnalare un problema"

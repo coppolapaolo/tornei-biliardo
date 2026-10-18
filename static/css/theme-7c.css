@@ -2071,8 +2071,46 @@ a.c7-bracket__node.is-live:hover { background: var(--c7-accent); filter: brightn
 }
 .c7-tpa-hist__btn:disabled { color: var(--c7-ink-faint); border-style: dashed; cursor: not-allowed; }
 .c7-tpa-hist__pos {
-  padding: 0 4px; white-space: nowrap;
+  display: block; text-align: center; white-space: nowrap; line-height: 1;
   font-family: var(--c7-font-mono); font-size: 11px; font-weight: 700; color: var(--c7-ink-muted);
+}
+/* «Annulla l'ultima» sta in mezzo, fra le due frecce: e' il rimedio che si
+   usa di piu', quindi pieno e non a contorno. */
+.c7-tpa-hist__btn--undo {
+  border-color: transparent; background: var(--c7-card); color: var(--c7-ink); white-space: nowrap;
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
+}
+.c7-tpa-hist__btn--undo:active:not(:disabled) { transform: scale(var(--c7-press)); transition-duration: 0ms; }
+.c7-tpa-hist__btn--undo:disabled { background: transparent; border-color: var(--c7-line); }
+
+/* Le caselle che contengono l'ultimo tocco: si toccano per annullarlo, e la
+   freccia in alto a destra lo dice. */
+.c7-tpa-slip--undo {
+  position: relative; width: 100%; padding: 0; border: 0; background: transparent;
+  color: inherit; font: inherit; text-align: inherit; cursor: pointer;
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
+}
+.c7-tpa-slip--undo:active { transform: scale(var(--c7-press)); transition-duration: 0ms; }
+.c7-tpa-slip__undo {
+  position: absolute; top: 0; right: 0; width: 38px; text-align: center;
+  font-size: 10px; line-height: 13px; opacity: .8;
+}
+
+/* Tre secondi dopo un annulla: cosa e' stato tolto, e «Rimetti». Galleggia
+   sopra il tastierino come un toast, quindi non sposta niente. */
+.c7-tpa__pad { position: relative; }
+.c7-tpa-undone {
+  position: absolute; left: var(--c7-gutter); right: var(--c7-gutter); bottom: calc(100% + 8px);
+  margin: 0; padding: 0 6px 0 16px; min-height: var(--c7-touch); border-radius: var(--c7-r-pill);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--c7-ink); color: var(--c7-bg); box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+  font-size: 13px; font-weight: 800;
+}
+.c7-tpa-undone[hidden] { display: none; }
+.c7-tpa-undone__btn {
+  min-height: 40px; padding: 0 16px; border: 0; border-radius: var(--c7-r-pill);
+  background: var(--c7-accent-bright); color: var(--c7-ink);
+  font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
 }
 .c7-tpa-reading {
   margin: 0; font-size: 11px; font-weight: 800; letter-spacing: .06em;

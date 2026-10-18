@@ -197,7 +197,15 @@ class TestReferto:
         match = db.session.get(IndividualMatch, match.id)
         assert (match.player1_score, match.player2_score) == (3, 0)
         assert not match.player1_confirmed and not match.player2_confirmed
-        assert not _notifiche(a, NotificationType.MATCH_RESULT_TO_CONFIRM)
+        # Dal 18/10/2026 alla distanza il referto si chiude da solo, e
+        # chiuderlo e' dichiarare: i due ricevono la richiesta, ma nessuno ha
+        # firmato al posto loro (ADR-044, emendamento).
+        assert TpaRefertoService.get_for_match(match.id).is_closed
+        for giocatore in (a, b):
+            assert (
+                len(_notifiche(giocatore, NotificationType.MATCH_RESULT_TO_CONFIRM))
+                == 1
+            )
 
     def test_i_giocatori_non_scrivono_il_referto(self):
         marco, a, b = _istruttore(), _user(), _user()

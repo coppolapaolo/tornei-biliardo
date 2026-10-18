@@ -210,12 +210,19 @@ def tpa_press(match_id: int):
 @individual_match_bp.route("/matches/<int:match_id>/tpa/undo", methods=["POST"])
 @player_director_or_scorer
 def tpa_undo(match_id: int):
-    """Annulla l'ultimo tocco."""
+    """Annulla l'ultimo tocco: «Annulla l'ultima», o il tocco sulla casella.
+
+    Sul referto chiuso alla distanza lo riapre (`can_undo_closing`).
+    """
     match, referto, is_player = _load(match_id)
     if not is_player or referto is None:
         return jsonify({"success": False, "message": _("Referto non trovato")}), 404
 
     score_before = _score_of(match_id)
+    # Il tocco tolto torna al client, che per tre secondi lo offre da
+    # rimettere: rimetterlo e' un `press` come un altro, validato dal motore.
+    comandi = list(referto.comandi or [])
+    undone = comandi[-1].command if comandi else None
     try:
         TpaRefertoService.undo(referto.id, current_user.id)
     except DomainError as error:
@@ -227,7 +234,13 @@ def tpa_undo(match_id: int):
             500,
         )
     _announce(match_id, referto, score_before)
-    return _state_response(referto)
+    return jsonify(
+        {
+            "success": True,
+            "state": TpaRefertoService.describe(referto, viewer_id=current_user.id),
+            "undone": undone,
+        }
+    )
 
 
 @individual_match_bp.route("/matches/<int:match_id>/tpa/clear", methods=["POST"])

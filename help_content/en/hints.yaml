@@ -707,6 +707,15 @@ hints:
   - individual_match.tpa_referto
   page: referto_tpa
   section: rileggere-e-ripartire
+- id: referto.annulla
+  label: Undo last
+  short: Removes your last tap, even a table passed. Tapping the last entry, the one with the arrow,
+    does the same. For three seconds you can put it back.
+  anchor: referto-annulla
+  screens:
+  - individual_match.tpa_referto
+  page: referto_tpa
+  section: se-sbagli
 - id: challenge.ricerca
   label: Search the title or the instructions…
   short: It filters all three tabs at once, and the numbers next to the tab names update. It looks inside
@@ -1521,6 +1530,7 @@ tours:
   - hint: referto.passa_tavolo
   - hint: referto.annotazioni_piccole
   - hint: referto.rileggi
+  - hint: referto.annulla
 - screen: feedback.nuova_segnalazione
   title: Reporting a problem
   intro: Three fields, that is all. The page you came from, the version and the browser are attached by

@@ -226,7 +226,23 @@
         if (state.closed) { players.appendChild(node); return; }
 
         const turn = active ? v.turn : lastTurnOf(seat, v);
-        const slip = span('c7-tpa-slip');
+        /* Le caselle che contengono l'ultimo tocco si toccano per annullarlo:
+           e' il gesto che chi annota si aspetta. Sono quelle di chi e' al
+           tavolo se il turno ha gia' qualcosa di scritto, quelle dell'altro
+           se l'ultimo tocco ha passato il tavolo. Mai dentro una card che e'
+           gia' un pulsante. */
+        const holdsLast = CAN_WRITE && v.live && !tappable && !!turn && !!state.can_undo &&
+          (state.can_clear ? active : (!active && state.last_command === 'end'));
+        let slip;
+        if (holdsLast) {
+          slip = doc.createElement('button');
+          slip.type = 'button';
+          slip.className = 'c7-tpa-slip c7-tpa-slip--undo';
+          slip.setAttribute('aria-label', dati.etAnnullaAria);
+          slip.addEventListener('click', annulla);
+        } else {
+          slip = span('c7-tpa-slip');
+        }
         /* La riga del calcio c'e' sempre, anche vuota: senza, le caselle dei
            due giocatori finirebbero a due altezze diverse. */
         const kickrow = span('c7-tpa-kickrow');
@@ -253,6 +269,15 @@
         }
         slip.appendChild(white);
         slip.appendChild(shaded);
+        if (holdsLast) {
+          /* Il segno che la casella si tocca: la freccia dell'annulla. */
+          const mark = span('c7-tpa-slip__undo');
+          const icon = doc.createElement('i');
+          icon.className = 'fas fa-rotate-left';
+          icon.setAttribute('aria-hidden', 'true');
+          mark.appendChild(icon);
+          slip.appendChild(mark);
+        }
         node.appendChild(slip);
 
         if (tappable) {
@@ -424,6 +449,8 @@
       el('tpaPosizione').textContent = fill(dati.etPosizione);
       back.disabled = v.position <= 1;
       el('tpaAvanti').disabled = v.live;
+      const undo = el('tpaAnnulla');
+      if (undo) undo.disabled = !(v.live && state.can_undo);
       const reading = el('tpaRileggi');
       reading.hidden = v.live;
       reading.textContent = v.live ? '' : fill(dati.etRileggi);
@@ -490,9 +517,10 @@
     }
 
     let busy = false;
-    function send(url, body) {
+    function send(url, body, poi) {
       if (busy) return;
       busy = true;
+      nascondiTolta();
       root.fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': root.csrfToken() },
@@ -501,15 +529,80 @@
         .then((response) => response.json())
         .then((data) => {
           if (data.success && data.state) {
+            const eraChiuso = !!state.closed;
             state = data.state;
             leggendo = null;
+            /* La partita e' arrivata alla distanza e il referto si e' chiuso
+               da solo: la pagina chiusa e' un'altra, e la da' il server. */
+            if (state.closed && !eraChiuso) { ricarica(); return; }
             render();
+            if (poi) poi(data);
           } else {
             root.showError(data.message || dati.etErrore);
           }
         })
         .catch(() => root.showError(dati.etErrore))
         .finally(() => { busy = false; });
+    }
+
+    /* «Annulla l'ultima», e il tocco sull'ultima annotazione: tolgono un
+       tocco solo, qualunque fosse, anche il tavolo passato. Si esegue
+       subito — chi annota deve poter riscrivere al volo — e per tre secondi
+       la riga sopra le card dice cosa e' stato tolto e offre di rimetterlo
+       (ADR-074: azione frequente e reversibile, niente domanda). */
+    let toltaTimer = null;
+    function nascondiTolta() {
+      const riga = el('tpaTolta');
+      if (riga) { riga.hidden = true; riga.textContent = ''; }
+      if (toltaTimer) { root.clearTimeout(toltaTimer); toltaTimer = null; }
+    }
+
+    function nomeDelTocco(command) {
+      if (command === 'end') return dati.etTavoloPassato;
+      if (String(command).indexOf('seat:') === 0) return dati.etChiSpacca;
+      return command;
+    }
+
+    function mostraTolta(command) {
+      const riga = el('tpaTolta');
+      if (!riga || !command) return;
+      nascondiTolta();
+      riga.appendChild(span('', dati.etTolta.replace('{nota}', nomeDelTocco(command))));
+      const rimetti = doc.createElement('button');
+      rimetti.type = 'button';
+      rimetti.className = 'c7-tpa-undone__btn';
+      rimetti.textContent = dati.etRimetti;
+      rimetti.addEventListener('click', () => {
+        nascondiTolta();
+        send(dati.pressUrl, { command: command });
+      });
+      riga.appendChild(rimetti);
+      riga.hidden = false;
+      toltaTimer = root.setTimeout(nascondiTolta, 3000);
+    }
+
+    function annulla() {
+      if (!state.can_undo) return;
+      send(dati.undoUrl, {}, (data) => mostraTolta(data.undone));
+    }
+
+    if (el('tpaAnnulla')) el('tpaAnnulla').addEventListener('click', annulla);
+
+    /* Il referto chiuso alla distanza si riapre annullando l'ultimo tocco. */
+    if (el('tpaRiapri')) {
+      el('tpaRiapri').addEventListener('click', () => {
+        root.fetch(dati.undoUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': root.csrfToken() },
+          body: '{}'
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) ricarica();
+            else root.showError(data.message || dati.etErrore);
+          })
+          .catch(() => root.showError(dati.etErrore));
+      });
     }
 
     if (el('tpaIndietro')) {
