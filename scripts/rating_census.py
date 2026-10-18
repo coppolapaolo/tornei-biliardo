@@ -168,8 +168,8 @@ def _partite_casual() -> List[Partita]:
     confermate, quindi non sono dati. I pareggi restano: qui si misurano i
     dati, mentre l'ELO globale li salta (`sfida_conta_per_elo`, ADR-083), e
     le sfide in attesa — che il pool della vista «Tutte» conta — non sono
-    ancora confermate. Qui non si applica `RatingEligibility`: non esiste una gara, quindi
-    non esistono handicap né categorie da confrontare.
+    ancora confermate. Qui non si applica `RatingEligibility`: non esiste una
+    gara, quindi non esistono handicap né categorie da confrontare.
     """
     from models.individual_match.models import IndividualMatch
     from models.status_enum import MatchStatus

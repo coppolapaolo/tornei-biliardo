@@ -3866,7 +3866,16 @@ class TestLivelliDiCertificazione:
 
 class TestPartitaDiUnTerzo:
     """SPECIFICHE.md, «Ciclo di vita dei Match» («La partita di altri due») e
-    «Livelli di certificazione», note del 2026-10-17 (ADR-084)."""
+    «Livelli di certificazione», note del 2026-10-17 (ADR-084) e del
+    2026-10-18 (emendamento dell'ADR-084).
+
+    La regola del 2026-10-17 era per giocatore anche nel rifiuto: «chi conferma
+    se la tiene, chi rifiuta la toglie solo a sé». La specifica emendata il
+    2026-10-18, per decisione dell'utente, dice il contrario: «Un rifiuto
+    basta: se uno dei due rifiuta, prima o dopo la conferma dell'altro, la
+    partita è rifiutata per tutti e due». Questi test difendono la regola
+    nuova; quelli di prima difendevano la vecchia, e con una conferma e un
+    rifiuto la partita restava in corso per sempre."""
 
     @staticmethod
     def _sfida(p1=False, p2=False, r1=False, r2=False, status=None):
@@ -3891,22 +3900,79 @@ class TestPartitaDiUnTerzo:
         sfida.tpa_referto = TpaReferto(compiler_id=3, game_type=9, closed_at=utc_now())
         return sfida
 
-    def test_il_livello_e_per_giocatore(self):
+    def test_il_livello_e_per_giocatore_finche_nessuno_rifiuta(self):
         """«Sfida di un terzo, per il giocatore che l'ha confermata |
-        Confermata»; «… che non ha ancora deciso | In attesa»; «… che l'ha
-        rifiutata | nessuno»."""
+        Confermata»; «… dichiarata, per il giocatore che non ha ancora deciso
+        | In attesa»."""
         from models.certificazione import Livello, livello_di_sfida_per
 
-        sfida = self._sfida(p1=True, r2=False)
+        sfida = self._sfida(p1=True)
         assert livello_di_sfida_per(sfida, 1) is Livello.CONFERMATA
         assert livello_di_sfida_per(sfida, 2) is Livello.IN_ATTESA
-        rifiutata = self._sfida(p1=True, r2=True)
-        assert livello_di_sfida_per(rifiutata, 2) is None
-        assert livello_di_sfida_per(rifiutata, 1) is Livello.CONFERMATA
+
+    @pytest.mark.parametrize("prima_conferma", [True, False])
+    def test_un_rifiuto_basta(self, prima_conferma):
+        """«Un rifiuto basta: se uno dei due rifiuta, prima o dopo la conferma
+        dell'altro, la partita è rifiutata per tutti e due»; «Sfida di un
+        terzo rifiutata da uno dei due | nessuno, per tutti e due | no»."""
+        from models.certificazione import (
+            livello_di_sfida,
+            livello_di_sfida_per,
+            sfida_conta_per_elo,
+        )
+
+        sfida = self._sfida(p1=prima_conferma)
+        sfida.reject_as_player(2)
+        assert sfida.status == MatchStatus.REJECTED
+        assert livello_di_sfida_per(sfida, 1) is None
+        assert livello_di_sfida_per(sfida, 2) is None
+        assert livello_di_sfida(sfida) is None
+        assert sfida_conta_per_elo(sfida) is False
+
+    def test_la_rifiutata_non_compare_ai_giocatori(self):
+        """«non compare più ai due giocatori»; «Chi l'ha segnata la vede
+        ancora, marcata rifiutata»."""
+        sfida = self._sfida()
+        sfida.reject_as_player(1)
+        assert sfida.is_hidden_from(1) and sfida.is_hidden_from(2)
+        assert not sfida.is_hidden_from(3)
+
+    def test_chi_l_ha_segnata_la_corregge_o_la_cancella(self):
+        """«può correggerla — il referto si riapre, conferme e rifiuti si
+        azzerano …— oppure cancellarla»."""
+        corretta = self._sfida(p1=True)
+        corretta.reject_as_player(2)
+        corretta.reopen_by_scorer(3)
+        assert corretta.status == MatchStatus.IN_PROGRESS
+        assert not corretta.is_declared_by_scorer
+        assert corretta.decision_of(1) is None and corretta.decision_of(2) is None
+
+        cancellata = self._sfida(p1=True)
+        cancellata.reject_as_player(2)
+        cancellata.cancel_by_scorer(3)
+        assert cancellata.status == MatchStatus.CANCELLED
+
+    def test_l_admin_non_segna(self):
+        """«Un istruttore o un direttore — non l'admin — può segnare la sfida
+        fra due altri giocatori»."""
+        from types import SimpleNamespace
+
+        from models.individual_match.scored_match_service import ScoredMatchService
+
+        def utente(**ruoli):
+            base = dict(is_admin=False, is_director=False, is_instructor=False)
+            return SimpleNamespace(is_authenticated=True, **{**base, **ruoli})
+
+        assert ScoredMatchService.can_score(utente(is_instructor=True))
+        assert ScoredMatchService.can_score(utente(is_director=True))
+        assert not ScoredMatchService.can_score(utente(is_admin=True))
+        assert not ScoredMatchService.can_score(
+            utente(is_admin=True, is_instructor=True)
+        )
 
     def test_l_elo_e_per_coppia(self):
-        """«conferma di entrambi → ELO di Confermate; nessun rifiuto → ELO di
-        Tutte; un rifiuto → fuori dall'ELO per tutti e due»."""
+        """«conferma di entrambi → ELO di Confermate; dichiarata e nessun
+        rifiuto → ELO di Tutte»."""
         from models.certificazione import Livello, livello_di_sfida, sfida_conta_per_elo
 
         entrambi = self._sfida(True, True, status=MatchStatus.CONFIRMED_BY_BOTH)
@@ -3915,7 +3981,6 @@ class TestPartitaDiUnTerzo:
         nessun_rifiuto = self._sfida()
         assert livello_di_sfida(nessun_rifiuto) is Livello.IN_ATTESA
         assert sfida_conta_per_elo(nessun_rifiuto) is True
-        assert sfida_conta_per_elo(self._sfida(p1=True, r2=True)) is False
 
     def test_nessuna_firma_d_ufficio_e_nessun_blocco(self):
         """«Nessuna firma d'ufficio»; «non blocca i due giocatori … e non si

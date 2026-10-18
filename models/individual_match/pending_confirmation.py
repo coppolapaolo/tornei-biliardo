@@ -24,7 +24,8 @@ triangolo, mentre i due stanno ancora giocando.
 
 La **partita di altri due** (ADR-084) non entra in nessuna di queste regole:
 non l'hanno chiesta i giocatori, quindi non li blocca, e non aspetta una firma
-sola ma la decisione di ciascuno. L'avviso a fine referto va a **entrambi**.
+sola ma la decisione di ciascuno. L'avviso a fine referto va a **entrambi**;
+quello del rifiuto all'altro giocatore e a chi l'ha segnata (2026-10-18).
 """
 
 from __future__ import annotations
@@ -280,6 +281,109 @@ def avvisa_annullata_da_chi_segna(match: IndividualMatch) -> None:
         )
 
 
+def ritira_gli_avvisi_in_sospeso(match: IndividualMatch) -> None:
+    """Gli avvisi ancora da leggere che portano a questa partita scadono.
+
+    Dopo il rifiuto della partita di altri due nessuno dei due ha più niente
+    da confermare: una richiesta — o l'avviso «qualcuno segna la tua
+    partita» — rimasta nella casella porterebbe a una partita che non gli si
+    mostra più. Scaduti e non cancellati: la storia delle notifiche resta
+    com'era. Toglierli serve anche alla correzione: `_gia_avvisato` non
+    salterebbe la richiesta nuova.
+    """
+    from models.notification.models import (
+        Notification,
+        NotificationStatus,
+        NotificationType,
+    )
+
+    link = pagina_della_sfida(match)
+    for avviso in Notification.query.filter(
+        Notification.user_id.in_([match.player1_id, match.player2_id]),
+        Notification.notification_type.in_(  # type: ignore[attr-defined]
+            [NotificationType.MATCH_RESULT_TO_CONFIRM, NotificationType.MATCH_ACCEPTED]
+        ),
+        Notification.action_url == link,
+        Notification.status.in_(  # type: ignore[attr-defined]
+            [NotificationStatus.PENDING, NotificationStatus.SENT]
+        ),
+    ).all():
+        avviso.status = NotificationStatus.EXPIRED
+
+
+def avvisa_del_rifiuto(match: IndividualMatch, rifiutata_da: int) -> None:
+    """Uno dei due ha rifiutato la partita di altri due: lo sanno tutti.
+
+    Regola del 2026-10-18 (ADR-084, emendamento): un rifiuto basta, e lo
+    vengono a sapere **l'altro giocatore** — che magari l'aveva confermata, e
+    la vede sparire — e **chi l'ha segnata**, che può correggerla o
+    cancellarla. Con la descrizione, se c'è: chi segna ne tiene più d'una.
+
+    All'altro giocatore niente link alla partita: non gli si mostra più.
+    """
+    from flask_babel import gettext as _
+    from flask_babel import lazy_gettext as _l
+
+    from models.notification.models import NotificationPriority, NotificationType
+    from models.notification.services import NotificationService
+
+    ritira_gli_avvisi_in_sospeso(match)
+
+    nome = _nome(match, rifiutata_da)
+    descrizione = match.description or ""
+    altro_id = (
+        match.player2_id if rifiutata_da == match.player1_id else match.player1_id
+    )
+
+    def all_altro() -> str:
+        if descrizione:
+            return _(
+                "%(nome)s ha rifiutato la partita «%(descrizione)s»: non conta "
+                "per nessuno dei due.",
+                nome=nome,
+                descrizione=descrizione,
+            )
+        return _(
+            "%(nome)s ha rifiutato la vostra partita segnata da un terzo: non "
+            "conta per nessuno dei due.",
+            nome=nome,
+        )
+
+    def a_chi_segna() -> str:
+        if descrizione:
+            return _(
+                "%(nome)s ha rifiutato la partita «%(descrizione)s»: puoi "
+                "correggerla o cancellarla.",
+                nome=nome,
+                descrizione=descrizione,
+            )
+        return _(
+            "%(nome)s ha rifiutato la partita che hai segnato: puoi "
+            "correggerla o cancellarla.",
+            nome=nome,
+        )
+
+    NotificationService.create_notification(
+        user_id=altro_id,
+        notification_type=NotificationType.MATCH_CANCELLED,
+        title=_l("Partita rifiutata"),
+        message=all_altro,
+        priority=NotificationPriority.NORMAL,
+        related_entities={"individual_match_id": match.id},
+    )
+    if match.scorer_id is not None:
+        NotificationService.create_notification(
+            user_id=match.scorer_id,
+            notification_type=NotificationType.MATCH_CANCELLED,
+            title=_l("Partita rifiutata"),
+            message=a_chi_segna,
+            priority=NotificationPriority.HIGH,
+            related_entities={"individual_match_id": match.id},
+            action_url=pagina_della_sfida(match),
+            action_text=_l("Apri la partita"),
+        )
+
+
 def avvisa_del_ritiro(
     match: IndividualMatch, ritirata_da: int, avversario_id: int
 ) -> None:
@@ -311,6 +415,8 @@ __all__ = [
     "PendingConfirmationService",
     "avvisa_annullata_da_chi_segna",
     "avvisa_chi_deve_firmare",
+    "avvisa_del_rifiuto",
     "avvisa_del_ritiro",
     "pagina_della_sfida",
+    "ritira_gli_avvisi_in_sospeso",
 ]

@@ -138,6 +138,9 @@ class TournamentStatus(_StrEnum):
 #   NB: i due valori finali si chiamano CLOSED_UNILATERALLY ("completed") e
 #   CONFIRMED_BY_BOTH ("validated"). Il perché di quel divario fra nome e
 #   valore sta nella docstring della classe.
+# Persistito anche: `individual_match.status` → {scheduled, in_progress,
+#   completed, validated, cancelled, rejected}; `rejected` solo nella partita
+#   di altri due (ADR-084, emendamento del 2026-10-18).
 # Fonte: models/match/models.py
 # ──────────────────────────────────────────────────────────────────────────────
 class MatchStatus(_StrEnum):
@@ -203,6 +206,15 @@ class MatchStatus(_StrEnum):
     CONFIRMED_BY_BOTH = "validated"
 
     CANCELLED = "cancelled"
+
+    #: Solo la **partita di altri due** (ADR-084, emendamento del 2026-10-18):
+    #: uno dei due giocatori l'ha rifiutata, e un rifiuto basta. Non è finita
+    #: né in corso, quindi i filtri su `finished_values()` e `active_values()`
+    #: la lasciano fuori da soli; non conta per nessuno dei due e ai giocatori
+    #: non si mostra. Chi l'ha segnata la riapre per correggerla
+    #: (`IndividualMatch.reopen_by_scorer`) o la cancella (→ ``CANCELLED``).
+    #: Non è uno stato finale: aspetta lui.
+    REJECTED = "rejected"
 
     @classmethod
     def finished_values(cls) -> Tuple[str, ...]:

@@ -147,20 +147,28 @@ Single rack result within a match.
 - `send_match_reminders(hours_before, window_minutes)` - Send reminder notifications
 
 ### ScoredMatchService (ADR-084)
-La partita di **altri due**, tenuta da un istruttore o da un direttore (anche
-admin). `scorer_id` presente = partita di un terzo.
+La partita di **altri due**, tenuta da un istruttore o da un direttore (mai
+l'admin, dal 2026-10-18). `scorer_id` presente = partita di un terzo.
 
-- `can_score(user)` - istruttore, direttore o admin
+- `can_score(user)` - istruttore o direttore; l'admin no, nemmeno col ruolo di
+  istruttore
 - `start(scorer, player1_id, player2_id, config)` - nasce in corso col referto
   già aperto (compilatore lo scorer). I giocatori li sceglie `_giocatore`, il
   punto da estendere per i giocatori non registrati
 - nessuna firma d'ufficio; chiudere il referto la **dichiara**
   (`is_declared_by_scorer`) e avvisa entrambi
-- ogni giocatore `confirm_as_player` / `reject_as_player` per sé, una volta;
+- ogni giocatore `confirm_as_player` per sé, una volta;
   `awaits_decision_from(user_id)` è la domanda unica «tocca a lui?» per i due
   tipi di sfida. `awaiting_confirmation_from_id` resta `None`: non blocca
   nessuno e non si ritira
-- `cancel_by_scorer` finché nessuno ha confermato
+- `reject_as_player`: **un rifiuto basta** (2026-10-18) → `MatchStatus.REJECTED`
+  per tutti e due, nessun livello né ELO, e `is_hidden_from(user_id)` la
+  nasconde ai giocatori (`get_user_matches`, `match_detail`, `can_read` del
+  referto). Avvisa l'altro e lo scorer, e fa scadere gli avvisi in sospeso
+- lo scorer sulla rifiutata: `ScoredMatchService.reopen` →
+  `reopen_by_scorer` (referto riaperto, decisioni azzerate; alla nuova
+  chiusura la richiesta di conferma riparte) oppure `cancel_by_scorer`
+- `cancel_by_scorer` finché nessuno ha confermato, o sempre se rifiutata
 - livello per giocatore: `livello_di_sfida_per`, `sfide_della_vista(vista,
   user_id=…)` — le query sulle sfide di un giocatore passano **sempre** la
   persona
@@ -211,6 +219,7 @@ Vedi `docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md`.
 | Partita di altri due creata | MATCH_ACCEPTED | I due giocatori, con la descrizione |
 | Referto della partita di altri due chiuso | MATCH_RESULT_TO_CONFIRM | Ciascuno dei due che non ha ancora deciso |
 | Partita di altri due annullata da chi segna | MATCH_CANCELLED | I due giocatori |
+| Partita di altri due rifiutata | MATCH_CANCELLED | L'altro giocatore e chi l'ha segnata |
 
 ---
 

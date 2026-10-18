@@ -1,7 +1,7 @@
 # [084] Istruttori e direttori tengono il TPA della partita di altri due
 
 **Data**: 2026-10-17
-**Stato**: Accepted
+**Stato**: Accepted, emendato il 2026-10-18 (vale il rifiuto; l'admin non segna)
 **Decisori**: Paolo Coppola (utente), Claude
 
 Emenda [ADR-044](ADR-044-tpa-scoresheet.md) («il referto lo tiene uno dei due
@@ -27,7 +27,8 @@ Con un terzo che segna, entrambe le premesse cadono:
 ## Decisione
 
 **Chi può segnare.** `user.is_instructor`, `user.is_director` o l'admin
-(`ScoredMatchService.can_score`). Chi segna non è mai uno dei due giocatori.
+(`ScoredMatchService.can_score`) — _l'admin non più dal 2026-10-18, vedi
+l'emendamento_. Chi segna non è mai uno dei due giocatori.
 I due giocatori, in questa versione, sono utenti registrati
 (`ScoredMatchService._giocatore`, il punto da estendere per i giocatori non
 registrati).
@@ -53,7 +54,9 @@ scrive a **entrambi** i giocatori, con la descrizione della partita.
 **Nessuna firma d'ufficio.** `_sync_match_score` con `scorer_id` non firma per
 nessuno, né alla distanza né in parità.
 
-**Conferma e rifiuto, per giocatore.** Ognuno decide per sé, una volta sola:
+**Conferma e rifiuto, per giocatore.** _Il rifiuto per giocatore è sostituito
+dall'emendamento del 2026-10-18: un rifiuto basta, per tutti e due._ Ognuno
+decide per sé, una volta sola:
 
 * conferma → `player*_confirmed`; con entrambe la partita va a
   `CONFIRMED_BY_BOTH` come ogni sfida, e si emette l'evento dell'ELO globale;
@@ -130,7 +133,8 @@ referto.
 
 ### Negative
 
-- Una partita in cui uno conferma e l'altro rifiuta resta `in_progress` per
+- _(Superata dall'emendamento del 2026-10-18, che introduce `REJECTED`.)_ Una
+  partita in cui uno conferma e l'altro rifiuta resta `in_progress` per
   sempre: non c'è uno stato «chiusa a metà». I livelli la leggono bene; gli
   elenchi la mostrano per quello che è, una partita con due decisioni diverse.
 - Il TPA nelle partite di **gara** resta fuori: `TpaReferto` ha solo
@@ -160,6 +164,82 @@ referto.
   `tests/new/integration/test_partita_di_altri_due.py`,
   `tests/new/unit/test_specifiche_conformita.py` (classe della partita di un
   terzo).
+
+## Emendamento del 2026-10-18 — vale il rifiuto
+
+**Decisori**: Paolo Coppola (utente), Claude
+
+Sostituisce la regola «Conferma e rifiuto, per giocatore» per la parte del
+rifiuto, la riga «almeno un rifiuto» della tabella dei livelli per persona,
+la frase «Chi l'ha confermata se la tiene…», l'Alternativa 2 (che ora è la
+decisione) e la prima conseguenza negativa. Cambia anche «Chi può segnare».
+
+La decisione dell'utente: «Se in una partita segnata da un terzo uno conferma
+e l'altro rifiuta, allora vale il rifiuto (tutti vengono notificati) e la
+partita può essere modificata dal terzo o cancellata. Non compare ai due
+giocatori.» E: «admin non dovrebbe segnare partite».
+
+**Un rifiuto basta.** Se uno dei due rifiuta, prima o dopo la conferma
+dell'altro, la partita passa a `MatchStatus.REJECTED` (valore `"rejected"`,
+`reject_as_player`). È uno stato e non un fatto derivato dalle colonne
+`player*_rejected_at`, perché la partita non deve più restare `in_progress`:
+`REJECTED` non è né concluso né in corso, quindi ogni filtro su
+`finished_values()`/`active_values()` — viste di certificazione, ELO, storico,
+TPA, dashboard — la lascia fuori da solo. Le colonne restano e dicono chi ha
+rifiutato e quando. La colonna è un `VARCHAR` a valori (`values_callable`),
+senza vincolo: il valore nuovo non tocca i dati già scritti
+(`test_enum_columns_store_values.py`).
+
+**Non compare ai due giocatori.** `IndividualMatch.is_hidden_from(user_id)`:
+vero per chiunque tranne lo scorer. Lo chiedono `match_detail` (che rimanda
+alle sfide) e `TpaRefertoService.can_read`; `get_user_matches` la esclude, e da
+lì passano «Le mie sfide», la dashboard delle sfide e le statistiche. Gli
+avvisi in sospeso che portano alla partita scadono
+(`ritira_gli_avvisi_in_sospeso`).
+
+**Tutti vengono avvisati.** `avvisa_del_rifiuto`: all'altro giocatore e a chi
+l'ha segnata, con la descrizione della partita, composti nella lingua di chi
+riceve (ADR-062).
+
+**Chi l'ha segnata corregge o cancella.** La vede fra «Partite che segni»,
+marcata «Rifiutata», e ha due comandi, ciascuno col foglio che porta il nome
+dell'azione (ADR-074):
+
+* **Correggi la partita** (`ScoredMatchService.reopen` →
+  `reopen_by_scorer`, route `individual_match.reopen_scored_match`): il
+  referto si riapre, conferme e rifiuti si azzerano, la partita torna in corso.
+  Richiudere il referto è la nuova dichiarazione, e i due ricevono di nuovo la
+  richiesta di conferma. L'azzeramento è una scelta di default, non una
+  richiesta esplicita dell'utente: senza, il rifiuto di prima varrebbe anche
+  sul punteggio corretto;
+* **Cancella la partita** (`cancel_by_scorer`): va a `CANCELLED` anche se uno
+  dei due l'aveva confermata, e senza un secondo avviso.
+
+Nessun altro può fare queste due cose.
+
+**L'admin non segna.** `ScoredMatchService.can_score` è falso per l'admin,
+anche col ruolo di istruttore: è la regola «l'admin non è un player». Il
+decoratore `player_director_or_scorer` gli lascia solo le partite di cui è già
+scorer, nate prima di questa data, perché nessun altro potrebbe chiuderle.
+
+**Dati già scritti.** `migrations/20261018_partita_di_un_terzo_rifiutata.py`
+porta a `rejected` ogni partita di un terzo ancora `in_progress` con un
+rifiuto. È idempotente, e l'ELO non si muove: con la regola vecchia una
+partita con un rifiuto era già fuori dall'ELO di tutti e due.
+
+**Livelli, dopo l'emendamento.**
+
+| Partita di un terzo, per il giocatore | Livello |
+|---|---|
+| l'ha confermata (o confermata da entrambi) | Confermata |
+| dichiarata, non ha ancora deciso | In attesa |
+| rifiutata da uno dei due, o non ancora dichiarata | nessuno, per tutti e due |
+
+Presidi: `TestPartitaDiUnTerzo` in `test_specifiche_conformita.py`,
+`tests/new/unit/test_partita_di_altri_due.py`,
+`tests/new/unit/test_partita_di_un_terzo_rifiutata_migration.py`,
+`tests/new/integration/test_partita_di_altri_due.py`,
+`tests/new/e2e/test_partita_di_altri_due_e2e.py`.
 
 ## Riferimenti
 

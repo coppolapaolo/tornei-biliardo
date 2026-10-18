@@ -81,9 +81,16 @@ class TpaRefertoService:
     @staticmethod
     def can_read(match: IndividualMatch, user) -> bool:
         """Chi può **guardare** il referto: i due giocatori, chi lo tiene, e
-        gli istruttori a cui uno dei due ha aperto una scheda (ADR-069)."""
+        gli istruttori a cui uno dei due ha aperto una scheda (ADR-069).
+
+        La partita di altri due rifiutata la guarda solo chi l'ha segnata
+        (2026-10-18): ai giocatori non si mostra più, e nemmeno a chi segue
+        uno dei due.
+        """
         user_id = getattr(user, "id", None)
         if user_id is None:
+            return False
+        if match.is_hidden_from(user_id):
             return False
         if match.is_player(user_id) or TpaRefertoService.can_compile(match, user_id):
             return True
@@ -420,6 +427,8 @@ class TpaRefertoService:
         (ADR-084): si può solo a partita finita — distanza raggiunta, o almeno
         un triangolo nel formato libero — e avvisa i due giocatori, che da qui
         confermano o rifiutano. Una partita a metà non si dichiara: si annulla.
+        Dopo una correzione (`IndividualMatch.reopen_by_scorer`) la chiusura è
+        la nuova dichiarazione, e la richiesta di conferma riparte.
         """
         referto = db.session.get(TpaReferto, referto_id)
         if referto is None:

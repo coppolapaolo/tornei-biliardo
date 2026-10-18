@@ -356,7 +356,7 @@ blocks:
   - type: text
     text: >-
       Se sei **istruttore** o **direttore di gara** puoi tenere il referto di
-      una partita che giocano altri due: una finale da guardare, la partita di
+      una partita che giocano altri due (l'amministratore no): una finale da guardare, la partita di
       un tuo allievo. In **Sfide individuali** tocca **Segna la partita di
       altri due**, scegli il giocatore A e il giocatore B, scrivi che partita
       è, e tocca **Inizia il referto**. Tu non puoi essere uno dei due.
@@ -371,15 +371,15 @@ blocks:
         text: "La partita parte subito, col referto già aperto e tuo. I due giocatori ricevono un avviso con la descrizione: la vedono fra le loro sfide, ma non la segnano."
       - title: "Chiudilo a fine partita"
         text: "Si chiude solo alla distanza, o dopo almeno un triangolo nel formato libero. Nessuno firma al posto dei giocatori: chiuso il referto, tutti e due ricevono un avviso."
-      - title: "Ognuno decide per sé"
-        text: "Ciascun giocatore **conferma** o **rifiuta** la partita, una volta sola. Chi conferma se la tiene nelle sue statistiche; chi rifiuta non la vede più, e il suo rifiuto non toglie niente all'altro."
+      - title: "I due confermano"
+        text: "Ciascun giocatore **conferma** o **rifiuta** la partita, una volta sola. Chi conferma la ritrova nelle sue statistiche. Ma basta un rifiuto: se uno dei due rifiuta, anche dopo che l'altro ha confermato, la partita non conta per nessuno dei due e sparisce dalle loro sfide. L'altro giocatore e tu ricevete un avviso."
 
   - type: list
     title: "E l'ELO?"
     items:
       - "Confermata da tutti e due: conta come ogni sfida confermata."
       - "Chiusa e non rifiutata da nessuno: conta nella vista **Tutte**."
-      - "Rifiutata anche da uno solo: non conta per l'ELO di nessuno dei due."
+      - "Rifiutata da uno dei due: non conta per l'ELO di nessuno dei due."
 
   - type: note
     tone: info
@@ -388,6 +388,17 @@ blocks:
       Finché nessuno dei due l'ha confermata, chi segna può **annullarla**
       dalla pagina della partita, anche a triangoli segnati: i giocatori
       ricevono un avviso. Dopo la prima conferma non si annulla più.
+
+  - type: note
+    tone: tip
+    title: "Se uno dei due la rifiuta"
+    text: >-
+      La partita resta solo a te, fra **Partite che segni**, con la scritta
+      **Rifiutata**. Aprila e scegli: **Correggi la partita** riapre il
+      referto, così sistemi quello che non andava; quando lo richiudi, i due
+      ricevono di nuovo la richiesta di conferma, come la prima volta.
+      **Cancella la partita** invece la toglie per sempre. Nessun altro può
+      fare queste due cose.
 
   - type: heading
     id: dove-si-vede

@@ -36,7 +36,8 @@ PR del ritiro (`test_ritiro_sfida_senza_seconda_firma.py`, unitario e di
 integrazione).
 UC12, la partita di altri due tenuta da un istruttore o da un direttore, è
 realizzato con l'ADR-084 (`test_partita_di_altri_due.py`, unitario e di
-integrazione).
+integrazione); le varianti del rifiuto, della correzione e dell'admin con il
+suo emendamento del 2026-10-18 (anche `test_partita_di_altri_due_e2e.py`).
 
 ## Use case 1 — Avvio rapido dal telefono
 
@@ -218,7 +219,7 @@ Marco è istruttore (ADR-069). Paolo e Pietro giocano la finale, e Marco la
 segna dal bordo del tavolo (ADR-084).
 
 - In `/match/` Marco tocca «Segna la partita di altri due»: la voce la vede
-  solo chi è istruttore o direttore.
+  solo chi è istruttore o direttore, mai l'admin.
 - Sceglie Paolo come giocatore A e Pietro come giocatore B, scrive «Finale
   1ª giornata, serie C FVG», palla 9 al 7. Tocca «Inizia il referto».
 - La partita nasce in corso, col referto aperto e Marco compilatore. Paolo e
@@ -231,13 +232,26 @@ segna dal bordo del tavolo (ADR-084).
   ancora deciso, è *In attesa*. L'ELO di *Tutte* si muove per entrambi.
 - Pietro conferma anche lui: la sfida è confermata da entrambi, e si muove
   l'ELO di *Confermate*.
-- _(variante: Pietro **rifiuta** → per lui la partita sparisce da ogni vista;
-  per Paolo resta *Confermata*, con TPA e vittoria. Nessun triangolo viene
-  tolto, e la partita esce dall'ELO di tutti e due)_
+- _(variante: Pietro **rifiuta**, dopo la conferma di Paolo → vale il
+  rifiuto: la partita è **rifiutata** per tutti e due, esce da ogni vista e
+  dall'ELO di entrambi, e non compare più né a Paolo né a Pietro. Nessun
+  triangolo viene tolto. Paolo e Marco ricevono un avviso con la
+  descrizione)_
+- _(variante: Pietro rifiuta **prima** che Paolo decida → stessa cosa: Paolo
+  non ha più niente da confermare)_
+- _(variante: Marco apre la partita rifiutata, che lui vede marcata
+  «Rifiutata», e tocca **«Correggi la partita»** → il referto si riapre e le
+  decisioni dei due si azzerano. Marco corregge l'ultimo triangolo e richiude
+  il referto: Paolo e Pietro ricevono di nuovo la richiesta di conferma)_
+- _(variante: Marco tocca invece **«Cancella la partita»** e conferma nel
+  foglio → la partita è annullata, anche se Paolo l'aveva confermata)_
+- _(variante: l'admin prova ad aprire il modulo → rifiutato: l'admin non
+  segna partite)_
 - _(variante: Pietro non apre mai l'app → non è bloccato su nuove sfide: la
   partita non l'ha chiesta lui)_
 - _(variante: a metà partita Paolo si ritira e Marco **annulla** la partita →
-  sparisce per tutti; dopo la prima conferma Marco non la può più annullare)_
+  sparisce per tutti; dopo la prima conferma Marco non la può più annullare,
+  a meno che l'altro l'abbia rifiutata)_
 - _(variante: Gianni, giocatore senza ruolo, non vede la voce, e un modulo
   mandato a mano viene rifiutato)_
 - _(variante: Marco prova a mettersi come giocatore A → rifiutato: chi segna

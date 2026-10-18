@@ -91,15 +91,20 @@ class MatchLifecycleService:
     def reject_match_result(match_id: int, user_id: int) -> IndividualMatch:
         """Reject match result - removes last rack (new UX).
 
-        Nella partita di altri due il rifiuto è «non la riconosco», per sé:
-        non toglie triangoli e non tocca l'altro giocatore (ADR-084).
+        Nella partita di altri due il rifiuto è «non la riconosco», e ne
+        basta uno: la partita è rifiutata per tutti e due, non toglie
+        triangoli, e l'altro giocatore e chi l'ha segnata ricevono un avviso
+        (ADR-084, emendamento del 2026-10-18).
         """
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             raise ValueError("Match non trovato")
 
         if match.is_scored_by_third_party:
+            from .pending_confirmation import avvisa_del_rifiuto
+
             match.reject_as_player(user_id)
+            avvisa_del_rifiuto(match, rifiutata_da=user_id)
             return match
 
         if not match.is_player(user_id):
@@ -142,6 +147,8 @@ class MatchLifecycleService:
 
         La partita di altri due la annulla solo chi la segna, finché nessuno
         dei due l'ha confermata, e i giocatori ricevono un avviso (ADR-084).
+        Quella **rifiutata** la cancella anche dopo una conferma, e senza un
+        secondo avviso: i due sanno già, dal rifiuto, che non conta.
         """
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
@@ -150,8 +157,10 @@ class MatchLifecycleService:
         if match.is_scored_by_third_party:
             from .pending_confirmation import avvisa_annullata_da_chi_segna
 
+            era_rifiutata = match.is_rejected
             match.cancel_by_scorer(user_id)
-            avvisa_annullata_da_chi_segna(match)
+            if not era_rifiutata:
+                avvisa_annullata_da_chi_segna(match)
             return match
 
         if not match.is_player(user_id):

@@ -180,6 +180,8 @@ class StatusPresenter:
             MatchStatus.SCHEDULED.value: ("bg-secondary", _("Da giocare")),
             MatchStatus.IN_PROGRESS.value: ("bg-primary", _("In Corso")),
             MatchStatus.CANCELLED.value: ("bg-secondary", _("Annullata")),
+            # Solo la partita di altri due (2026-10-18): la vede chi l'ha segnata.
+            MatchStatus.REJECTED.value: ("bg-danger", _("Rifiutata")),
             MatchStatus.CLOSED_UNILATERALLY.value: ("bg-success", _("Completato")),
             # Diceva «Validato», che è proprio il fraintendimento da cui è
             # nato il rinomino dell'enum: questo stato non è la validazione

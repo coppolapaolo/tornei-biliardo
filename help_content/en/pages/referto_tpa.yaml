@@ -355,7 +355,8 @@ blocks:
   - type: text
     text: >-
       If you are an **instructor** or a **competition director** you can keep
-      the scoresheet of a match played by two other players: a final you are
+      the scoresheet of a match played by two other players (administrators
+      cannot): a final you are
       watching, a match of one of your students. In **Individual matches** tap
       **Score a match between two others**, pick player A and player B, write
       which match it is, and tap **Start the scoresheet**. You cannot be one
@@ -370,15 +371,15 @@ blocks:
         text: "The match starts at once, with the scoresheet already open and yours. The two players get a notice with the description: they see it among their matches, but they do not score it."
       - title: "Close it when the match ends"
         text: "It closes only at the distance, or after at least one rack in free format. Nobody signs on the players' behalf: once it is closed, both of them get a notice."
-      - title: "Each one decides for themselves"
-        text: "Each player **confirms** or **rejects** the match, once. Whoever confirms keeps it in their statistics; whoever rejects no longer sees it, and the rejection takes nothing away from the other."
+      - title: "The two confirm"
+        text: "Each player **confirms** or **rejects** the match, once. Whoever confirms finds it in their statistics. But one rejection is enough: if either player rejects it, even after the other has confirmed, the match counts for neither of them and disappears from their matches. The other player and you get a notice."
 
   - type: list
     title: "What about ELO?"
     items:
       - "Confirmed by both: it counts like any confirmed match."
       - "Closed and rejected by nobody: it counts in the **All** view."
-      - "Rejected even by one: it does not count for either player's ELO."
+      - "Rejected by one of the two: it does not count for either player's ELO."
 
   - type: note
     tone: info
@@ -387,6 +388,16 @@ blocks:
       Until one of the two confirms it, the scorer can **cancel** it from the
       match page, even with racks recorded: the players get a notice. After
       the first confirmation it can no longer be cancelled.
+
+  - type: note
+    tone: tip
+    title: "If one of the two rejects it"
+    text: >-
+      The match stays with you alone, under **Matches you are scoring**, marked
+      **Rejected**. Open it and choose: **Correct the match** reopens the
+      scoresheet so you can fix what was wrong; when you close it again, the
+      two players get the request to confirm once more, as the first time.
+      **Delete the match** removes it for good. Nobody else can do either.
 
   - type: heading
     id: dove-si-vede

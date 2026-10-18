@@ -149,9 +149,10 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
 
     # La partita di altri due (ADR-084). `scorer_id` presente vuol dire che il
     # referto lo tiene un istruttore o un direttore che non gioca: nessuno
-    # firma d'ufficio, e ognuno dei due conferma o **rifiuta per sé**. Il
-    # rifiuto è «non la riconosco»: un fatto solo suo, che non toglie
-    # triangoli e non tocca l'altro giocatore.
+    # firma d'ufficio, e ognuno dei due conferma o rifiuta. Un rifiuto basta
+    # (emendamento del 2026-10-18): la partita va a `REJECTED` per tutti e
+    # due, e chi la segna la corregge o la cancella. `player*_rejected_at` dice
+    # chi l'ha rifiutata e quando; la correzione lo azzera.
     scorer_id = db.Column(
         db.Integer, db.ForeignKey("user.id"), nullable=True, index=True
     )
@@ -476,16 +477,65 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         return self.confirm_result(user_id)
 
     def reject_as_player(self, user_id: int) -> None:
-        """«Non la riconosco»: il rifiuto della partita di un terzo, per sé.
+        """«Non la riconosco»: il rifiuto della partita di un terzo.
 
-        Non toglie triangoli e non tocca l'altro giocatore: chi ha confermato
-        se la tiene (ADR-084).
+        Un rifiuto basta (emendamento del 2026-10-18 all'ADR-084): prima o
+        dopo la conferma dell'altro, la partita è ``REJECTED`` per tutti e
+        due. Non toglie triangoli — il punteggio lo ha scritto chi segna, ed è
+        lui a correggerlo (`reopen_by_scorer`) — e la conferma dell'altro resta
+        scritta com'era, finché la correzione non azzera tutto.
+
+        Fino al 2026-10-18 valeva solo per chi rifiutava, e con una conferma e
+        un rifiuto la partita restava in corso per sempre.
         """
         self._require_decision(user_id)
         if user_id == self.player1_id:
             self.player1_rejected_at = utc_now()
         else:
             self.player2_rejected_at = utc_now()
+        self.status = MatchStatus.REJECTED
+
+    @property
+    def is_rejected(self) -> bool:
+        """Se uno dei due giocatori ha rifiutato la partita di un terzo."""
+        return self.status == MatchStatus.REJECTED
+
+    def is_hidden_from(self, user_id: Optional[int]) -> bool:
+        """Se la partita non si mostra a ``user_id``.
+
+        La partita rifiutata non compare più ai due giocatori: non conta per
+        nessuno dei due, e tenerla in vista sarebbe un «in attesa» che non
+        aspetta più niente da loro. La vede solo chi l'ha segnata, che la
+        corregge o la cancella.
+        """
+        return self.is_rejected and (user_id is None or user_id != self.scorer_id)
+
+    def reopen_by_scorer(self, user_id: int) -> None:
+        """Chi l'ha segnata riapre la partita rifiutata per correggerla.
+
+        Il referto si riapre, conferme e rifiuti si azzerano e la partita
+        torna in corso: è di nuovo una partita da dichiarare, e quando chi
+        segna richiude il referto i due ricevono di nuovo la richiesta di
+        conferma (`TpaRefertoService.close`). Senza azzerare, il rifiuto di
+        prima varrebbe anche per il punteggio corretto.
+        """
+        from ..exceptions import ConflictError, PermissionDeniedError
+
+        if not self.is_scored_by_third_party or self.scorer_id != user_id:
+            raise PermissionDeniedError(
+                "La partita rifiutata la corregge solo chi la segna"
+            )
+        if not self.is_rejected:
+            raise ConflictError("Si corregge solo una partita rifiutata")
+
+        self.reset_confirmations()
+        self.player1_rejected_at = None
+        self.player2_rejected_at = None
+        self.ended_at = None
+        self.status = MatchStatus.IN_PROGRESS
+        referto = getattr(self, "tpa_referto", None)
+        if referto is not None:
+            referto.closed_at = None
 
     def cancel_by_scorer(self, user_id: int) -> None:
         """Chi segna annulla la partita, finché nessuno dei due l'ha confermata.
@@ -493,11 +543,18 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         Anche a triangoli segnati: la partita a metà — uno se ne va, il
         referto è partito male — si toglie così. Dopo la prima conferma la
         partita è anche di chi l'ha confermata, e chi segna non la toglie più.
+
+        Tranne quando è stata **rifiutata**: lì non conta già per nessuno dei
+        due, e cancellarla è una delle due strade di chi l'ha segnata (l'altra
+        è correggerla).
         """
         from ..exceptions import ConflictError, PermissionDeniedError
 
         if not self.is_scored_by_third_party or self.scorer_id != user_id:
             raise PermissionDeniedError("La partita la annulla solo chi la segna")
+        if self.is_rejected:
+            self.status = MatchStatus.CANCELLED
+            return
         if self.status not in (MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS):
             raise ConflictError("La partita è già chiusa o annullata")
         if self.player1_confirmed or self.player2_confirmed:

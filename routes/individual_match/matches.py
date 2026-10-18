@@ -59,6 +59,15 @@ def match_detail(match_id):
             flash(_("Accesso negato a questa sfida."), "danger")
             return redirect(url_for("individual_match.match_list"))
 
+        # La partita di altri due rifiutata non si mostra più ai due
+        # giocatori: la vede solo chi l'ha segnata (2026-10-18).
+        if match.is_hidden_from(current_user.id):
+            flash(
+                _("Questa partita è stata rifiutata: non conta per nessuno dei due."),
+                "info",
+            )
+            return redirect(url_for("individual_match.dashboard"))
+
         from flask import render_template
         from models.tpa.services import (
             FEATURE_CODE as TPA_FEATURE,
@@ -483,12 +492,19 @@ def reject_result(match_id):
                 }
             )
         elif match.is_scored_by_third_party:
-            # Il rifiuto per sé (ADR-084): nessun triangolo tolto.
+            # Un rifiuto basta (2026-10-18): nessun triangolo tolto, e la
+            # partita non si mostra più. Si torna alle sfide, non alla partita.
             flash(
-                _("Hai rifiutato la partita: per te non conta, per l'altro sì."),
+                _(
+                    "Hai rifiutato la partita: non conta per nessuno dei due. "
+                    "L'altro giocatore e chi l'ha segnata ricevono un avviso."
+                ),
                 "warning",
             )
-            return redirect(_after_result_url(match_id))
+            return redirect(
+                safe_next_url(request.form.get("next"))
+                or url_for("individual_match.dashboard")
+            )
         else:
             flash(_("Risultato rifiutato. Ultimo triangolo rimosso."), "warning")
             return redirect(_after_result_url(match_id))
@@ -590,8 +606,18 @@ def cancel_match(match_id):
         if request.is_json:
             return jsonify({"success": True, "message": "Match cancelled successfully"})
         elif match is not None and match.scorer_id == current_user.id:
+            # Rifiutata, i due lo sapevano già: nessun secondo avviso.
+            rifiutata = (
+                match.player1_rejected_at is not None
+                or match.player2_rejected_at is not None
+            )
             flash(
-                _("Partita annullata: i due giocatori ricevono un avviso."), "success"
+                (
+                    _("Partita cancellata.")
+                    if rifiutata
+                    else _("Partita annullata: i due giocatori ricevono un avviso.")
+                ),
+                "success",
             )
             return redirect(url_for("individual_match.dashboard"))
         else:

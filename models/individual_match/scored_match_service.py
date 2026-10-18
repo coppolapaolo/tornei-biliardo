@@ -6,8 +6,11 @@ corso e col referto già aperto**, compilatore chi la segna: una partita di un
 terzo senza referto non esiste, perché è il referto il motivo per cui c'è.
 
 Chi segna non firma per nessuno. Quando chiude il referto la partita è
-*dichiarata* e i due giocatori decidono, ciascuno per sé
-(`IndividualMatch.confirm_as_player` / `reject_as_player`).
+*dichiarata* e i due giocatori decidono
+(`IndividualMatch.confirm_as_player` / `reject_as_player`). Le conferme sono
+per sé, il rifiuto no: ne basta uno e la partita è rifiutata per tutti e due
+(emendamento del 2026-10-18). Chi l'ha segnata la riapre per correggerla
+(`reopen`) o la cancella.
 
 I giocatori sono utenti che esistono, registrati o no, oppure nascono dal
 modulo come giocatori non ancora registrati (`NuovoGiocatore`, ADR-085): la
@@ -48,13 +51,20 @@ class ScoredMatchService:
     def can_score(user) -> bool:
         """Chi può segnare la partita di altri due: istruttori e direttori.
 
-        Anche l'admin, che di un direttore ha tutti i poteri. Il ruolo si
-        guarda qui, quando la partita nasce; dopo il permesso è `scorer_id`
-        (`TpaRefertoService.can_compile`).
+        **Non l'admin**, nemmeno se ha il ruolo di istruttore (decisione
+        dell'utente del 2026-10-18: «admin non dovrebbe segnare partite»).
+        L'admin non gioca e non segna: è la regola «l'admin non è un player»,
+        e segnare per altri due è stare al tavolo come loro. Fino a quella
+        data l'admin poteva, «con i poteri del direttore».
+
+        Il ruolo si guarda qui, quando la partita nasce; dopo il permesso è
+        `scorer_id` (`TpaRefertoService.can_compile`).
         """
         if user is None or not getattr(user, "is_authenticated", True):
             return False
-        return bool(user.is_admin or user.is_director or user.is_instructor)
+        if user.is_admin:
+            return False
+        return bool(user.is_director or user.is_instructor)
 
     @staticmethod
     def _giocatore(user_id: Any, etichetta: str, scorer=None):
@@ -195,6 +205,21 @@ class ScoredMatchService:
         TpaRefertoService.open_referto(match.id, scorer.id)
 
         ScoredMatchService._avvisa_i_giocatori(match, scorer)
+        return match
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def reopen(match_id: int, user_id: int) -> IndividualMatch:
+        """Chi l'ha segnata riapre la partita rifiutata, per correggerla.
+
+        La regola sta in `IndividualMatch.reopen_by_scorer`. Gli avvisi «da
+        confermare» della dichiarazione di prima sono già stati ritirati dal
+        rifiuto: quando il referto si richiude, i due ne ricevono uno nuovo.
+        """
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            raise NotFoundError(_("Partita non trovata"))
+        match.reopen_by_scorer(user_id)
         return match
 
     @staticmethod

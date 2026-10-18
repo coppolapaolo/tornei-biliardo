@@ -502,6 +502,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # gli istruttori hanno `role=player`; chi può davvero segnare lo decide
     # `ScoredMatchService.can_score`.
     "individual_match.scored_match": {"player", "director"},
+    # Chi l'ha segnata riapre la partita rifiutata per correggerla
+    # (2026-10-18); il permesso vero è `scorer_id`.
+    "individual_match.reopen_scored_match": {"player", "director"},
     # Referto TPA (ADR-044). Visibile a player/director come il resto del
     # match individuale; a *sbloccarlo* e' pero' il gate gamification
     # 'tpa_scoresheet', applicato sulle route con @feature_required.
