@@ -101,11 +101,16 @@ function ambiente(iniziale, opzioni) {
       ' data-et-cap-p="in buca" data-et-cap-g="triangolo" data-et-cap-n="non colpita"' +
       ' data-et-kick-in="Primo tiro di calcio?" data-et-kick-in-aria="calcio del giocatore {n}"' +
       ' data-et-runout-chiedi="Un solo turno?"' +
-      ' data-et-runout-si="Chiusa in un solo turno">' +
+      ' data-et-runout-si="Chiusa in un solo turno"' +
+      ' data-et-annulla-aria="Tocca per annullare" data-et-tolta="Annullata: {nota}"' +
+      ' data-et-tavolo-passato="tavolo passato" data-et-chi-spacca="chi spacca" data-et-rimetti="Rimetti">' +
       '<div id="tpaPlayers"></div>' +
       (scrive
         ? '<p id="tpaRileggi" hidden></p><div id="tpaNumbers"></div><div id="tpaLetters"></div>' +
-          '<button id="tpaIndietro"></button><span id="tpaPosizione"></span><button id="tpaAvanti"></button>' +
+          '<p id="tpaTolta" hidden></p>' +
+          '<button id="tpaIndietro"></button><button id="tpaAnnulla"></button>' +
+          '<button id="tpaAvanti"></button><span id="tpaPosizione"></span>' +
+          (opzioni.riapri ? '<button id="tpaRiapri"></button>' : "") +
           '<div id="tpaRipartiModal"><h3 id="tpaRipartiTitolo"></h3><div id="tpaRipartiElenco"></div>' +
           '<button id="tpaRipartiConferma"></button></div>'
         : "") +
@@ -567,6 +572,92 @@ async function main() {
     assert.strictEqual(seconda.querySelector(".c7-tpa-nt__balls--won").textContent, "6");
     assert.strictEqual(seconda.querySelector(".c7-tpa-kick").textContent, "2");
     assert.ok(seconda.textContent.indexOf("↺") < 0 && seconda.textContent.indexOf("●") < 0);
+  }
+
+  // 15. «Annulla l'ultima»: spento se non c'è niente da annullare, acceso
+  //     altrimenti; toglie un tocco solo e per tre secondi offre «Rimetti».
+  {
+    const vuoto = ambiente(stato({ can_undo: false, commands: 0 }));
+    assert.strictEqual(vuoto.doc.getElementById("tpaAnnulla").disabled, true);
+
+    const a = ambiente(stato({ can_undo: true, last_command: "end" }));
+    const pulsante = a.doc.getElementById("tpaAnnulla");
+    assert.strictEqual(pulsante.disabled, false);
+    pulsante.click();
+    assert.strictEqual(a.chiamate.length, 1);
+    assert.strictEqual(a.chiamate[0].url, "/m/7/tpa/undo");
+    a.risposte[0].ok({ success: true, state: stato({ can_undo: true, last_command: "M" }), undone: "end" });
+    await giro(); await giro();
+    const tolta = a.doc.getElementById("tpaTolta");
+    assert.strictEqual(tolta.hidden, false);
+    assert.ok(tolta.textContent.indexOf("Annullata: tavolo passato") >= 0, tolta.textContent);
+    tolta.querySelector("button").click();
+    assert.strictEqual(a.chiamate[1].url, "/m/7/tpa/press");
+    assert.deepStrictEqual(JSON.parse(a.chiamate[1].init.body), { command: "end" });
+    assert.strictEqual(tolta.hidden, true, "rimettendo la riga se ne va");
+  }
+
+  // 16. Toccare l'ultima annotazione la annulla: le caselle di chi è al
+  //     tavolo se il turno ha già qualcosa, quelle dell'altro se l'ultimo
+  //     tocco ha passato il tavolo. Le altre caselle non si toccano.
+  {
+    const scritto = stato({
+      can_undo: true, can_clear: true, last_command: "3",
+      current: { is_break: false, can_choose_seat: false, winning: false, main_note: null,
+        secondary_note: null,
+        annotation: { total_potted: 3, break_potted: null, first_shot_kick_in: false, run_out: null } },
+    });
+    const a = ambiente(scritto);
+    const mia = a.riquadri()[0].querySelector(".c7-tpa-slip");
+    assert.strictEqual(mia.tagName, "BUTTON");
+    assert.ok(mia.className.indexOf("c7-tpa-slip--undo") >= 0);
+    assert.ok(mia.querySelector(".c7-tpa-slip__undo"), "la freccia dice che si tocca");
+    mia.click();
+    assert.strictEqual(a.chiamate[0].url, "/m/7/tpa/undo");
+
+    const passato = stato({
+      can_undo: true, can_clear: false, last_command: "end", can_switch_player: false,
+      current_player: 1,
+      racks: [{ number: 1, turns: [
+        { player: 2, is_break: false, winning: false, main_note: "M", secondary_note: "",
+          annotation: { break_potted: null, total_potted: 2, first_shot_kick_in: false },
+          score_snapshot: null },
+        { player: 1, is_break: false, winning: false, main_note: null, secondary_note: null,
+          annotation: { break_potted: null, total_potted: null, first_shot_kick_in: false },
+          score_snapshot: null },
+      ] }],
+    });
+    const b = ambiente(passato);
+    assert.strictEqual(b.riquadri()[0].querySelector(".c7-tpa-slip").tagName, "SPAN");
+    const altra = b.riquadri()[1].querySelector(".c7-tpa-slip");
+    assert.strictEqual(altra.tagName, "BUTTON");
+    altra.click();
+    assert.strictEqual(b.chiamate[0].url, "/m/7/tpa/undo");
+
+    // Chi guarda non annulla niente.
+    const c = ambiente(scritto, { scrive: false });
+    assert.strictEqual(c.riquadri()[0].querySelector(".c7-tpa-slip").tagName, "SPAN");
+  }
+
+  // 17. Il tocco che porta alla distanza chiude il referto: la pagina si
+  //     ricarica, perché quella chiusa è un'altra.
+  {
+    const a = ambiente(stato());
+    a.tasto("3").click();
+    a.risposte[0].ok({ success: true, state: stato({ closed: true }) });
+    await giro(); await giro();
+    assert.strictEqual(a.ricariche(), 1);
+  }
+
+  // 18. Sul referto chiuso alla distanza «Annulla l'ultima e riapri» chiama
+  //     l'annulla e ricarica.
+  {
+    const a = ambiente(stato({ closed: true }), { riapri: true });
+    a.doc.getElementById("tpaRiapri").click();
+    assert.strictEqual(a.chiamate[0].url, "/m/7/tpa/undo");
+    a.risposte[0].ok({ success: true, state: stato() });
+    await giro(); await giro();
+    assert.strictEqual(a.ricariche(), 1);
   }
 
   console.log("test_tpa_referto: ok");

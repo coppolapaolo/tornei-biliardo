@@ -257,6 +257,60 @@ un istruttore o da un direttore fra altri due: lì il compilatore è lo scorer
 permesso è uno solo, `TpaRefertoService.can_compile`; posti e motore non
 cambiano. Decisione e conseguenze in [ADR-084](ADR-084-tpa-tenuto-da-un-terzo.md).
 
+## Emendamento del 2026-10-18 · chiuso alla distanza, l'annulla torna in vista
+
+Segnalazione dell'utente, da un telefono mentre teneva il referto di una sua
+sfida: la testata della pagina occupava spazio senza servire, il referto
+non si chiudeva da solo alla distanza, e non si capiva come annullare
+l'ultima annotazione — toccarla, come ci si aspettava, non faceva niente.
+
+**Il referto aperto è a tutto schermo.** Sparisce la testata della pagina
+(«A vs B», descrizione, badge del livello): chi è al tavolo lo dicono le card
+dei due giocatori, con nome, triangoli e TPA. In fondo restano «Chiudi il
+referto» e «Torna alla sfida». La testata resta alla presentazione e al
+referto chiuso, che si leggono e non si compilano.
+
+**Alla distanza il referto si chiude da solo.** Lo decide il VO `Distance`
+(attraverso `rack_score`): «al N» quando uno dei due arriva a N, «esattamente
+N» quando il totale arriva a N. Non lo stato della partita, perché la firma
+d'ufficio non deve cambiare la risposta. La chiusura è la stessa del gesto a
+mano (`TpaRefertoService._chiudi`), quindi fa le stesse cose: nella partita di
+altri due chiudere è dichiarare, e i due ricevono la richiesta di conferma;
+nella sfida fra i due la firma d'ufficio e l'avviso li ha già dati
+`_sync_match_score`. Senza distanza — formato libero — non cambia niente: si
+chiude a mano.
+
+**Il rimedio a una chiusura sbagliata è l'annulla.** L'ultimo tocco era
+sbagliato e ha portato la partita alla distanza: il compilatore lo annulla, e
+annullarlo riapre il referto (`can_undo_closing`). Vale finché la partita non
+è conclusa — una firma sola non la conclude, le due sì — e non è stata
+rifiutata, perché lì chi segna ha già la correzione. Il triangolo torna
+indietro e le firme si azzerano, come per ogni punteggio che si muove. Sul
+referto chiuso il compilatore trova il pulsante «Annulla l'ultima e riapri il
+referto», sotto un avviso che dice perché si è chiuso. Scartati: un «Annulla»
+di tre secondi subito dopo la chiusura, che si perde se in quei tre secondi
+si sta guardando il tavolo; e una colonna «chiuso da solo», che sarebbe un
+fatto salvato accanto a quelli da cui si ricava.
+
+Un limite noto: l'avviso «conferma il risultato» partito alla chiusura resta
+fra le notifiche dell'avversario anche dopo la riapertura. La partita a cui
+porta è di nuovo in corso, e alla chiusura successiva ne parte uno nuovo.
+
+**L'annulla di un tocco torna nell'interfaccia.** L'emendamento del 19/09 lo
+aveva tolto, perché fra «cancella» e «riparti» non gli restava un caso suo.
+Il caso c'era: un tavolo passato per sbaglio. «Cancella» non lo toglie,
+perché lavora solo sul turno in corso, e «riparti» chiede di scorrere
+indietro e confermare un foglio. Ora l'annulla ha due ingressi: il pulsante
+«Annulla l'ultima», fra «Indietro» e «Avanti», e il tocco sulle caselle che
+contengono l'ultimo tocco — quelle di chi è al tavolo se il turno ha già
+qualcosa di scritto, quelle dell'altro se l'ultimo tocco ha passato il
+tavolo. Una freccia nell'angolo dice che si toccano. Nel registro resta quello
+che era: togliere l'ultimo comando e rigiocare. Segue l'ADR-074 come azione
+frequente e reversibile: niente domanda. Si esegue subito, perché chi
+annota vuole riscrivere al volo, e per tre secondi una riga sopra il
+tastierino dice cosa è stato tolto e offre «Rimetti», che è un tocco come gli
+altri, validato dal motore.
+
 ## Riferimenti
 
 - `models/tpa/engine.py` — le regole, con le divergenze documentate in testa

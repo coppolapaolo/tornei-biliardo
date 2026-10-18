@@ -237,12 +237,24 @@ blocks:
 
   - type: text
     text: >-
-      Ci sono due rimedi, uno piccolo e uno grande.
+      Ci sono tre rimedi, dal più piccolo al più grande.
 
   - type: list
     items:
+      - "**Annulla l'ultima**, in fondo al tastierino fra «Indietro» e «Avanti»: toglie l'**ultimo tocco**, qualunque fosse — un numero, una lettera, anche il tavolo passato per sbaglio. Puoi toccarlo più volte, un tocco alla volta."
       - "**Cancella**, il tasto col bordo accanto allo zero: toglie quello che hai scritto **in questo turno**, tutto insieme, e lo riscrivi. Il tavolo resta a chi c'era."
       - "**Indietro**, in fondo al tastierino: per tornare a un turno già passato. Lo trovi spiegato qui sotto."
+
+  - type: note
+    tone: tip
+    title: "Tocca l'ultima annotazione per annullarla"
+    text: >-
+      Le caselle che contengono l'ultima cosa che hai scritto hanno una
+      piccola **freccia** nell'angolo: toccarle fa lo stesso di «Annulla
+      l'ultima». Sono quelle di chi è al tavolo, oppure — se hai appena
+      passato il tavolo — quelle dell'altro giocatore. Per tre secondi, sopra
+      il tastierino, compare cosa hai tolto e il pulsante **Rimetti**, se
+      l'avevi toccata per sbaglio.
 
   - type: heading
     id: rileggere-e-ripartire
@@ -250,9 +262,9 @@ blocks:
 
   - type: text
     text: >-
-      In fondo al tastierino ci sono **Indietro** e **Avanti**, con in mezzo a
-      che punto sei: «turno 6 di 8». Servono a scorrere la partita un turno
-      alla volta.
+      In fondo al tastierino ci sono **Indietro** e **Avanti**, e sotto a che
+      punto sei: «turno 6 di 8». Servono a scorrere la partita un turno alla
+      volta.
 
   - type: shot
     shot: referto-tpa-rileggi
@@ -323,10 +335,27 @@ blocks:
 
   - type: text
     text: >-
-      Quando avete finito, **Chiudi il referto**: su telefono è in fondo alla
-      pagina, su uno schermo largo in alto a destra. Ti chiede conferma,
-      perché dopo non si annota più. Il risultato della partita segue la
+      Se la partita ha una distanza, il referto **si chiude da solo** appena
+      ci arriva: in una partita «al 5» quando uno dei due vince il quinto
+      triangolo, in una partita «esattamente 6 triangoli» quando se ne sono
+      giocati sei. Non devi fare niente. Il risultato della partita segue la
       strada di sempre: va confermato da tutti e due.
+
+  - type: note
+    tone: tip
+    title: "Se l'ultimo tocco era sbagliato"
+    text: >-
+      Capita: un triangolo dato al giocatore sbagliato, e la partita risulta
+      finita. Sul referto chiuso trovi **Annulla l'ultima e riapri il
+      referto**: l'ultimo tocco sparisce, il triangolo torna indietro e
+      riprendi ad annotare. Si può finché la partita non è stata confermata
+      da tutti e due.
+
+  - type: text
+    text: >-
+      Se la partita non ha una distanza, quando avete finito tocca **Chiudi il
+      referto**, in fondo alla pagina. Ti chiede conferma, perché dopo non si
+      annota più.
 
   - type: shot
     shot: referto-tpa-chiuso
@@ -372,8 +401,8 @@ blocks:
     items:
       - title: "Tieni il referto"
         text: "La partita parte subito, col referto già aperto e tuo. I due giocatori ricevono un avviso con la descrizione: la vedono fra le loro sfide, ma non la segnano."
-      - title: "Chiudilo a fine partita"
-        text: "Si chiude solo alla distanza, o dopo almeno un triangolo nel formato libero. Nessuno firma al posto dei giocatori: chiuso il referto, tutti e due ricevono un avviso."
+      - title: "Alla distanza si chiude da solo"
+        text: "Arrivati alla distanza il referto si chiude senza che tu faccia niente; nel formato libero lo chiudi tu, dopo almeno un triangolo. Nessuno firma al posto dei giocatori: chiuso il referto, tutti e due ricevono un avviso."
       - title: "I due confermano"
         text: "Ciascun giocatore **conferma** o **rifiuta** la partita, una volta sola. Chi conferma la ritrova nelle sue statistiche. Ma basta un rifiuto: se uno dei due rifiuta, anche dopo che l'altro ha confermato, la partita non conta per nessuno dei due e sparisce dalle loro sfide. L'altro giocatore e tu ricevete un avviso."
 
@@ -461,7 +490,7 @@ blocks:
       - q: "Lo può tenere il mio avversario al posto mio?"
         a: "Lo tiene chi lo apre, e resta suo per tutta la partita. Tu premi «Guarda il referto TPA» e lo vedi riempirsi da solo, senza ricaricare la pagina, ma non puoi scriverci."
       - q: "Ho premuto il tasto sbagliato."
-        a: "Se è successo in questo turno, tocca «cancella», accanto allo zero: il turno torna vuoto e lo riscrivi. Se te ne accorgi dopo aver passato il tavolo, tocca «Indietro» fino a quel turno e poi «Riparti da questo turno…»: il foglio ti dice quali turni escono dal referto, e da lì riannoti."
+        a: "Tocca «Annulla l'ultima», oppure l'ultima annotazione, quella con la freccia nell'angolo: sparisce l'ultimo tocco, anche se era il tavolo passato. Se vuoi rifare tutto il turno, tocca «cancella», accanto allo zero. Se te ne accorgi molti turni dopo, tocca «Indietro» fino a quel turno e poi «Riparti da questo turno…»: il foglio ti dice quali turni escono dal referto, e da lì riannoti."
       - q: "Ho toccato «Indietro» per sbaglio: ho perso qualcosa?"
         a: "No. Indietro e Avanti servono solo a rileggere: non cambiano niente, né nel referto né nel punteggio. Tocca «Avanti» finché torni al turno in corso. Si tolgono dei turni solo con «Riparti da questo turno…», e solo dopo la conferma."
       - q: "Che TPA è un buon TPA?"

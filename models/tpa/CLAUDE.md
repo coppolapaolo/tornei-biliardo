@@ -50,10 +50,15 @@ state = TpaRefertoService.press(referto.id, user_id, "3")
 state = TpaRefertoService.press(referto.id, user_id, "M")
 state = TpaRefertoService.press(referto.id, user_id, "end")   # passa il tavolo
 
-TpaRefertoService.undo(referto.id, user_id)     # annulla l'ultimo comando (l'interfaccia non lo usa piu')
+TpaRefertoService.undo(referto.id, user_id)     # «Annulla l'ultima», o il tocco sulla casella;
+                                                # sul referto chiuso alla distanza lo riapre
+TpaRefertoService.can_undo_closing(referto, user_id)  # ...finche' la partita non e' conclusa
+TpaRefertoService.distanza_raggiunta(match)     # dal VO Distance: «al N» o «esattamente N»
 TpaRefertoService.clear_turn(referto.id, user_id)  # «cancella»: via l'annotazione del turno in corso
 TpaRefertoService.restart_from_turn(referto.id, user_id, rack, turn)  # «riparti da questo turno…»
 TpaRefertoService.close(referto.id, user_id)    # da qui si legge e basta
+# Alla distanza `press` chiude da solo, dallo stesso `_chiudi` (ADR-044,
+# emendamento del 18/10/2026). Senza distanza si chiude solo a mano.
 
 # Per la pagina: stato + nomi + se chi guarda puo' scrivere
 payload = TpaRefertoService.describe(referto, viewer_id=current_user.id)

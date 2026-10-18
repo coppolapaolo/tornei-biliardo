@@ -334,6 +334,212 @@ class TestPunteggioDerivato:
             assert match.player2_confirmed is False
 
 
+class TestChiusuraAllaDistanza:
+    """Alla distanza il referto si chiude da solo (segnalazione del 18/10/2026).
+
+    Chi segna non deve ricordarsi di chiuderlo, e la chiusura passa dallo
+    stesso percorso di quella a mano. Se l'ultimo tocco era sbagliato,
+    annullarlo riapre il referto finche' la partita non e' conclusa.
+    """
+
+    _vinci_un_rack = staticmethod(TestPunteggioDerivato._vinci_un_rack)
+
+    def test_al_n_si_chiude_quando_uno_arriva_a_n(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two, distance=3, is_race_to=True)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+
+            self._vinci_un_rack(referto.id, one.id, seat=1)
+            self._vinci_un_rack(referto.id, one.id, seat=2)
+            self._vinci_un_rack(referto.id, one.id, seat=1)
+            assert not TpaRefertoService.get_for_match(match.id).is_closed  # 2-1
+
+            self._vinci_un_rack(referto.id, one.id, seat=1)  # 3-1
+
+            referto = TpaRefertoService.get_for_match(match.id)
+            assert referto.is_closed
+            match = db.session.get(IndividualMatch, match.id)
+            assert (match.player1_score, match.player2_score) == (3, 1)
+            # Stessa firma d'ufficio di prima: chi e' avanti conferma.
+            assert match.player1_confirmed and not match.player2_confirmed
+
+    def test_esattamente_n_si_chiude_quando_il_totale_arriva_a_n(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two, distance=2, is_race_to=False)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+
+            self._vinci_un_rack(referto.id, one.id, seat=1)
+            assert not TpaRefertoService.get_for_match(match.id).is_closed
+            self._vinci_un_rack(referto.id, one.id, seat=2)  # 1-1, totale 2
+
+            assert TpaRefertoService.get_for_match(match.id).is_closed
+            match = db.session.get(IndividualMatch, match.id)
+            assert (match.player1_score, match.player2_score) == (1, 1)
+
+    def test_senza_distanza_non_si_chiude(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two, distance=None)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+
+            for _ in range(4):
+                self._vinci_un_rack(referto.id, one.id)
+
+            assert not TpaRefertoService.get_for_match(match.id).is_closed
+            assert db.session.get(IndividualMatch, match.id).player1_score == 4
+
+    def test_annullare_riapre_il_referto_chiuso_alla_distanza(self, app, players):
+        """Il rimedio all'ultimo tocco sbagliato: si toglie e il referto si riapre."""
+        with app.app_context():
+            one, two = players
+            match = _match(one, two, distance=2, is_race_to=True)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            self._vinci_un_rack(referto.id, one.id)
+            self._vinci_un_rack(referto.id, one.id, seat=1)
+            referto = TpaRefertoService.get_for_match(match.id)
+            assert referto.is_closed
+            assert TpaRefertoService.can_undo_closing(referto, one.id)
+            assert not TpaRefertoService.can_undo_closing(referto, two.id)
+            assert TpaRefertoService.describe(referto, viewer_id=one.id)[
+                "can_undo_closing"
+            ]
+
+            TpaRefertoService.undo(referto.id, one.id)
+
+            referto = TpaRefertoService.get_for_match(match.id)
+            assert not referto.is_closed
+            match = db.session.get(IndividualMatch, match.id)
+            assert (match.player1_score, match.player2_score) == (1, 0)
+            # La firma d'ufficio data alla distanza non vale piu'.
+            assert not match.player1_confirmed and not match.player2_confirmed
+
+    def test_a_partita_conclusa_non_si_riapre(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two, distance=1, is_race_to=True)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            self._vinci_un_rack(referto.id, one.id)
+            _confermata(db.session.get(IndividualMatch, match.id))
+
+            referto = TpaRefertoService.get_for_match(match.id)
+            assert not TpaRefertoService.can_undo_closing(referto, one.id)
+            with pytest.raises(ConflictError):
+                TpaRefertoService.undo(referto.id, one.id)
+
+    def test_chiuso_a_mano_senza_distanza_non_si_riapre(self, app, players):
+        """Il rimedio e' per la chiusura alla distanza, non un «riapri» generico."""
+        with app.app_context():
+            one, two = players
+            match = _match(one, two, distance=None)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            self._vinci_un_rack(referto.id, one.id)
+            TpaRefertoService.close(referto.id, one.id)
+
+            assert not TpaRefertoService.can_undo_closing(referto, one.id)
+            with pytest.raises(ConflictError):
+                TpaRefertoService.undo(referto.id, one.id)
+
+
+class TestAnnullaLUltima:
+    """«Annulla l'ultima» e il tocco sull'ultima annotazione: la route."""
+
+    def test_l_annulla_dice_cosa_ha_tolto(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            TpaRefertoService.press(referto.id, one.id, "1")
+            TpaRefertoService.press(referto.id, one.id, "3")
+
+            response = TestRotte._client(app, one).post(
+                f"/match/matches/{match.id}/tpa/undo"
+            )
+
+            assert response.status_code == 200
+            data = response.get_json()
+            assert data["undone"] == "3"
+            assert data["state"]["last_command"] == "1"
+            assert data["state"]["can_undo"] is True
+
+    def test_lo_stato_dice_l_ultimo_tocco_e_se_si_annulla(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+
+            vuoto = TpaRefertoService.describe(referto, viewer_id=one.id)
+            assert vuoto["last_command"] is None and vuoto["can_undo"] is False
+
+            TpaRefertoService.press(referto.id, one.id, "seat:2")
+            state = TpaRefertoService.describe(referto, viewer_id=one.id)
+            assert state["last_command"] == "seat:2" and state["can_undo"] is True
+            # Chi guarda non annulla.
+            assert (
+                TpaRefertoService.describe(referto, viewer_id=two.id)["can_undo"]
+                is False
+            )
+
+
+class TestLaPaginaATuttoSchermo:
+    """Sul referto aperto lo schermo e' del referto (segnalazione del 18/10/2026).
+
+    Niente testata con «A vs B», descrizione e badge del livello; i nomi
+    restano nelle card dei giocatori, che li disegna il JavaScript dallo stato.
+    """
+
+    def test_il_referto_aperto_non_ha_la_testata(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two, description="Rivincita del giovedi")
+            TpaRefertoService.open_referto(match.id, one.id)
+
+            html = (
+                TestRotte._client(app, one)
+                .get(f"/match/matches/{match.id}/tpa")
+                .get_data(as_text=True)
+            )
+
+            assert 'class="c7-head"' not in html
+            assert 'id="gami-badge"' not in html
+            assert "Rivincita del giovedi" not in html
+            # Chi e' al tavolo lo dicono le card: i nomi arrivano nello stato.
+            stato = html[html.index('id="tpaStato"') :]
+            assert one.username in stato and two.username in stato
+            # In fondo, il ritorno alla sfida e «Annulla l'ultima».
+            assert f'href="/match/matches/{match.id}"' in html
+            assert "Torna alla sfida" in html
+            assert 'id="tpaAnnulla"' in html
+            assert f'data-undo-url="/match/matches/{match.id}/tpa/undo"' in html
+
+    def test_il_referto_chiuso_tiene_la_testata_e_offre_il_rimedio(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two, distance=1, is_race_to=True)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            TestPunteggioDerivato._vinci_un_rack(referto.id, one.id)
+
+            html = (
+                TestRotte._client(app, one)
+                .get(f"/match/matches/{match.id}/tpa")
+                .get_data(as_text=True)
+            )
+
+            assert 'class="c7-head"' in html
+            assert 'id="tpaRiapri"' in html
+
+            from flask import g
+
+            g.pop("_login_user", None)
+            html_due = (
+                TestRotte._client(app, two)
+                .get(f"/match/matches/{match.id}/tpa")
+                .get_data(as_text=True)
+            )
+            assert 'id="tpaRiapri"' not in html_due
+
+
 class TestCancellaIlTurno:
     """«Cancella»: via l'annotazione del turno in corso, e solo quella.
 
@@ -601,9 +807,9 @@ class TestRotte:
             assert f'action="{base}/close"' in foglio
             assert 'name="csrf_token"' in foglio[: foglio.index("</form>")]
 
-            # «Chiudi il referto» c'e' due volte — in testata da lg, in fondo
-            # sotto — e nessuna delle due porta un `id`: aprono lo stesso foglio.
-            assert html.count('data-bs-target="#tpaChiudiModal"') == 2
+            # «Chiudi il referto» sta in fondo, una volta sola: la testata, dove
+            # stava da lg in su, sul referto aperto non c'e' piu' (18/10/2026).
+            assert html.count('data-bs-target="#tpaChiudiModal"') == 1
             assert html.count('id="tpaChiudiModal"') == 1
             # La legenda spiega anche la notazione, non solo le lettere.
             legenda = html[html.index('id="tpaLegenda"') : html.index('id="tpaSheet"')]

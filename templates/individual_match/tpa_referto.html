@@ -16,18 +16,12 @@
 <span class="c7-sep">·</span> {{ match.discipline|discipline_display }}
 {% endblock %}
 
-{# Da lg in su «Chiudi il referto» sta in testata, come nel canvas; sotto lg
-   resta in fondo alla pagina, dove il pollice lo trova. Nessuno dei due ha un
-   `id`: aprono lo stesso foglio. #}
-{% block page_actions %}
-{% if state and state.can_write %}
-<button type="button" class="btn btn-secondary d-none d-lg-inline-flex"
-        data-bs-toggle="modal" data-bs-target="#tpaChiudiModal">
-  <i class="fas fa-flag-checkered"></i> {{ _('Chiudi il referto') }}
-</button>
-{% endif %}
-{{ super() }}
-{% endblock %}
+{# Il referto aperto ha lo schermo tutto per se' (segnalazione del
+   18/10/2026, da un telefono): niente testata con «A vs B», descrizione e
+   badge del livello. Chi e' al tavolo lo dicono le card dei due giocatori,
+   e per uscire c'e' «Torna alla sfida» in fondo. La testata resta alla
+   presentazione e al referto chiuso, che si leggono e non si compilano. #}
+{% block page_head %}{% if referto is none or state.closed %}{{ super() }}{% endif %}{% endblock %}
 
 {# Chi compila ha il tastierino agganciato in basso: la nav flottante gli
    lascia il posto. Per uscire c'e' la freccia in testata. #}
@@ -84,6 +78,7 @@
        niente e `|tojson` non serve. #}
     <section class="c7-tpa{{ ' c7-tpa--write' if state.can_write }}" id="tpaReferto"
              data-press-url="{{ url_for('individual_match.tpa_press', match_id=match.id) }}"
+             data-undo-url="{{ url_for('individual_match.tpa_undo', match_id=match.id) }}"
              data-restart-url="{{ url_for('individual_match.tpa_restart', match_id=match.id) }}"
              data-clear-url="{{ url_for('individual_match.tpa_clear', match_id=match.id) }}"
              data-state-url="{{ url_for('individual_match.tpa_state', match_id=match.id) }}"
@@ -127,7 +122,13 @@
              data-et-riparti-conferma="{{ _('Riparti dal turno {n}') }}"
              data-et-si-riannota="{{ _('si riannota') }}"
              data-et-runout-chiedi="{{ _('Ha chiuso in un solo turno?') }}"
-             data-et-runout-si="{{ _('Chiuso in un solo turno') }}">
+             data-et-runout-si="{{ _('Chiuso in un solo turno') }}"
+             data-et-annulla-aria="{{ _('Tocca per annullare l’ultima annotazione') }}"
+             {# `{nota}` lo sostituisce il JavaScript. #}
+             data-et-tolta="{{ _('Annullata: {nota}') }}"
+             data-et-tavolo-passato="{{ _('tavolo passato') }}"
+             data-et-chi-spacca="{{ _('chi spacca') }}"
+             data-et-rimetti="{{ _('Rimetti') }}">
       <script type="application/json" id="tpaStato">{{ state|tojson }}</script>
       {# I riquadri dei giocatori e il tastierino li disegna il JavaScript e li
          svuota a ogni tocco: le ancore dell'aiuto (`data-help`) stanno su
@@ -141,6 +142,10 @@
       {% if state.can_write %}
       {# Sotto lg questo blocco sta agganciato in basso (vedi `.c7-tpa-dock`). #}
       <div class="c7-tpa-dock c7-tpa__pad" id="tpaDock">
+        {# Per tre secondi dopo un annulla: cosa e' stato tolto, e come
+           rimetterlo (ADR-074, l'azione frequente e reversibile). Galleggia
+           sopra il tastierino, cosi' non sposta niente. #}
+        <p class="c7-tpa-undone" id="tpaTolta" role="status" hidden></p>
         <div class="c7-stack" data-help="referto-tastierino" style="gap:8px">
           <div class="c7-tpa-pad" id="tpaNumbers"></div>
           <div class="c7-tpa-pad" id="tpaLetters"></div>
@@ -148,11 +153,14 @@
         {# Indietro e avanti scorrono i turni e non scrivono niente: e' una
            vista. Si scrive solo dal turno in corso, o ripartendo da uno del
            passato dopo la conferma del foglio qui sotto. #}
+        {# In mezzo «Annulla l'ultima»: toglie l'ultimo tocco, qualunque fosse,
+           anche il tavolo passato. A quale turno si e' lo dice la riga sotto. #}
         <div class="c7-tpa-hist" data-help="referto-rileggi">
           <button type="button" class="c7-tpa-hist__btn" id="tpaIndietro"><i class="fas fa-chevron-left" aria-hidden="true"></i> {{ _('Indietro') }}</button>
-          <span class="c7-tpa-hist__pos" id="tpaPosizione"></span>
+          <button type="button" class="c7-tpa-hist__btn c7-tpa-hist__btn--undo" id="tpaAnnulla" data-help="referto-annulla"><i class="fas fa-rotate-left" aria-hidden="true"></i> {{ _('Annulla l’ultima') }}</button>
           <button type="button" class="c7-tpa-hist__btn" id="tpaAvanti">{{ _('Avanti') }} <i class="fas fa-chevron-right" aria-hidden="true"></i></button>
         </div>
+        <span class="c7-tpa-hist__pos" id="tpaPosizione"></span>
       </div>
       {% endif %}
 
@@ -162,6 +170,20 @@
          posto che a referto aperto e' del tastierino. #}
       {% set uno = summary.players[1] %}{% set due = summary.players[2] %}
       <div class="c7-stack c7-tpa__pad" id="tpaRefertoChiuso">
+        {% if state.can_undo_closing %}
+        {# Il rimedio alla chiusura automatica: se l'ultimo tocco era
+           sbagliato, annullarlo riapre il referto. Finche' la partita non e'
+           conclusa (ADR-044, emendamento del 18/10/2026). #}
+        <div class="c7-flash c7-flash--info" id="tpaChiusoAllaDistanza">
+          <span class="c7-flash__ico"><i class="fas fa-flag-checkered"></i></span>
+          <span class="c7-flash__body">
+            {{ _('La partita è arrivata alla distanza e il referto si è chiuso. Se l’ultimo tocco era sbagliato, annullalo: il referto si riapre.') }}
+          </span>
+        </div>
+        <button type="button" class="btn btn-secondary w-100" id="tpaRiapri">
+          <i class="fas fa-rotate-left" aria-hidden="true"></i> {{ _('Annulla l’ultima e riapri il referto') }}
+        </button>
+        {% endif %}
         <div class="c7-kicker">
           <i class="fas fa-lock" aria-hidden="true"></i> {{ _('Referto chiuso') }}
           <span class="c7-sep">·</span>
@@ -240,7 +262,7 @@
 
       <div class="c7-stack c7-tpa__actions">
         {% if state.can_write %}
-        <button type="button" class="btn btn-secondary w-100 d-lg-none"
+        <button type="button" class="btn btn-secondary w-100"
                 data-bs-toggle="modal" data-bs-target="#tpaChiudiModal">
           <i class="fas fa-flag-checkered"></i> {{ _('Chiudi il referto') }}
         </button>

@@ -236,12 +236,24 @@ blocks:
 
   - type: text
     text: >-
-      There are two remedies, a small one and a big one.
+      There are three remedies, from the smallest to the biggest.
 
   - type: list
     items:
+      - "**Undo last**, at the bottom of the keypad between «Back» and «Next»: removes your **last tap**, whatever it was — a number, a letter, even a table passed by mistake. You can tap it again and again, one tap at a time."
       - "**Clear**, the outlined key next to the zero: removes what you wrote **in this inning**, all at once, so you can write it again. The table stays with whoever had it."
       - "**Back**, at the bottom of the keypad: to return to an inning already played. It is explained just below."
+
+  - type: note
+    tone: tip
+    title: "Tap the last entry to undo it"
+    text: >-
+      The boxes holding the last thing you wrote have a small **arrow** in
+      the corner: tapping them does the same as «Undo last». They are the
+      boxes of the player at the table or — if you have just passed the
+      table — those of the other player. For three seconds, above the
+      keypad, you see what was removed and a **Put back** button, in case
+      you tapped it by mistake.
 
   - type: heading
     id: rileggere-e-ripartire
@@ -249,8 +261,8 @@ blocks:
 
   - type: text
     text: >-
-      At the bottom of the keypad are **Back** and **Next**, with where you are
-      in between: «turn 6 of 8». They step through the match one inning at a
+      At the bottom of the keypad are **Back** and **Next**, and below them
+      where you are: «turn 6 of 8». They step through the match one inning at a
       time.
 
   - type: shot
@@ -322,10 +334,27 @@ blocks:
 
   - type: text
     text: >-
-      When you are done, **Close the scoresheet**: on a phone it is at the
-      bottom of the page, on a wide screen at the top right. It asks you to
-      confirm, because nothing can be recorded afterwards. The match result
-      goes the usual way: both players confirm it.
+      If the match has a distance, the scoresheet **closes by itself** as soon
+      as it gets there: in a «race to 5» when one player wins the fifth rack,
+      in an «exactly 6 racks» match when six have been played. You do not have
+      to do anything. The match result goes the usual way: both players
+      confirm it.
+
+  - type: note
+    tone: tip
+    title: "If the last tap was wrong"
+    text: >-
+      It happens: a rack given to the wrong player, and the match looks
+      finished. On the closed scoresheet you find **Undo the last one and
+      reopen the scoresheet**: the last tap disappears, the rack goes back
+      and you carry on recording. You can do it until both players have
+      confirmed the match.
+
+  - type: text
+    text: >-
+      If the match has no distance, when you are done tap **Close the
+      scoresheet**, at the bottom of the page. It asks you to confirm,
+      because nothing can be recorded afterwards.
 
   - type: shot
     shot: referto-tpa-chiuso
@@ -372,8 +401,8 @@ blocks:
     items:
       - title: "Keep the scoresheet"
         text: "The match starts at once, with the scoresheet already open and yours. The two players get a notice with the description: they see it among their matches, but they do not score it."
-      - title: "Close it when the match ends"
-        text: "It closes only at the distance, or after at least one rack in free format. Nobody signs on the players' behalf: once it is closed, both of them get a notice."
+      - title: "At the distance it closes by itself"
+        text: "When the distance is reached the scoresheet closes without you doing anything; in free format you close it yourself, after at least one rack. Nobody signs on the players' behalf: once it is closed, both of them get a notice."
       - title: "The two confirm"
         text: "Each player **confirms** or **rejects** the match, once. Whoever confirms finds it in their statistics. But one rejection is enough: if either player rejects it, even after the other has confirmed, the match counts for neither of them and disappears from their matches. The other player and you get a notice."
 
@@ -460,7 +489,7 @@ blocks:
       - q: "Can my opponent keep it instead of me?"
         a: "Whoever starts it keeps it, for the whole match. You press «View the TPA scoresheet» and watch it fill in on its own, without reloading the page, but you cannot write on it."
       - q: "I pressed the wrong key."
-        a: "If it happened in this inning, tap «clear», next to the zero: the inning goes back to empty and you write it again. If you notice after passing the table, tap «Back» until you reach that inning and then «Restart from this turn…»: the sheet tells you which innings leave the scoresheet, and you record again from there."
+        a: "Tap «Undo last», or the last entry, the one with the arrow in the corner: your last tap disappears, even if it passed the table. To redo the whole inning, tap «clear», next to the zero. If you notice many innings later, tap «Back» until you reach that inning and then «Restart from this turn…»: the sheet tells you which innings leave the scoresheet, and you record again from there."
       - q: "I tapped «Back» by mistake: have I lost anything?"
         a: "No. Back and Next only let you review: they change nothing, neither the scoresheet nor the score. Tap «Next» until you are back at the current inning. Innings are only removed by «Restart from this turn…», and only after you confirm."
       - q: "What counts as a good TPA?"

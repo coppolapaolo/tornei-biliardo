@@ -270,7 +270,47 @@ class TpaRefertoService:
         )
 
         TpaRefertoService._sync_match_score(referto, state)
+        # Alla distanza il referto si chiude da solo, dallo stesso percorso
+        # della chiusura a mano (ADR-044, emendamento del 2026-10-18): chi
+        # segna non deve ricordarsi di farlo, e un tocco dopo la fine non
+        # avrebbe comunque dove andare.
+        if TpaRefertoService.distanza_raggiunta(referto.match):
+            TpaRefertoService._chiudi(referto)
         return state
+
+    @staticmethod
+    def distanza_raggiunta(match: Optional[IndividualMatch]) -> bool:
+        """Se il punteggio della sfida è arrivato alla sua distanza.
+
+        «Al N»: uno dei due arriva a N. «Esattamente N»: il totale arriva a N.
+        Lo decide il VO `Distance` attraverso `rack_score`, e non lo stato
+        della partita: una firma d'ufficio non deve cambiare la risposta. Una
+        sfida senza distanza (formato libero) non ci arriva mai: lì il referto
+        si chiude solo a mano.
+        """
+        if match is None or match.distance_config is None:
+            return False
+        score = match.rack_score
+        return score is not None and score.is_complete()
+
+    @staticmethod
+    def can_undo_closing(referto: TpaReferto, user_id: Optional[int]) -> bool:
+        """Se chi tiene il referto chiuso alla distanza lo può ancora riaprire
+        annullando l'ultima annotazione.
+
+        È il rimedio alla chiusura automatica: l'ultimo tocco era sbagliato e
+        ha portato la partita alla distanza. Vale finché la partita non è
+        conclusa — una firma sola non la conclude, le due sì — e non è stata
+        rifiutata, perché lì chi segna ha già la sua strada (la correzione).
+        """
+        match = referto.match
+        if user_id is None or referto.compiler_id != user_id:
+            return False
+        if not referto.is_closed or not referto.comandi or match is None:
+            return False
+        if match.status != MatchStatus.IN_PROGRESS or match.is_rejected:
+            return False
+        return TpaRefertoService.distanza_raggiunta(match)
 
     @staticmethod
     def _validate(state: TpaState, command: str) -> None:
@@ -308,6 +348,11 @@ class TpaRefertoService:
         referto = db.session.get(TpaReferto, referto_id)
         if referto is None:
             raise NotFoundError(_("Referto non trovato"))
+        # Il referto chiuso alla distanza si riapre annullando: e' il rimedio
+        # all'ultimo tocco sbagliato, che la chiusura automatica non deve
+        # rendere definitivo.
+        if TpaRefertoService.can_undo_closing(referto, user_id):
+            referto.closed_at = None
         TpaRefertoService._require_compiler(referto, user_id)
 
         comandi: List[TpaComando] = list(referto.comandi)
@@ -448,14 +493,26 @@ class TpaRefertoService:
                     "distanza. Se la partita si è fermata, annullala."
                 )
             )
+        TpaRefertoService._chiudi(referto)
+        return referto
+
+    @staticmethod
+    def _chiudi(referto: TpaReferto) -> None:
+        """La chiusura vera, una sola per il gesto a mano e per la distanza.
+
+        Nella partita di altri due chiudere è dichiarare: i due giocatori
+        ricevono la richiesta di conferma (ADR-084). Nella sfida fra i due la
+        firma d'ufficio e l'avviso li ha già dati `_sync_match_score` al
+        triangolo che ha portato alla distanza.
+        """
         referto.close()
-        if di_un_terzo:
+        match = referto.match
+        if match is not None and match.scorer_id is not None:
             from models.individual_match.pending_confirmation import (
                 avvisa_chi_deve_firmare,
             )
 
             avvisa_chi_deve_firmare(match)
-        return referto
 
     # ------------------------------------------------------------------
     # Confezionamento per la pagina
@@ -498,6 +555,14 @@ class TpaRefertoService:
             },
         }
         payload["commands"] = len(referto.comandi or [])
+        comandi = list(referto.comandi or [])
+        # L'ultimo tocco: l'interfaccia lo usa per sapere quale casella
+        # toccare per annullarlo, e per poterlo rimettere.
+        payload["last_command"] = comandi[-1].command if comandi else None
+        payload["can_undo"] = bool(payload["can_write"] and comandi)
+        payload["can_undo_closing"] = TpaRefertoService.can_undo_closing(
+            referto, viewer_id
+        )
         # «Cancella» ha senso solo se in questo turno qualcosa e' stato scritto.
         payload["can_clear"] = bool(
             TpaRefertoService._turn_commands(list(referto.comandi or []))
