@@ -29,7 +29,12 @@ from typing import Any, Dict, Optional
 from flask_babel import gettext as _
 
 from ..base import db, utc_now
-from ..exceptions import ConflictError, NotFoundError, ValidationError
+from ..exceptions import (
+    ConflictError,
+    NotFoundError,
+    PermissionDeniedError,
+    ValidationError,
+)
 from ..match.break_rules import (
     DEFAULT_BREAK_RULE,
     DEFAULT_START_RULE,
@@ -179,11 +184,84 @@ class QuickMatchService:
             .first()
         )
 
+    # ------------------------------------------------------------------
+    # Chi si può sfidare (ADR-085, emendamento del 2026-10-18)
+    # ------------------------------------------------------------------
+    @staticmethod
+    def can_be_opponent(user: Any) -> bool:
+        """Se ``user`` si può scegliere come avversario dell'avvio rapido.
+
+        Chi ha sbloccato le sfide individuali — lo stesso filtro dell'elenco
+        avversari e della ricerca — **oppure un giocatore non registrato**:
+        non ha un account, quindi non sblocca niente e non riceve niente, ma
+        gioca davvero. Lo può scegliere chiunque giochi: la sfida resta *In
+        attesa* finché qualcuno non lo riscatta, e chi lo riscatta la conferma
+        o la rifiuta come qualunque avversario.
+        """
+        if user is None or getattr(user, "deleted_at", None) is not None:
+            return False
+        if getattr(user, "is_fittizio", False):
+            return False
+        return bool(user.is_placeholder or user.can_access("create_match_direct"))
+
+    @staticmethod
+    def can_create_opponent(user: Any) -> bool:
+        """Se ``user`` può creare dall'avvio rapido un avversario non registrato.
+
+        Il permesso dell'ADR-085 (`can_create_placeholder`: direttori e
+        istruttori), **senza l'admin**: l'admin non gioca, e qui il giocatore
+        nasce per giocare contro chi lo crea. Chi non può crearlo può comunque
+        sceglierne uno già esistente (`can_be_opponent`).
+        """
+        from ..user.profile_service import UserProfileService
+
+        if user is None or getattr(user, "is_admin", False):
+            return False
+        return UserProfileService.can_create_placeholder(user)
+
+    @staticmethod
+    def _avversario(user_id: int, opponent: Any):
+        """L'avversario scelto: un id, o un ``NuovoGiocatore`` da creare."""
+        from ..user.models import User
+        from .scored_match_service import NuovoGiocatore
+
+        if isinstance(opponent, NuovoGiocatore):
+            creatore = db.session.get(User, user_id)
+            if not QuickMatchService.can_create_opponent(creatore):
+                raise PermissionDeniedError(
+                    _(
+                        "Un giocatore non registrato lo aggiungono direttori e "
+                        "istruttori: cercalo fra i giocatori, se c'è già."
+                    )
+                )
+            from ..user.profile_service import UserProfileService
+
+            return UserProfileService.create_placeholder(
+                opponent.first_name, opponent.last_name, creatore
+            )
+
+        if opponent == user_id:
+            raise ValidationError(_("Non puoi giocare contro te stesso."))
+        avversario = db.session.get(User, opponent)
+        if avversario is None or avversario.deleted_at is not None:
+            raise NotFoundError(_("Giocatore non trovato."))
+
+        # Stesso filtro dell'elenco avversari e della ricerca giocatori: chi non
+        # ha sbloccato le sfide individuali non le vedrebbe nemmeno arrivare.
+        if not QuickMatchService.can_be_opponent(avversario):
+            raise ConflictError(
+                _(
+                    "%(name)s non ha ancora sbloccato le sfide individuali.",
+                    name=avversario.username,
+                )
+            )
+        return avversario
+
     @staticmethod
     @transactional(domain="individual_match")
     def start(
         user_id: int,
-        opponent_id: int,
+        opponent_id: Any,
         config: Optional[Dict[str, Any]] = None,
     ) -> IndividualMatch:
         """Crea una sfida **già in corso** fra i due giocatori.
@@ -192,44 +270,40 @@ class QuickMatchService:
         assenti (o ``None``) si prendono da lì. Con ``config`` vuoto la
         chiamata è quella dell'avvio rapido puro: chi gioca, e basta.
 
+        ``opponent_id`` è l'id dell'avversario, oppure un ``NuovoGiocatore``:
+        nome e cognome di chi si ha davanti e non ha un account, che nasce
+        qui non registrato (ADR-085, emendamento del 2026-10-18). Lo crea solo
+        chi passa :meth:`can_create_opponent`.
+
         Se una sfida fra i due è già in corso, restituisce quella invece di
         aprirne un'altra.
         """
-        from ..user.models import User
-
-        if opponent_id == user_id:
-            raise ValidationError(_("Non puoi giocare contro te stesso."))
+        from .scored_match_service import NuovoGiocatore
 
         # Che partita è («Finale della prima giornata…»): facoltativa, e non
         # fa parte delle precompilazioni — ogni partita ha la sua.
         from ..match.match_info_service import normalize_description
+        from .pending_confirmation import PendingConfirmationService
 
         description = normalize_description((config or {}).get("description"))
 
-        opponent = db.session.get(User, opponent_id)
-        if opponent is None or opponent.deleted_at is not None:
-            raise NotFoundError(_("Giocatore non trovato."))
+        if isinstance(opponent_id, NuovoGiocatore):
+            # Il blocco prima di creare: chi deve firmare non apre sfide, e
+            # un giocatore nato per una sfida che non parte resterebbe orfano.
+            PendingConfirmationService.ensure_none_pending(user_id)
+            opponent = QuickMatchService._avversario(user_id, opponent_id)
+        else:
+            opponent = QuickMatchService._avversario(user_id, opponent_id)
 
-        # Stesso filtro dell'elenco avversari e della ricerca giocatori: chi non
-        # ha sbloccato le sfide individuali non le vedrebbe nemmeno arrivare.
-        if not opponent.can_access("create_match_direct"):
-            raise ConflictError(
-                _(
-                    "%(name)s non ha ancora sbloccato le sfide individuali.",
-                    name=opponent.username,
-                )
-            )
+            existing = QuickMatchService.find_open_match(user_id, opponent.id)
+            if existing is not None:
+                return existing
 
-        existing = QuickMatchService.find_open_match(user_id, opponent_id)
-        if existing is not None:
-            return existing
-
-        # Solo **dopo** la guardia sul doppio avvio: se la partita che aspetta
-        # la firma è proprio contro chi hai davanti, riaprirla è il modo di
-        # chiuderla, non una sfida nuova (2026-09-14).
-        from .pending_confirmation import PendingConfirmationService
-
-        PendingConfirmationService.ensure_none_pending(user_id)
+            # Solo **dopo** la guardia sul doppio avvio: se la partita che
+            # aspetta la firma è proprio contro chi hai davanti, riaprirla è il
+            # modo di chiuderla, non una sfida nuova (2026-09-14).
+            PendingConfirmationService.ensure_none_pending(user_id)
+        opponent_id = opponent.id
 
         settings = QuickMatchService._resolve_config(user_id, config)
 
@@ -261,7 +335,9 @@ class QuickMatchService:
         # una scorciatoia che scrive lo stato a mano (nel multi-set apre il set).
         match.start_match()
 
-        QuickMatchService._notify_opponent(match, user_id, opponent_id)
+        # Il non registrato non riceve niente (ADR-085): non lo si avvisa.
+        if not opponent.is_placeholder:
+            QuickMatchService._notify_opponent(match, user_id, opponent_id)
         return match
 
     # ------------------------------------------------------------------

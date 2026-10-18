@@ -36,10 +36,7 @@ def quick_match():
 
     data = request.get_json() if request.is_json else request.form
 
-    try:
-        opponent_id = int(data.get("opponent_id") or 0)
-    except (TypeError, ValueError):
-        opponent_id = 0
+    opponent_id = _scelta_avversario(data)
 
     if not opponent_id:
         message = _("Scegli l'avversario per iniziare.")
@@ -70,9 +67,14 @@ def quick_match():
     except PendingConfirmationError as exc:
         # Non un errore secco: la proposta di chiudere le partite che aspettano
         # la sua firma, e poi il ritorno qui con lo stesso avversario.
-        return pending_confirmation_response(
-            exc, url_for("individual_match.quick_match", opponent_id=opponent_id)
+        # Un avversario ancora da creare non ha un id da riportare: si torna
+        # al modulo vuoto.
+        ritorno = (
+            url_for("individual_match.quick_match", opponent_id=opponent_id)
+            if isinstance(opponent_id, int)
+            else url_for("individual_match.quick_match")
         )
+        return pending_confirmation_response(exc, ritorno)
     except DomainError as exc:
         if request.is_json:
             return (
@@ -103,6 +105,29 @@ def quick_match():
     return redirect(destinazione)
 
 
+def _scelta_avversario(data):
+    """L'id scelto, oppure nome e cognome di un avversario da creare.
+
+    Sotto la ricerca c'è «Non ha un account? Aggiungilo» (ADR-085,
+    emendamento del 2026-10-18): se c'è un id vince l'id, come nel modulo
+    della partita di altri due — i due campi restano nel modulo anche quando
+    si è cambiato idea e si è cercato. ``0`` se non c'è né l'uno né l'altro.
+    """
+    from models.individual_match.scored_match_service import NuovoGiocatore
+
+    try:
+        opponent_id = int(data.get("opponent_id") or 0)
+    except (TypeError, ValueError):
+        opponent_id = 0
+    if opponent_id:
+        return opponent_id
+    nome = (data.get("opponent_new_first_name") or "").strip()
+    cognome = (data.get("opponent_new_last_name") or "").strip()
+    if nome or cognome:
+        return NuovoGiocatore(nome, cognome)
+    return 0
+
+
 def _quick_match_form():
     """La schermata di avvio, con i valori già scritti dentro."""
     from models.base import db
@@ -121,11 +146,7 @@ def _quick_match_form():
         from models.user.models import User
 
         candidate = db.session.get(User, requested_id)
-        if (
-            candidate is not None
-            and candidate.deleted_at is None
-            and candidate.can_access("create_match_direct")
-        ):
+        if QuickMatchService.can_be_opponent(candidate):
             preselected = candidate
 
     # Gli avversari abituali sono la scorciatoia vera: in sala si rigioca quasi
@@ -137,7 +158,7 @@ def _quick_match_form():
         for player in IndividualMatchStatisticsService.get_frequent_opponents(
             current_user.id, limit=8
         )
-        if player.can_access("create_match_direct")
+        if QuickMatchService.can_be_opponent(player)
     ][:6]
 
     verified_venues = (
@@ -161,6 +182,9 @@ def _quick_match_form():
         frequent_opponents=frequent,
         verified_venues=verified_venues,
         in_progress=_own_matches_in_progress(),
+        # Chi può aggiungere un avversario non registrato (ADR-085): direttori
+        # e istruttori. Gli altri lo trovano nella ricerca, se c'è già.
+        puo_creare_avversario=QuickMatchService.can_create_opponent(current_user),
         tpa_disponibile=current_user.can_access(TPA_FEATURE),
         tpa_discipline=sorted(GAME_TYPE_BY_DISCIPLINE),
     )

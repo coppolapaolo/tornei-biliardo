@@ -24,7 +24,8 @@ Personaggi:
 - **Pietro**, che non la apre quasi mai;
 - **Gianni**, che la usa;
 - **Luca**, che guarda i profili da ospite;
-- **Marco**, istruttore, che segna le partite degli altri.
+- **Marco**, istruttore, che segna le partite degli altri;
+- **Gino**, che non ha un account (ADR-085).
 
 Stato: UC1 è realizzato (PR #696), UC2 e UC3 con l'emendamento all'ADR-051.
 UC4, UC5, UC7, UC8 e UC9 sono realizzati lato dominio con l'ADR-083
@@ -38,6 +39,10 @@ UC12, la partita di altri due tenuta da un istruttore o da un direttore, è
 realizzato con l'ADR-084 (`test_partita_di_altri_due.py`, unitario e di
 integrazione); le varianti del rifiuto, della correzione e dell'admin con il
 suo emendamento del 2026-10-18 (anche `test_partita_di_altri_due_e2e.py`).
+UC13, la sfida contro un giocatore non registrato, è realizzato con
+l'emendamento del 2026-10-18 all'ADR-085
+(`test_avversario_non_registrato.py` di integrazione,
+`test_sfida_avversario_non_registrato_e2e.py`).
 
 ## Use case 1 — Avvio rapido dal telefono
 
@@ -260,3 +265,40 @@ segna dal bordo del tavolo (ADR-084).
   rifiutato; la partita a metà si annulla)_
 - _(variante: Lucia è l'istruttrice a cui Paolo ha aperto una scheda → può
   guardare il referto in sola lettura)_
+
+## Use case 13 — Marco tiene il referto della sua partita contro Gino, che non ha un account
+
+Marco, istruttore, gioca contro Gino la finale del giovedì, che viene
+ripresa su YouTube. Gino non si è mai registrato. La partita è di Marco:
+quella di altri due non va, perché chi segna non gioca (UC12).
+
+- Dall'avvio rapido Marco cerca Gino e non lo trova. Sotto la ricerca tocca
+  **«Non ha un account? Aggiungilo»**, scrive nome e cognome, sceglie palla 9
+  al 3, spunta «Tengo il referto TPA» e scrive «Finale del giovedì». Tocca
+  «Inizia a segnare»: Gino nasce **non registrato**, creato da Marco, e Marco
+  arriva al referto.
+- Gino non riceve niente: non ha un account.
+- Marco annota la partita. Al terzo triangolo vince Gino: **firma Marco**,
+  perché Gino non firma. La sfida è *In attesa* e conta per l'ELO di *Tutte*.
+  Marco chiude il referto.
+- Nella pagina della sfida Marco legge **«In attesa del riscatto»**: niente
+  «manca la conferma», nessun promemoria. In `/match/` la sfida sta fra le
+  giocate, con lo stesso stato; in dashboard non è fra le sfide in corso.
+- Marco **non è bloccato**: apre subito un'altra sfida, anche contro Gino.
+- Il giorno dopo Gino si registra e tocca «Sei tu? Riscatta»; Marco, che l'ha
+  creato, conferma. La sfida passa all'account di Gino, che riceve l'avviso
+  «Una sfida aspetta la tua firma» e la conferma: è *Confermata*, e si muove
+  l'ELO di *Confermate*.
+- _(variante: Gino rifiuta → come per qualunque sfida, l'ultimo triangolo si
+  toglie e le firme si azzerano)_
+- _(variante: Paolo, giocatore senza ruolo, non vede «Non ha un account?»: un
+  modulo mandato a mano viene rifiutato. Può però cercare e scegliere un
+  giocatore non registrato che esiste già, col segno «non registrato»)_
+- _(variante: l'admin non apre l'avvio rapido, e non crea giocatori da qui)_
+- _(variante: prima del riscatto Marco **ritira** la sfida → annullata, e
+  nessuno riceve avvisi)_
+- _(variante: dalla pagina della sfida Marco cerca «Proponi un'altra data» →
+  non c'è: a Gino una proposta non arriverebbe. «Rigioca adesso» apre
+  l'avvio rapido con Gino già scelto)_
+- _(variante: Marco prova a mandare a Gino una proposta di sfida → rifiutata,
+  con l'indicazione di usare l'avvio rapido)_

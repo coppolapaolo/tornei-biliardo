@@ -1046,11 +1046,29 @@ hints:
   section: avvio-rapido
 - id: sfida.chi_hai_davanti
   label: Who is across the table
-  short: 'The opponents you play most often are already listed. For anyone else, search by name: they
-    need an account.'
+  short: 'The opponents you play most often are already listed. For anyone else, search by name: unregistered
+    players show up too.'
   anchor: sfida-chi-hai-davanti
   screens:
   - individual_match.quick_match
+  page: partite_amichevoli
+  section: avvio-rapido
+- id: sfida.avversario_non_registrato
+  label: Opponent without an account
+  short: 'If they are not registered, only you sign the match, and it waits until someone claims them.
+    Instructors and directors add them here, by first and last name.'
+  anchor: sfida-avversario-non-registrato
+  screens:
+  - individual_match.quick_match
+  page: partite_amichevoli
+  section: avvio-rapido
+- id: sfida.in_attesa_del_riscatto
+  label: Waiting to be claimed
+  short: 'Your opponent has no account and does not sign. The match counts as «pending» and does not
+    block you: once someone claims them, they will confirm or reject it.'
+  anchor: sfida-in-attesa-del-riscatto
+  screens:
+  - individual_match.match_detail
   page: partite_amichevoli
   section: avvio-rapido
 - id: sfida.altri_due_chi_gioca

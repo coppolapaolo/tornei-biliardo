@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "components/_form_macros.html" import choice, stepper, toggle, form_macros_scripts %}
+{% from "components/_nome_giocatore.html" import badge_non_registrato %}
 
 {% block title %}{{ _("Avvio rapido") }} - {{ config.APP_NAME }}{% endblock %}
 
@@ -82,7 +83,7 @@
             {{ player.username[:2]|upper }}
           </span>
           <span class="flex-fill">
-            <span class="c7-choice__title d-block">{{ player.username }}</span>
+            <span class="c7-choice__title d-block">{{ player.username }}{{ badge_non_registrato(player) }}</span>
           </span>
           <i class="fas fa-circle-check c7-choice__mark"></i>
         </label>
@@ -94,7 +95,22 @@
         {{ _("Un altro giocatore") if frequent_opponents else _("Cerca il giocatore") }}
       </label>
       <select id="opponentSearch" placeholder="{{ _('Cerca per nome...') }}"></select>
-      <div class="form-text">{{ _("Deve avere un account: la partita finisce nel suo storico e nel tuo.") }}</div>
+      {# Chi non ha un account (ADR-085, emendamento del 2026-10-18): lo
+         aggiungono qui direttori e istruttori, con nome e cognome, come nel
+         modulo della partita di altri due. Gli altri lo trovano nella ricerca,
+         col segno «non registrato», se qualcuno l'ha già creato. #}
+      {% if puo_creare_avversario %}
+      <details class="c7-nonreg-crea" data-nuovo="opponent">
+        <summary class="c7-nonreg-crea__apri"><i class="fas fa-user-plus"></i>&nbsp;{{ _("Non ha un account? Aggiungilo") }}</summary>
+        <div class="c7-grid mt-1" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+          <input type="text" class="form-control" name="opponent_new_first_name" maxlength="100"
+                 autocomplete="off" placeholder="{{ _('Nome') }}" aria-label="{{ _('Nome del giocatore da aggiungere') }}">
+          <input type="text" class="form-control" name="opponent_new_last_name" maxlength="100"
+                 autocomplete="off" placeholder="{{ _('Cognome') }}" aria-label="{{ _('Cognome del giocatore da aggiungere') }}">
+        </div>
+      </details>
+      {% endif %}
+      <div class="form-text" data-help="sfida-avversario-non-registrato">{{ _("La partita finisce nel suo storico e nel tuo. Se non è registrato la firmi solo tu, e resta in attesa finché qualcuno non lo riscatta.") }}</div>
     </div>
 
     {# ---------- Come si gioca: gia' deciso, si cambia solo se serve ---------- #}
@@ -266,6 +282,7 @@
         searchPlaceholder: {{ _("Cerca per nome...")|tojson }},
         noResults: {{ _("Nessun giocatore con questo nome.")|tojson }},
         typeMore: {{ _("Scrivi almeno due lettere.")|tojson }},
+        notRegistered: {{ _("non registrato")|tojson }},
         change: {{ _("Cambia")|tojson }},
         close: {{ _("Chiudi")|tojson }}
     };
@@ -299,14 +316,17 @@
             placeholder: i18n.searchPlaceholder,
             load: function (query, callback) {
                 if (query.length < 2) return callback();
-                fetch({{ url_for("individual_match.search_players")|tojson }} + '?q=' + encodeURIComponent(query))
+                fetch({{ url_for("individual_match.search_players", ambito="sfida")|tojson }} + '&q=' + encodeURIComponent(query))
                     .then(r => r.json())
                     .then(callback)
                     .catch(() => callback());
             },
             render: {
                 option: function (data, escape) {
-                    return '<div class="py-2 px-3"><i class="fas fa-user me-2 text-muted"></i>' + escape(data.username) + '</div>';
+                    const segno = data.is_placeholder
+                        ? '<span class="c7-state c7-state--muted c7-nonreg">' + escape(i18n.notRegistered) + '</span>'
+                        : '';
+                    return '<div class="py-2 px-3"><i class="fas fa-user me-2 text-muted"></i>' + escape(data.username) + segno + '</div>';
                 },
                 item: function (data, escape) {
                     return '<div><i class="fas fa-user me-1"></i>' + escape(data.username) + '</div>';
@@ -393,8 +413,16 @@
         }
     });
 
+    // Senza un avversario scelto vale nome e cognome di uno da aggiungere
+    // (ADR-085): i due campi ci sono solo per direttori e istruttori.
+    function nuovoAvversario() {
+        const nome = document.querySelector('[name="opponent_new_first_name"]');
+        const cognome = document.querySelector('[name="opponent_new_last_name"]');
+        return nome && cognome && nome.value.trim() && cognome.value.trim();
+    }
+
     document.getElementById('quickForm').addEventListener('submit', function (e) {
-        if (!opponentId.value) {
+        if (!opponentId.value && !nuovoAvversario()) {
             e.preventDefault();
             showError(i18n.noOpponent);
         }

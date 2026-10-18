@@ -110,10 +110,18 @@ def search_players():
 
     # I giocatori non registrati (ADR-085) li trova solo chi segna la partita
     # di altri due: una sfida normale non la riceverebbero.
-    if request.args.get("ambito") == "altri_due" and ScoredMatchService.can_score(
-        current_user
-    ):
+    ambito = request.args.get("ambito")
+    if ambito == "altri_due" and ScoredMatchService.can_score(current_user):
         eligible_users = users[:limit]
+    elif ambito == "sfida":
+        # L'avvio rapido (ADR-085, emendamento del 2026-10-18): anche i non
+        # registrati, perché la sfida nasce già in corso e non va accettata.
+        # La proposta no: da un non registrato una risposta non arriva.
+        from models.individual_match.quick_match_service import QuickMatchService
+
+        eligible_users = [u for u in users if QuickMatchService.can_be_opponent(u)][
+            :limit
+        ]
     else:
         eligible_users = [
             u

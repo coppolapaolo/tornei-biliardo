@@ -389,6 +389,49 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         return None
 
     # ------------------------------------------------------------------
+    # L'avversario non registrato (ADR-085, emendamento del 2026-10-18)
+    # ------------------------------------------------------------------
+
+    def _giocatore(self, user_id: Optional[int]):
+        if user_id is not None and user_id == self.player1_id:
+            return self.player1
+        if user_id is not None and user_id == self.player2_id:
+            return self.player2
+        return None
+
+    def is_placeholder_player(self, user_id: Optional[int]) -> bool:
+        """Se ``user_id`` è uno dei due ed è un giocatore non registrato."""
+        giocatore = self._giocatore(user_id)
+        return bool(giocatore is not None and giocatore.is_placeholder)
+
+    @property
+    def aspetta_il_riscatto(self) -> bool:
+        """Se la sfida aspetta la firma di un giocatore non registrato.
+
+        Quella firma non arriva finché qualcuno non lo riscatta (ADR-086):
+        per chi ha firmato la sfida è chiusa, al livello *In attesa*, e non
+        gli si mostra come una firma da sollecitare. Dopo il riscatto il
+        giocatore è un account vero, e la sfida aspetta lui come qualunque
+        altra.
+        """
+        return self.is_placeholder_player(self.awaiting_confirmation_from_id)
+
+    def firma_d_ufficio(self, user_id: int) -> None:
+        """La firma automatica alla distanza, che un non registrato non dà.
+
+        Arrivati alla distanza firma chi vince (o, in parità, chi ha segnato
+        l'ultimo triangolo). Se quello è un giocatore non registrato firma
+        l'altro, cioè chi ha aperto la sfida e la sta segnando: il non
+        registrato non ha un account con cui firmare, e la sua firma
+        resterebbe scritta senza che nessuno l'abbia data.
+        """
+        if self.is_placeholder_player(user_id):
+            other = self.opponent_of(user_id)
+            if other is not None:
+                user_id = other
+        self.confirm_result(user_id)
+
+    # ------------------------------------------------------------------
     # La partita di altri due (ADR-084)
     # ------------------------------------------------------------------
 

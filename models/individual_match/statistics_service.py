@@ -324,6 +324,9 @@ class IndividualMatchStatisticsService:
             or (
                 not m.is_scored_by_third_party
                 and m.awaiting_confirmation_from_id is not None
+                # In attesa di un non registrato non c'è niente da sollecitare:
+                # la firma arriva solo col riscatto (ADR-085, 2026-10-18).
+                and not m.aspetta_il_riscatto
             )
         ]
         active_matches = [

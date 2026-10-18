@@ -42,6 +42,11 @@
    rifiutata la vede solo chi l'ha segnata (2026-10-18). #}
 {% set di_un_terzo = match.is_scored_by_third_party %}
 {% set sono_scorer = di_un_terzo and match.scorer_id == current_user.id %}
+{# L'avversario non registrato (ADR-085, emendamento del 2026-10-18): non
+   firma, e la sfida che aspetta lui aspetta il riscatto. Per chi l'ha
+   firmata è chiusa: niente «manca la conferma», niente promemoria. #}
+{% set aspetta_riscatto = match.aspetta_il_riscatto %}
+{% set avversario_non_registrato = match.is_player(current_user.id) and match.is_placeholder_player(match.opponent_of(current_user.id)) %}
 
 <div class="c7-cols">
   {# ---------- Colonna del gioco ---------- #}
@@ -64,6 +69,18 @@
 
     {% if di_un_terzo and state in (MatchStatus.IN_PROGRESS.value, MatchStatus.REJECTED.value) %}
     {% include "individual_match/_partita_di_altri_due.html" %}
+    {% endif %}
+
+    {% if aspetta_riscatto and signed_waiting %}
+    <div class="c7-flash c7-flash--info" data-help="sfida-in-attesa-del-riscatto">
+      <span class="c7-flash__ico"><i class="fas fa-user-clock"></i></span>
+      <span class="c7-flash__body">
+        <span class="c7-flash__title">{{ _('In attesa del riscatto') }}</span>
+        <span class="c7-flash__text">
+          {{ _('Hai firmato. %(name)s non è ancora registrato: la sfida conta come «in attesa» finché qualcuno non lo riscatta, e allora sarà lui a confermarla o rifiutarla. Intanto puoi giocare altre partite.', name=(match.player2.username if match.player1_id == current_user.id else match.player1.username)) }}
+        </span>
+      </span>
+    </div>
     {% endif %}
 
     {% if state == MatchStatus.SCHEDULED.value %}
@@ -107,7 +124,9 @@
     <div class="c7-card">
       <div class="c7-kicker">{{ _('Distanza libera') }}</div>
 
-      {% if ho_chiuso %}
+      {% if ho_chiuso and aspetta_riscatto %}
+      {# Il riquadro «In attesa del riscatto» qui sopra dice già tutto. #}
+      {% elif ho_chiuso %}
       <div class="c7-flash c7-flash--info" style="margin-top:10px">
         <span class="c7-flash__ico"><i class="fas fa-hourglass-half"></i></span>
         <span class="c7-flash__body">
@@ -293,9 +312,12 @@
         <i class="fas fa-play"></i> {{ _("Rigioca adesso") }}
       </a>
       {% endif %}
+      {# Un non registrato non riceve proposte (ADR-085). #}
+      {% if not avversario_non_registrato %}
       <a href="{{ url_for('individual_match.rematch', match_id=match.id) }}" class="btn btn-secondary w-100">
         <i class="fas fa-rotate-right"></i> {{ _("Proponi un'altra data") }}
       </a>
+      {% endif %}
       <a href="{{ url_for('individual_match.user_statistics') }}" class="btn btn-secondary w-100">
         {{ _("Vedi le statistiche") }}
       </a>
@@ -309,7 +331,7 @@
       <form method="POST" action="{{ url_for('individual_match.withdraw_match', match_id=match.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="button" class="btn btn-outline-danger w-100"
-                onclick='confirmSubmit(this.closest("form"), {{ _("Ritirare la sfida? Non conterà più per nessuno dei due, e il tuo avversario riceverà un avviso.")|tojson }}, {confirmText: {{ _("Ritira")|tojson }}, confirmClass: "btn-danger"})'>
+                onclick='confirmSubmit(this.closest("form"), {{ (_("Ritirare la sfida? Non conterà più per nessuno dei due.") if aspetta_riscatto else _("Ritirare la sfida? Non conterà più per nessuno dei due, e il tuo avversario riceverà un avviso."))|tojson }}, {confirmText: {{ _("Ritira")|tojson }}, confirmClass: "btn-danger"})'>
           <i class="fas fa-trash-can"></i>&nbsp;{{ _("Ritira la sfida") }}
         </button>
       </form>

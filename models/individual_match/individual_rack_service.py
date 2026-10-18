@@ -130,12 +130,14 @@ class IndividualRackService:
         # firma che nessuno aveva dato. Chi era in vantaggio, per giunta, non
         # vedeva mai il proprio pulsante fare niente — era già confermato.
         if match.distance is not None and match.is_ready_for_validation():
+            # `firma_d_ufficio`: un avversario non registrato non firma, e al
+            # suo posto firma chi segna (ADR-085, emendamento del 2026-10-18).
             if match.player1_score > match.player2_score:
-                match.confirm_result(match.player1_id)
+                match.firma_d_ufficio(match.player1_id)
             elif match.player2_score > match.player1_score:
-                match.confirm_result(match.player2_id)
+                match.firma_d_ufficio(match.player2_id)
             else:
-                match.confirm_result(user_id)
+                match.firma_d_ufficio(user_id)
 
             from .pending_confirmation import avvisa_chi_deve_firmare
 
