@@ -1056,7 +1056,7 @@ hints:
 - id: sfida.altri_due_chi_gioca
   label: Who plays
   short: 'The two players of the match you score; you cannot be one of them. Add anyone without an account
-    by first and last name. When it ends, each confirms or rejects it for themselves.'
+    by first and last name. When it ends, both confirm it; if one rejects it, it counts for neither.'
   anchor: partita-altri-due-chi-gioca
   screens:
   - individual_match.scored_match

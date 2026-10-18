@@ -38,7 +38,8 @@
    «Rigioca adesso» riporterebbe a questa stessa partita. #}
 {% set signed_waiting = match.signed_and_waiting(current_user.id) %}
 {# La partita di altri due (ADR-084): la segna un terzo, i giocatori
-   confermano o rifiutano per sé a referto chiuso. #}
+   confermano o rifiutano a referto chiuso, e un rifiuto basta: la partita
+   rifiutata la vede solo chi l'ha segnata (2026-10-18). #}
 {% set di_un_terzo = match.is_scored_by_third_party %}
 {% set sono_scorer = di_un_terzo and match.scorer_id == current_user.id %}
 
@@ -61,7 +62,7 @@
     {% include "components/_multi_set_score_display.html" %}
     {% endif %}
 
-    {% if di_un_terzo and state == MatchStatus.IN_PROGRESS.value %}
+    {% if di_un_terzo and state in (MatchStatus.IN_PROGRESS.value, MatchStatus.REJECTED.value) %}
     {% include "individual_match/_partita_di_altri_due.html" %}
     {% endif %}
 

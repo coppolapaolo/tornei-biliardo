@@ -100,8 +100,12 @@
     <div class="c7-rows">
       {% for match in scored_matches %}
       {% set dichiarata = match.is_declared_by_scorer %}
+      {# Rifiutata da uno dei due (2026-10-18): la vedi solo tu, e aspetta che
+         la correggi o la cancelli. Si apre la partita, dove stanno i due
+         comandi. #}
+      {% set rifiutata = match.is_rejected %}
       <a class="c7-rows__row"
-         href="{{ url_for('individual_match.match_detail', match_id=match.id) if dichiarata else url_for('individual_match.tpa_referto', match_id=match.id) }}"
+         href="{{ url_for('individual_match.match_detail', match_id=match.id) if (dichiarata or rifiutata) else url_for('individual_match.tpa_referto', match_id=match.id) }}"
          style="color:inherit;text-decoration:none">
         <div class="c7-rows__main">
           <div class="c7-rows__title">
@@ -113,7 +117,9 @@
             <span class="c7-num">{{ match.player1_score }}–{{ match.player2_score }}</span>
           </div>
         </div>
-        {% if dichiarata %}
+        {% if rifiutata %}
+        <span class="c7-state c7-state--err">{{ _('Rifiutata') }}</span>
+        {% elif dichiarata %}
         <span class="c7-state c7-state--warn">{{ _('In attesa di conferma') }}</span>
         {% else %}
         <span class="c7-state c7-state--err">{{ _('In corso') }}</span>

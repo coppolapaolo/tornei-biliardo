@@ -23,7 +23,8 @@
   MatchStatus.IN_PROGRESS.value: _('In corso'),
   MatchStatus.CLOSED_UNILATERALLY.value: _('Concluso'),
   MatchStatus.CONFIRMED_BY_BOTH.value: _('Confermato dai giocatori'),
-  MatchStatus.CANCELLED.value: _('Annullato')
+  MatchStatus.CANCELLED.value: _('Annullato'),
+  MatchStatus.REJECTED.value: _('Rifiutata')
 } %}
 
 {% set tone = {
@@ -31,5 +32,6 @@
   MatchStatus.IN_PROGRESS.value: 'err',
   MatchStatus.CLOSED_UNILATERALLY.value: 'ok',
   MatchStatus.CONFIRMED_BY_BOTH.value: 'ok',
-  MatchStatus.CANCELLED.value: 'muted'
+  MatchStatus.CANCELLED.value: 'muted',
+  MatchStatus.REJECTED.value: 'err'
 } %}

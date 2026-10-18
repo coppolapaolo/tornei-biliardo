@@ -19,12 +19,19 @@ due numeri diversi nella stessa pagina, ed è il guasto che i pool ELO hanno
 già conosciuto (ADR-073 racconta lo stesso schema per la classifica).
 
 Nella **partita di altri due** (ADR-084) — il referto lo tiene un istruttore
-o un direttore — il livello è **per giocatore**: chi la conferma la vede
-*Confermata*, chi non ha ancora deciso *In attesa*, chi la rifiuta non la vede.
-Le funzioni che ricevono una persona (`livello_di_sfida_per`,
+o un direttore — il livello è **per giocatore** finché nessuno la rifiuta: chi
+la conferma la vede *Confermata*, chi non ha ancora deciso *In attesa*. Le
+funzioni che ricevono una persona (`livello_di_sfida_per`,
 `sfide_della_vista(vista, user_id=…)`) applicano quella regola; senza persona la
 regola è **di coppia**, ed è quella dell'ELO, che misura una partita fra due e
-non si divide: con un rifiuto la partita esce dall'ELO di tutti e due.
+non si divide.
+
+Il rifiuto invece non è per giocatore (emendamento del 2026-10-18): ne basta
+uno e la partita va a ``MatchStatus.REJECTED``, che non è né conclusa né in
+corso, quindi non ha livello per nessuno dei due e nessuna vista la comprende.
+I controlli sulle colonne ``player*_rejected_at`` qui sotto restano come
+difesa: una riga che le avesse scritte senza cambiare stato resterebbe fuori lo
+stesso.
 
 Casi d'uso in ``docs/usecases/sfide-e-certificazione.md``.
 """
@@ -141,10 +148,10 @@ def livello_di_sfida_per(sfida: "IndividualMatch", user_id: int) -> Optional[Liv
     """Il livello della sfida **per questo giocatore** (ADR-084).
 
     Sulla sfida normale coincide con `livello_di_sfida`: le firme sono dei due
-    insieme. Nella partita di un terzo ciascuno decide per sé: chi l'ha
+    insieme. Nella partita di un terzo ciascuno conferma per sé: chi l'ha
     confermata la vede *Confermata*, chi non ha ancora deciso *In attesa*
-    (purché chi la segna l'abbia dichiarata chiudendo il referto), chi l'ha
-    rifiutata non la vede.
+    (purché chi la segna l'abbia dichiarata chiudendo il referto). Rifiutata
+    da uno dei due, non ha livello per nessuno (``REJECTED``, 2026-10-18).
     """
     if getattr(sfida, "scorer_id", None) is None:
         return livello_di_sfida(sfida)
@@ -169,8 +176,8 @@ def esito_dichiarato(sfida: "IndividualMatch") -> Optional[int]:
     ``winner_id`` lo scrive la seconda firma, quindi una sfida non ancora
     chiusa non ce l'ha: il risultato dichiarato sta nel punteggio, che chi ha
     firmato ha visto e accettato. Vale anche per la partita di un terzo
-    confermata da uno e rifiutata dall'altro: per chi l'ha confermata è una
-    vittoria o una sconfitta, non un pareggio.
+    confermata da uno solo: per chi l'ha confermata è una vittoria o una
+    sconfitta, non un pareggio.
     """
     if MatchStatus.is_finished(_valore(sfida.status)):
         return sfida.winner_id
@@ -199,8 +206,8 @@ def sfide_della_vista(vista: Vista, user_id: Optional[int] = None) -> Any:
 
     Con ``user_id`` è la regola di `livello_di_sfida_per`: **le query sulle
     sfide di un giocatore lo passano sempre**. Senza, la regola è di coppia
-    (quella dell'ELO), e una partita di un terzo confermata da lui e rifiutata
-    dall'altro sparirebbe anche dai suoi numeri.
+    (quella dell'ELO), e una partita di un terzo confermata da lui e non
+    ancora dall'altro conterebbe per lui solo come *In attesa*.
     """
     from models.individual_match.match_models import IndividualMatch
     from models.tpa.models import TpaReferto

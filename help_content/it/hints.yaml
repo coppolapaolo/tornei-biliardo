@@ -915,7 +915,7 @@ hints:
 
   - id: sfida.altri_due_chi_gioca
     label: "Chi gioca"
-    short: "I due giocatori della partita che segni; tu non puoi essere uno dei due. Chi non ha un account lo aggiungi con nome e cognome. A fine partita ognuno conferma o rifiuta per sé."
+    short: "I due giocatori della partita che segni; tu non puoi essere uno dei due. Chi non ha un account lo aggiungi con nome e cognome. A fine partita i due la confermano; se uno la rifiuta, non conta per nessuno."
     anchor: partita-altri-due-chi-gioca
     screens: [individual_match.scored_match]
     page: referto_tpa

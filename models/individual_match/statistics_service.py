@@ -32,12 +32,20 @@ class IndividualMatchStatisticsService:
     def get_user_matches(
         user_id: int, status_filter: Optional[MatchStatus] = None
     ) -> List[IndividualMatch]:
-        """Get individual matches for a user."""
+        """Le sfide di un giocatore, dalla più recente.
+
+        Senza la partita di altri due **rifiutata** (2026-10-18): non conta
+        per nessuno dei due e ai giocatori non si mostra più. È qui e non in
+        ogni elenco perché da qui passano tutti — «Le mie sfide», la
+        dashboard delle sfide, le statistiche. La vede solo chi l'ha
+        segnata, che non è uno dei due giocatori.
+        """
         query = IndividualMatch.query.filter(
             db.or_(
                 IndividualMatch.player1_id == user_id,
                 IndividualMatch.player2_id == user_id,
-            )
+            ),
+            IndividualMatch.status != MatchStatus.REJECTED,
         )
 
         if status_filter:
@@ -312,11 +320,7 @@ class IndividualMatchStatisticsService:
         awaiting_matches = [
             m
             for m in open_matches
-            if (
-                m.is_scored_by_third_party
-                and m.is_awaiting_decisions
-                and m.decision_of(user_id) != "rejected"
-            )
+            if (m.is_scored_by_third_party and m.is_awaiting_decisions)
             or (
                 not m.is_scored_by_third_party
                 and m.awaiting_confirmation_from_id is not None
@@ -331,19 +335,24 @@ class IndividualMatchStatisticsService:
                 and m.awaiting_confirmation_from_id is None
             )
         ]
-        # Le partite che questo utente segna per altri due: ancora da chiudere
-        # o in attesa delle decisioni dei giocatori.
+        # Le partite che questo utente segna per altri due: ancora da chiudere,
+        # in attesa delle decisioni dei giocatori, o rifiutate — queste le vede
+        # solo lui, e aspettano che le corregga o le cancelli (2026-10-18).
         scored_matches = [
             m
             for m in IndividualMatch.query.filter(
                 IndividualMatch.scorer_id == user_id,
                 IndividualMatch.status.in_(
-                    [MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS]
+                    [
+                        MatchStatus.SCHEDULED,
+                        MatchStatus.IN_PROGRESS,
+                        MatchStatus.REJECTED,
+                    ]
                 ),
             )
             .order_by(IndividualMatch.scheduled_at.desc())
             .all()
-            if not m.is_declared_by_scorer or m.is_awaiting_decisions
+            if m.is_rejected or not m.is_declared_by_scorer or m.is_awaiting_decisions
         ]
         completed_matches = [
             m

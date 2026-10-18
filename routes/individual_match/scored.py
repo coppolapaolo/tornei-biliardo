@@ -5,10 +5,12 @@ partita è, come si gioca. La partita nasce in corso, col referto aperto, e si
 arriva dritti al referto.
 
 **L'admin.** Le sfide individuali sono chiuse all'admin
-(`RoleRequirement.player_or_director_required`): l'admin non gioca. Segnare la
-partita di altri due però non è giocare, e l'admin ha i poteri del direttore.
-`player_director_or_scorer` apre a lui **solo** le route della partita che sta
-segnando, e quelle per crearne una.
+(`RoleRequirement.player_or_director_required`): l'admin non gioca, e dal
+2026-10-18 non segna nemmeno («admin non dovrebbe segnare partite»,
+`ScoredMatchService.can_score`). `player_director_or_scorer` gli apre ancora
+le route di una partita di cui **è già** lo scorer: sono quelle nate prima di
+quella data, e senza questa porta resterebbero appese — nessun altro può
+chiuderle, correggerle o cancellarle. Per crearne una nuova non passa più.
 """
 
 from __future__ import annotations
@@ -34,12 +36,13 @@ logger = logging.getLogger(__name__)
 
 
 def player_director_or_scorer(f):
-    """Come `player_or_director_required`, più l'admin che segna (ADR-084).
+    """Come `player_or_director_required`, più l'admin che segnava (ADR-084).
 
     Con ``match_id`` nella route l'admin passa se è lo scorer di quella
-    partita; senza, se può segnare (cioè sempre: è admin). Gli altri controlli
-    — chi è giocatore, chi tiene il referto — restano dove sono, nelle route e
-    nei servizi.
+    partita — una nata prima del 2026-10-18, quando l'admin poteva ancora
+    segnare; senza, se può segnare, e dal 2026-10-18 non può mai
+    (`ScoredMatchService.can_score`). Gli altri controlli — chi è giocatore,
+    chi tiene il referto — restano dove sono, nelle route e nei servizi.
     """
 
     @wraps(f)
@@ -107,6 +110,40 @@ def scored_match():
 
     flash(_("Partita aperta: il referto è tuo."), "success")
     return redirect(url_for("individual_match.tpa_referto", match_id=match.id))
+
+
+@individual_match_bp.route("/matches/<int:match_id>/reopen", methods=["POST"])
+@player_director_or_scorer
+def reopen_scored_match(match_id: int):
+    """Chi l'ha segnata riapre la partita rifiutata, per correggerla.
+
+    Regola del 2026-10-18 (ADR-084, emendamento). Si arriva al referto, che è
+    di nuovo aperto: chiuderlo è la nuova dichiarazione, e i due giocatori
+    ricevono di nuovo la richiesta di conferma.
+    """
+    from models.exceptions import NotFoundError, PermissionDeniedError
+
+    # I messaggi si scrivono qui, tradotti: quelli del dominio sono per chi
+    # legge il codice e i log (come `withdraw_match`).
+    try:
+        ScoredMatchService.reopen(match_id, current_user.id)
+    except NotFoundError:
+        abort(404)
+    except PermissionDeniedError:
+        flash(_("La partita rifiutata la corregge solo chi l'ha segnata."), "danger")
+        return redirect(url_for("individual_match.dashboard"))
+    except DomainError:
+        flash(_("Si corregge solo una partita rifiutata."), "warning")
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    flash(
+        _(
+            "Partita riaperta: correggi il referto e chiudilo. I due giocatori "
+            "riceveranno di nuovo la richiesta di conferma."
+        ),
+        "success",
+    )
+    return redirect(url_for("individual_match.tpa_referto", match_id=match_id))
 
 
 def _scelta(data, posto: str):
