@@ -67,7 +67,13 @@
     <div class="c7-flash c7-flash--info">
       <span class="c7-flash__ico"><i class="fas fa-eye"></i></span>
       <span class="c7-flash__body">
+        {#- Il compilatore senza scrittura: la sfida si è conclusa col referto
+            ancora aperto (formato libero), e non si riscrive più (2026-10-18). -#}
+        {%- if referto.compiler_id == current_user.id -%}
+        {{ _('La sfida è conclusa: il referto si rilegge, ma non si scrive più.') }}
+        {%- else -%}
         {{ _('Il referto lo tiene %(name)s. Qui lo vedi aggiornarsi.', name=referto.compiler.username) }}
+        {%- endif -%}
       </span>
     </div>
     {% endif %}

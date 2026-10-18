@@ -348,7 +348,9 @@ blocks:
       finished. On the closed scoresheet you find **Undo the last one and
       reopen the scoresheet**: the last tap disappears, the rack goes back
       and you carry on recording. You can do it until both players have
-      confirmed the match.
+      confirmed the match. The confirmation request your opponent already
+      received disappears from their notifications: when the scoresheet
+      closes again, they get a new one with the right score.
 
   - type: text
     text: >-

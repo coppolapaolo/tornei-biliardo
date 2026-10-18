@@ -39,7 +39,14 @@ Parametri:
    contrario di quel che fanno; i **valori** sono rimasti quelli storici, ed e'
    per questo che qui si passa dall'enum invece che dalla stringa. #}
 {% set chiusa_dai_giocatori = status_str == MatchStatus.CONFIRMED_BY_BOTH.value %}
+{#- La sfida individuale lo dice da sé (`score_can_change`): confermata da
+    entrambi è conclusa, e il punteggio non si tocca più (2026-10-18). Il
+    ritorno indietro dalla doppia conferma vale per le partite di gara. -#}
+{% if match.score_can_change is defined %}
+{% set puo_annullare = user_is_player and match.score_can_change %}
+{% else %}
 {% set puo_annullare = user_is_player and (is_in_progress or chiusa_dai_giocatori) %}
+{% endif %}
 
 {% set is_multi_set = match.is_multi_set is defined and match.is_multi_set %}
 {% set is_free_format = match.distance is none %}

@@ -292,9 +292,21 @@ di tre secondi subito dopo la chiusura, che si perde se in quei tre secondi
 si sta guardando il tavolo; e una colonna «chiuso da solo», che sarebbe un
 fatto salvato accanto a quelli da cui si ricava.
 
-Un limite noto: l'avviso «conferma il risultato» partito alla chiusura resta
-fra le notifiche dell'avversario anche dopo la riapertura. La partita a cui
-porta è di nuovo in corso, e alla chiusura successiva ne parte uno nuovo.
+Alla riapertura l'avviso «conferma il risultato» partito alla chiusura
+**scade**, come ogni volta che le firme si azzerano
+(`IndividualMatch.reset_confirmations`, e `undo` stesso per una riapertura
+che il punteggio non lo muove): chiedeva di firmare un punteggio che non c'è
+più. Alla chiusura successiva ne parte uno nuovo. Nella partita di altri due
+scadono le richieste a entrambi i giocatori. _(Fino alla correzione del
+2026-10-18 sera era un limite noto: l'avviso restava fra le notifiche
+dell'avversario e portava a una partita di nuovo in corso.)_
+
+Il referto di una sfida **conclusa** non si riscrive più, nemmeno se è
+rimasto aperto — nel formato libero si chiude a mano, e i due possono firmare
+prima: `_require_compiler` lo rifiuta con un `ConflictError`, `describe` dice
+`can_write = False` e il tastierino non compare. La domanda è una sola per
+referto e segnapunti, `IndividualMatch.score_can_change` (SPECIFICHE, «Ciclo
+di vita dei Match», nota del 2026-10-18).
 
 **L'annulla di un tocco torna nell'interfaccia.** L'emendamento del 19/09 lo
 aveva tolto, perché fra «cancella» e «riparti» non gli restava un caso suo.

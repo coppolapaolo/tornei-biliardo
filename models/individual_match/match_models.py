@@ -569,6 +569,41 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
             raise ConflictError("Questa sfida non aspetta la tua revisione")
         self.contested_at = utc_now()
 
+    @property
+    def score_can_change(self) -> bool:
+        """Se il punteggio della sfida si può ancora toccare.
+
+        Sì finché è in corso — anche firmata da uno solo, o dichiarata da chi
+        segna: una firma sola non la conclude — e sulla sfida *registrata da
+        uno* finché l'avversario è ancora non registrato, perché lì la
+        chiusura è solo la firma di chi la segna (`reset_confirmations` la
+        rimette in corso).
+
+        No a sfida **conclusa**: confermata da entrambi, chiusa con un
+        forfait, registrata da uno e ormai riscattata, annullata, rifiutata.
+        La doppia firma ha già mosso l'ELO globale e non si ritira (SPECIFICHE,
+        «Ciclo di vita dei Match»): togliere un triangolo azzerava le firme e
+        lasciava la sfida confermata, uno stato che non esiste (2026-10-18).
+        La partita rifiutata ha la sua strada, la correzione di chi segna
+        (`reopen_by_scorer`), che la rimette in corso.
+        """
+        if self.status == MatchStatus.IN_PROGRESS:
+            return True
+        return self.is_recorded_by_one and self.is_placeholder_player(
+            self.opponent_of(self.recorded_by_id)
+        )
+
+    def ensure_score_can_change(self) -> None:
+        """Solleva `ConflictError` se la sfida è conclusa (`score_can_change`)."""
+        from flask_babel import gettext as _
+
+        from ..exceptions import ConflictError
+
+        if not self.score_can_change:
+            raise ConflictError(
+                _("La sfida è conclusa: il punteggio non si cambia più.")
+            )
+
     def reset_confirmations(self) -> None:
         """Le firme si azzerano; la sfida registrata da uno torna in corso.
 
@@ -576,6 +611,11 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         ancora aperto dopo la distanza. Una sfida *chiusa* col punteggio
         cambiato sarebbe una sfida che nessuno ha mai registrato così: torna
         in corso, e si richiude da sola alla prossima firma.
+
+        Gli avvisi «conferma il risultato» ancora da leggere si ritirano
+        (2026-10-18): chiedevano di firmare un punteggio che non c'è più, e
+        portavano a una sfida di nuovo in corso. Alla firma successiva ne
+        parte uno nuovo, col punteggio nuovo (`avvisa_chi_deve_firmare`).
         """
         if self.is_recorded_by_one:
             self.status = MatchStatus.IN_PROGRESS
@@ -584,6 +624,14 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
             self.winner_id = None
             self.ended_at = None
         super().reset_confirmations()
+        if self.id is not None:
+            from models.notification.models import NotificationType
+
+            from .pending_confirmation import ritira_gli_avvisi_in_sospeso
+
+            ritira_gli_avvisi_in_sospeso(
+                self, tipi=(NotificationType.MATCH_RESULT_TO_CONFIRM,)
+            )
 
     def can_withdraw(self, user_id: Optional[int]) -> bool:
         """Se ``user_id`` può ritirare la sfida (`withdraw_by_signer`)."""

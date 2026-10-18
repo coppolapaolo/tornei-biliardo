@@ -45,6 +45,9 @@ class IndividualRackService:
         if not match.is_player(winner_id):
             raise ValueError("Invalid winner ID")
 
+        # A sfida conclusa il punteggio non si tocca (2026-10-18).
+        match.ensure_score_can_change()
+
         # A partita finita non si segna più. La regola era già scritta —
         # `can_add_rack()` sul modello, e `match_scoring_state` che le fa
         # sparire i «+1» — ma nessuno la chiedeva qui, e l'interfaccia non è un
@@ -166,6 +169,14 @@ class IndividualRackService:
                 _("Questa partita la segna chi tiene il referto.")
             )
 
+        # A sfida conclusa il punteggio non si tocca (2026-10-18). Prima
+        # questa funzione non chiedeva niente allo stato: su una sfida
+        # confermata da entrambi toglieva il triangolo, azzerava le firme e la
+        # lasciava `CONFIRMED_BY_BOTH` — confermata senza firme, con l'ELO
+        # globale già mosso da un punteggio che non c'era più. La specifica
+        # non prevede correzioni dopo la doppia firma: nemmeno il ritiro.
+        match.ensure_score_can_change()
+
         if match.is_multi_set:
             # Il triangolo appartiene a un set, e `player*_score` conta i set:
             # toglierlo di qui abbasserebbe i **set vinti**. Se ne occupa il
@@ -198,10 +209,9 @@ class IndividualRackService:
             else:
                 match.player2_score = max(0, match.player2_score - 1)
 
-        match.player1_confirmed = False
-        match.player2_confirmed = False
-        match.player1_confirmed_at = None
-        match.player2_confirmed_at = None
+        # Dal modello, come ogni punteggio che si muove: la sfida registrata
+        # da uno torna in corso e gli avvisi «conferma» superati scadono.
+        match.reset_confirmations()
 
     @staticmethod
     @transactional(domain="individual_match")

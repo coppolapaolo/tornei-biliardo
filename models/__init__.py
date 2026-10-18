@@ -35,7 +35,11 @@ from .user.models import (
     VenueManagement,
 )
 from .user.role_grant import RoleGrant, RoleRequest, RoleRequestRecipient
-from .user.claim_request import ClaimRequest, ClaimRequestRecipient
+from .user.claim_request import (
+    ClaimRequest,
+    ClaimRequestMatch,
+    ClaimRequestRecipient,
+)
 from .user.privacy_models import (
     UserPrivacySetting,
     HiddenMatch,
@@ -188,6 +192,7 @@ __all__ = [
     "RoleRequestRecipient",
     # Riscatto dei giocatori non registrati (ADR-086)
     "ClaimRequest",
+    "ClaimRequestMatch",
     "ClaimRequestRecipient",
     # User privacy models
     "UserPrivacySetting",

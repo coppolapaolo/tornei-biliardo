@@ -306,11 +306,10 @@ class BaseMatchMixin:
         # Remove last rack (implementation delegated to subclass)
         self._remove_last_rack(user_id)
 
-        # Reset confirmations
-        self.player1_confirmed = False
-        self.player2_confirmed = False
-        self.player1_confirmed_at = None
-        self.player2_confirmed_at = None
+        # Le firme si azzerano dallo stesso posto di ogni punteggio che si
+        # muove: le sottoclassi ci appendono quello che ne consegue (la sfida
+        # ritira gli avvisi «conferma il risultato» ormai superati).
+        self.reset_confirmations()
 
     def _complete_match_after_confirmation(self) -> None:
         """

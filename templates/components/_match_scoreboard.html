@@ -207,10 +207,12 @@
 {% set breaks_now = none if board.at_distance else (match.next_break_player_id if match.next_break_player_id is defined else none) %}
 
 {# L'annullamento segue la stessa regola della vista verticale: si torna
-   indietro finche' la partita e' in corso o e' stata chiusa dai due
-   giocatori, mai su una chiusura d'ufficio. E' il momento in cui un tocco
-   sbagliato costa di piu' — ha appena chiuso la partita. #}
-{% set puo_annullare = board.is_player and last_rack and (board.in_progress or board.closed_by_players) %}
+   indietro finche' la partita e' in corso o, nelle partite di gara, e' stata
+   chiusa dai due giocatori, mai su una chiusura d'ufficio. E' il momento in
+   cui un tocco sbagliato costa di piu' — ha appena chiuso la partita. La
+   sfida individuale confermata da entrambi invece e' conclusa
+   (`board.can_undo`, 2026-10-18). #}
+{% set puo_annullare = board.is_player and last_rack and board.can_undo %}
 
 {% set winner_name = p1_name if board.winner_id == match.player1_id else p2_name %}
 

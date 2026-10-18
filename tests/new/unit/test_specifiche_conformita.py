@@ -4449,3 +4449,140 @@ class TestSfidaInAttesaNonEInCorso:
         for user in (a, b):
             sezioni = DashboardSectionBuilder.build_individual_match_sections(user.id)
             assert sfida.id not in {m.id for m in sezioni["sfide_in_corso"]}
+
+
+class TestSfidaConclusaEAvvisiSuperati:
+    """SPECIFICHE.md, «Ciclo di vita dei Match», nota del 2026-10-18:
+
+    > La sfida **confermata da entrambi è conclusa**: il punteggio non si
+    > cambia più, né togliendo un triangolo dal segnapunti né annullando dal
+    > referto TPA, e i pulsanti per farlo non si mostrano.
+
+    > Quando le firme si **azzerano** — un rifiuto, un triangolo tolto, il
+    > referto TPA riaperto annullando l'ultima annotazione — la richiesta
+    > ancora da leggere si **ritira**."""
+
+    @staticmethod
+    def _sfida(db_session, **campi):
+        from models.base import utc_now
+        from models.individual_match.match_models import IndividualMatch
+
+        utenti = []
+        for _ in range(2):
+            s = uuid.uuid4().hex[:8]
+            u = User(username=f"scs_{s}", email=f"scs_{s}@test.com")
+            u.set_password("test1234")
+            db_session.add(u)
+            utenti.append(u)
+        db_session.flush()
+        a, b = utenti
+        dati = dict(
+            player1_id=a.id,
+            player2_id=b.id,
+            scheduled_at=utc_now(),
+            status=MatchStatus.IN_PROGRESS,
+            distance=3,
+            is_race_to=True,
+            player1_score=3,
+            player2_score=1,
+        )
+        dati.update(campi)
+        sfida = IndividualMatch(**dati)
+        db_session.add(sfida)
+        db_session.flush()
+        return a, b, sfida
+
+    def test_la_confermata_da_entrambi_non_si_tocca(self, db_session):
+        from models.exceptions import ConflictError
+
+        _a, _b, sfida = self._sfida(
+            db_session,
+            status=MatchStatus.CONFIRMED_BY_BOTH,
+            player1_confirmed=True,
+            player2_confirmed=True,
+        )
+        assert not sfida.score_can_change
+        with pytest.raises(ConflictError):
+            sfida.ensure_score_can_change()
+
+    def test_in_corso_firmata_da_uno_si_tocca(self, db_session):
+        """Una firma sola non la conclude."""
+        _a, _b, sfida = self._sfida(db_session, player1_confirmed=True)
+        assert sfida.score_can_change
+
+    def test_le_firme_azzerate_ritirano_la_richiesta(self, db_session):
+        from models.notification.models import (
+            Notification,
+            NotificationStatus,
+            NotificationType,
+        )
+
+        a, b, sfida = self._sfida(db_session, player1_confirmed=True)
+        richiesta = Notification(
+            user_id=b.id,
+            notification_type=NotificationType.MATCH_RESULT_TO_CONFIRM,
+            title="Una sfida aspetta la tua firma",
+            message="3-1",
+            status=NotificationStatus.SENT,
+            action_url=f"/match/matches/{sfida.id}",
+        )
+        db_session.add(richiesta)
+        db_session.flush()
+
+        sfida.reset_confirmations()
+        db_session.flush()
+
+        assert richiesta.status == NotificationStatus.EXPIRED
+
+
+class TestRevisioneSoloDellePartiteRiscattate:
+    """SPECIFICHE.md, «Il riscatto» → «La revisione delle partite», nota del
+    2026-10-18 (sera):
+
+    > Quali partite erano del non registrato si annota quando il riscatto è
+    > approvato: una partita di altri due in cui chi ha riscattato era un
+    > giocatore **già prima** non è da rivedere."""
+
+    def test_la_partita_di_altri_due_non_annotata_non_si_rivede(self, db_session):
+        from models.base import utc_now
+        from models.individual_match.match_models import IndividualMatch
+        from models.individual_match.revisione import RevisioneService
+
+        utenti = []
+        for _ in range(3):
+            s = uuid.uuid4().hex[:8]
+            u = User(username=f"rvs_{s}", email=f"rvs_{s}@test.com")
+            u.set_password("test1234")
+            db_session.add(u)
+            utenti.append(u)
+        db_session.flush()
+        luca, anna, istruttore = utenti
+        sua = IndividualMatch(
+            player1_id=luca.id,
+            player2_id=anna.id,
+            scorer_id=istruttore.id,
+            scheduled_at=utc_now(),
+            status=MatchStatus.IN_PROGRESS,
+            distance=3,
+            is_race_to=True,
+            player1_score=3,
+            player2_score=1,
+        )
+        db_session.add(sua)
+        db_session.flush()
+        # Dichiarata da chi la segna: aspetta la decisione di Luca.
+        from models.tpa.models import TpaReferto
+
+        db_session.add(
+            TpaReferto(
+                individual_match_id=sua.id,
+                compiler_id=istruttore.id,
+                game_type=9,
+                closed_at=utc_now(),
+            )
+        )
+        db_session.flush()
+        sua = db_session.get(IndividualMatch, sua.id)
+        assert sua.awaits_decision_from(luca.id)
+
+        assert sua not in RevisioneService.da_rivedere(luca.id)

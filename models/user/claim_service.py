@@ -361,6 +361,10 @@ class ClaimService:
         richiesta.status = ClaimRequestStatus.APPROVED.value
         richiesta.decided_by_id = decider.id
         richiesta.decided_at = utc_now()
+        # Prima dell'unione: dopo, le sfide sono già del richiedente e non si
+        # distingue più quali fossero del giocatore (emendamento del
+        # 2026-10-18 all'ADR-086).
+        ClaimService._annota_le_partite(richiesta)
         db.session.flush()
 
         try:
@@ -396,6 +400,43 @@ class ClaimService:
             decider.id,
         )
         return richiesta
+
+    @staticmethod
+    def _annota_le_partite(richiesta: ClaimRequest) -> None:
+        """Scrive quali sfide individuali erano del giocatore da riscattare.
+
+        Le *registrate da uno* contro di lui e le partite di altri due in cui
+        era un giocatore, in qualunque stato: che una vada ancora rivista lo
+        dice la sfida, al momento della revisione. Le sfide fra due
+        registrati senza nessuna firma, l'unione le rende sfide normali.
+        """
+        from sqlalchemy import or_
+
+        from models.individual_match.models import IndividualMatch
+
+        from .claim_request import ClaimRequestMatch
+
+        placeholder_id = richiesta.placeholder_id
+        partite = (
+            db.session.query(IndividualMatch.id)
+            .filter(
+                or_(
+                    IndividualMatch.player1_id == placeholder_id,
+                    IndividualMatch.player2_id == placeholder_id,
+                ),
+                or_(
+                    IndividualMatch.recorded_by_id.isnot(None),
+                    IndividualMatch.scorer_id.isnot(None),
+                ),
+            )
+            .all()
+        )
+        gia = {riga.individual_match_id for riga in richiesta.partite}
+        for (match_id,) in partite:
+            if match_id not in gia:
+                richiesta.partite.append(
+                    ClaimRequestMatch(individual_match_id=match_id)
+                )
 
     @staticmethod
     @transactional(domain="user")
@@ -605,7 +646,9 @@ class ClaimService:
         from models.individual_match.revisione import RevisioneService
         from models.notification.models import NotificationPriority, NotificationType
 
-        quante = len(RevisioneService.da_rivedere(claimant_id))
+        quante = len(
+            RevisioneService.da_rivedere(claimant_id, richiesta_id=richiesta.id)
+        )
         if not quante:
             return
         giocatore = richiesta.nome_giocatore

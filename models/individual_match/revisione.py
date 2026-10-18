@@ -20,12 +20,22 @@ Le partite da rivedere sono quelle che aspettano il **suo** riconoscimento:
 La revisione è **facoltativa e senza scadenza**: le partite non rivedute
 restano come sono, *In attesa*, e non bloccano niente. Le partite di gara
 restano fuori: le certifica il torneo.
+
+**Quali partite erano del non registrato** (2026-10-18). Dopo l'unione non lo
+dice più la partita: `ClaimService.approve` lo scrive prima, in
+`ClaimRequestMatch`, e le partite di altri due compaiono solo se sono lì. Una
+partita di altri due in cui l'utente era un giocatore dall'inizio la decide
+dalla sua pagina, come sempre. Le sfide registrate da uno non ne hanno
+bisogno: si chiudono così solo contro un non registrato, quindi una che
+aspetta la revisione di un utente registrato viene per forza da un riscatto
+(o da un'unione dell'admin). Per i riscatti approvati prima di quella data
+la traccia non c'è: valgono le sole registrate da uno.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 from flask_babel import gettext as _
 from sqlalchemy import or_
@@ -49,11 +59,46 @@ class RevisioneService:
     """Chi deve rivedere cosa, e il gesto che lo fa."""
 
     @staticmethod
-    def da_rivedere(user_id: int) -> List[IndividualMatch]:
+    def riscattate(user_id: int, richiesta_id: Optional[int] = None):
+        """Sottoquery: gli id delle sfide che i riscatti di ``user_id`` gli
+        hanno portato (`ClaimRequestMatch`), o quelle di una richiesta sola."""
+        from models.status_enum import ClaimRequestStatus
+        from models.user.claim_request import ClaimRequest, ClaimRequestMatch
+
+        query = (
+            db.session.query(ClaimRequestMatch.individual_match_id)
+            .join(ClaimRequest, ClaimRequest.id == ClaimRequestMatch.request_id)
+            .filter(
+                ClaimRequest.claimant_id == user_id,
+                ClaimRequest.status == ClaimRequestStatus.APPROVED.value,
+            )
+        )
+        if richiesta_id is not None:
+            query = query.filter(ClaimRequest.id == richiesta_id)
+        return query
+
+    @staticmethod
+    def da_rivedere(
+        user_id: int, richiesta_id: Optional[int] = None
+    ) -> List[IndividualMatch]:
         """Le partite che aspettano il riconoscimento di ``user_id``.
+
+        Le partite di altri due solo se erano del giocatore riscattato
+        (`riscattate`); le registrate da uno sempre, perché vengono per forza
+        da un non registrato. Con ``richiesta_id`` solo quelle di quel
+        riscatto: l'invito conta le sue.
 
         Dalla più vecchia: si rivedono nell'ordine in cui sono state giocate.
         """
+        riscattate = RevisioneService.riscattate(user_id, richiesta_id)
+        registrata_da_uno = (
+            (IndividualMatch.status == MatchStatus.CLOSED_UNILATERALLY)
+            & IndividualMatch.recorded_by_id.isnot(None)
+            & (IndividualMatch.recorded_by_id != user_id)
+            & IndividualMatch.contested_at.is_(None)
+        )
+        if richiesta_id is not None:
+            registrata_da_uno = registrata_da_uno & IndividualMatch.id.in_(riscattate)
         candidate = (
             IndividualMatch.query.filter(
                 or_(
@@ -62,13 +107,12 @@ class RevisioneService:
                 ),
                 or_(
                     # Registrata da uno, non ancora rivista.
-                    (IndividualMatch.status == MatchStatus.CLOSED_UNILATERALLY)
-                    & IndividualMatch.recorded_by_id.isnot(None)
-                    & (IndividualMatch.recorded_by_id != user_id)
-                    & IndividualMatch.contested_at.is_(None),
-                    # Partita di un terzo che aspetta la sua decisione.
+                    registrata_da_uno,
+                    # Partita di un terzo che aspetta la sua decisione, ed era
+                    # del giocatore riscattato.
                     IndividualMatch.scorer_id.isnot(None)
-                    & (IndividualMatch.status == MatchStatus.IN_PROGRESS),
+                    & (IndividualMatch.status == MatchStatus.IN_PROGRESS)
+                    & IndividualMatch.id.in_(riscattate),
                 ),
             )
             .order_by(IndividualMatch.ended_at.asc(), IndividualMatch.id.asc())
