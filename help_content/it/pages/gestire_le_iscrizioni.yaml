@@ -194,6 +194,12 @@ blocks:
           **Non è lui: rifiuta**: il giocatore resta com'era, e qualcun altro
           potrà chiederlo.
 
+  - type: text
+    text: >-
+      Chi ha chiesto il riscatto può anche **ritirare** la richiesta, finché
+      non hai deciso. In quel caso ti arriva un avviso, la richiesta compare
+      come «ritirata» e non c'è più niente da decidere.
+
   - type: note
     tone: info
     title: "I giocatori che c'erano già"

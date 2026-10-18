@@ -20,6 +20,8 @@
   <span class="c7-state c7-state--warn">{{ _("in attesa") }}</span>
   {% elif r.status == ClaimRequestStatus.APPROVED.value %}
   <span class="c7-state c7-state--ok">{{ _("confermata") }}</span>
+  {% elif r.status == ClaimRequestStatus.WITHDRAWN.value %}
+  <span class="c7-state c7-state--muted">{{ _("ritirata") }}</span>
   {% else %}
   <span class="c7-state c7-state--muted">{{ _("rifiutata") }}</span>
   {% endif %}
@@ -49,6 +51,16 @@
     <div class="c7-rows">
       {% for r in mie %}
       {{ riga(r, _("chiesto da te")) }}
+      {% if r.is_pending %}
+      {# Un modulo non sta dentro il link della riga: va nella riga sotto. #}
+      <form class="c7-rows__row" method="POST" action="{{ url_for('riscatto.ritira', request_id=r.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline-danger w-100"
+                onclick='return confirmSubmit(this.form, {{ _("La richiesta di riscatto di %(giocatore)s non aspetterà più una risposta. Potrai chiederla di nuovo.", giocatore=r.nome_giocatore)|tojson }}, {confirmText: {{ _("Ritira la richiesta")|tojson }}, confirmClass: "btn-danger"})'>
+          <i class="fas fa-rotate-left"></i>&nbsp;{{ _("Ritira la richiesta") }}
+        </button>
+      </form>
+      {% endif %}
       {% endfor %}
     </div>
   </section>

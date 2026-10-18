@@ -84,6 +84,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "riscatto.richieste": {"player", "director"},
     "riscatto.richiesta": {"player", "director"},
     "riscatto.decidi": {"player", "director"},
+    # Il ritiro: chi l'ha chiesta, finché aspetta (emendamento ADR-086).
+    "riscatto.ritira": {"player", "director"},
     "riscatto.omonimi": {"player", "director"},
     "admin.competition.gara_detail": {"anonimo", "player", "director"},
     # Tabellone della gara (US-13): sola lettura, e la segue anche chi non ha

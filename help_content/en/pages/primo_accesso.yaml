@@ -178,6 +178,17 @@ blocks:
           player's registrations, matches, standings and ELO are yours.
 
   - type: note
+    tone: info
+    title: "Made a mistake? Withdraw the request"
+    text: >-
+      As long as nobody has answered, you can withdraw it: open **Claims** in
+      the menu, or the request from the notification, and tap **Withdraw the
+      request**. Whoever had to decide gets a notice and has nothing left to
+      do, and the player is free again: you or someone else can claim it once
+      more. A request that has already been confirmed or rejected can no
+      longer be withdrawn.
+
+  - type: note
     tone: tip
     title: "If you type your name at the start"
     text: >-

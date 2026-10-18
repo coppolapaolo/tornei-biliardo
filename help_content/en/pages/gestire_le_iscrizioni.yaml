@@ -197,6 +197,12 @@ blocks:
           and ELO move to their account, and this can't be undone. **Not them:
           reject**: the player stays as it was, and someone else can claim it.
 
+  - type: text
+    text: >-
+      Whoever asked for the claim can also **withdraw** the request, as long
+      as you haven't decided. In that case you get a notice, the request shows
+      as «withdrawn» and there is nothing left to decide.
+
   - type: note
     tone: info
     title: "Players that were already there"
