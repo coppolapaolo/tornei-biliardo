@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.83.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.82.0...v1.83.0) (2026-10-18)
+
+
+### Funzioni nuove
+
+* il referto TPA a tutto schermo, chiuso alla distanza, con l'annullamento a portata di dito ([#714](https://github.com/coppolapaolo/tornei-biliardo/issues/714)) ([335b1f6](https://github.com/coppolapaolo/tornei-biliardo/commit/335b1f683216c36c6c7d2f5a1faf962e599acdd1))
+* la sfida contro un non registrato si chiude da sola, e chi lo riscatta rivede le partite ([#716](https://github.com/coppolapaolo/tornei-biliardo/issues/716)) ([a5a5844](https://github.com/coppolapaolo/tornei-biliardo/commit/a5a5844418bab9174d635383b7e5db9a04fd99b5))
+
 ## [1.82.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.81.0...v1.82.0) (2026-10-18)
 
 
