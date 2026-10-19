@@ -13,7 +13,9 @@ from models.user.role_enum import UserRole
 from models.transaction.manager import transactional, read_only
 from models.user.tokens import UserToken
 from models.shared.email_service import EmailService
-from flask import current_app, request  # For base_url
+from flask import current_app
+
+from utils.indirizzo_pubblico import indirizzo_per_le_email
 from flask_babel import gettext as _
 
 
@@ -211,7 +213,7 @@ class UserProfileService:
             # invoke send_pending_verification_email() after this returns.
             user._pending_verification_email = {
                 "token": token,
-                "base_url": request.host_url.rstrip("/"),
+                "base_url": indirizzo_per_le_email(),
             }
 
         return user
@@ -373,7 +375,7 @@ class UserProfileService:
             token = UserToken.create_token(user.id, "verification")
             user._pending_verification_email = {
                 "token": token,
-                "base_url": request.host_url.rstrip("/"),
+                "base_url": indirizzo_per_le_email(),
             }
 
         return user
@@ -697,11 +699,9 @@ class UserProfileService:
 
         try:
             token = UserToken.create_token(user.id, "verification")
-            # request.host_url needs a Flask request context (always present
-            # when invoked from a route handler, which is the only call site).
-            EmailService.send_verification_email(
-                user, token, request.host_url.rstrip("/")
-            )
+            # L'origine del link viene dalla configurazione, non dalla
+            # richiesta: vedi `utils/indirizzo_pubblico.py`.
+            EmailService.send_verification_email(user, token, indirizzo_per_le_email())
             return True
         except Exception:
             # Helper to log exception would be good here
@@ -779,7 +779,7 @@ class UserProfileService:
         ).update({"is_used": True}, synchronize_session=False)
 
         token = UserToken.create_token(user.id, "password_reset")
-        return user.id, token.token, request.host_url.rstrip("/")
+        return user.id, token.token, indirizzo_per_le_email()
 
     @staticmethod
     def request_password_reset(email: str) -> bool:

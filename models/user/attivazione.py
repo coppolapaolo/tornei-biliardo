@@ -35,7 +35,6 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from flask import has_request_context, request
 from flask_babel import gettext as _
 from markupsafe import escape
 
@@ -64,8 +63,11 @@ ATTIVAZIONE = "attivazione"
 
 
 def _base_url() -> str:
-    """L'indirizzo del sito da mettere nei link: quello della richiesta."""
-    return request.host_url.rstrip("/") if has_request_context() else ""
+    """L'indirizzo del sito da mettere nei link: quello configurato, mai
+    quello che dice la richiesta (``utils/indirizzo_pubblico.py``)."""
+    from utils.indirizzo_pubblico import indirizzo_per_le_email
+
+    return indirizzo_per_le_email()
 
 
 @dataclass(frozen=True)

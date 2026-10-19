@@ -501,3 +501,96 @@ class TestCambioEmailNelProfilo:
         client = self._collegato(app, io)
         risposta = _post(client, "/player/profile/edit", data={"email": io.email})
         assert risposta.status_code == 302
+
+
+# ------------------------------------------------- i link non seguono l'header Host
+
+
+class TestLinkSulDominioConfigurato:
+    """Con ``PUBLIC_BASE_URL`` configurato, un ``Host`` falsificato non sposta i
+    link delle email: altrimenti chi fa partire l'email manderebbe alla vittima
+    un link verso il proprio dominio, e il token arriverebbe a lui."""
+
+    SITO = "https://www.torneibiliardo.it"
+
+    @staticmethod
+    def _falsificato(client, url, **kw):
+        g.pop("_login_user", None)
+        return client.post(
+            url,
+            base_url="http://evil.example",
+            headers={"X-Forwarded-Host": "evil.example"},
+            **kw,
+        )
+
+    def _link(self, corpo: str, percorso: str) -> None:
+        assert f"{self.SITO}{percorso}" in corpo, corpo
+        assert "evil.example" not in corpo
+
+    def test_attivazione(self, app, posta, monkeypatch):
+        monkeypatch.setitem(app.config, "PUBLIC_BASE_URL", self.SITO + "/")
+        giocatore = _placeholder_con_email()
+        self._falsificato(
+            app.test_client(),
+            "/auth/register",
+            data={
+                "username": f"p_{_uid()}",
+                "email": giocatore.email,
+                "password": "pw123456",
+            },
+        )
+        self._link(posta[0][2], "/auth/attiva/")
+
+    def test_avviso_di_registrazione(self, app, posta, monkeypatch):
+        monkeypatch.setitem(app.config, "PUBLIC_BASE_URL", self.SITO)
+        esistente = _user()
+        self._falsificato(
+            app.test_client(),
+            "/auth/register",
+            data={
+                "username": f"q_{_uid()}",
+                "email": esistente.email,
+                "password": "pw123456",
+            },
+        )
+        self._link(posta[0][2], "/auth/forgot-password")
+
+    def test_verifica_della_registrazione(self, app, posta, monkeypatch):
+        monkeypatch.setitem(app.config, "PUBLIC_BASE_URL", self.SITO)
+        uid = _uid()
+        self._falsificato(
+            app.test_client(),
+            "/auth/register",
+            data={
+                "username": f"r_{uid}",
+                "email": f"r_{uid}@test.com",
+                "password": "pw123456",
+            },
+        )
+        self._link(posta[0][2], "/auth/verify-email/")
+
+    def test_recupero_password(self, app, posta, monkeypatch):
+        monkeypatch.setitem(app.config, "PUBLIC_BASE_URL", self.SITO)
+        esistente = _user()
+        self._falsificato(
+            app.test_client(),
+            "/auth/forgot-password",
+            data={"email": esistente.email},
+        )
+        self._link(posta[0][2], "/auth/reset-password/")
+
+    def test_senza_configurazione_si_usa_la_richiesta(self, app, posta):
+        """Sviluppo e test: nessun sito vero da proteggere, si ripiega."""
+        assert not app.config.get("PUBLIC_BASE_URL")
+        esistente = _user()
+        _post(_anonimo(app), "/auth/forgot-password", data={"email": esistente.email})
+        assert "http://localhost/auth/reset-password/" in posta[0][2]
+
+
+def test_la_produzione_ha_il_dominio_vero(monkeypatch):
+    """In produzione ``PUBLIC_BASE_URL`` non resta mai vuoto."""
+    from config import ProductionConfig
+
+    monkeypatch.delenv("PUBLIC_BASE_URL", raising=False)
+    valori = ProductionConfig.environment_settings()
+    assert valori["PUBLIC_BASE_URL"] == "https://www.torneibiliardo.it"

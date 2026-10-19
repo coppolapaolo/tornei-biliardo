@@ -345,10 +345,21 @@ quella del giocatore stesso, non di chi chiede.
   su un non registrato. Il riscatto con conferma del creatore resta per chi
   l'email del giocatore non ce l'ha.
 
+- **I link delle email non vengono dalla richiesta** (dalla revisione di
+  sicurezza della stessa PR). Verifica, recupero password, avviso e
+  attivazione costruivano il link da `request.host_url`: con un `Host` o un
+  `X-Forwarded-Host` falsificato, chi faceva partire l'email mandava alla
+  vittima un link verso il proprio dominio, e aprendolo lei gli consegnava il
+  token. Ora l'origine è `PUBLIC_BASE_URL` (`Config.environment_settings`,
+  in produzione `https://www.torneibiliardo.it` se la variabile manca),
+  letta da un solo punto, `utils/indirizzo_pubblico.indirizzo_per_le_email`.
+  In sviluppo e nei test, senza valore, si ripiega sulla richiesta.
+
 **Presidi.** `tests/new/integration/test_email_senza_rivelare.py` (risposta
 identica, nessun account, contenuto delle email, attivazione e login con le
 partite, recupero password, token scaduto o usato, richiesta pendente di un
-altro, cambio email nel profilo);
+altro, cambio email nel profilo, link sul dominio configurato con un `Host`
+falsificato);
 `tests/new/unit/test_specifiche_conformita.py::TestAttivazioneDallEmail`.
 Regola in `docs/reference/SPECIFICHE.md`, «L'attivazione dall'email» e «La
 registrazione non rivela gli indirizzi»; flussi in

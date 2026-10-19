@@ -210,6 +210,13 @@ class Config:
             "GITHUB_FEEDBACK_REPO": (
                 os.environ.get("GITHUB_FEEDBACK_REPO") or "coppolapaolo/tornei-biliardo"
             ),
+            # L'origine dei link nelle email (verifica, recupero password,
+            # attivazione). Mai dalla richiesta in produzione: chi falsifica
+            # l'header `Host` farebbe arrivare alla vittima un link verso il
+            # suo dominio, e con l'apertura il token finirebbe a lui. Senza
+            # valore — sviluppo, test — si ripiega sull'indirizzo della
+            # richiesta (`utils/indirizzo_pubblico.py`).
+            "PUBLIC_BASE_URL": os.environ.get("PUBLIC_BASE_URL") or None,
         }
 
 
@@ -250,6 +257,11 @@ class ProductionConfig(Config):
                 "ADMIN_PASSWORD": os.environ.get("ADMIN_PASSWORD") or None,
                 # Sempre False in produzione, qualunque cosa dica l'ambiente.
                 "DEBUG_MODE": False,
+                # I link delle email puntano sempre al sito vero, qualunque
+                # `Host` abbia mandato chi ha fatto partire l'email.
+                "PUBLIC_BASE_URL": (
+                    os.environ.get("PUBLIC_BASE_URL") or "https://www.torneibiliardo.it"
+                ),
             }
         )
         return values
@@ -282,6 +294,7 @@ class TestingConfig(Config):
                 "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
                 "GLITCHTIP_DSN": None,
                 "GA_MEASUREMENT_ID": None,
+                "PUBLIC_BASE_URL": None,
                 "ADMIN_USERNAME": "admin",
                 "ADMIN_EMAIL": "admin@campionato.local",
                 "ADMIN_PASSWORD": "admin123",

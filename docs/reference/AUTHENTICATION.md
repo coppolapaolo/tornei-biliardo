@@ -109,6 +109,12 @@ The system uses **Flask-Mail** to send emails via SMTP.
 | `MAIL_USERNAME` | SMTP Username | `user@gmail.com` |
 | `MAIL_PASSWORD` | SMTP Password | `app-password` |
 | `MAIL_DEFAULT_SENDER` | "From" Address | `Name <email>` |
+| `PUBLIC_BASE_URL` | Origin of every link in an email (verification, reset, activation). Production defaults to `https://www.torneibiliardo.it`; unset in development and tests, where the request's host is used | `https://www.torneibiliardo.it` |
+
+Email links are **never** built from the request in production
+(`utils/indirizzo_pubblico.py`): with a forged `Host` or `X-Forwarded-Host`
+header, an attacker could otherwise trigger an email whose link points to
+their own domain, and receive the victim's token when the victim opens it.
 
 ## Database Schema Changes
 
