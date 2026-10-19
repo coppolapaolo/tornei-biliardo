@@ -143,7 +143,7 @@ sfida-registrata-da-uno: "A match against an unregistered player, closed with th
 sfide-da-rivedere: "The matches to review after a claim: for each one who recorded it, the score and the «I dispute it» box; below, «I recognise them all», «I dispute only the ticked ones» and «I dispute them all»."
 avvio-rapido-non-registrato: "Quick start as an instructor sees it: under the opponent search, «No account? Add them» opens with first and last name."
 partita-altri-due: "The «Score a match between two others» form: player A and player B, each with the search and «No account? Add them», then the description and how the match is played."
-gara-iscrivi-non-registrato: "«New unregistered player», under the entrant search, open: first name, last name and the «Create and enroll» button."
+gara-iscrivi-non-registrato: "The entrant search with a name that isn't there: «No player with that name», and below it the offer to create them as unregistered, with first and last name already filled in and the button «Create «Gino Ferraro» as unregistered and enroll them»."
 riscatto-giocatore: "The «Is this you?» page of an unregistered player: what claiming it means, who confirms it, and the two buttons to create an account or log in."
 riscatto-richiesta: "A claim request as the player's creator sees it: who is asking, with username and email, and the «Confirm the claim» and «Not them: reject» buttons."
 riscatto-ritira: "The same request as its author sees it: it waits for the answer of whoever created the player, and below there is «Withdraw the request»."

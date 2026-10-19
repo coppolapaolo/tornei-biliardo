@@ -168,7 +168,8 @@ blocks:
       - title: "Tocca «Sei tu? Riscatta»"
         text: >-
           Si apre una pagina che spiega cosa succede e chi lo conferma: chi ti
-          ha aggiunto, o l'amministratore.
+          ha aggiunto, il direttore della tua prima gara, o
+          l'amministratore.
       - title: "Crea un account, o accedi"
         text: >-
           Se non hai ancora un account tocca **Crea un account**; se ce l'hai,

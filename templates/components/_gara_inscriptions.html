@@ -35,12 +35,16 @@
 <section class="c7-stack">
 
   {# ---- Iscrivi un giocatore: il campo in cima ----
-     Sotto la ricerca, chi è in sala senza account: nome e cognome, e nasce
-     un giocatore non ancora registrato già iscritto (ADR-085). Il modulo c'è
-     anche quando non c'è nessuno da cercare. #}
+     La ricerca trova chi ha già un account. Chi è in sala senza account si
+     crea **dalla stessa ricerca** (ADR-085, emendamento del 2026-10-19): si
+     scrive il nome, e sotto i risultati — o al posto loro, se non ce ne
+     sono — compare «Crea «Nome Cognome» come non registrato e iscrivilo»,
+     con nome e cognome già presi dal testo cercato e modificabili
+     (`static/js/iscritti_ricerca.js`). Senza JavaScript il modulo resta
+     visibile, vuoto. #}
   {% if _puo_iscrivere and not gara.is_prova %}
-  <div class="c7-stack" style="gap:8px">
-  {% if available_users and available_users|length > 0 %}
+  {% set _crea_nonreg = feature_visible('admin.competition.admin_inscribe_placeholder') %}
+  {% if (available_users and available_users|length > 0) or _crea_nonreg %}
   <div class="c7-stack" data-iscrivibili data-massimo="8" style="gap:8px">
     <div>
       <label class="c7-label" data-help="gara-cerca-da-iscrivere">{{ _('Iscrivi un giocatore') }}</label>
@@ -48,6 +52,7 @@
              placeholder="{{ _('Cognome, nome o username') }}"
              aria-label="{{ _('Cerca il giocatore da iscrivere') }}">
     </div>
+    {% if available_users and available_users|length > 0 %}
     <div class="c7-rows c7-iscrivibili">
       {% for user in available_users %}
       <form method="POST" action="{{ url_for('admin.competition.admin_inscribe_user', gara_id=gara.id) }}"
@@ -66,35 +71,34 @@
       </form>
       {% endfor %}
       <div class="c7-rows__row c7-rows__row--dim js-iscritti-nessuno" hidden>
-        <div class="c7-rows__sub">{{ _('Nessun giocatore con questo nome. Se non ha un account, iscrivilo qui sotto con nome e cognome.') }}</div>
+        <div class="c7-rows__sub">{{ _('Nessun giocatore con questo nome.') }}</div>
       </div>
     </div>
+    {% endif %}
     <div class="js-iscritti-esito c7-kicker" aria-live="polite" data-formato="{{ _('{n} giocatori trovati') }}"></div>
-  </div>
-  {% endif %}
 
-  {% if feature_visible('admin.competition.admin_inscribe_placeholder') %}
-  <details class="c7-nonreg-crea">
-    <summary class="c7-nonreg-crea__apri" data-help="gara-iscrivi-non-registrato">
-      <i class="fas fa-user-plus"></i>&nbsp;{{ _('Nuovo giocatore non registrato') }}
-    </summary>
+    {% if _crea_nonreg %}
     <form method="POST" action="{{ url_for('admin.competition.admin_inscribe_placeholder', gara_id=gara.id) }}"
-          class="c7-stack mt-2" style="gap:8px">
+          class="c7-card c7-stack c7-nonreg-crea js-iscritti-crea" style="gap:8px">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="c7-label mb-0" data-help="gara-iscrivi-non-registrato">
+        <i class="fas fa-user-plus"></i>&nbsp;{{ _('Non ha un account? Crealo come non registrato') }}
+      </div>
       <div class="c7-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
-        <input type="text" class="form-control" name="first_name" maxlength="100" required
+        <input type="text" class="form-control js-iscritti-crea-nome" name="first_name" maxlength="100" required
                autocomplete="off" placeholder="{{ _('Nome') }}" aria-label="{{ _('Nome') }}">
-        <input type="text" class="form-control" name="last_name" maxlength="100" required
+        <input type="text" class="form-control js-iscritti-crea-cognome" name="last_name" maxlength="100" required
                autocomplete="off" placeholder="{{ _('Cognome') }}" aria-label="{{ _('Cognome') }}">
       </div>
-      <button type="submit" class="btn btn-primary w-100">
-        <i class="fas fa-user-plus"></i>&nbsp;{{ _('Crea e iscrivi') }}
+      <button type="submit" class="btn btn-primary w-100 js-iscritti-crea-invia"
+              data-formato="{{ _('Crea «{nome}» come non registrato e iscrivilo') }}">
+        <i class="fas fa-user-plus"></i>&nbsp;<span class="js-iscritti-crea-testo">{{ _('Crea e iscrivi') }}</span>
       </button>
       <div class="c7-nota">{{ _("Gioca e va in classifica come tutti, ma non riceve notifiche finché non si registra. Quando lo farà, potrà prendersi le sue partite.") }}</div>
     </form>
-  </details>
-  {% endif %}
+    {% endif %}
   </div>
+  {% endif %}
   {% endif %}
 
   {# Competizione di prova (ADR-058): niente utenti veri, si iscrivono

@@ -42,7 +42,7 @@
     </div>
     {% endif %}
     {% if richiesta.is_pending %}
-    <div class="c7-nota">{{ _("La decide %(chi)s.", chi=a_chi) }}</div>
+    <div class="c7-nota">{{ _("La decide %(chi)s.", chi=a_chi) }}{% if come_riserva %} {{ _("Come amministratore puoi decidere tu, se non risponde.") }}{% endif %}</div>
     {% elif richiesta.status == ClaimRequestStatus.WITHDRAWN.value %}
     <div class="c7-nota">{{ _("Ritirata da chi l'aveva fatta il %(data)s.", data=richiesta.decided_at|datetime_local) }}</div>
     {% elif richiesta.decided_by %}
@@ -86,7 +86,11 @@
         {% endif %}
       </div>
     </div>
+    {% if come_riserva %}
+    <div class="c7-nota">{{ _("Conferma solo se sei sicuro che sia lui: le partite passano al suo account e non tornano indietro.") }}</div>
+    {% else %}
     <div class="c7-nota">{{ _("Conferma solo se sei sicuro che sia la persona che hai aggiunto: le partite passano al suo account e non tornano indietro.") }}</div>
+    {% endif %}
     <form method="POST" action="{{ url_for('riscatto.decidi', request_id=richiesta.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="decisione" value="approva">

@@ -499,6 +499,19 @@ def _capture_one(
                 )
             page.wait_for_timeout(500)
 
+        for campo in shot.get("type") or []:
+            # Testo scritto in un campo, come lo scriverebbe chi usa la
+            # pagina: `fill` manda l'evento `input`, ed è lì che ascolta chi
+            # reagisce a ciò che si scrive (la ricerca degli iscritti, che
+            # propone di creare il non registrato col nome cercato).
+            if page.query_selector(campo["selector"]) is None:
+                raise CaptureError(
+                    f"«{shot['id']}»: selettore `type` non trovato: "
+                    f"{campo['selector']}"
+                )
+            page.fill(campo["selector"], campo["text"])
+            page.wait_for_timeout(300)
+
         for selector in shot.get("tap") or []:
             # Un tocco **vero**, con i suoi eventi di puntatore, e non il
             # `click()` del DOM qui sopra: il panno dell'allenamento ascolta

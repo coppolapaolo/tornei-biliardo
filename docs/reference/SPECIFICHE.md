@@ -13,7 +13,7 @@ Ci sono tre tipologie di utenti:
 
 #### Giocatori non ancora registrati
 
-Un **direttore** (o l'admin) e un **istruttore** possono creare un giocatore che non ha un account, scrivendone **nome e cognome**: è chi arriva in sala per giocare senza essersi mai registrato. Lo si crea dall'iscrizione a una gara, accanto alla ricerca, dal modulo della partita di altri due o dall'avvio rapido di una sfida.
+Un **direttore** (o l'admin) e un **istruttore** possono creare un giocatore che non ha un account, scrivendone **nome e cognome**: è chi arriva in sala per giocare senza essersi mai registrato. Lo si crea dall'iscrizione a una gara, **dalla ricerca stessa** — scritto il nome, sotto i risultati compare «Crea «Nome Cognome» come non registrato e iscrivilo», con la prima parola come nome e il resto come cognome, modificabili —, dal modulo della partita di altri due o dall'avvio rapido di una sfida.
 
 - Lo **username** è il nome e cognome; se è già preso si aggiunge un numero: «Mario Rossi (2)».
 - **Non entra nell'app**: non ha password, e il login lo rifiuta comunque. Se ha un'**email** — quella che aveva prima di diventare non registrato, o che gli ha scritto l'admin — chi legge quella casella lo **attiva** (vedi «L'attivazione dall'email»).
@@ -26,9 +26,11 @@ Un **direttore** (o l'admin) e un **istruttore** possono creare un giocatore che
 - Chi l'ha registrata la può **ritirare** finché nessuno l'ha riconosciuta. Se il punteggio cambia — un triangolo tolto dal referto TPA ancora aperto — torna in corso, e si richiude alla firma successiva.
 - Dopo il riscatto, chi l'ha riscattato la **rivede** (vedi «La revisione delle partite»).
 - Accanto al suo nome, negli iscritti, nelle classifiche e nel profilo, c'è il segno **«non registrato»**.
-- Chi poi si registra lo **riscatta**: le partite passano al nuovo account con la conferma di chi l'ha creato, o dell'admin per i giocatori senza creatore.
+- Chi poi si registra lo **riscatta**: le partite passano al nuovo account con la conferma di chi l'ha creato — per i giocatori senza creatore, dei direttori della loro prima gara —, o dell'admin (vedi «Il riscatto»).
 
 _Regola nuova del 2026-10-17, decisa dall'utente (ADR-085)._
+
+_Nota del 2026-10-19, richiesta dall'utente («quando un direttore di gara iscrive gli utenti alla gara, può contestualmente alla ricerca creare un nuovo utente placeholder e aggiungerlo alla gara?», ADR-085): fino a questa data il modulo stava a parte, sotto la ricerca, e andava aperto e riempito da capo._
 
 _Emendamento del 2026-10-18, deciso dall'utente («l'aggiunta dell'esterno deve essere possibile anche dai match singoli», ADR-085): fino a questa data il giocatore non registrato non era un avversario delle sfide individuali, e chi voleva segnare la propria partita contro di lui non aveva una strada._
 
@@ -40,7 +42,9 @@ Chi si registra e si riconosce in un giocatore non registrato lo **riscatta**: c
 
 - Nelle pagine pubbliche, accanto al nome di un giocatore non registrato, c'è **«Sei tu? Riscatta»**. Lo vede chiunque, anche senza account, tranne il giocatore stesso e chi l'ha creato; sparisce quando una richiesta è già in attesa.
 - Chi non ha un account sceglie **Accedi** o **Crea un account**: la richiesta parte **da sola appena entra**, senza un secondo gesto.
-- Decide **chi ha creato il giocatore**, che lo conosce di persona. Per un giocatore **senza creatore** — quelli presenti prima di questa regola — o col creatore cancellato decide **solo l'amministratore**.
+- Decide **chi ha creato il giocatore**, che lo conosce di persona. Per un giocatore **senza creatore** — quelli presenti prima di questa regola — il creatore si ricostruisce dalla **prima gara** a cui ha partecipato: è chi ce l'ha iscritto, se è un direttore o l'amministratore; altrimenti l'**unico direttore** di quella gara. Se quella gara aveva **più direttori**, decide **uno qualsiasi di loro**. Senza nessuno di questi, o col creatore cancellato, decide l'amministratore.
+- L'**amministratore può decidere ogni richiesta in attesa**, anche quelle che toccano a un direttore, se il direttore non risponde: in «Riscatti» le vede tutte, con scritto chi le dovrebbe decidere. La **notifica** però gli arriva solo quando non c'è nessun altro a cui mandarla.
+- Chi chiede il riscatto non decide la propria richiesta: se è uno dei direttori che lo confermerebbero, decidono gli altri, o l'amministratore.
 - C'è **una sola richiesta in attesa** per giocatore. Dopo un rifiuto se ne può fare un'altra.
 - Chi ha chiesto può **ritirare** la richiesta finché aspetta una risposta; nessun altro la ritira (chi decide ha già «rifiuta»). Dopo il ritiro se ne può fare un'altra, anche dalla stessa persona, e chi doveva decidere riceve un avviso. Una richiesta già decisa non si ritira, e una ritirata non si decide.
 - Non lo riscatta chi l'ha creato, né l'amministratore, né un altro giocatore non registrato. Un giocatore si riscatta **una volta sola**.
@@ -52,6 +56,8 @@ Chi si registra e si riconosce in un giocatore non registrato lo **riscatta**: c
 _Regola nuova del 2026-10-17, decisa dall'utente (ADR-086): conferma il creatore, l'amministratore per i giocatori senza creatore._
 
 _Emendamento del 2026-10-18, deciso dall'utente (ADR-086): la richiesta si ritira. Prima una richiesta sbagliata teneva fermo il giocatore finché chi decide non la rifiutava._
+
+_Emendamento del 2026-10-19, deciso dall'utente (ADR-086): «per gli utenti esistenti che non si sono mai collegati, non si riesce a risalire a chi è il direttore che li ha creati sulla base della prima gara a cui hanno partecipato? Così quello può confermare i riscatti» e «admin potrebbe essere colui che conferma i riscatti di tutti, nel caso i direttori non lo facciano». Fino a questa data i giocatori senza creatore li decideva solo l'amministratore, e l'amministratore non decideva quelli che un creatore lo avevano. Che con più direttori decida uno qualsiasi di loro, e che l'amministratore riceva la notifica solo come ripiego, sono scelte prese nell'implementazione._
 
 ##### L'attivazione dall'email
 

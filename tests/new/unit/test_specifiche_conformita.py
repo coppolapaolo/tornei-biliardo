@@ -4311,8 +4311,9 @@ class TestRiscattoDeiNonRegistrati:
         giocatore = self._giocatore(db_session, direttore)
         assert [u.id for u in ClaimService.destinatari(giocatore)] == [direttore.id]
 
-    def test_senza_creatore_decide_solo_l_admin(self, db_session):
-        """«Per un giocatore senza creatore […] decide solo l'amministratore»."""
+    def test_senza_creatore_e_senza_gare_decide_l_admin(self, db_session):
+        """«Senza nessuno di questi, o col creatore cancellato, decide
+        l'amministratore» (emendamento del 2026-10-19)."""
         from models.user.claim_service import ClaimService
 
         admin = User.query.filter_by(role=UserRole.ADMIN.value).first() or (
@@ -4324,6 +4325,93 @@ class TestRiscattoDeiNonRegistrati:
         destinatari = ClaimService.destinatari(storico)
         assert destinatari and all(u.is_admin for u in destinatari)
         assert admin.id in {u.id for u in destinatari}
+
+    def _storico_in_gara(self, db_session, titolare, codirettori=(), da=None):
+        from datetime import date, time as ora
+
+        from models.matchmaking.configuration import MatchmakingStrategy
+        from models.user.models import DirectorAssignment
+
+        gara = Gara(
+            name=f"G{uuid.uuid4().hex[:6]}",
+            number=1,
+            date=date(2025, 3, 1),
+            time=ora(20, 0),
+            discipline=Discipline.NINE_BALL.value,
+            distance=5,
+            rounds_count=3,
+            min_participants=2,
+            max_participants=16,
+            matchmaking_strategy=MatchmakingStrategy.RANDOM.value,
+            director_id=titolare.id,
+        )
+        db_session.add(gara)
+        db_session.flush()
+        for d in codirettori:
+            db_session.add(
+                DirectorAssignment(
+                    user_id=d.id,
+                    entity_type="gara",
+                    entity_id=gara.id,
+                    assigned_by_id=titolare.id,
+                )
+            )
+        storico = self._utente(db_session)
+        storico.is_placeholder = True
+        db_session.add(
+            Inscription(
+                gara_id=gara.id,
+                user_id=storico.id,
+                inscribed_by_id=da.id if da else None,
+            )
+        )
+        db_session.flush()
+        return storico
+
+    def test_storico_decide_chi_l_ha_iscritto_alla_prima_gara(self, db_session):
+        """«è chi ce l'ha iscritto, se è un direttore o l'amministratore»."""
+        from models.user.claim_service import ClaimService
+
+        titolare = self._utente(db_session, UserRole.DIRECTOR.value)
+        chi_iscrive = self._utente(db_session, UserRole.DIRECTOR.value)
+        storico = self._storico_in_gara(db_session, titolare, da=chi_iscrive)
+        assert [u.id for u in ClaimService.destinatari(storico)] == [chi_iscrive.id]
+
+    def test_storico_decide_l_unico_direttore(self, db_session):
+        """«altrimenti l'unico direttore di quella gara»."""
+        from models.user.claim_service import ClaimService
+
+        titolare = self._utente(db_session, UserRole.DIRECTOR.value)
+        storico = self._storico_in_gara(db_session, titolare)
+        assert [u.id for u in ClaimService.destinatari(storico)] == [titolare.id]
+
+    def test_storico_con_piu_direttori_decide_uno_qualsiasi(self, db_session):
+        """«Se quella gara aveva più direttori, decide uno qualsiasi di loro»."""
+        from models.user.claim_service import ClaimService
+
+        titolare = self._utente(db_session, UserRole.DIRECTOR.value)
+        altro = self._utente(db_session, UserRole.DIRECTOR.value)
+        storico = self._storico_in_gara(db_session, titolare, codirettori=[altro])
+        assert {u.id for u in ClaimService.destinatari(storico)} == {
+            titolare.id,
+            altro.id,
+        }
+
+    def test_l_admin_decide_ogni_richiesta_ma_la_notifica_solo_come_ripiego(
+        self, db_session
+    ):
+        """«L'amministratore può decidere ogni richiesta in attesa […]. La
+        notifica però gli arriva solo quando non c'è nessun altro»."""
+        from models.user.claim_service import ClaimService
+
+        admin = User.query.filter_by(role=UserRole.ADMIN.value).first() or (
+            self._utente(db_session, UserRole.ADMIN.value)
+        )
+        richiesta = ClaimService.richiedi(
+            self._giocatore(db_session).id, self._utente(db_session)
+        )
+        assert admin.id not in richiesta.recipient_ids
+        assert ClaimService.puo_decidere(richiesta, admin)
 
     def test_una_sola_richiesta_in_attesa(self, db_session):
         """«C'è una sola richiesta in attesa per giocatore»."""

@@ -4,8 +4,11 @@ Purpose: Riscatto di un giocatore non ancora registrato (ADR-086).
 
 Chi si registra e si riconosce in un giocatore creato da un direttore o da un
 istruttore (ADR-085) chiede di prenderne le partite. Decide **chi l'ha
-creato**, che lo conosce di persona; per i giocatori storici senza creatore, o
-col creatore cancellato, decide **l'amministratore**. Approvare vuol dire unire
+creato**, che lo conosce di persona; per i giocatori storici senza creatore i
+direttori della loro prima gara (emendamento del 2026-10-19), e se non c'è
+nessuno **l'amministratore**. L'amministratore può comunque decidere ogni
+richiesta in attesa, ma la notifica gli arriva solo quando è l'unico a poter
+decidere. Approvare vuol dire unire
 il giocatore all'account di chi chiede con ``UserMergeService``: iscrizioni,
 partite, ELO e classifiche passano a lui, e il giocatore non registrato si
 anonimizza come la sorgente di ogni unione.
@@ -77,15 +80,7 @@ class ClaimService:
         return creatore
 
     @staticmethod
-    def destinatari(placeholder: User) -> List[User]:
-        """Chi decide il riscatto di ``placeholder``.
-
-        Il creatore, se c'è ancora. Altrimenti — giocatore storico senza
-        creatore, o creatore cancellato — l'amministratore, e **solo** lui.
-        """
-        creatore = ClaimService._creatore_attivo(placeholder)
-        if creatore is not None:
-            return [creatore]
+    def amministratori() -> List[User]:
         return (
             User.query.filter(
                 User.role == UserRole.ADMIN.value, User.deleted_at.is_(None)
@@ -95,13 +90,38 @@ class ClaimService:
         )
 
     @staticmethod
-    def puo_decidere(richiesta: ClaimRequest, user: Any) -> bool:
-        """Vero per un destinatario della richiesta, o per chi lo è diventato.
+    def destinatari(placeholder: User) -> List[User]:
+        """Chi decide il riscatto di ``placeholder``, e riceve la notifica.
+
+        Il creatore, se c'è ancora. Per un giocatore storico senza creatore,
+        chi lo ha iscritto alla prima gara o i direttori di quella gara
+        (``ricostruisci_creatore``, emendamento del 2026-10-19). Altrimenti —
+        nessun dato, o creatore cancellato — l'amministratore. L'admin decide
+        anche le altre (``puo_decidere``), ma la notifica la riceve solo qui:
+        quando non c'è nessun altro.
+        """
+        creatore = ClaimService._creatore_attivo(placeholder)
+        if creatore is not None:
+            return [creatore]
+        if placeholder.created_by_id is None:
+            from .placeholder_storici import ricostruisci_creatore
+
+            confermatori = ricostruisci_creatore(placeholder).confermatori
+            if confermatori:
+                return list(confermatori)
+        return ClaimService.amministratori()
+
+    @staticmethod
+    def e_destinatario(richiesta: ClaimRequest, user: Any) -> bool:
+        """Vero per chi la richiesta la deve decidere, o lo è diventato.
 
         Il secondo caso è l'admin quando il creatore è stato cancellato dopo la
-        richiesta: la riserva vale anche per le richieste già aperte.
+        richiesta: la riserva vale anche per le richieste già aperte. Chi l'ha
+        chiesta non decide mai la propria richiesta.
         """
         if user is None or not getattr(user, "is_authenticated", True):
+            return False
+        if user.id == richiesta.claimant_id:
             return False
         if user.id in richiesta.recipient_ids:
             return True
@@ -109,6 +129,22 @@ class ClaimService:
         if placeholder is None:
             return False
         return user.id in {u.id for u in ClaimService.destinatari(placeholder)}
+
+    @staticmethod
+    def puo_decidere(richiesta: ClaimRequest, user: Any) -> bool:
+        """Un destinatario, oppure l'admin, che decide **ogni** richiesta.
+
+        L'admin è il ripiego quando i direttori non rispondono (emendamento
+        del 2026-10-19): decide anche le richieste che non gli sono arrivate.
+        """
+        if ClaimService.e_destinatario(richiesta, user):
+            return True
+        return bool(
+            user is not None
+            and getattr(user, "is_authenticated", True)
+            and user.is_admin
+            and user.id != richiesta.claimant_id
+        )
 
     @staticmethod
     def puo_vedere(richiesta: ClaimRequest, user: Any) -> bool:
@@ -294,7 +330,11 @@ class ClaimService:
         placeholder = ClaimService._giocatore_riscattabile(placeholder_id)
         ClaimService._verifica(placeholder, claimant)
 
-        destinatari = ClaimService.destinatari(placeholder)
+        # Chi chiede non decide la propria richiesta: se era fra i direttori
+        # che confermano, restano gli altri, e senza altri l'admin.
+        destinatari = [
+            d for d in ClaimService.destinatari(placeholder) if d.id != claimant.id
+        ] or ClaimService.amministratori()
         if not destinatari:
             raise ValidationError(
                 _("Non c'è nessuno che possa confermare il riscatto, per ora.")
@@ -339,7 +379,10 @@ class ClaimService:
             raise ConflictError(_("Questa richiesta ha già avuto una risposta."))
         if not ClaimService.puo_decidere(richiesta, decider):
             raise PermissionDeniedError(
-                _("Questa richiesta la decide chi ha creato il giocatore.")
+                _(
+                    "Questa richiesta la decide chi ha creato il giocatore, "
+                    "o l'amministratore."
+                )
             )
         return richiesta
 
@@ -499,8 +542,14 @@ class ClaimService:
     # ------------------------------------------------------------------- code
 
     @staticmethod
-    def da_decidere_per(user: Any) -> List[ClaimRequest]:
-        """Le richieste in attesa che ``user`` può decidere, dalla più vecchia."""
+    def da_decidere_per(
+        user: Any, solo_destinatario: bool = False
+    ) -> List[ClaimRequest]:
+        """Le richieste in attesa che ``user`` può decidere, dalla più vecchia.
+
+        Per l'admin sono **tutte**; con ``solo_destinatario`` restano quelle
+        che toccano a lui, cioè senza nessun altro che le decida.
+        """
         if user is None or not getattr(user, "is_authenticated", False):
             return []
         in_attesa = (
@@ -517,13 +566,22 @@ class ClaimService:
             # riscattabile: la sua richiesta non è una decisione da prendere.
             if placeholder is None or placeholder.is_deleted:
                 continue
-            if ClaimService.puo_decidere(richiesta, user):
+            decide = (
+                ClaimService.e_destinatario
+                if solo_destinatario
+                else ClaimService.puo_decidere
+            )
+            if decide(richiesta, user):
                 risultato.append(richiesta)
         return risultato
 
     @staticmethod
     def conta_da_decidere(user: Any) -> int:
-        """Quante richieste aspettano ``user``: zero senza query per i più."""
+        """Quante richieste aspettano ``user``: zero senza query per i più.
+
+        Contano solo quelle che toccano a lui: le altre l'admin le trova in
+        ``/riscatti``, ma non lo chiamano (emendamento del 2026-10-19).
+        """
         if user is None or not getattr(user, "is_authenticated", False):
             return 0
         if not (
@@ -533,7 +591,7 @@ class ClaimService:
             or ClaimRequestRecipient.query.filter_by(recipient_id=user.id).first()
         ):
             return 0
-        return len(ClaimService.da_decidere_per(user))
+        return len(ClaimService.da_decidere_per(user, solo_destinatario=True))
 
     @staticmethod
     def richieste_di(user: Any) -> List[ClaimRequest]:

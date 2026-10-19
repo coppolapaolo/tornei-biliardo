@@ -32,7 +32,9 @@ una sola richiesta in attesa per giocatore; le chiuse restano come storia.
   (`puo_decidere` ricalcola i destinatari).
 
 L'admin **non** decide i giocatori che hanno un creatore attivo: per quelli
-gli resta l'unione manuale della pagina utenti, invariata.
+gli resta l'unione manuale della pagina utenti, invariata. _(Superato
+dall'emendamento del 2026-10-19: l'admin decide ogni richiesta in attesa, e
+gli storici li decidono i direttori della loro prima gara.)_
 
 **Chi non chiede.** Il creatore stesso, l'admin, un altro non registrato o un
 fittizio; nessuno se il giocatore è già riscattato o ha una richiesta in
@@ -364,6 +366,98 @@ falsificato);
 Regola in `docs/reference/SPECIFICHE.md`, «L'attivazione dall'email» e «La
 registrazione non rivela gli indirizzi»; flussi in
 `docs/reference/AUTHENTICATION.md`.
+
+## Secondo emendamento 2026-10-19 — chi ha creato gli storici, e l'admin come ripiego
+
+**Richieste dell'utente.** «Lo script per i placeholder può convertire solo un
+utente? Così faccio la prova e vedo come funziona.» — «Per gli utenti
+esistenti che non si sono mai collegati, non si riesce a risalire a chi è il
+direttore che li ha creati sulla base della prima gara a cui hanno
+partecipato? Così quello può confermare i riscatti.» — «Admin potrebbe essere
+colui che conferma i riscatti di tutti, nel caso i direttori non lo facciano.»
+
+**Che dati c'erano.** Nessun registro della creazione di un utente: né
+`created_by_id` (nato con l'ADR-085, mai scritto per gli storici) né un log di
+audit. Restano tre tracce:
+
+- `Inscription.inscribed_by_id`, chi ha registrato l'iscrizione — ma solo dal
+  2026-09-16 (`migrations/20260916_add_inscription_inscribed_by.py`): le
+  iscrizioni più vecchie lo hanno NULL;
+- il titolare della gara: `gara.director_id` per una gara singola, i
+  direttori del campionato per una gara di campionato;
+- i co-direttori, `DirectorAssignment` sulla gara.
+
+Le ultime due le unisce già `direzione_della_gara`
+(`models/competition/direzione.py`). La data di `DirectorAssignment` non
+aiuta: dice quando qualcuno è diventato direttore, non chi ha creato chi.
+
+**La regola** (`models/user/placeholder_storici.py`, `ricostruisci_creatore`).
+La **prima gara** è quella con data e ora più vecchie fra le iscrizioni non
+ritirate (tutte, se sono tutte ritirate).
+
+1. Se l'iscrizione a quella gara ha `inscribed_by_id`, e chi l'ha fatta è un
+   utente attivo che è admin, direttore di ruolo o uno dei direttori della
+   gara, è lui il **creatore** (`ModoRicostruzione.ISCRIZIONE`).
+2. Altrimenti, se la gara ha **un solo** direttore — admin esclusi, perché
+   l'admin è già il ripiego —, è lui (`DIRETTORE_UNICO`).
+3. Con **più direttori** un creatore unico non c'è (`DIRETTORI`): il riscatto
+   lo può confermare **uno qualsiasi** di loro.
+4. Senza dati utili, l'admin (`NESSUNO`).
+
+**Dove sta.** Nei casi 1 e 2 lo script scrive `created_by_id` insieme al
+segno (`completa_creatore`): da lì lo storico è un non registrato come gli
+altri, il creatore non lo vede fra i «Sei tu?» e non lo può riscattare.
+Nel caso 3 non si scrive niente: `ClaimService.destinatari`, per un non
+registrato con `created_by_id` NULL, chiama `ricostruisci_creatore` al
+momento e restituisce i direttori. Scartata una tabella dei confermatori: è
+schema nuovo per un dato che si ricava sempre dalle stesse righe, e che
+resterebbe fermo se i direttori della gara cambiassero. Il calcolo al momento
+costa qualche query per richiesta in attesa, e le richieste sono poche.
+
+**Chi chiede non decide.** Con più direttori, uno di loro potrebbe essere chi
+chiede il riscatto: `richiedi` lo toglie dai destinatari (restano gli altri, o
+l'admin), ed `e_destinatario` non vale mai per chi l'ha chiesta. Il caso c'era
+già col creatore unico, e lì `_verifica` lo rifiuta prima.
+
+**Lo script.** `scripts/mark_placeholder_users.py`:
+
+- `--user-id` (ripetibile, o con più id) lavora solo su quegli utenti; si
+  combina con la prova generale e con `--commit`. Chi non rispetta i criteri
+  non si segna, e lo script stampa **quali** mancano (`criteri_mancanti`, che
+  rilegge i criteri di `candidati_storici` uno per uno: un test verifica che
+  diano la stessa risposta);
+- per ogni utente stampa chi è stato ricostruito e come («creatore X, l'ha
+  iscritto alla gara…», «unico direttore della gara…», «confermano i
+  direttori…», «conferma l'admin»);
+- è **idempotente**: riprende anche i non registrati già segnati, senza
+  creatore e non riscattati (`storici_da_completare`), e scrive solo il
+  creatore. Chi il creatore ce l'ha non si tocca.
+- La logica sta in `elabora()`, che lavora in un contesto applicativo già
+  aperto: i test la chiamano direttamente, `esegui()` ci aggiunge solo il
+  `bootstrap_and_create_app`.
+
+**L'admin decide sempre.** `ClaimService.puo_decidere` è vero per un
+destinatario (`e_destinatario`, la regola di prima) **oppure** per l'admin, su
+qualunque richiesta in attesa che non sia sua. In `/riscatti` l'admin ha una
+seconda sezione, «In attesa di altri», con chi dovrebbe decidere; la pagina
+della richiesta glielo dice e gli mostra i pulsanti.
+
+- **Default scelto: la notifica all'admin solo come ripiego.** Riceve
+  `CLAIM_REQUEST_RECEIVED` solo quando è lui il destinatario, cioè quando non
+  c'è nessun altro; il contatore della barra laterale
+  (`conta_da_decidere`) conta solo quelle. Le altre le trova andando in
+  «Riscatti»: con tutti i direttori in copia, ogni riscatto lo avviserebbe.
+- Quando decide, gli avvisi dei destinatari si segnano letti come per
+  qualunque decisione (`_risolvi_avvisi_ai_destinatari`, che guarda i
+  destinatari della richiesta e non chi decide).
+
+**Interfaccia.** «Sei tu?» dice «Lo conferma uno dei direttori della sua prima
+gara (…)» quando sono più d'uno, togliendo dall'elenco chi guarda.
+
+- Test: `tests/new/integration/test_riscatto_storici_creatore_e_admin.py`,
+  `test_riscatto_giocatori.py::TestChiDecide::test_l_admin_decide_anche_quando_c_e_il_creatore`
+  (che sostituisce il test della regola vecchia),
+  `test_specifiche_conformita.py::TestRiscattoDeiNonRegistrati`.
 
 ## Riferimenti
 

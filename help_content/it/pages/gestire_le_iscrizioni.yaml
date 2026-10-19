@@ -70,8 +70,11 @@ blocks:
           «iscritto da» col tuo nome, e posti e parità valgono come per tutti.
       - name: "Iscrivere chi non ha un account"
         text: >-
-          Sotto la ricerca tocca **Nuovo giocatore non registrato**, scrivi
-          nome e cognome e tocca **Crea e iscrivi**. Il giocatore nasce già
+          Scrivi il suo nome nella stessa ricerca. Sotto i risultati, o al
+          posto loro se non c'è nessuno, compare **Crea «Nome Cognome» come
+          non registrato e iscrivilo**: la prima parola fa da nome, il resto
+          da cognome, e li puoi correggere prima di toccare il pulsante. Il
+          giocatore nasce già
           iscritto, con il segno «non registrato» accanto al nome: gioca e va
           in classifica come tutti, ma non riceve notifiche. La gara dopo lo
           ritrovi nella ricerca, senza crearlo di nuovo. Quando si registrerà
@@ -220,10 +223,20 @@ blocks:
     tone: info
     title: "I giocatori che c'erano già"
     text: >-
-      Un giocatore non registrato senza un creatore — quelli presenti
-      nell'app prima di questa funzione — lo conferma solo l'amministratore.
-      Lo stesso vale se il direttore che l'aveva aggiunto ha cancellato il
-      suo account.
+      Per un giocatore che c'era prima di questa funzione, e che nessuno
+      risulta aver aggiunto, il riscatto lo conferma il direttore della **sua
+      prima gara**: chi l'ha iscritto, oppure l'unico direttore di quella
+      gara. Se i direttori erano più d'uno, la richiesta arriva a tutti e
+      basta che decida uno. Se non c'è nessuno, o il direttore ha cancellato
+      il suo account, la conferma l'amministratore.
+
+  - type: note
+    tone: tip
+    title: "Se non rispondi"
+    text: >-
+      L'amministratore vede tutte le richieste in attesa e può decidere al
+      posto tuo, se non lo fai. Non riceve la notifica delle tue: le trova
+      nella sua pagina **Riscatti**.
 
   - type: faq
     items:
@@ -232,6 +245,6 @@ blocks:
       - q: "Un iscritto non ha pagato la quota. Posso segnarlo?"
         a: "L'app non gestisce i pagamenti: la quota è un'informazione sulla scheda della gara. Gli incassi si tengono come si è sempre fatto."
       - q: "Come faccio a iscrivere chi non ha lo smartphone?"
-        a: "Iscrivilo tu a mano dalla pagina della gara, nel riquadro degli iscritti. Se non ha un account, tocca «Nuovo giocatore non registrato» e scrivi nome e cognome: lo iscrivi in un gesto."
+        a: "Iscrivilo tu a mano dalla pagina della gara, nel riquadro degli iscritti. Se non ha un account, scrivi nome e cognome nella ricerca e tocca «Crea … come non registrato e iscrivilo»: lo iscrivi in un gesto."
       - q: "Quanti iscritti servono per far partire la gara?"
         a: "Il minimo che hai indicato alla creazione, o nel foglio «Apri le iscrizioni», dove si cambia insieme al massimo. Sotto quella soglia il pulsante di avvio resta spento."

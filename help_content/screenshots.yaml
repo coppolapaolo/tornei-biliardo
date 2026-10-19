@@ -14,6 +14,9 @@
 #   viewports  [mobile] di norma; aggiungere `desktop` solo dove il disegno
 #              della pagina cambia davvero
 #   click      selettori da premere prima dello scatto (linguette, pannelli)
+#   type       [{selector, text}] testo da scrivere in un campo, con l'evento
+#              `input`: serve a chi reagisce a cio' che si scrive (la ricerca
+#              degli iscritti)
 #   tap        selettori da **toccare** davvero, con gli eventi di puntatore:
 #              serve a chi ascolta `pointerdown` e vuole sapere dove si e'
 #              toccato, come il panno dell'allenamento. Tocca il centro
@@ -948,9 +951,9 @@ shots:
   - id: gara-iscrivi-non-registrato
     route: /admin/gara/3
     as: Luca Bianchi
-    caption: "«Nuovo giocatore non registrato», sotto la ricerca degli iscritti, aperto: nome, cognome e il pulsante «Crea e iscrivi»."
-    click: ['summary[data-help="gara-iscrivi-non-registrato"]']
-    clip: "details.c7-nonreg-crea"
+    caption: "La ricerca degli iscritti con un nome che non c'è: «Nessun giocatore con questo nome», e sotto la proposta di crearlo come non registrato, con nome e cognome già scritti e il pulsante «Crea «Gino Ferraro» come non registrato e iscrivilo»."
+    type: [{selector: ".js-iscritti-cerca", text: "gino ferraro"}]
+    clip: "[data-iscrivibili]"
 
   - id: riscatto-giocatore
     route: /giocatori/54/riscatta

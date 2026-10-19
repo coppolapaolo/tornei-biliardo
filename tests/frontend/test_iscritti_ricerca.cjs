@@ -152,6 +152,75 @@ prova("Invio nel campo non manda il form a metà", function () {
   assert.strictEqual(evento.defaultPrevented, true);
 });
 
+// ── Crea dalla ricerca (ADR-085, emendamento del 2026-10-19) ──────────
+
+function ambienteConCrea() {
+  const crea = `
+    <form class="js-iscritti-crea">
+      <input class="js-iscritti-crea-nome" name="first_name">
+      <input class="js-iscritti-crea-cognome" name="last_name">
+      <button class="btn btn-primary js-iscritti-crea-invia"
+              data-formato="Crea «{nome}» come non registrato e iscrivilo">
+        <span class="js-iscritti-crea-testo">Crea e iscrivi</span></button>
+    </form>`;
+  // Il modulo sta dentro il contenitore, dopo le righe.
+  const html = blocco().replace(/<\/div>\s*$/, crea + "</div>");
+  const dom = new JSDOM(`<!doctype html><body>${html}</body>`, { runScripts: "outside-only" });
+  dom.window.eval(SRC);
+  return dom.window;
+}
+
+function modulo(window) {
+  return window.document.querySelector(".js-iscritti-crea");
+}
+
+prova("crea: nascosto finché non si scrive", function () {
+  const window = ambienteConCrea();
+  assert.strictEqual(modulo(window).hidden, true);
+});
+
+prova("crea: prima parola il nome, il resto il cognome, con le maiuscole", function () {
+  const window = ambienteConCrea();
+  cerca(window, 0, "gianni de luca");
+  const m = modulo(window);
+  assert.strictEqual(m.hidden, false);
+  assert.strictEqual(m.querySelector(".js-iscritti-crea-nome").value, "Gianni");
+  assert.strictEqual(m.querySelector(".js-iscritti-crea-cognome").value, "De Luca");
+  assert.strictEqual(
+    m.querySelector(".js-iscritti-crea-testo").textContent,
+    "Crea «Gianni De Luca» come non registrato e iscrivilo"
+  );
+});
+
+prova("crea: senza risultati è la proposta principale, con risultati passa in secondo piano", function () {
+  const window = ambienteConCrea();
+  cerca(window, 0, "inesistente");
+  const invia = modulo(window).querySelector(".js-iscritti-crea-invia");
+  assert.ok(invia.classList.contains("btn-primary"));
+  cerca(window, 0, "marco");
+  assert.ok(invia.classList.contains("btn-secondary"));
+  assert.ok(!invia.classList.contains("btn-primary"));
+  assert.strictEqual(modulo(window).hidden, false);
+});
+
+prova("crea: toccati a mano, i campi non si riscrivono finché non si svuota la ricerca", function () {
+  const window = ambienteConCrea();
+  cerca(window, 0, "mario");
+  const m = modulo(window);
+  const cognome = m.querySelector(".js-iscritti-crea-cognome");
+  cognome.value = "Rossi";
+  cognome.dispatchEvent(new window.Event("input", { bubbles: true }));
+  assert.strictEqual(m.querySelector(".js-iscritti-crea-testo").textContent,
+    "Crea «Mario Rossi» come non registrato e iscrivilo");
+  cerca(window, 0, "mario r");
+  assert.strictEqual(cognome.value, "Rossi");
+  cerca(window, 0, "");
+  assert.strictEqual(m.hidden, true);
+  assert.strictEqual(cognome.value, "");
+  cerca(window, 0, "anna bruni");
+  assert.strictEqual(cognome.value, "Bruni");
+});
+
 let falliti = 0;
 prove.forEach(function ({ nome, corpo }) {
   try {

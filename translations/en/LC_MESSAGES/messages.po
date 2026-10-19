@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-19 08:05+0200\n"
+"POT-Creation-Date: 2026-10-19 08:26+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -3246,9 +3246,9 @@ msgstr "%(user)s asks to sit «%(exam)s»: %(slot)s."
 msgid "Richiesta d'esame"
 msgstr "Exam request"
 
-#: models/exam/request_service.py:659 models/user/attivazione.py:377
-#: models/user/claim_service.py:623 models/user/claim_service.py:706
-#: templates/exam/detail.html:153 templates/riscatto/giocatore.html:39
+#: models/exam/request_service.py:659 models/user/attivazione.py:379
+#: models/user/claim_service.py:681 models/user/claim_service.py:764
+#: templates/exam/detail.html:153 templates/riscatto/giocatore.html:43
 msgid "Vedi la richiesta"
 msgstr "View the request"
 
@@ -3911,7 +3911,7 @@ msgstr "You can't play against yourself."
 
 #: models/individual_match/quick_match_service.py:247
 #: models/individual_match/scored_match_service.py:96
-#: models/user/claim_service.py:149
+#: models/user/claim_service.py:185
 msgid "Giocatore non trovato."
 msgstr "Player not found."
 
@@ -5338,7 +5338,7 @@ msgstr ""
 #: templates/admin/gara_edit_avviata.html:57
 #: templates/admin/venues_list.html:30
 #: templates/components/_gara_edit_form.html:33
-#: templates/components/_gara_inscriptions.html:86
+#: templates/components/_gara_inscriptions.html:89
 #: templates/components/_new_gara_modal.html:128
 #: templates/components/_playoff_config_form.html:10
 #: templates/components/_user_info_card.html:10
@@ -6487,17 +6487,17 @@ msgstr "done"
 msgid "Voce"
 msgstr "Item"
 
-#: models/user/attivazione.py:204
+#: models/user/attivazione.py:206
 #, python-format
 msgid "Attiva il tuo account - %(app)s"
 msgstr "Activate your account - %(app)s"
 
-#: models/user/attivazione.py:206 models/user/attivazione.py:237
+#: models/user/attivazione.py:208 models/user/attivazione.py:239
 #, python-format
 msgid "Ciao %(nome)s,"
 msgstr "Hi %(nome)s,"
 
-#: models/user/attivazione.py:208
+#: models/user/attivazione.py:210
 #, python-format
 msgid ""
 "su %(app)s c'è già un giocatore con questo indirizzo email: %(nome)s, con"
@@ -6506,7 +6506,7 @@ msgstr ""
 "on %(app)s there is already a player with this email address: %(nome)s, "
 "with the matches played at the club."
 
-#: models/user/attivazione.py:213
+#: models/user/attivazione.py:215
 msgid ""
 "Se sei tu, apri il link qui sotto: scegli nome utente e password e il "
 "giocatore diventa il tuo account, con tutte le sue partite."
@@ -6514,11 +6514,11 @@ msgstr ""
 "If that's you, open the link below: choose a username and password, and "
 "the player becomes your account, with all of its matches."
 
-#: models/user/attivazione.py:216 templates/auth/attiva_account.html:45
+#: models/user/attivazione.py:218 templates/auth/attiva_account.html:45
 msgid "Attiva il mio account"
 msgstr "Activate my account"
 
-#: models/user/attivazione.py:218
+#: models/user/attivazione.py:220
 msgid ""
 "Se non sei stato tu a chiederlo, ignora questa email: senza il link non "
 "cambia niente."
@@ -6526,17 +6526,17 @@ msgstr ""
 "If you didn't ask for this, ignore this email: without the link nothing "
 "changes."
 
-#: models/user/attivazione.py:221
+#: models/user/attivazione.py:223
 #, python-format
 msgid "Il link scadrà tra %(ore)s ore."
 msgstr "The link will expire in %(ore)s hours."
 
-#: models/user/attivazione.py:233
+#: models/user/attivazione.py:235
 #, python-format
 msgid "Un tentativo di registrazione con il tuo indirizzo - %(app)s"
 msgstr "A sign-up attempt with your address - %(app)s"
 
-#: models/user/attivazione.py:239
+#: models/user/attivazione.py:241
 #, python-format
 msgid ""
 "qualcuno ha provato a registrarsi su %(app)s con il tuo indirizzo email. "
@@ -6545,7 +6545,7 @@ msgstr ""
 "someone tried to sign up on %(app)s with your email address. We did not "
 "create a new account: yours is still in place."
 
-#: models/user/attivazione.py:245
+#: models/user/attivazione.py:247
 msgid ""
 "Se eri tu, hai già un account: accedi, o recupera la password se non la "
 "ricordi."
@@ -6553,7 +6553,7 @@ msgstr ""
 "If it was you, you already have an account: log in, or recover your "
 "password if you don't remember it."
 
-#: models/user/attivazione.py:248
+#: models/user/attivazione.py:250
 #: templates/components/_index_registration_info.html:16
 #: templates/components/_index_registration_info.html:37
 #: templates/errors/403.html:17 templates/login.html:3 templates/login.html:44
@@ -6561,45 +6561,44 @@ msgstr ""
 msgid "Accedi"
 msgstr "Login"
 
-#: models/user/attivazione.py:249
+#: models/user/attivazione.py:251
 msgid "Recupera la password"
 msgstr "Recover your password"
 
-#: models/user/attivazione.py:250
+#: models/user/attivazione.py:252
 msgid "Se non eri tu, ignora questa email."
 msgstr "If it wasn't you, ignore this email."
 
-#: models/user/attivazione.py:280 routes/auth.py:410
+#: models/user/attivazione.py:282 routes/auth.py:408
 msgid "Link di attivazione non valido o scaduto."
 msgstr "Invalid or expired activation link."
 
-#: models/user/attivazione.py:286
+#: models/user/attivazione.py:288
 msgid "Scegli un nome utente."
 msgstr "Choose a username."
 
-#: models/user/attivazione.py:288
+#: models/user/attivazione.py:290
 msgid "Il nome utente è troppo lungo."
 msgstr "The username is too long."
 
-#: models/user/attivazione.py:291 models/user/profile_service.py:301
+#: models/user/attivazione.py:293 models/user/profile_service.py:303
 msgid "Lo username «admin» (e le sue varianti) è riservato al sistema."
 msgstr "The username “admin” (and its variants) is reserved by the system."
 
-#: models/user/attivazione.py:299 models/user/profile_service.py:311
+#: models/user/attivazione.py:301 models/user/profile_service.py:313
 #, python-format
 msgid "Lo username «%(nome)s» è già in uso."
 msgstr "The username “%(nome)s” is already taken."
 
-#: models/user/attivazione.py:302
-#, python-format
+#: models/user/attivazione.py:304
 msgid "La password deve avere almeno 6 caratteri."
 msgstr "The password must be at least 6 characters long."
 
-#: models/user/attivazione.py:368 models/user/claim_service.py:702
+#: models/user/attivazione.py:370 models/user/claim_service.py:760
 msgid "Esito del riscatto"
 msgstr "Claim outcome"
 
-#: models/user/attivazione.py:370
+#: models/user/attivazione.py:372
 #, python-format
 msgid ""
 "%(giocatore)s ha attivato il suo account dall'indirizzo email con cui era"
@@ -6608,41 +6607,41 @@ msgstr ""
 "%(giocatore)s activated their account from the email address they had "
 "been registered with: your claim request is closed."
 
-#: models/user/claim_service.py:129
+#: models/user/claim_service.py:165
 msgid "l'amministratore"
 msgstr "the administrator"
 
-#: models/user/claim_service.py:151
+#: models/user/claim_service.py:187
 msgid "Questo giocatore è già stato riscattato."
 msgstr "This player has already been claimed."
 
-#: models/user/claim_service.py:158
+#: models/user/claim_service.py:194
 msgid "Accedi per riscattare un giocatore."
 msgstr "Log in to claim a player."
 
-#: models/user/claim_service.py:160
+#: models/user/claim_service.py:196
 msgid "Questo giocatore sei tu."
 msgstr "This player is you."
 
-#: models/user/claim_service.py:162
+#: models/user/claim_service.py:198
 msgid "Questo account non può riscattare."
 msgstr "This account cannot claim players."
 
-#: models/user/claim_service.py:165
+#: models/user/claim_service.py:201
 msgid "L'amministratore non gioca: non riscatta giocatori."
 msgstr "The administrator doesn't play, so it doesn't claim players."
 
-#: models/user/claim_service.py:169
+#: models/user/claim_service.py:205
 msgid "L'hai creato tu: un giocatore non si riscatta da chi l'ha creato."
 msgstr "You created this player: a player can't be claimed by whoever created it."
 
-#: models/user/claim_service.py:176 templates/riscatto/omonimi.html:22
+#: models/user/claim_service.py:212 templates/riscatto/omonimi.html:22
 msgid "Hai già chiesto di riscattarlo: la richiesta aspetta una risposta."
 msgstr ""
 "You've already asked to claim this player: the request is awaiting an "
 "answer."
 
-#: models/user/claim_service.py:182 models/user/claim_service.py:317
+#: models/user/claim_service.py:218 models/user/claim_service.py:357
 msgid ""
 "Qualcun altro ha già chiesto di riscattare questo giocatore: la sua "
 "richiesta aspetta una risposta."
@@ -6650,27 +6649,29 @@ msgstr ""
 "Someone else has already asked to claim this player: their request is "
 "awaiting an answer."
 
-#: models/user/claim_service.py:300
+#: models/user/claim_service.py:340
 msgid "Non c'è nessuno che possa confermare il riscatto, per ora."
 msgstr "There's nobody who can confirm the claim right now."
 
-#: models/user/claim_service.py:335 models/user/claim_service.py:474
+#: models/user/claim_service.py:375 models/user/claim_service.py:517
 msgid "Richiesta non trovata."
 msgstr "Request not found."
 
-#: models/user/claim_service.py:337
+#: models/user/claim_service.py:377
 msgid "Questa richiesta l'ha ritirata chi l'aveva fatta."
 msgstr "This request was withdrawn by the person who made it."
 
-#: models/user/claim_service.py:339
+#: models/user/claim_service.py:379
 msgid "Questa richiesta ha già avuto una risposta."
 msgstr "This request has already been answered."
 
-#: models/user/claim_service.py:342
-msgid "Questa richiesta la decide chi ha creato il giocatore."
-msgstr "This request is decided by whoever created the player."
+#: models/user/claim_service.py:383
+msgid "Questa richiesta la decide chi ha creato il giocatore, o l'amministratore."
+msgstr ""
+"This request is decided by whoever created the player, or by the "
+"administrator."
 
-#: models/user/claim_service.py:377
+#: models/user/claim_service.py:420
 msgid ""
 "Chi chiede ha giocato contro questo giocatore: le partite fra i due non "
 "si possono unire. Rifiuta la richiesta, o chiedi all'amministratore di "
@@ -6680,36 +6681,36 @@ msgstr ""
 "can't be merged. Reject the request, or ask the administrator to sort "
 "them out first."
 
-#: models/user/claim_service.py:481
+#: models/user/claim_service.py:524
 msgid "Una richiesta di riscatto la ritira solo chi l'ha fatta."
 msgstr "Only the person who made a claim request can withdraw it."
 
-#: models/user/claim_service.py:484
+#: models/user/claim_service.py:527
 msgid "Hai già ritirato questa richiesta."
 msgstr "You have already withdrawn this request."
 
-#: models/user/claim_service.py:487
+#: models/user/claim_service.py:530
 msgid "Questa richiesta ha già avuto una risposta: non si ritira più."
 msgstr "This request has already been answered: it can no longer be withdrawn."
 
-#: models/user/claim_service.py:572
+#: models/user/claim_service.py:630
 msgid "Richiesta di riscatto"
 msgstr "Claim request"
 
-#: models/user/claim_service.py:574
+#: models/user/claim_service.py:632
 #, python-format
 msgid "%(chi)s dice di essere %(giocatore)s e chiede le sue partite."
 msgstr "%(chi)s says they are %(giocatore)s and asks for their matches."
 
-#: models/user/claim_service.py:580
+#: models/user/claim_service.py:638
 msgid "Decidi"
 msgstr "Decide"
 
-#: models/user/claim_service.py:614
+#: models/user/claim_service.py:672
 msgid "Riscatto ritirato"
 msgstr "Claim withdrawn"
 
-#: models/user/claim_service.py:616
+#: models/user/claim_service.py:674
 #, python-format
 msgid ""
 "%(chi)s ha ritirato la richiesta di riscatto di %(giocatore)s: non c'è "
@@ -6718,7 +6719,7 @@ msgstr ""
 "%(chi)s withdrew the claim request for %(giocatore)s: there is nothing "
 "left to decide."
 
-#: models/user/claim_service.py:658
+#: models/user/claim_service.py:716
 #, python-format
 msgid ""
 "Una partita di %(giocatore)s registrata da un altro giocatore ora è tua: "
@@ -6737,56 +6738,56 @@ msgstr[1] ""
 " recognise them all, or dispute the wrong ones. Until you do, they count "
 "only in «All»."
 
-#: models/user/claim_service.py:671
+#: models/user/claim_service.py:729
 #, python-format
 msgid "Rivedi le partite di %(giocatore)s"
 msgstr "Review the matches of %(giocatore)s"
 
-#: models/user/claim_service.py:675
+#: models/user/claim_service.py:733
 msgid "Rivedi le partite"
 msgstr "Review the matches"
 
-#: models/user/claim_service.py:691
+#: models/user/claim_service.py:749
 #, python-format
 msgid "Riscatto confermato: le partite di %(giocatore)s ora sono tue."
 msgstr "Claim confirmed: %(giocatore)s's matches are now yours."
 
-#: models/user/claim_service.py:696
+#: models/user/claim_service.py:754
 #, python-format
 msgid "Il riscatto di %(giocatore)s non è stato confermato."
 msgstr "Your claim of %(giocatore)s was not confirmed."
 
-#: models/user/profile_service.py:82
+#: models/user/profile_service.py:84
 msgid "I giocatori non registrati li creano direttori e istruttori."
 msgstr "Unregistered players are created by competition directors and instructors."
 
-#: models/user/profile_service.py:88
+#: models/user/profile_service.py:90
 msgid "Scrivi nome e cognome del giocatore da aggiungere."
 msgstr "Type the first and last name of the player to add."
 
-#: models/user/profile_service.py:91
+#: models/user/profile_service.py:93
 msgid "Nome e cognome sono troppo lunghi."
 msgstr "First and last name are too long."
 
-#: models/user/profile_service.py:274
+#: models/user/profile_service.py:276
 #: routes/admin/competition/inscriptions.py:195
 #: routes/admin/competition/inscriptions.py:329
 msgid "Utente non trovato."
 msgstr "User not found."
 
-#: models/user/profile_service.py:278
+#: models/user/profile_service.py:280
 msgid "L'utente amministratore non è modificabile."
 msgstr "The administrator account cannot be modified."
 
-#: models/user/profile_service.py:287
+#: models/user/profile_service.py:289
 msgid "Il nome utente non può restare vuoto."
 msgstr "The username cannot be left empty."
 
-#: models/user/profile_service.py:288
+#: models/user/profile_service.py:290
 msgid "L'indirizzo email non può restare vuoto."
 msgstr "The email address cannot be left empty."
 
-#: models/user/profile_service.py:365
+#: models/user/profile_service.py:367
 msgid "Questo indirizzo email non si può usare: scrivine un altro."
 msgstr "This email address can't be used: enter a different one."
 
@@ -7035,43 +7036,43 @@ msgstr "Go to your profile to verify your email"
 msgid "Username o password errati."
 msgstr "Wrong username or password."
 
-#: routes/auth.py:269
+#: routes/auth.py:267
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr "Registration complete! Check your email to verify the account."
 
-#: routes/auth.py:280 templates/onboarding.html:12
+#: routes/auth.py:278 templates/onboarding.html:12
 msgid "Ti diamo il benvenuto!"
 msgstr "Welcome aboard!"
 
-#: routes/auth.py:281
+#: routes/auth.py:279
 msgid "Registrazione completata con successo."
 msgstr "Registration completed successfully."
 
-#: routes/auth.py:328
+#: routes/auth.py:326
 msgid "Inserisci l'indirizzo email del tuo account."
 msgstr "Enter the email address of your account."
 
-#: routes/auth.py:334
+#: routes/auth.py:332
 msgid "Se l'email esiste, riceverai un link per resettare la password."
 msgstr "If that email exists, you'll receive a link to reset your password."
 
-#: routes/auth.py:344
+#: routes/auth.py:342
 msgid "Non siamo riusciti a inviare l'email. Riprova fra qualche minuto."
 msgstr "We couldn't send the email. Please try again in a few minutes."
 
-#: routes/auth.py:364 routes/auth.py:386
+#: routes/auth.py:362 routes/auth.py:384
 msgid "Token non valido o scaduto."
 msgstr "Invalid or expired link."
 
-#: routes/auth.py:372 routes/auth.py:418
+#: routes/auth.py:370 routes/auth.py:416
 msgid "Le password non coincidono."
 msgstr "Passwords do not match."
 
-#: routes/auth.py:379
+#: routes/auth.py:377
 msgid "Password aggiornata con successo! Ora puoi effettuare il login."
 msgstr "Password updated successfully! You can now log in."
 
-#: routes/auth.py:431
+#: routes/auth.py:429
 msgid ""
 "Account attivato! Accedi con il nome utente e la password che hai scelto:"
 " le tue partite ti aspettano."
@@ -7552,15 +7553,15 @@ msgid ""
 "tuo account."
 msgstr "Request sent to %(chi)s: once confirmed, the matches move to your account."
 
-#: routes/riscatto.py:211
+#: routes/riscatto.py:226
 msgid "Riscatto confermato: le partite sono passate al suo account."
 msgstr "Claim confirmed: the matches have moved to their account."
 
-#: routes/riscatto.py:216
+#: routes/riscatto.py:231
 msgid "Riscatto rifiutato."
 msgstr "Claim rejected."
 
-#: routes/riscatto.py:234
+#: routes/riscatto.py:249
 msgid ""
 "Richiesta ritirata: il giocatore torna libero, e puoi chiederlo di nuovo "
 "quando vuoi."
@@ -9914,7 +9915,7 @@ msgstr "Player"
 msgid "Fill Gara"
 msgstr "Fill Competition"
 
-#: templates/base.html:659 templates/components/_gara_inscriptions.html:64
+#: templates/base.html:659 templates/components/_gara_inscriptions.html:69
 msgid "Iscrivi"
 msgstr "Enroll"
 
@@ -10207,7 +10208,7 @@ msgid "Classifica"
 msgstr "Standings"
 
 #: templates/components/_gara_info.html:42
-#: templates/components/_gara_inscriptions.html:156
+#: templates/components/_gara_inscriptions.html:160
 #: templates/components/_nearby_gare.html:137
 #: templates/direttore/_fase_conclusa.html:116
 #: templates/direttore/_fase_gioco.html:292
@@ -10555,7 +10556,7 @@ msgstr ""
 "Optional. If you've already played at a venue without an account, this "
 "lets us find your matches."
 
-#: templates/components/_gara_inscriptions.html:88
+#: templates/components/_gara_inscriptions.html:91
 #: templates/components/_user_info_card.html:93
 #: templates/components/_user_info_card.html:95
 #: templates/individual_match/quick_match.html:109
@@ -11432,7 +11433,7 @@ msgid "registrato da %(name)s"
 msgstr "recorded by %(name)s"
 
 #: templates/admin/campionato_detail.html:236
-#: templates/components/_gara_inscriptions.html:185
+#: templates/components/_gara_inscriptions.html:189
 msgid "direzione"
 msgstr "the direction"
 
@@ -11476,7 +11477,7 @@ msgstr ""
 #: templates/individual_match/match_detail.html:183
 #: templates/individual_match/proposal_detail.html:138
 #: templates/individual_match/proposals.html:109
-#: templates/riscatto/richiesta.html:102 templates/roles/requests.html:48
+#: templates/riscatto/richiesta.html:106 templates/roles/requests.html:48
 msgid "Rifiuta"
 msgstr "Reject"
 
@@ -11505,17 +11506,17 @@ msgid "I playoff sono cambiati dopo il suo sì"
 msgstr "The play-offs changed after their yes"
 
 #: templates/admin/campionato_detail.html:280
-#: templates/components/_gara_inscriptions.html:200
+#: templates/components/_gara_inscriptions.html:204
 msgid "da riconfermare"
 msgstr "to reconfirm"
 
 #: templates/admin/campionato_detail.html:285
-#: templates/components/_gara_inscriptions.html:204
+#: templates/components/_gara_inscriptions.html:208
 msgid "Riconferma al suo posto"
 msgstr "Reconfirm on their behalf"
 
 #: templates/admin/campionato_detail.html:286
-#: templates/components/_gara_inscriptions.html:205
+#: templates/components/_gara_inscriptions.html:209
 #, python-format
 msgid "Riconferma %(nome)s"
 msgstr "Reconfirm %(nome)s"
@@ -12867,7 +12868,7 @@ msgid "Partecipanti"
 msgstr "Participants"
 
 #: templates/admin/gara_create_standalone.html:483
-#: templates/components/_gara_inscriptions.html:193
+#: templates/components/_gara_inscriptions.html:197
 #: templates/components/_match_result_row.html:24
 #: templates/components/_match_result_row.html:28
 #: templates/components/_match_result_row.html:32
@@ -18330,7 +18331,7 @@ msgid "Numero dispari"
 msgstr "Odd number"
 
 #: templates/components/_gara_info.html:82
-#: templates/components/_gara_inscriptions.html:157
+#: templates/components/_gara_inscriptions.html:161
 #: templates/direttore/_fase_gioco.html:293
 #: templates/direttore/_fase_spareggio.html:91
 #, python-format
@@ -18366,44 +18367,47 @@ msgstr "After each round"
 msgid "Regolamento di gara"
 msgstr "Competition rules"
 
-#: templates/components/_gara_inscriptions.html:46
+#: templates/components/_gara_inscriptions.html:50
 msgid "Iscrivi un giocatore"
 msgstr "Add a player"
 
-#: templates/components/_gara_inscriptions.html:48
+#: templates/components/_gara_inscriptions.html:52
 msgid "Cognome, nome o username"
 msgstr "Last name, first name or username"
 
-#: templates/components/_gara_inscriptions.html:49
+#: templates/components/_gara_inscriptions.html:53
 msgid "Cerca il giocatore da iscrivere"
 msgstr "Search for the player to enter"
 
-#: templates/components/_gara_inscriptions.html:63
+#: templates/components/_gara_inscriptions.html:68
 msgid "Aggiungi iscritto"
 msgstr "Add participant"
 
-#: templates/components/_gara_inscriptions.html:69
-msgid ""
-"Nessun giocatore con questo nome. Se non ha un account, iscrivilo qui "
-"sotto con nome e cognome."
-msgstr ""
-"No player with this name. If they have no account, enroll them below with"
-" first and last name."
+#: templates/components/_gara_inscriptions.html:74
+#: templates/individual_match/quick_match.html:283
+#: templates/individual_match/scored_match.html:152
+msgid "Nessun giocatore con questo nome."
+msgstr "No player with that name."
 
-#: templates/components/_gara_inscriptions.html:72
+#: templates/components/_gara_inscriptions.html:78
 #, python-brace-format
 msgid "{n} giocatori trovati"
 msgstr "{n} players found"
 
-#: templates/components/_gara_inscriptions.html:79
-msgid "Nuovo giocatore non registrato"
-msgstr "New unregistered player"
+#: templates/components/_gara_inscriptions.html:85
+msgid "Non ha un account? Crealo come non registrato"
+msgstr "No account? Create them as unregistered"
 
-#: templates/components/_gara_inscriptions.html:91
+#: templates/components/_gara_inscriptions.html:94
+#, python-brace-format
+msgid "Crea «{nome}» come non registrato e iscrivilo"
+msgstr "Create «{nome}» as unregistered and enroll them"
+
+#: templates/components/_gara_inscriptions.html:95
 msgid "Crea e iscrivi"
 msgstr "Create and enroll"
 
-#: templates/components/_gara_inscriptions.html:93
+#: templates/components/_gara_inscriptions.html:97
 msgid ""
 "Gioca e va in classifica come tutti, ma non riceve notifiche finché non "
 "si registra. Quando lo farà, potrà prendersi le sue partite."
@@ -18412,40 +18416,40 @@ msgstr ""
 "notifications until they sign up. When they do, they can take over their "
 "matches."
 
-#: templates/components/_gara_inscriptions.html:105
+#: templates/components/_gara_inscriptions.html:109
 msgid "Giocatori fittizi"
 msgstr "Dummy players"
 
-#: templates/components/_gara_inscriptions.html:108
+#: templates/components/_gara_inscriptions.html:112
 msgid "Iscrivi il minimo"
 msgstr "Enter the minimum"
 
-#: templates/components/_gara_inscriptions.html:109
+#: templates/components/_gara_inscriptions.html:113
 msgid "Iscrivi fino al massimo"
 msgstr "Fill to the maximum"
 
-#: templates/components/_gara_inscriptions.html:110
+#: templates/components/_gara_inscriptions.html:114
 msgid "Iscrivine uno in più"
 msgstr "Enter one more"
 
-#: templates/components/_gara_inscriptions.html:116
+#: templates/components/_gara_inscriptions.html:120
 msgid "Niente da aggiungere"
 msgstr "Nothing to add"
 
-#: templates/components/_gara_inscriptions.html:116
+#: templates/components/_gara_inscriptions.html:120
 #, python-format
 msgid "Aggiunge %(n)s giocatori fittizi"
 msgstr "Adds %(n)s dummy players"
 
-#: templates/components/_gara_inscriptions.html:124
+#: templates/components/_gara_inscriptions.html:128
 msgid "Imposta un massimo di iscritti per usare «fino al massimo»."
 msgstr "Set a maximum number of entries to use \"fill to the maximum\"."
 
-#: templates/components/_gara_inscriptions.html:137
+#: templates/components/_gara_inscriptions.html:141
 msgid "La gara è cambiata: ci sei ancora?"
 msgstr "The competition has changed: are you still in?"
 
-#: templates/components/_gara_inscriptions.html:140
+#: templates/components/_gara_inscriptions.html:144
 msgid ""
 "Se ci sei, confermalo; se non puoi più, disiscriviti. Finché non rispondi"
 " resti iscritto, e decide il direttore."
@@ -18453,90 +18457,90 @@ msgstr ""
 "If you are, confirm it; if you can no longer make it, withdraw. Until you"
 " answer you stay entered, and the director decides."
 
-#: templates/components/_gara_inscriptions.html:145
+#: templates/components/_gara_inscriptions.html:149
 #: templates/player/playoff_invitation.html:69
 msgid "Ci sono"
 msgstr "I'm in"
 
-#: templates/components/_gara_inscriptions.html:158
+#: templates/components/_gara_inscriptions.html:162
 #: templates/istruttore/allievi.html:46 templates/riscatto/richiesta.html:25
 #: templates/riscatto/richieste.html:20
 msgid "in attesa"
 msgstr "pending"
 
-#: templates/components/_gara_inscriptions.html:181
+#: templates/components/_gara_inscriptions.html:185
 #, python-format
 msgid "iscritto il %(date)s"
 msgstr "registered on %(date)s"
 
-#: templates/components/_gara_inscriptions.html:185
+#: templates/components/_gara_inscriptions.html:189
 #, python-format
 msgid "iscritto da %(nome)s"
 msgstr "registered by %(nome)s"
 
-#: templates/components/_gara_inscriptions.html:193
+#: templates/components/_gara_inscriptions.html:197
 msgid "Ha dato forfait"
 msgstr "Forfeited"
 
-#: templates/components/_gara_inscriptions.html:200
+#: templates/components/_gara_inscriptions.html:204
 msgid "La gara è cambiata dopo la sua iscrizione"
 msgstr "The competition changed after they entered"
 
-#: templates/components/_gara_inscriptions.html:217
+#: templates/components/_gara_inscriptions.html:221
 msgid "cat."
 msgstr "cat."
 
-#: templates/components/_gara_inscriptions.html:219
+#: templates/components/_gara_inscriptions.html:223
 #, python-format
 msgid "Categoria di %(username)s in questa gara"
 msgstr "%(username)s's category in this competition"
 
-#: templates/components/_gara_inscriptions.html:236
+#: templates/components/_gara_inscriptions.html:240
 #, python-format
 msgid "Squadra di %(username)s in questa gara"
 msgstr "%(username)s's team in this competition"
 
-#: templates/components/_gara_inscriptions.html:237
+#: templates/components/_gara_inscriptions.html:241
 #: templates/direttore/_squadre_categorie.html:193
 msgid "Senza squadra"
 msgstr "No team"
 
-#: templates/components/_gara_inscriptions.html:250
+#: templates/components/_gara_inscriptions.html:254
 msgid "Ritira dalla gara"
 msgstr "Withdraw from the competition"
 
-#: templates/components/_gara_inscriptions.html:250
+#: templates/components/_gara_inscriptions.html:254
 #, python-format
 msgid "Ritira %(username)s dalla gara"
 msgstr "Withdraw %(username)s from the competition"
 
-#: templates/components/_gara_inscriptions.html:258
+#: templates/components/_gara_inscriptions.html:262
 #, python-format
 msgid "Disiscrivere %(username)s? Riceverà una notifica."
 msgstr "Remove %(username)s? They will get a notification."
 
-#: templates/components/_gara_inscriptions.html:261
+#: templates/components/_gara_inscriptions.html:265
 msgid "Disiscrive il giocatore"
 msgstr "Removes the player"
 
-#: templates/components/_gara_inscriptions.html:261
+#: templates/components/_gara_inscriptions.html:265
 #, python-format
 msgid "Disiscrive %(username)s"
 msgstr "Removes %(username)s"
 
-#: templates/components/_gara_inscriptions.html:272
+#: templates/components/_gara_inscriptions.html:276
 msgid "Nessun iscritto"
 msgstr "No registered players"
 
-#: templates/components/_gara_inscriptions.html:273
+#: templates/components/_gara_inscriptions.html:277
 msgid "Appena qualcuno si iscrive lo trovi qui."
 msgstr "As soon as someone signs up you will find them here."
 
-#: templates/components/_gara_inscriptions.html:286
+#: templates/components/_gara_inscriptions.html:290
 msgid "Limite massimo raggiunto"
 msgstr "Maximum limit reached"
 
-#: templates/components/_gara_inscriptions.html:287
+#: templates/components/_gara_inscriptions.html:291
 msgid "Chi arriva adesso finisce in lista d’attesa."
 msgstr "Anyone arriving now goes on the waiting list."
 
@@ -25622,8 +25626,8 @@ msgstr "%(who)s hasn't answered"
 
 #: templates/exam/request_detail.html:145
 #: templates/exam/request_detail.html:169 templates/riscatto/richiesta.html:59
-#: templates/riscatto/richiesta.html:60 templates/riscatto/richieste.html:59
-#: templates/riscatto/richieste.html:60
+#: templates/riscatto/richiesta.html:60 templates/riscatto/richieste.html:74
+#: templates/riscatto/richieste.html:75
 msgid "Ritira la richiesta"
 msgstr "Withdraw the request"
 
@@ -28810,11 +28814,6 @@ msgstr "Nobody has to accept: you both confirm the result at the end."
 msgid "Scegli chi hai davanti prima di iniziare."
 msgstr "Choose who you are playing before you start."
 
-#: templates/individual_match/quick_match.html:283
-#: templates/individual_match/scored_match.html:152
-msgid "Nessun giocatore con questo nome."
-msgstr "No player with that name."
-
 #: templates/individual_match/quick_match.html:284
 #: templates/individual_match/scored_match.html:153
 msgid "Scrivi almeno due lettere."
@@ -30764,7 +30763,7 @@ msgstr "%(n)s venues registered"
 msgid "Città non indicata"
 msgstr "City not given"
 
-#: templates/player/venues.html:49 templates/riscatto/giocatore.html:36
+#: templates/player/venues.html:49 templates/riscatto/giocatore.html:40
 msgid "Richiesta inviata"
 msgstr "Request sent"
 
@@ -31257,27 +31256,36 @@ msgstr ""
 "%(chi)s confirms it, since they added the player and know you: they will "
 "see your username and email."
 
-#: templates/riscatto/giocatore.html:37
+#: templates/riscatto/giocatore.html:33
+#, python-format
+msgid ""
+"Lo conferma uno dei direttori della sua prima gara (%(chi)s): vedrà il "
+"tuo nome utente e la tua email."
+msgstr ""
+"One of the directors of their first competition confirms it (%(chi)s): "
+"they will see your username and email."
+
+#: templates/riscatto/giocatore.html:41
 msgid "La tua richiesta aspetta una risposta."
 msgstr "Your request is awaiting an answer."
 
-#: templates/riscatto/giocatore.html:50 templates/riscatto/omonimi.html:28
+#: templates/riscatto/giocatore.html:54 templates/riscatto/omonimi.html:28
 msgid "Sono io: chiedi il riscatto"
 msgstr "It's me: request the claim"
 
-#: templates/riscatto/giocatore.html:55
+#: templates/riscatto/giocatore.html:59
 msgid "Per riscattarlo serve un account"
 msgstr "You need an account to claim it"
 
-#: templates/riscatto/giocatore.html:60
+#: templates/riscatto/giocatore.html:64
 msgid "Crea un account"
 msgstr "Create an account"
 
-#: templates/riscatto/giocatore.html:67
+#: templates/riscatto/giocatore.html:71
 msgid "Ho già un account: accedi"
 msgstr "I already have an account: log in"
 
-#: templates/riscatto/giocatore.html:70
+#: templates/riscatto/giocatore.html:74
 msgid "Appena entri, la richiesta parte da sola."
 msgstr "As soon as you log in, the request is sent automatically."
 
@@ -31357,6 +31365,10 @@ msgstr[1] "%(giocatore)s is registered for %(n)s competitions."
 msgid "La decide %(chi)s."
 msgstr "Decided by %(chi)s."
 
+#: templates/riscatto/richiesta.html:45
+msgid "Come amministratore puoi decidere tu, se non risponde."
+msgstr "As administrator you can decide it yourself, if they don't answer."
+
 #: templates/riscatto/richiesta.html:47
 #, python-format
 msgid "Ritirata da chi l'aveva fatta il %(data)s."
@@ -31392,7 +31404,15 @@ msgstr "verified"
 msgid "da verificare"
 msgstr "unverified"
 
-#: templates/riscatto/richiesta.html:89
+#: templates/riscatto/richiesta.html:90
+msgid ""
+"Conferma solo se sei sicuro che sia lui: le partite passano al suo "
+"account e non tornano indietro."
+msgstr ""
+"Confirm only if you're sure it's them: the matches move to their account "
+"and can't be moved back."
+
+#: templates/riscatto/richiesta.html:92
 msgid ""
 "Conferma solo se sei sicuro che sia la persona che hai aggiunto: le "
 "partite passano al suo account e non tornano indietro."
@@ -31400,7 +31420,7 @@ msgstr ""
 "Confirm only if you're sure it's the person you added: the matches move "
 "to their account and can't be moved back."
 
-#: templates/riscatto/richiesta.html:94
+#: templates/riscatto/richiesta.html:98
 #, python-format
 msgid ""
 "Le partite di %(giocatore)s passano all'account di %(chi)s, e non si "
@@ -31409,16 +31429,16 @@ msgstr ""
 "%(giocatore)s's matches move to %(chi)s's account, and this can't be "
 "undone."
 
-#: templates/riscatto/richiesta.html:94 templates/riscatto/richiesta.html:95
+#: templates/riscatto/richiesta.html:98 templates/riscatto/richiesta.html:99
 msgid "Conferma il riscatto"
 msgstr "Confirm the claim"
 
-#: templates/riscatto/richiesta.html:102
+#: templates/riscatto/richiesta.html:106
 #, python-format
 msgid "%(chi)s non riceverà le partite di %(giocatore)s."
 msgstr "%(chi)s won't receive %(giocatore)s's matches."
 
-#: templates/riscatto/richiesta.html:103
+#: templates/riscatto/richiesta.html:107
 msgid "Non è lui: rifiuta"
 msgstr "Not them: reject"
 
@@ -31443,15 +31463,32 @@ msgstr "requested by %(chi)s"
 msgid "Nessuna richiesta aspetta una tua decisione."
 msgstr "No request is waiting for your decision."
 
-#: templates/riscatto/richieste.html:50
+#: templates/riscatto/richieste.html:53
+msgid "In attesa di altri"
+msgstr "Waiting for others"
+
+#: templates/riscatto/richieste.html:56
+#, python-format
+msgid "lo chiede %(chi)s, decide %(decide)s"
+msgstr "requested by %(chi)s, decided by %(decide)s"
+
+#: templates/riscatto/richieste.html:59
+msgid ""
+"Come amministratore puoi decidere anche queste, se chi le deve decidere "
+"non risponde."
+msgstr ""
+"As administrator you can decide these too, if whoever should decide them "
+"doesn't answer."
+
+#: templates/riscatto/richieste.html:65
 msgid "Le tue richieste"
 msgstr "Your requests"
 
-#: templates/riscatto/richieste.html:53
+#: templates/riscatto/richieste.html:68
 msgid "chiesto da te"
 msgstr "requested by you"
 
-#: templates/riscatto/richieste.html:59
+#: templates/riscatto/richieste.html:74
 #, python-format
 msgid ""
 "La richiesta di riscatto di %(giocatore)s non aspetterà più una risposta."

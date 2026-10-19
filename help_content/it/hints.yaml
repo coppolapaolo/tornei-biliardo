@@ -260,8 +260,8 @@ hints:
     section: primo_turno
 
   - id: gara.iscrivi_non_registrato
-    label: "Nuovo giocatore non registrato"
-    short: "Per chi è in sala senza account: scrivi nome e cognome e lo iscrivi subito. Gioca e va in classifica, ma non riceve notifiche finché non si registra."
+    label: "Crealo come non registrato"
+    short: "Per chi è in sala senza account: scrivi il suo nome nella ricerca e lo crei e iscrivi da lì. Gioca e va in classifica, ma non riceve notifiche finché non si registra."
     anchor: gara-iscrivi-non-registrato
     screens: [admin.competition.gara_detail]
     page: gestire_le_iscrizioni

@@ -25,8 +25,12 @@
     <div class="c7-nota">
       {% if conferma_admin %}
       {{ _("Lo conferma l'amministratore, che vedrà il tuo nome utente e la tua email.") }}
+      {% elif confermatori|length == 1 %}
+      {{ _("Lo conferma %(chi)s, che l'ha aggiunto e ti conosce: vedrà il tuo nome utente e la tua email.", chi=confermatori[0].username) }}
       {% else %}
-      {{ _("Lo conferma %(chi)s, che l'ha aggiunto e ti conosce: vedrà il tuo nome utente e la tua email.", chi=creatore.username) }}
+      {# Uno storico senza creatore, la cui prima gara aveva più direttori
+         (emendamento del 2026-10-19 all'ADR-086): basta uno di loro. #}
+      {{ _("Lo conferma uno dei direttori della sua prima gara (%(chi)s): vedrà il tuo nome utente e la tua email.", chi=confermatori|map(attribute='username')|join(', ')) }}
       {% endif %}
     </div>
   </section>
