@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.84.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.83.1...v1.84.0) (2026-10-19)
+
+
+### Funzioni nuove
+
+* lo script segna un utente alla volta, ritrova chi ha creato gli storici, l'admin conferma ogni riscatto e il non registrato si crea dalla ricerca ([#720](https://github.com/coppolapaolo/tornei-biliardo/issues/720)) ([ddef3ab](https://github.com/coppolapaolo/tornei-biliardo/commit/ddef3ab78ecdc20ff28b77674798e10fe84552cc))
+
+
+### Correzioni
+
+* la registrazione non rivela le email, e chi ha l'email di un non registrato lo attiva ([#719](https://github.com/coppolapaolo/tornei-biliardo/issues/719)) ([3388fb4](https://github.com/coppolapaolo/tornei-biliardo/commit/3388fb4274cfae8a7b366a13c137bac862ffffc0))
+
 ## [1.83.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.83.0...v1.83.1) (2026-10-18)
 
 
