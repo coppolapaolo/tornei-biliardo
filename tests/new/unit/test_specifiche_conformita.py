@@ -4586,3 +4586,95 @@ class TestRevisioneSoloDellePartiteRiscattate:
         assert sua.awaits_decision_from(luca.id)
 
         assert sua not in RevisioneService.da_rivedere(luca.id)
+
+
+class TestAttivazioneDallEmail:
+    """SPECIFICHE.md, «Giocatori non ancora registrati» → «L'attivazione
+    dall'email» e «La registrazione non rivela gli indirizzi», regola del
+    2026-10-19 (ADR-086, emendamento del 2026-10-19)."""
+
+    @staticmethod
+    def _giocatore_con_email(db_session):
+        from models.user.services import UserService
+
+        creatore = _utente(db_session)
+        creatore.role = UserRole.DIRECTOR.value
+        db_session.flush()
+        giocatore = UserService.create_placeholder(
+            "Gino", f"Attivo{uuid.uuid4().hex[:4]}", creatore
+        )
+        giocatore.email = f"gino_{uuid.uuid4().hex[:6]}@test.local"
+        db_session.flush()
+        return giocatore
+
+    def test_l_email_ricevuta_basta_senza_la_conferma_del_creatore(
+        self, app, db_session
+    ):
+        """«Aver ricevuto l'email è la prova: non serve la conferma di chi
+        aveva creato il giocatore»; «diventa un account normale […] con tutte
+        le sue partite: è lo stesso account»."""
+        from models.user.attivazione import AttivazioneService
+        from models.user.claim_request import ClaimRequest
+
+        giocatore = self._giocatore_con_email(db_session)
+        with app.test_request_context():
+            token = AttivazioneService.prepara_attivazione(giocatore).token
+            attivato = AttivazioneService.attiva(token, "gino_vero", "segreta1")
+
+        assert attivato.id == giocatore.id
+        assert not attivato.is_placeholder
+        assert attivato.claimed_at is not None
+        assert attivato.is_verified
+        assert attivato.check_password("segreta1")
+        assert ClaimRequest.query.filter_by(placeholder_id=giocatore.id).count() == 0
+
+    def test_il_link_vale_una_volta_sola(self, app, db_session):
+        """«Il link vale 24 ore e una volta sola»."""
+        from models.exceptions import NotFoundError
+        from models.user.attivazione import ORE_DI_VALIDITA, AttivazioneService
+
+        assert ORE_DI_VALIDITA == 24
+        giocatore = self._giocatore_con_email(db_session)
+        with app.test_request_context():
+            token = AttivazioneService.prepara_attivazione(giocatore).token
+            AttivazioneService.attiva(token, "gino_uno", "segreta1")
+            with pytest.raises(NotFoundError):
+                AttivazioneService.attiva(token, "gino_due", "segreta2")
+
+    def test_la_richiesta_di_riscatto_di_un_altro_si_chiude_rifiutata(
+        self, app, db_session
+    ):
+        """«Se un'altra persona aveva chiesto il riscatto […] la richiesta si
+        chiude rifiutata, decisa dal giocatore stesso»."""
+        from models.status_enum import ClaimRequestStatus
+        from models.user.attivazione import AttivazioneService
+        from models.user.claim_service import ClaimService
+
+        giocatore = self._giocatore_con_email(db_session)
+        richiesta = ClaimService.richiedi(giocatore.id, _utente(db_session))
+        with app.test_request_context():
+            token = AttivazioneService.prepara_attivazione(giocatore).token
+            AttivazioneService.attiva(token, "gino_tre", "segreta1")
+
+        assert richiesta.status == ClaimRequestStatus.REJECTED.value
+        assert richiesta.decided_by_id == giocatore.id
+
+    def test_la_registrazione_con_email_nota_non_crea_l_account(self, db_session):
+        """«La registrazione con un'email già presente […] Non nasce nessun
+        account»: il servizio lo segnala con un'eccezione sua, che la pagina
+        non mostra."""
+        from models.user.profile_service import EmailGiaRegistrata, UserProfileService
+
+        esistente = _utente(db_session)
+        # Il servizio annulla la sua transazione: senza commit l'annullamento
+        # si porterebbe via anche l'utente appena creato qui.
+        db_session.commit()
+        prima = User.query.count()
+        with pytest.raises(EmailGiaRegistrata):
+            UserProfileService.create_user(
+                username=f"altro_{uuid.uuid4().hex[:6]}",
+                email=esistente.email.upper(),
+                password="segreta1",
+                send_verification_email=False,
+            )
+        assert User.query.count() == prima

@@ -13,8 +13,19 @@ from models.user.role_enum import UserRole
 from models.transaction.manager import transactional, read_only
 from models.user.tokens import UserToken
 from models.shared.email_service import EmailService
-from flask import current_app, request  # For base_url
+from flask import current_app
+
+from utils.indirizzo_pubblico import indirizzo_per_le_email
 from flask_babel import gettext as _
+
+
+class EmailGiaRegistrata(ValueError):
+    """L'indirizzo di una registrazione appartiene già a qualcuno.
+
+    È un `ValueError` come prima, per chi crea utenti da script o da test; la
+    registrazione pubblica la cattura a parte e **non** lo dice a chi si sta
+    registrando (`AttivazioneService.avvisa_registrazione_con_email_nota`).
+    """
 
 
 class UserProfileService:
@@ -168,13 +179,15 @@ class UserProfileService:
         if existing_user:
             raise ValueError(f"Username '{username}' already exists")
 
-        # Check for existing email (encrypted field requires manual iteration)
-        # Note: This is necessary due to EncryptedString field encryption
-        email_normalized = email.strip().lower()
-        users = User.query.all()
-        for user in users:
-            if user.email and user.email.lower() == email_normalized:
-                raise ValueError(f"Email '{email}' already exists")
+        # L'email cifrata non si confronta in SQL: si cerca per `email_hash`
+        # (issue #8). Prima si decifravano tutti gli utenti, uno per uno.
+        #
+        # Il messaggio non arriva mai a una pagina: la registrazione cattura
+        # `EmailGiaRegistrata` e risponde come a una riuscita, per non dire a
+        # chiunque quali indirizzi stanno sul sito (emendamento del 2026-10-19
+        # all'ADR-086).
+        if UserProfileService.get_user_by_email(email) is not None:
+            raise EmailGiaRegistrata(f"Email '{email}' already exists")
 
         # Create new user
         user = User(
@@ -200,7 +213,7 @@ class UserProfileService:
             # invoke send_pending_verification_email() after this returns.
             user._pending_verification_email = {
                 "token": token,
-                "base_url": request.host_url.rstrip("/"),
+                "base_url": indirizzo_per_le_email(),
             }
 
         return user
@@ -336,6 +349,24 @@ class UserProfileService:
                         email_changed = True
                 setattr(user, field, new_value)
 
+        # Un indirizzo che è già di un altro account non si accetta: due
+        # account con la stessa email si contendono il recupero password e
+        # l'attivazione, e `get_user_by_email` ne troverebbe uno a caso. Prima
+        # il controllo mancava del tutto. Qui scrive solo chi è collegato (o
+        # l'admin), e il messaggio non dice di chi sia l'indirizzo
+        # (emendamento del 2026-10-19 all'ADR-086).
+        if email_changed and user.email:
+            from utils.encryption import compute_email_hash
+
+            altro = User.query.filter(
+                User.email_hash == compute_email_hash(user.email),
+                User.id != user.id,
+            ).first()
+            if altro is not None:
+                raise ValueError(
+                    _("Questo indirizzo email non si può usare: scrivine un altro.")
+                )
+
         # Email change → email is no longer confirmed; queue a verification
         # email using the same pattern as create_user (sent post-commit).
         if email_changed:
@@ -344,7 +375,7 @@ class UserProfileService:
             token = UserToken.create_token(user.id, "verification")
             user._pending_verification_email = {
                 "token": token,
-                "base_url": request.host_url.rstrip("/"),
+                "base_url": indirizzo_per_le_email(),
             }
 
         return user
@@ -668,11 +699,9 @@ class UserProfileService:
 
         try:
             token = UserToken.create_token(user.id, "verification")
-            # request.host_url needs a Flask request context (always present
-            # when invoked from a route handler, which is the only call site).
-            EmailService.send_verification_email(
-                user, token, request.host_url.rstrip("/")
-            )
+            # L'origine del link viene dalla configurazione, non dalla
+            # richiesta: vedi `utils/indirizzo_pubblico.py`.
+            EmailService.send_verification_email(user, token, indirizzo_per_le_email())
             return True
         except Exception:
             # Helper to log exception would be good here
@@ -705,7 +734,7 @@ class UserProfileService:
 
     @staticmethod
     @transactional(domain="user")
-    def _prepara_reset_password(email: str) -> Optional[tuple]:
+    def _prepara_reset_password(email: str) -> Optional[Any]:
         """Crea il token di reset e restituisce cosa serve per scrivere l'email.
 
         Sta separata dall'invio per una ragione precisa: `EmailService` fa
@@ -720,13 +749,26 @@ class UserProfileService:
         (vedi il commento li'): qui la lezione mancava.
 
         Returns:
-            `(user_id, token, base_url)`, oppure `None` se quell'email non
-            appartiene a nessuno — caso in cui non si invia niente e non si
-            rivela niente.
+            `(user_id, token, base_url)`; un `EmailDaSpedire` di attivazione
+            se l'email e' di un non registrato; oppure `None` se quell'email
+            non appartiene a nessuno — caso in cui non si invia niente e non
+            si rivela niente.
         """
         user = UserProfileService.get_user_by_email(email)
         if not user:
             return None  # nessuna rivelazione: il chiamante risponde come sempre
+
+        # Un non registrato con un'email vera non entrerebbe con la password
+        # nuova: il login lo rifiuta (ADR-085). Il link giusto per lui è
+        # l'attivazione, che lo fa diventare un account normale (emendamento
+        # del 2026-10-19 all'ADR-086). Un non registrato che non si può
+        # attivare — già riscattato, fittizio — non riceve niente.
+        if user.is_placeholder or user.is_fittizio:
+            from models.user.attivazione import AttivazioneService
+
+            if not AttivazioneService.attivabile(user):
+                return None
+            return AttivazioneService.prepara_attivazione(user)
 
         # I link chiesti prima smettono di valere. Chiederne uno nuovo e'
         # spesso il gesto di chi teme che il primo sia finito dove non doveva
@@ -737,7 +779,7 @@ class UserProfileService:
         ).update({"is_used": True}, synchronize_session=False)
 
         token = UserToken.create_token(user.id, "password_reset")
-        return user.id, token.token, request.host_url.rstrip("/")
+        return user.id, token.token, indirizzo_per_le_email()
 
     @staticmethod
     def request_password_reset(email: str) -> bool:
@@ -755,6 +797,22 @@ class UserProfileService:
         preparazione = UserProfileService._prepara_reset_password(email)
         if preparazione is None:
             return True  # nessun utente con quell'email: nulla da inviare
+
+        from models.user.attivazione import AttivazioneService, EmailDaSpedire
+
+        if isinstance(preparazione, EmailDaSpedire):
+            try:
+                inviata = AttivazioneService.spedisci(preparazione)
+            except Exception as e:
+                current_app.logger.error(f"Attivazione: invio fallito ({e})")
+                return False
+            if not inviata:
+                current_app.logger.error(
+                    "Attivazione: l'email non e' partita "
+                    f"(utente {preparazione.user_id}); servizio di posta "
+                    "non disponibile?"
+                )
+            return inviata
 
         user_id, token, base_url = preparazione
         user = db.session.get(User, user_id)

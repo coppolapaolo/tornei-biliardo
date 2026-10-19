@@ -32,7 +32,7 @@ Un giocatore non registrato è un `User` normale con tre colonne in più:
 | `created_by_id` (FK `user.id`, `SET NULL`) | chi l'ha creato: è lui che confermerà il riscatto |
 | `claimed_at` (datetime) | quando è stato riscattato; NULL finché nessuno lo reclama |
 
-Nasce con **email NULL**, `password_hash = PASSWORD_DA_RISCATTARE`
+Nasce con **email NULL** _(gli storici segnati dallo script possono averne una: dal 2026-10-19 da quella casella si attivano, emendamento all'ADR-086)_, `password_hash = PASSWORD_DA_RISCATTARE`
 (`"!da-riscattare!"`, che non è un hash di Werkzeug e non verifica nessuna
 password), `onboarding_completed=True`, `is_verified=False`, `role=player`,
 nome e cognome nell'anagrafica cifrata, username = «Nome Cognome» reso unico

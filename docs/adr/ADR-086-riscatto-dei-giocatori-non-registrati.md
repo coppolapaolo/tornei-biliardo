@@ -281,10 +281,95 @@ essere registrato da tempo, e avere partite sue segnate da un istruttore.
   `test_specifiche_conformita.py::TestRevisioneSoloDellePartiteRiscattate`,
   `tests/new/unit/test_migration_partite_del_riscatto.py`.
 
+## Emendamento 2026-10-19 — l'email ricevuta basta, e la registrazione non rivela gli indirizzi
+
+**Le segnalazioni dell'utente.** I giocatori non registrati possono avere
+un'email vera: quella che avevano quando lo script degli storici li ha segnati
+(`placeholder_storici.py`), o quella che l'admin ha scritto. Per loro la
+registrazione rispondeva «email già in uso» — «non è compliant con GDPR dire
+che c'è già un utente con quella email» — e il recupero password mandava un
+link valido, ma il login li rifiutava anche con la password nuova: «non va
+bene che sia bloccato».
+
+**Decisione: un'email ricevuta con l'attivazione è la prova sufficiente.** Non
+serve la conferma del creatore né dell'admin. Aprire un link mandato a quella
+casella dimostra la stessa cosa che il recupero password dimostra per chiunque.
+L'**Alternativa 2** («email verificata obbligatoria») era stata scartata perché
+un'email non dice *chi* sia la persona: qui non serve dirlo, perché l'email è
+quella del giocatore stesso, non di chi chiede.
+
+- **L'attivazione** (`models/user/attivazione.py`, `AttivazioneService`):
+  token `UserToken` di tipo nuovo `activation` — il nome lungo
+  `placeholder_activation` non entra in `String(20)` —, 24 ore, uso singolo,
+  e chiederne uno nuovo spegne i precedenti. Il link `/auth/attiva/<token>`
+  (`auth.activate_account`, in `ENDPOINT_ROLES` per anonimo, giocatore e
+  direttore) chiede nome utente, precompilato, e password. La stessa riga di
+  `user` diventa un account normale: `is_placeholder` falso, `claimed_at`
+  valorizzato, `is_verified` vero. **Nessuna unione**: le partite sono già sue.
+  Dopo l'attivazione si entra dal login, come dopo un recupero password.
+- **Chi si attiva**: `AttivazioneService.attivabile` — non registrato, non
+  fittizio, non cancellato, non ancora riscattato, con un'email.
+- **Due ingressi.** La registrazione con quell'email
+  (`avvisa_registrazione_con_email_nota`) e il recupero password
+  (`UserProfileService._prepara_reset_password`, che per un non registrato
+  prepara l'attivazione invece del reset). In entrambi i casi il token nasce
+  nella transazione e l'email parte dopo il commit, nella lingua di chi la
+  riceve (`nella_lingua_di`, ADR-062).
+- **La registrazione non rivela più niente.** Con un'email già presente la
+  pagina risponde come a una riuscita: stesso flash, stesso redirect, stesso
+  evento analytics, e un hash della password calcolato e buttato perché i
+  tempi siano simili. Nessun account nasce. `create_user` solleva
+  `EmailGiaRegistrata` (sottoclasse di `ValueError`, così chi crea utenti da
+  script continua a vederla) e cerca l'email per `email_hash` invece di
+  decifrare tutti gli utenti. All'indirizzo arriva l'avviso con i link al login
+  e al recupero password se è di un account normale, il link di attivazione se
+  è di un non registrato attivabile, niente altrimenti. Lo username già preso
+  si dice ancora: è pubblico, e il messaggio non nomina l'email.
+- **Default scelto: la richiesta di riscatto in attesa si chiude rifiutata.**
+  L'attivazione ha la precedenza. *Ritirata* direbbe che l'ha ritirata chi
+  l'aveva fatta, che non è vero; *rifiutata*, con `decided_by_id` uguale al
+  giocatore stesso, dice esattamente cos'è successo — la persona vera ha detto
+  no — e la pagina della richiesta lo mostra così senza toccare i template.
+  Gli avvisi «Decidi» dei destinatari si spengono
+  (`ClaimService._risolvi_avvisi_ai_destinatari`) e chi aveva chiesto riceve
+  `CLAIM_REQUEST_PROCESSED` nella sua lingua.
+- **Default scelto: da collegato, il cambio email nel profilo rifiuta un
+  indirizzo già di un altro account**, con un messaggio che non dice di chi
+  sia. Prima non c'era nessun controllo e nascevano due account con la stessa
+  email, che si contendevano recupero password e attivazione. È una
+  rivelazione limitata a chi è già collegato e identificato; l'alternativa —
+  accettare in silenzio e mandare l'avviso al proprietario — lasciava il
+  giocatore convinto di aver cambiato indirizzo.
+- **Cosa resta uguale.** Il login continua a rifiutare i non registrati
+  (ADR-085): la strada per entrare è l'attivazione, non una password scritta
+  su un non registrato. Il riscatto con conferma del creatore resta per chi
+  l'email del giocatore non ce l'ha.
+
+- **I link delle email non vengono dalla richiesta** (dalla revisione di
+  sicurezza della stessa PR). Verifica, recupero password, avviso e
+  attivazione costruivano il link da `request.host_url`: con un `Host` o un
+  `X-Forwarded-Host` falsificato, chi faceva partire l'email mandava alla
+  vittima un link verso il proprio dominio, e aprendolo lei gli consegnava il
+  token. Ora l'origine è `PUBLIC_BASE_URL` (`Config.environment_settings`,
+  in produzione `https://www.torneibiliardo.it` se la variabile manca),
+  letta da un solo punto, `utils/indirizzo_pubblico.indirizzo_per_le_email`.
+  In sviluppo e nei test, senza valore, si ripiega sulla richiesta.
+
+**Presidi.** `tests/new/integration/test_email_senza_rivelare.py` (risposta
+identica, nessun account, contenuto delle email, attivazione e login con le
+partite, recupero password, token scaduto o usato, richiesta pendente di un
+altro, cambio email nel profilo, link sul dominio configurato con un `Host`
+falsificato);
+`tests/new/unit/test_specifiche_conformita.py::TestAttivazioneDallEmail`.
+Regola in `docs/reference/SPECIFICHE.md`, «L'attivazione dall'email» e «La
+registrazione non rivela gli indirizzi»; flussi in
+`docs/reference/AUTHENTICATION.md`.
+
 ## Riferimenti
 
 - ADR-035 (onboarding), ADR-041 (richieste con destinatari), ADR-062
   (notifiche), ADR-074 (conferme), ADR-085 (giocatori non registrati).
 - File: `models/user/claim_request.py`, `models/user/claim_service.py`,
-  `models/user/merge_service.py`, `routes/riscatto.py`, `routes/auth.py`,
+  `models/user/merge_service.py`, `models/user/attivazione.py`,
+  `routes/riscatto.py`, `routes/auth.py`, `templates/auth/attiva_account.html`,
   `templates/riscatto/`, `templates/components/_nome_giocatore.html`.

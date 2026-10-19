@@ -4,7 +4,7 @@ kind: tutorial
 audience: [tutti]
 minutes: 3
 summary: "Creare l'account, confermare l'email ed entrare la prima volta. Sono cinque minuti, una volta sola."
-screens: [auth.register, auth.login, auth.forgot_password, auth.verify_email, auth.diagnosi_cookie, onboarding.onboarding, main.riscatta_giocatore, riscatto.omonimi]
+screens: [auth.register, auth.login, auth.forgot_password, auth.verify_email, auth.diagnosi_cookie, onboarding.onboarding, main.riscatta_giocatore, riscatto.omonimi, auth.activate_account]
 related: [iscriversi_a_una_gara, profilo_e_statistiche]
 
 blocks:
@@ -40,7 +40,10 @@ blocks:
         text: >-
           Riceverai un messaggio con un collegamento da toccare. Serve a
           verificare che l'indirizzo sia davvero tuo. Se non arriva entro
-          qualche minuto, controlla la posta indesiderata.
+          qualche minuto, controlla la posta indesiderata. Se quell'indirizzo
+          era già registrato, la pagina risponde lo stesso «Registrazione
+          completata», ma l'email che ricevi è diversa: ti ricorda che hai già
+          un account, con il collegamento per recuperare la password.
       - title: "Entra"
         text: >-
           Torna sull'app e accedi con nome utente e password. Da qui in avanti
@@ -180,6 +183,18 @@ blocks:
     shot: riscatto-giocatore
 
   - type: note
+    tone: tip
+    title: "Il direttore aveva la tua email? Attivalo da lì"
+    text: >-
+      Se quel giocatore ha già il tuo indirizzo email, non serve chiedere il
+      riscatto. Registrati con quell'indirizzo, oppure tocca **Password
+      dimenticata** e scrivilo: ti arriva un'email con il collegamento
+      **Attiva il mio account**. Lì scegli nome utente e password, e il
+      giocatore diventa il tuo account, con tutte le sue partite. Non deve
+      confermarlo nessuno: aver ricevuto l'email basta. Il collegamento vale
+      24 ore e una volta sola.
+
+  - type: note
     tone: info
     title: "Poi rivedi le partite"
     text: >-
@@ -231,6 +246,8 @@ blocks:
         a: "Il nome utente resta quello scelto alla registrazione, perché è il nome con cui compari nelle classifiche già pubblicate. Email e password si cambiano dal profilo."
       - q: "Provo a entrare e una pagina dice che il browser non ha inviato i cookie."
         a: "Per riconoscerti tra una pagina e l'altra il sito usa un cookie, e il tuo browser non lo sta mandando. Su quella pagina tocca **Fai il test dei cookie**: si apre il [test dei cookie](/auth/diagnosi), che fa quattro controlli sul tuo dispositivo e ti dice dove si blocca e cosa provare. Se il test dice che i cookie funzionano ma l'accesso continua a fallire, fai uno screenshot della pagina del test e segnala il problema."
+      - q: "Mi registro e la pagina dice «Registrazione completata», ma non riesco a entrare."
+        a: "Forse quell'indirizzo era già registrato: per non dire a chiunque quali email sono iscritte, la pagina risponde sempre allo stesso modo. Controlla la posta: ti è arrivata un'email che lo spiega, con il collegamento per recuperare la password — o, se un direttore ti aveva aggiunto con quell'indirizzo, per attivare il tuo account."
       - q: "Non ho ricevuto l'email di conferma."
         a: "Controlla la posta indesiderata. Dal tuo profilo puoi chiedere di inviarla di nuovo."
       - q: "Posso usare l'app da più dispositivi?"

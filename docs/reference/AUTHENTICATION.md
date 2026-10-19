@@ -51,6 +51,52 @@ Allows users to recover access if they forget their password.
     3. Email is sent with link: `/auth/reset-password/<token>`.
     4. User sets new password -> Token is consumed and invalidated.
 
+    The response is the same whether the address exists or not. For a
+    **placeholder player** (ADR-085) the email carries the activation link
+    instead (see below): a new password alone would not let them in, because
+    login refuses placeholders.
+
+## Registration never reveals an address
+
+Since 2026-10-19 (ADR-086, amendment of 2026-10-19) `/auth/register` answers
+**exactly like a successful registration** when the email already belongs to
+someone: same flash, same redirect to the login page, same analytics event,
+and a password hash computed and thrown away so the timing matches. No account
+is created. `UserProfileService.create_user` raises `EmailGiaRegistrata` (a
+`ValueError`) and the route hands it to
+`AttivazioneService.avvisa_registrazione_con_email_nota`, which sends — after
+the commit, in the recipient's language — one of two emails:
+
+- **normal account**: "someone tried to sign up with your address", with links
+  to login and to `/auth/forgot-password`. No token is created;
+- **placeholder player still to be claimed**: the activation link.
+
+A taken **username** is still reported: usernames are public, and the message
+mentions only the username. From the profile page, a logged-in user who types
+an address that belongs to another account gets a neutral "this address can't
+be used" (until 2026-10-19 nothing was checked and duplicates were created).
+
+## Placeholder activation
+
+A placeholder player (`User.is_placeholder`, ADR-085) who has an email
+activates the account from that mailbox, without anyone's confirmation:
+receiving the email is the proof (ADR-086, amendment of 2026-10-19).
+
+- **Flow** (`models/user/attivazione.py`):
+    1. Registration with that email, or a password-reset request for it.
+    2. Token of type `activation` (24 hours, single use; requesting a new one
+       invalidates the previous ones).
+    3. Email with link `/auth/attiva/<token>` (`auth.activate_account`).
+    4. The person chooses username and password. The same `user` row becomes a
+       normal account: `is_placeholder = False`, `claimed_at` set,
+       `is_verified = True`. No merge: the matches are already there.
+    5. Other unused `activation` and `password_reset` tokens are invalidated;
+       a pending `ClaimRequest` by somebody else is closed as **rejected**,
+       decided by the player themself, with a notice to the claimant.
+
+- Not activatable: fittizi (ADR-058), placeholders already claimed or deleted,
+  placeholders without email. For them nothing is sent.
+
 ## Configuration
 
 The system uses **Flask-Mail** to send emails via SMTP.
@@ -63,6 +109,12 @@ The system uses **Flask-Mail** to send emails via SMTP.
 | `MAIL_USERNAME` | SMTP Username | `user@gmail.com` |
 | `MAIL_PASSWORD` | SMTP Password | `app-password` |
 | `MAIL_DEFAULT_SENDER` | "From" Address | `Name <email>` |
+| `PUBLIC_BASE_URL` | Origin of every link in an email (verification, reset, activation). Production defaults to `https://www.torneibiliardo.it`; unset in development and tests, where the request's host is used | `https://www.torneibiliardo.it` |
+
+Email links are **never** built from the request in production
+(`utils/indirizzo_pubblico.py`): with a forged `Host` or `X-Forwarded-Host`
+header, an attacker could otherwise trigger an email whose link points to
+their own domain, and receive the victim's token when the victim opens it.
 
 ## Database Schema Changes
 
@@ -77,7 +129,7 @@ New table for managing secure tokens.
 | `id` | Integer | PK |
 | `user_id` | Integer | FK to User |
 | `token` | String(100) | Unique secure token |
-| `token_type` | String(20) | `verification` or `password_reset` |
+| `token_type` | String(20) | `verification`, `password_reset` or `activation` |
 | `created_at` | DateTime | Timestamp |
 | `expires_at` | DateTime | Expiration timestamp |
 | `is_used` | Boolean | If token has been consumed |

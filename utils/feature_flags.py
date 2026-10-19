@@ -48,6 +48,11 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "auth.forgot_password": {"anonimo"},
     "auth.reset_password": {"anonimo"},
     "auth.verify_email": {"anonimo"},
+    # L'attivazione di un non registrato dalla sua email (ADR-086,
+    # emendamento del 2026-10-19). Aperta anche a chi è collegato: il link
+    # arriva in una casella, e si può aprire dal browser in cui è collegato
+    # un altro account. La pagina non tocca la sessione.
+    "auth.activate_account": {"anonimo", "player", "director"},
     # Il test dei cookie: serve a chi NON riesce a entrare, quindi anonimo
     # non è opzionale — è il destinatario. Linkato dalla pagina 400.
     "auth.diagnosi_cookie": {"anonimo", "player", "director"},

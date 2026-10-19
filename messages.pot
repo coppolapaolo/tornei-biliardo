@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-18 21:56+0200\n"
+"POT-Creation-Date: 2026-10-19 08:05+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3094,9 +3094,9 @@ msgstr ""
 msgid "Richiesta d'esame"
 msgstr ""
 
-#: models/exam/request_service.py:659 models/user/claim_service.py:623
-#: models/user/claim_service.py:706 templates/exam/detail.html:153
-#: templates/riscatto/giocatore.html:39
+#: models/exam/request_service.py:659 models/user/attivazione.py:377
+#: models/user/claim_service.py:623 models/user/claim_service.py:706
+#: templates/exam/detail.html:153 templates/riscatto/giocatore.html:39
 msgid "Vedi la richiesta"
 msgstr ""
 
@@ -6203,6 +6203,114 @@ msgstr ""
 msgid "Voce"
 msgstr ""
 
+#: models/user/attivazione.py:204
+#, python-format
+msgid "Attiva il tuo account - %(app)s"
+msgstr ""
+
+#: models/user/attivazione.py:206 models/user/attivazione.py:237
+#, python-format
+msgid "Ciao %(nome)s,"
+msgstr ""
+
+#: models/user/attivazione.py:208
+#, python-format
+msgid ""
+"su %(app)s c'è già un giocatore con questo indirizzo email: %(nome)s, con"
+" le partite che ha giocato in sala."
+msgstr ""
+
+#: models/user/attivazione.py:213
+msgid ""
+"Se sei tu, apri il link qui sotto: scegli nome utente e password e il "
+"giocatore diventa il tuo account, con tutte le sue partite."
+msgstr ""
+
+#: models/user/attivazione.py:216 templates/auth/attiva_account.html:45
+msgid "Attiva il mio account"
+msgstr ""
+
+#: models/user/attivazione.py:218
+msgid ""
+"Se non sei stato tu a chiederlo, ignora questa email: senza il link non "
+"cambia niente."
+msgstr ""
+
+#: models/user/attivazione.py:221
+#, python-format
+msgid "Il link scadrà tra %(ore)s ore."
+msgstr ""
+
+#: models/user/attivazione.py:233
+#, python-format
+msgid "Un tentativo di registrazione con il tuo indirizzo - %(app)s"
+msgstr ""
+
+#: models/user/attivazione.py:239
+#, python-format
+msgid ""
+"qualcuno ha provato a registrarsi su %(app)s con il tuo indirizzo email. "
+"Non abbiamo creato nessun account nuovo: il tuo è al suo posto."
+msgstr ""
+
+#: models/user/attivazione.py:245
+msgid ""
+"Se eri tu, hai già un account: accedi, o recupera la password se non la "
+"ricordi."
+msgstr ""
+
+#: models/user/attivazione.py:248
+#: templates/components/_index_registration_info.html:16
+#: templates/components/_index_registration_info.html:37
+#: templates/errors/403.html:17 templates/login.html:3 templates/login.html:44
+#: templates/no_campionato.html:25 templates/register.html:42
+msgid "Accedi"
+msgstr ""
+
+#: models/user/attivazione.py:249
+msgid "Recupera la password"
+msgstr ""
+
+#: models/user/attivazione.py:250
+msgid "Se non eri tu, ignora questa email."
+msgstr ""
+
+#: models/user/attivazione.py:280 routes/auth.py:410
+msgid "Link di attivazione non valido o scaduto."
+msgstr ""
+
+#: models/user/attivazione.py:286
+msgid "Scegli un nome utente."
+msgstr ""
+
+#: models/user/attivazione.py:288
+msgid "Il nome utente è troppo lungo."
+msgstr ""
+
+#: models/user/attivazione.py:291 models/user/profile_service.py:301
+msgid "Lo username «admin» (e le sue varianti) è riservato al sistema."
+msgstr ""
+
+#: models/user/attivazione.py:299 models/user/profile_service.py:311
+#, python-format
+msgid "Lo username «%(nome)s» è già in uso."
+msgstr ""
+
+#: models/user/attivazione.py:302
+msgid "La password deve avere almeno 6 caratteri."
+msgstr ""
+
+#: models/user/attivazione.py:368 models/user/claim_service.py:702
+msgid "Esito del riscatto"
+msgstr ""
+
+#: models/user/attivazione.py:370
+#, python-format
+msgid ""
+"%(giocatore)s ha attivato il suo account dall'indirizzo email con cui era"
+" stato registrato: la tua richiesta di riscatto è chiusa."
+msgstr ""
+
 #: models/user/claim_service.py:129
 msgid "l'amministratore"
 msgstr ""
@@ -6336,47 +6444,38 @@ msgstr ""
 msgid "Il riscatto di %(giocatore)s non è stato confermato."
 msgstr ""
 
-#: models/user/claim_service.py:702
-msgid "Esito del riscatto"
-msgstr ""
-
-#: models/user/profile_service.py:73
+#: models/user/profile_service.py:82
 msgid "I giocatori non registrati li creano direttori e istruttori."
 msgstr ""
 
-#: models/user/profile_service.py:79
+#: models/user/profile_service.py:88
 msgid "Scrivi nome e cognome del giocatore da aggiungere."
 msgstr ""
 
-#: models/user/profile_service.py:82
+#: models/user/profile_service.py:91
 msgid "Nome e cognome sono troppo lunghi."
 msgstr ""
 
-#: models/user/profile_service.py:263
+#: models/user/profile_service.py:274
 #: routes/admin/competition/inscriptions.py:195
 #: routes/admin/competition/inscriptions.py:329
 msgid "Utente non trovato."
 msgstr ""
 
-#: models/user/profile_service.py:267
+#: models/user/profile_service.py:278
 msgid "L'utente amministratore non è modificabile."
 msgstr ""
 
-#: models/user/profile_service.py:276
+#: models/user/profile_service.py:287
 msgid "Il nome utente non può restare vuoto."
 msgstr ""
 
-#: models/user/profile_service.py:277
+#: models/user/profile_service.py:288
 msgid "L'indirizzo email non può restare vuoto."
 msgstr ""
 
-#: models/user/profile_service.py:290
-msgid "Lo username «admin» (e le sue varianti) è riservato al sistema."
-msgstr ""
-
-#: models/user/profile_service.py:300
-#, python-format
-msgid "Lo username «%(nome)s» è già in uso."
+#: models/user/profile_service.py:365
+msgid "Questo indirizzo email non si può usare: scrivine un altro."
 msgstr ""
 
 #: models/user/role_copy.py:44
@@ -6590,62 +6689,68 @@ msgstr ""
 msgid "più avanti"
 msgstr ""
 
-#: routes/auth.py:158
+#: routes/auth.py:159
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:159 templates/base.html:720
+#: routes/auth.py:160 templates/base.html:720
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
-#: routes/auth.py:190
+#: routes/auth.py:191
 msgid ""
 "Il tuo account non è ancora verificato. Senza email confermata non potrai"
 " recuperare la password se la dimentichi."
 msgstr ""
 
-#: routes/auth.py:198
+#: routes/auth.py:199
 msgid "Vai al profilo per verificare l'email"
 msgstr ""
 
-#: routes/auth.py:213
+#: routes/auth.py:214
 msgid "Username o password errati."
 msgstr ""
 
-#: routes/auth.py:256
+#: routes/auth.py:269
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr ""
 
-#: routes/auth.py:267 templates/onboarding.html:12
+#: routes/auth.py:280 templates/onboarding.html:12
 msgid "Ti diamo il benvenuto!"
 msgstr ""
 
-#: routes/auth.py:268
+#: routes/auth.py:281
 msgid "Registrazione completata con successo."
 msgstr ""
 
-#: routes/auth.py:315
+#: routes/auth.py:328
 msgid "Inserisci l'indirizzo email del tuo account."
 msgstr ""
 
-#: routes/auth.py:321
+#: routes/auth.py:334
 msgid "Se l'email esiste, riceverai un link per resettare la password."
 msgstr ""
 
-#: routes/auth.py:331
+#: routes/auth.py:344
 msgid "Non siamo riusciti a inviare l'email. Riprova fra qualche minuto."
 msgstr ""
 
-#: routes/auth.py:351 routes/auth.py:373
+#: routes/auth.py:364 routes/auth.py:386
 msgid "Token non valido o scaduto."
 msgstr ""
 
-#: routes/auth.py:359
+#: routes/auth.py:372 routes/auth.py:418
 msgid "Le password non coincidono."
 msgstr ""
 
-#: routes/auth.py:366
+#: routes/auth.py:379
 msgid "Password aggiornata con successo! Ora puoi effettuare il login."
+msgstr ""
+
+#: routes/auth.py:431
+msgid ""
+"Account attivato! Accedi con il nome utente e la password che hai scelto:"
+" le tue partite ti aspettano."
 msgstr ""
 
 #: routes/challenge.py:93 routes/challenge.py:158
@@ -9738,23 +9843,18 @@ msgstr ""
 msgid "Home - Tornei Biliardo"
 msgstr ""
 
-#: templates/components/_index_registration_info.html:16
-#: templates/components/_index_registration_info.html:37
-#: templates/errors/403.html:17 templates/login.html:3 templates/login.html:44
-#: templates/no_campionato.html:25 templates/register.html:42
-msgid "Accedi"
-msgstr ""
-
 #: templates/login.html:9
 msgid "Bentornato"
 msgstr ""
 
+#: templates/auth/attiva_account.html:26
 #: templates/components/_player_personal_info.html:15 templates/login.html:24
 #: templates/player/profile.html:86 templates/register.html:18
 msgid "Nome utente"
 msgstr ""
 
-#: templates/login.html:29 templates/register.html:34
+#: templates/auth/attiva_account.html:33 templates/login.html:29
+#: templates/register.html:34
 msgid "Password"
 msgstr ""
 
@@ -13737,6 +13837,30 @@ msgstr ""
 msgid "Aggiungi la Prima Sala"
 msgstr ""
 
+#: templates/auth/attiva_account.html:9 templates/auth/attiva_account.html:15
+msgid "Attiva il tuo account"
+msgstr ""
+
+#: templates/auth/attiva_account.html:19
+msgid ""
+"Le partite che hai giocato in sala sono già qui. Scegli nome utente e "
+"password: da adesso entri tu, e le partite sono tue."
+msgstr ""
+
+#: templates/auth/attiva_account.html:29
+msgid ""
+"È il nome che gli altri vedono in classifica. Puoi tenere questo o "
+"cambiarlo."
+msgstr ""
+
+#: templates/auth/attiva_account.html:36 templates/auth/reset_password.html:19
+msgid "Minimo 6 caratteri."
+msgstr ""
+
+#: templates/auth/attiva_account.html:40 templates/auth/reset_password.html:22
+msgid "Conferma Password"
+msgstr ""
+
 #: templates/auth/diagnosi_cookie.html:3 templates/auth/diagnosi_cookie.html:9
 msgid "Test dei cookie"
 msgstr ""
@@ -13826,14 +13950,6 @@ msgstr ""
 
 #: templates/auth/reset_password.html:16
 msgid "Nuova Password"
-msgstr ""
-
-#: templates/auth/reset_password.html:19
-msgid "Minimo 6 caratteri."
-msgstr ""
-
-#: templates/auth/reset_password.html:22
-msgid "Conferma Password"
 msgstr ""
 
 #: templates/auth/reset_password.html:27

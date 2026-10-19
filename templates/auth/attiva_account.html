@@ -1,0 +1,48 @@
+{# templates/auth/attiva_account.html — attivare un giocatore non registrato
+   dalla sua email (ADR-086, emendamento del 2026-10-19).
+
+   Ci si arriva da un link mandato all'indirizzo del giocatore: aprirlo è la
+   prova. Si sceglie nome utente e password, e il giocatore diventa
+   l'account di chi legge, con tutte le sue partite. #}
+{% extends "base.html" %}
+
+{% block title %}{{ _('Attiva il tuo account') }} - {{ config.APP_NAME }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 440px; margin: 6vh auto 0;">
+    <div style="text-align: center; margin-bottom: 24px;">
+        <div class="c7-kicker">{{ config.APP_NAME }}</div>
+        <h1 style="margin: 6px 0 0;">{{ _('Attiva il tuo account') }}</h1>
+    </div>
+
+    <p class="text-muted">
+        {{ _("Le partite che hai giocato in sala sono già qui. Scegli nome utente e password: da adesso entri tu, e le partite sono tue.") }}
+    </p>
+
+    <form method="POST" class="c7-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div>
+            <label for="username" class="form-label">{{ _('Nome utente') }}</label>
+            <input type="text" id="username" class="form-control" name="username"
+                   value="{{ username }}" autocomplete="username" required maxlength="80">
+            <div class="form-text">{{ _("È il nome che gli altri vedono in classifica. Puoi tenere questo o cambiarlo.") }}</div>
+        </div>
+
+        <div>
+            <label for="password" class="form-label">{{ _('Password') }}</label>
+            <input type="password" id="password" class="form-control" name="password"
+                   autocomplete="new-password" required minlength="6">
+            <div class="form-text">{{ _("Minimo 6 caratteri.") }}</div>
+        </div>
+
+        <div>
+            <label for="confirm_password" class="form-label">{{ _('Conferma Password') }}</label>
+            <input type="password" id="confirm_password" class="form-control" name="confirm_password"
+                   autocomplete="new-password" required minlength="6">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">{{ _('Attiva il mio account') }}</button>
+    </form>
+</div>
+{% endblock %}
