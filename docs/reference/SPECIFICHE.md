@@ -16,7 +16,7 @@ Ci sono tre tipologie di utenti:
 Un **direttore** (o l'admin) e un **istruttore** possono creare un giocatore che non ha un account, scrivendone **nome e cognome**: è chi arriva in sala per giocare senza essersi mai registrato. Lo si crea dall'iscrizione a una gara, accanto alla ricerca, dal modulo della partita di altri due o dall'avvio rapido di una sfida.
 
 - Lo **username** è il nome e cognome; se è già preso si aggiunge un numero: «Mario Rossi (2)».
-- **Non entra nell'app**: non ha email né password, e il login lo rifiuta comunque.
+- **Non entra nell'app**: non ha password, e il login lo rifiuta comunque. Se ha un'**email** — quella che aveva prima di diventare non registrato, o che gli ha scritto l'admin — chi legge quella casella lo **attiva** (vedi «L'attivazione dall'email»).
 - **Gioca davvero**: le sue partite contano per classifiche ed ELO come quelle di chiunque. Non è un giocatore fittizio di una prova.
 - **Non riceve niente**: né notifiche, né proposte di sfida.
 - **Si sfida con l'avvio rapido**: chiunque giochi lo trova fra gli avversari dell'avvio rapido, col segno «non registrato». **Direttori e istruttori — non l'admin —** lo possono anche creare da lì, con nome e cognome; chi non ha uno di questi ruoli sceglie solo un giocatore non registrato che esiste già. La proposta di sfida a lui non si fa: non la potrebbe accettare, e la rivincita con lui è un avvio rapido.
@@ -52,6 +52,27 @@ Chi si registra e si riconosce in un giocatore non registrato lo **riscatta**: c
 _Regola nuova del 2026-10-17, decisa dall'utente (ADR-086): conferma il creatore, l'amministratore per i giocatori senza creatore._
 
 _Emendamento del 2026-10-18, deciso dall'utente (ADR-086): la richiesta si ritira. Prima una richiesta sbagliata teneva fermo il giocatore finché chi decide non la rifiutava._
+
+##### L'attivazione dall'email
+
+Un giocatore non registrato che ha un'email si **attiva** da quella casella, senza chiedere il riscatto a nessuno.
+
+- Chi **si registra** con quell'email, o chiede il **recupero password** per quell'email, riceve un link di **attivazione**. Il link vale **24 ore** e **una volta sola**; chiederne uno nuovo spegne quelli di prima.
+- Aprendolo sceglie **nome utente e password**. Il giocatore diventa un account normale — non più «non registrato», email verificata — con **tutte le sue partite**: è lo stesso account, non serve nessuna unione.
+- **Aver ricevuto l'email è la prova**: non serve la conferma di chi aveva creato il giocatore, né dell'amministratore.
+- Se un'altra persona aveva chiesto il riscatto di quel giocatore e la richiesta aspetta ancora, la richiesta si chiude **rifiutata**, decisa dal giocatore stesso; chi l'aveva fatta riceve l'esito, e chi doveva decidere non trova più niente da decidere.
+- Un giocatore già riscattato, o cancellato, non si attiva più: il link non vale.
+
+##### La registrazione non rivela gli indirizzi
+
+- La registrazione con un'email **già presente** risponde **esattamente come una registrazione riuscita**: stesso messaggio, stessa pagina dopo, tempi simili. Non nasce nessun account.
+- All'indirizzo arriva un'email: per un **account normale** l'avviso che qualcuno ha provato a registrarsi con quell'indirizzo, con i link per accedere e per recuperare la password; per un **giocatore non registrato** il link di attivazione.
+- Lo **username** già preso invece si dice: gli username sono pubblici, e il messaggio non parla dell'email.
+- Il recupero password risponde allo stesso modo che l'email esista o no.
+- Da collegato, cambiando l'email nel profilo, un indirizzo che è già di un altro account si rifiuta, senza dire di chi sia.
+- Le email partono nella lingua di chi le riceve.
+
+_Regola nuova del 2026-10-19, decisa dall'utente: «non è compliant con GDPR dire che c'è già un utente con quella email», e il giocatore non registrato con l'email «non va bene che sia bloccato» (ADR-086, emendamento del 2026-10-19). Fino a questa data la registrazione rispondeva «email già in uso», e il recupero password dava al non registrato una password che il login rifiutava. Che una richiesta di riscatto in attesa si chiuda come rifiutata, e che il cambio email da collegato si rifiuti, sono scelte di default prese nell'implementazione: la regola non lo diceva._
 
 ##### La revisione delle partite
 

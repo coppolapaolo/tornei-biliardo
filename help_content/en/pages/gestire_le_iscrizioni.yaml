@@ -209,6 +209,16 @@ blocks:
       as you haven't decided. In that case you get a notice, the request shows
       as «withdrawn» and there is nothing left to decide.
 
+  - type: text
+    text: >-
+      If the player has an **email** — for example one of those who were
+      already there, with the address they signed up with — whoever reads that
+      mailbox activates it on their own, without asking you: signing up with
+      that address, or using «Forgotten your password?», they get a link to choose a
+      username and password. If someone else had asked to claim the player in
+      the meantime, that request closes as «rejected» and your «Decide» goes
+      away: the right person has come forward.
+
   - type: note
     tone: info
     title: "Players that were already there"

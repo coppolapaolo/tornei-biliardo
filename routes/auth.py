@@ -17,7 +17,8 @@ from flask_login import login_user, logout_user, login_required
 from utils.activity_feedback_view import reset_activity_feedback_view
 from flask_babel import gettext as _
 from models.user.services import UserService
-from models.user.profile_service import UserProfileService
+from models.user.attivazione import AttivazioneService
+from models.user.profile_service import EmailGiaRegistrata, UserProfileService
 from models.user.role_enum import UserRole
 from utils.analytics import AnalyticsEvent, track_event
 from utils.rate_limiter import limiter
@@ -232,16 +233,26 @@ def register():
 
         # Use service layer for user creation
         try:
-            nuovo = UserService.create_user(
-                username=username,
-                email=email,
-                password=password,
-                phone=phone if phone else None,
-            )
-            # La mail di verifica: `create_user` prepara il token, ma spedire
-            # tocca a chi chiama, dopo il commit. Qui non lo faceva nessuno, e
-            # il messaggio sotto prometteva un'email mai partita.
-            UserProfileService.send_pending_verification_email(nuovo)
+            try:
+                nuovo = UserService.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    phone=phone if phone else None,
+                )
+                # La mail di verifica: `create_user` prepara il token, ma
+                # spedire tocca a chi chiama, dopo il commit. Qui non lo faceva
+                # nessuno, e il messaggio sotto prometteva un'email mai partita.
+                UserProfileService.send_pending_verification_email(nuovo)
+            except EmailGiaRegistrata:
+                # L'indirizzo è già di qualcuno. Non nasce nessun account, ma
+                # la risposta è identica a quella di una registrazione
+                # riuscita — stesso messaggio, stesso redirect, tempi simili:
+                # «email già in uso» direbbe a chiunque chi è iscritto al
+                # sito. A quella casella arriva l'email giusta: l'avviso, o il
+                # link per attivare il non registrato che ce l'ha
+                # (emendamento del 2026-10-19 all'ADR-086).
+                AttivazioneService.avvisa_registrazione_con_email_nota(email, password)
 
             # Analytics: tracciato qui e non con un onclick sul bottone, così
             # nel conteggio finiscono solo le registrazioni davvero riuscite
@@ -377,6 +388,54 @@ def reset_password(token):
             return render_template("auth/reset_password.html", token=token)
 
     return render_template("auth/reset_password.html", token=token)
+
+
+@auth_bp.route("/attiva/<token>", methods=["GET", "POST"])
+@limiter.limit("10/minute", methods=["POST"])
+def activate_account(token):
+    """Chi ha l'email di un giocatore non registrato lo attiva (ADR-086).
+
+    Il link arriva dalla registrazione con quell'email o dal recupero
+    password. Aver aperto un link mandato a quella casella è la prova: non
+    serve la conferma di chi aveva creato il giocatore. La persona sceglie
+    nome utente e password, e il giocatore diventa il suo account, con tutte
+    le partite.
+    """
+    from models.exceptions import DomainError
+
+    token_obj = AttivazioneService.token_valido(token)
+    if token_obj is None:
+        flash(_("Link di attivazione non valido o scaduto."), "error")
+        return redirect(url_for("auth.login"))
+    giocatore = token_obj.user
+
+    if request.method == "POST":
+        username = (request.form.get("username") or "").strip()
+        password = request.form.get("password") or ""
+        if password != (request.form.get("confirm_password") or ""):
+            flash(_("Le password non coincidono."), "error")
+            return render_template(
+                "auth/attiva_account.html", token=token, username=username
+            )
+        try:
+            AttivazioneService.attiva(token, username, password)
+        except DomainError as e:
+            flash(str(e), "error")
+            return render_template(
+                "auth/attiva_account.html", token=token, username=username
+            )
+        flash(
+            _(
+                "Account attivato! Accedi con il nome utente e la password "
+                "che hai scelto: le tue partite ti aspettano."
+            ),
+            "success",
+        )
+        return redirect(url_for("auth.login"))
+
+    return render_template(
+        "auth/attiva_account.html", token=token, username=giocatore.username
+    )
 
 
 @auth_bp.route("/timezone", methods=["POST"])

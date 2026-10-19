@@ -206,6 +206,16 @@ blocks:
       non hai deciso. In quel caso ti arriva un avviso, la richiesta compare
       come «ritirata» e non c'è più niente da decidere.
 
+  - type: text
+    text: >-
+      Se il giocatore ha un'**email** — per esempio uno di quelli che c'erano
+      già, con l'indirizzo di quando si era iscritto — chi legge quella posta
+      lo attiva da solo, senza chiedere a te: registrandosi con
+      quell'indirizzo, o con «Password dimenticata», riceve un collegamento
+      per scegliere nome utente e password. Se nel frattempo qualcun altro ne
+      aveva chiesto il riscatto, quella richiesta si chiude come «rifiutata» e
+      il tuo «Decidi» si spegne: la persona giusta si è fatta avanti.
+
   - type: note
     tone: info
     title: "I giocatori che c'erano già"

@@ -4,7 +4,7 @@ kind: tutorial
 audience: [tutti]
 minutes: 3
 summary: "Creating the account, confirming your email and logging in for the first time. Five minutes, once and for all."
-screens: [auth.register, auth.login, auth.forgot_password, auth.verify_email, auth.diagnosi_cookie, onboarding.onboarding, main.riscatta_giocatore, riscatto.omonimi]
+screens: [auth.register, auth.login, auth.forgot_password, auth.verify_email, auth.diagnosi_cookie, onboarding.onboarding, main.riscatta_giocatore, riscatto.omonimi, auth.activate_account]
 related: [iscriversi_a_una_gara, profilo_e_statistiche]
 
 blocks:
@@ -40,7 +40,10 @@ blocks:
         text: >-
           You will get a message with a link to tap. It checks that the address
           really is yours. If nothing arrives within a few minutes, look in
-          your spam folder.
+          your spam folder. If that address was already registered, the page
+          still says «Registration complete», but the email you get is
+          different: it reminds you that you already have an account, with the
+          link to recover your password.
       - title: "Log in"
         text: >-
           Go back to the app and sign in with your username and password. From
@@ -181,6 +184,17 @@ blocks:
     shot: riscatto-giocatore
 
   - type: note
+    tone: tip
+    title: "Did the director have your email? Activate it from there"
+    text: >-
+      If that player already has your email address, you don't need to ask
+      for a claim. Sign up with that address, or tap **Forgotten your password?** and
+      enter it: you get an email with the **Activate my account** link. There
+      you choose a username and password, and the player becomes your
+      account, with all of its matches. Nobody has to confirm it: receiving
+      the email is enough. The link is valid for 24 hours and only once.
+
+  - type: note
     tone: info
     title: "Then review the matches"
     text: >-
@@ -233,6 +247,8 @@ blocks:
         a: "The username stays as chosen at sign-up, because it is the name you appear under in standings that are already published. Email and password can be changed from your profile."
       - q: "I try to log in and a page says my browser did not send cookies."
         a: "To recognise you from one page to the next the site uses a cookie, and your browser is not sending it. On that page tap **Run the cookie test**: it opens the [cookie test](/auth/diagnosi), which runs four checks on your device and tells you where it breaks and what to try. If the test says cookies work but you still cannot log in, take a screenshot of the test page and report the problem."
+      - q: "I sign up and the page says «Registration complete», but I can't log in."
+        a: "That address may have been registered already: so as not to tell anyone which emails are signed up, the page always answers the same way. Check your mail: you got an email explaining it, with the link to recover your password — or, if a director had added you with that address, to activate your account."
       - q: "I did not get the confirmation email."
         a: "Check your spam folder. From your profile you can ask for it to be sent again."
       - q: "Can I use the app on more than one device?"
