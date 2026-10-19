@@ -294,3 +294,29 @@ sfide nuove.
 `tests/new/unit/test_sfide_registrate_da_uno_migration.py`; l'e2e
 `test_sfida_avversario_non_registrato_e2e.py`, UC13 riscritto.
 
+## Emendamento (2026-10-19): la creazione dalla ricerca dell'iscrizione
+
+**Domanda dell'utente.** «Quando un direttore di gara iscrive gli utenti alla
+gara, può contestualmente alla ricerca creare un nuovo utente placeholder e
+aggiungerlo alla gara?»
+
+Il modulo «Nuovo giocatore non registrato» stava a parte, in un `<details>`
+sotto la ricerca: chi non trovava nessuno doveva aprirlo e riscrivere da capo
+il nome che aveva appena cercato.
+
+- **Dentro la ricerca.** In `components/_gara_inscriptions.html` il modulo è
+  ora un blocco del contenitore `[data-iscrivibili]`, dopo i risultati. Con
+  JavaScript resta nascosto finché il campo è vuoto; scritto un nome compare
+  **«Crea «Nome Cognome» come non registrato e iscrivilo»**, sotto i
+  risultati o al posto loro. Senza JavaScript resta visibile, vuoto.
+- **Nome e cognome dal testo cercato** (`static/js/iscritti_ricerca.js`):
+  prima parola il nome, il resto il cognome, con la maiuscola iniziale di
+  ogni parola. Restano modificabili; toccati a mano, la ricerca non li
+  riscrive finché non la si svuota. Il testo del pulsante segue i due campi.
+- **Gerarchia**: senza risultati il pulsante è primario, con dei risultati
+  diventa secondario — il gesto principale resta «Iscrivi» sulla riga.
+- **La stessa route**, `admin.competition.admin_inscribe_placeholder`, e lo
+  stesso servizio: cambia solo dove sta il modulo. Il campo di ricerca c'è
+  ora anche quando non c'è nessuno da iscrivere, perché è lui l'ingresso.
+- Test: `tests/frontend/test_iscritti_ricerca.cjs` (le quattro prove
+  «crea:»), `tests/new/integration/test_riscatto_storici_creatore_e_admin.py::TestCreazioneDallaRicerca`.

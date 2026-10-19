@@ -125,6 +125,11 @@ def riscatta_giocatore(user_id: int):
     viewer = _utente() if current_user.is_authenticated else None
     in_attesa = ClaimService.richiesta_in_attesa(user_id)
     destinatari = ClaimService.destinatari(giocatore)
+    if viewer is not None:
+        # Chi chiede non decide la propria richiesta (`ClaimService.richiedi`).
+        destinatari = [d for d in destinatari if d.id != viewer.id] or (
+            ClaimService.amministratori()
+        )
     conferma_admin = not destinatari or all(d.is_admin for d in destinatari)
     return render_template(
         "riscatto/giocatore.html",
@@ -139,7 +144,7 @@ def riscatta_giocatore(user_id: int):
             else None
         ),
         conferma_admin=conferma_admin,
-        creatore=None if conferma_admin else destinatari[0],
+        confermatori=[] if conferma_admin else destinatari,
         n_gare=len([i for i in giocatore.inscriptions if not i.is_withdrawn]),
     )
 
@@ -159,9 +164,16 @@ def _richiesta_o_404(request_id: int) -> ClaimRequest:
 def richieste():
     """Le richieste da decidere e quelle fatte da chi guarda."""
     user = _utente()
+    tutte = ClaimService.da_decidere_per(user)
+    mie_da_decidere = [r for r in tutte if ClaimService.e_destinatario(r, user)]
+    # L'admin vede anche quelle che toccano ad altri (emendamento del
+    # 2026-10-19 all'ADR-086): le decide lui se i direttori non rispondono.
+    di_altri = [r for r in tutte if r not in mie_da_decidere]
     return render_template(
         "riscatto/richieste.html",
-        da_decidere=ClaimService.da_decidere_per(user),
+        da_decidere=mie_da_decidere,
+        di_altri=di_altri,
+        a_chi={r.id: ClaimService.a_chi(r) for r in di_altri},
         mie=ClaimService.richieste_di(user),
     )
 
@@ -187,6 +199,9 @@ def richiesta(request_id: int):
         ),
         claimant=claimant,
         puo_decidere=richiesta.is_pending
+        and ClaimService.puo_decidere(richiesta, user),
+        come_riserva=richiesta.is_pending
+        and not ClaimService.e_destinatario(richiesta, user)
         and ClaimService.puo_decidere(richiesta, user),
         puo_ritirare=richiesta.is_pending and richiesta.claimant_id == user.id,
         a_chi=ClaimService.a_chi(richiesta),

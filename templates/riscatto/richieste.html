@@ -45,6 +45,21 @@
     {% endif %}
   </section>
 
+  {# Solo l'admin: le richieste che toccano a un direttore. Le può decidere
+     lui se il direttore non risponde (emendamento del 2026-10-19), ma non
+     gli arriva la notifica, per non intasarlo. #}
+  {% if di_altri %}
+  <section class="c7-stack" style="gap:8px">
+    <div class="c7-kicker">{{ _("In attesa di altri") }}</div>
+    <div class="c7-rows">
+      {% for r in di_altri %}
+      {{ riga(r, _("lo chiede %(chi)s, decide %(decide)s", chi=r.claimant.username, decide=a_chi[r.id])) }}
+      {% endfor %}
+    </div>
+    <div class="c7-nota">{{ _("Come amministratore puoi decidere anche queste, se chi le deve decidere non risponde.") }}</div>
+  </section>
+  {% endif %}
+
   {% if mie %}
   <section class="c7-stack" style="gap:8px">
     <div class="c7-kicker">{{ _("Le tue richieste") }}</div>

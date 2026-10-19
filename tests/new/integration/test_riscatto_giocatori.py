@@ -446,12 +446,14 @@ class TestChiDecide:
             ClaimRequestStatus.APPROVED.value
         )
 
-    def test_l_admin_non_decide_quando_c_e_il_creatore(self):
+    def test_l_admin_decide_anche_quando_c_e_il_creatore(self):
+        """Emendamento del 2026-10-19: l'admin è il ripiego se il creatore
+        non risponde. Fino ad allora qui c'era il contrario."""
         admin = _admin()
         richiesta = ClaimService.richiedi(_placeholder().id, _user())
         db.session.commit()
-        with pytest.raises(PermissionDeniedError):
-            ClaimService.reject(richiesta.id, admin)
+        assert admin.id not in richiesta.recipient_ids
+        ClaimService.reject(richiesta.id, admin)
 
     def test_col_creatore_cancellato_decide_l_admin(self):
         admin = _admin()

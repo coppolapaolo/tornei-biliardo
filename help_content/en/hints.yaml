@@ -300,9 +300,9 @@ hints:
   page: opzioni_della_gara
   section: struttura
 - id: gara.iscrivi_non_registrato
-  label: New unregistered player
-  short: 'For someone at the venue without an account: type first and last name and enroll them at once.
-    They play and appear in the standings, but get no notifications until they sign up.'
+  label: Create them as unregistered
+  short: 'For someone at the venue without an account: type their name in the search and create and enroll
+    them from there. They play and appear in the standings, but get no notifications until they sign up.'
   anchor: gara-iscrivi-non-registrato
   screens:
   - admin.competition.gara_detail
