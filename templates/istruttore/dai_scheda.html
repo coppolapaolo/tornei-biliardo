@@ -63,7 +63,7 @@
     <input type="hidden" name="promuove" value="{{ promossa.id }}">
     <section class="c7-inset">
       <div class="c7-kicker">{{ _("Passaggio di livello") }}</div>
-      <p style="margin:4px 0 0;font-size:13px;line-height:1.45">
+      <p style="margin:4px 0 0;font-size:calc(13 * var(--c7-tpx));line-height:1.45">
         {{ _("Questa proposta lascia indietro «%(scheda)s». Prendendola, potrà metterla nello storico: le sedute che ha fatto restano.", scheda=promossa.name) }}
       </p>
     </section>

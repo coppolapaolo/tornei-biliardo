@@ -118,8 +118,8 @@
         <button type="submit" class="btn btn-secondary w-100 h-100 d-flex flex-column align-items-center gap-1 py-2"
                 {% if quanti == 0 %}disabled{% endif %}
                 title="{% if quanti == 0 %}{{ _('Niente da aggiungere') }}{% else %}{{ _('Aggiunge %(n)s giocatori fittizi', n=quanti) }}{% endif %}">
-          <span style="font-size:12px;font-weight:700;line-height:1.15">{{ etichetta }}</span>
-          <span class="c7-num" style="font-size:13px">+{{ quanti }}</span>
+          <span style="font-size:calc(12 * var(--c7-tpx));font-weight:700;line-height:1.15">{{ etichetta }}</span>
+          <span class="c7-num" style="font-size:calc(13 * var(--c7-tpx))">+{{ quanti }}</span>
         </button>
       </form>
       {% endfor %}

@@ -94,7 +94,7 @@
             {%- else %}{{ ngettext("%(num)s prova", "%(num)s prove", riga.attempts) }}{% if riga.best is not none %} · {{ _("record %(best)s", best=riga.best) }}{% endif %}{% endif -%}
           </div>
         </div>
-        {% if riga.average_pct is not none %}<span class="c7-num" style="font-size:18px;font-weight:800">{{ riga.average_pct }}%</span>{% endif %}
+        {% if riga.average_pct is not none %}<span class="c7-num" style="font-size:calc(18 * var(--c7-tpx));font-weight:800">{{ riga.average_pct }}%</span>{% endif %}
       </div>
       {% endfor %}
     </section>
@@ -171,7 +171,7 @@
             {{ _("Superata") if attempt.passed else _("Non superata") }}
           </span>
           {% else %}
-          <span class="c7-num" style="font-size:15px;font-weight:800">{{ attempt.score }}</span>
+          <span class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ attempt.score }}</span>
           {% endif %}
         </a>
         {% endfor %}
@@ -188,7 +188,7 @@
       <a href="{{ url_for('challenge.edit_challenge', challenge_id=challenge.id) }}" class="c7-rows__row c7-rows__row--btn" style="color:inherit;text-decoration:none">
         <span class="c7-tile c7-tile--sm c7-tile--neutral"><i class="fas fa-pen"></i></span>
         <span class="c7-rows__main"><span class="c7-rows__title d-block">{{ _("Modifica l'esercizio") }}</span></span>
-        <i class="fas fa-chevron-right" style="font-size:11px;color:var(--c7-ink-faint)"></i>
+        <i class="fas fa-chevron-right" style="font-size:calc(11 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
       </a>
       {% endif %}
       {% if feature_visible('challenge.duplicate_challenge') %}
@@ -198,14 +198,14 @@
           <span class="c7-rows__title d-block">{{ _("Duplica") }}</span>
           <span class="c7-rows__sub d-block">{{ _("per farne una variante senza toccare questo") }}</span>
         </span>
-        <i class="fas fa-chevron-right" style="font-size:11px;color:var(--c7-ink-faint)"></i>
+        <i class="fas fa-chevron-right" style="font-size:calc(11 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
       </a>
       {% endif %}
       {% if feature_visible('challenge.challenge_statistics') %}
       <a href="{{ url_for('challenge.challenge_statistics', challenge_id=challenge.id) }}" class="c7-rows__row c7-rows__row--btn" style="color:inherit;text-decoration:none">
         <span class="c7-tile c7-tile--sm c7-tile--neutral"><i class="fas fa-chart-simple"></i></span>
         <span class="c7-rows__main"><span class="c7-rows__title d-block">{{ _("Statistiche") }}</span></span>
-        <i class="fas fa-chevron-right" style="font-size:11px;color:var(--c7-ink-faint)"></i>
+        <i class="fas fa-chevron-right" style="font-size:calc(11 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
       </a>
       {% endif %}
     </section>
@@ -226,7 +226,7 @@
   <a href="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}" class="btn btn-primary w-100">
     <i class="fas fa-play"></i>&nbsp;{{ _("Allenati su questo esercizio") }}
   </a>
-  <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+  <div class="text-center" style="font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
     {{ _("Registri una prova dopo l'altra, sulla stessa schermata") }}
   </div>
 </div>

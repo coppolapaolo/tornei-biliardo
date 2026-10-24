@@ -50,7 +50,7 @@
                 <td class="text-muted">
                     {% if request.processed_at %}
                     <span class="c7-num">{{ request.processed_at|datetime_local }}</span>
-                    {% if request.processed_by %}<div style="font-size: 12px;">{{ _("da") }} {{ request.processed_by.username }}</div>{% endif %}
+                    {% if request.processed_by %}<div style="font-size: calc(12 * var(--c7-tpx));">{{ _("da") }} {{ request.processed_by.username }}</div>{% endif %}
                     {% else %}
                     <span style="color: var(--c7-ink-faint);">—</span>
                     {% endif %}

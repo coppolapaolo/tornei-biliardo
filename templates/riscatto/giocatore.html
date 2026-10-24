@@ -15,7 +15,7 @@
 
   <section class="c7-card c7-stack">
     <div class="c7-kicker">{{ _("Giocatore non registrato") }}</div>
-    <div style="font-size:20px;font-weight:800;letter-spacing:-.02em">{{ nome }}</div>
+    <div style="font-size:calc(20 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ nome }}</div>
     <div class="c7-rows__sub">
       {{ ngettext("Iscritto a %(n)s gara, aggiunto da un direttore o da un istruttore.", "Iscritto a %(n)s gare, aggiunto da un direttore o da un istruttore.", n_gare, n=n_gare) }}
     </div>

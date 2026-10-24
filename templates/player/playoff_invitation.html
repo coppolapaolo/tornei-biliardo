@@ -13,12 +13,12 @@
     <section class="c7-card c7-card--accent">
         <div class="c7-kicker">{{ config.name }}</div>
         <div class="c7-num-xl" style="margin-top: 10px;">{{ qualification.qualifying_position }}</div>
-        <div style="font-size: 13px; color: var(--c7-accent-dim); margin-top: 2px;">{{ _("posizione in classifica") }}</div>
-        <p style="margin: 14px 0 0; font-size: 13px;">{{ qualification.qualification_reason }}</p>
+        <div style="font-size: calc(13 * var(--c7-tpx)); color: var(--c7-accent-dim); margin-top: 2px;">{{ _("posizione in classifica") }}</div>
+        <p style="margin: 14px 0 0; font-size: calc(13 * var(--c7-tpx));">{{ qualification.qualification_reason }}</p>
     </section>
 
     <section class="c7-card" style="margin-top: 12px;">
-        <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0; font-size: 13px;">
+        <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0; font-size: calc(13 * var(--c7-tpx));">
             {% if config.scheduled_date %}
             <dt class="text-muted" style="font-weight: 700;">{{ _("Quando") }}</dt>
             <dd class="c7-num" style="margin: 0; text-align: right;">{{ config.scheduled_date|datetime_local }}</dd>

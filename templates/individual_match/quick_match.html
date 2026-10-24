@@ -59,7 +59,7 @@
           </div>
         </div>
         <span class="c7-state c7-state--warn">{{ _("In corso") }}</span>
-        <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+        <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
       </a>
       {% endfor %}
     </div>
@@ -125,14 +125,14 @@
          con l'ultima partita giocata (o con la sala in cui sei disponibile). #}
       <div id="settingsSummary" class="c7-rows">
         <div class="c7-rows__row">
-          <i class="fas fa-clock" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+          <i class="fas fa-clock" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
           <div class="c7-rows__main">
             <div class="c7-rows__title">{{ _("Adesso") }}</div>
             <div class="c7-rows__sub">{{ _("La partita parte appena tocchi il pulsante") }}</div>
           </div>
         </div>
         <div class="c7-rows__row">
-          <i class="fas fa-location-dot" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+          <i class="fas fa-location-dot" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
           <div class="c7-rows__main">
             <div class="c7-rows__title" id="summaryLocation">
               {{ defaults.location or _("Sala non indicata") }}
@@ -141,7 +141,7 @@
           </div>
         </div>
         <div class="c7-rows__row">
-          <i class="fas fa-dice-one" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+          <i class="fas fa-dice-one" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
           <div class="c7-rows__main">
             <div class="c7-rows__title" id="summaryFormat">
               {{ defaults.discipline|discipline_display }} <span class="c7-sep">·</span> {{ format_summary }}
@@ -237,7 +237,7 @@
     <div id="tpaChoice">
       {{ toggle('tpa_referto', _("Tengo il referto TPA"),
                 _("Si annota turno per turno e il punteggio viene da lì: niente «+1» a mano.")) }}
-      <p style="margin:-8px 2px 0;font-size:12px;font-weight:600;color:var(--c7-ink-muted)" data-help="sfida-referto-all-avvio">
+      <p style="margin:-8px 2px 0;font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)" data-help="sfida-referto-all-avvio">
         {{ _("Va deciso adesso: a triangoli già segnati il referto non si apre più.") }}
       </p>
     </div>
@@ -248,7 +248,7 @@
        campionato — e chi la rivede deve capire di quale si tratta. Si
        corregge anche dopo, dalla pagina della sfida. #}
     <details class="c7-card">
-      <summary style="font-size:13px;font-weight:800;cursor:pointer">{{ _("Aggiungi una descrizione") }}</summary>
+      <summary style="font-size:calc(13 * var(--c7-tpx));font-weight:800;cursor:pointer">{{ _("Aggiungi una descrizione") }}</summary>
       <div style="margin-top:12px">
         <label for="description" class="c7-label">{{ _("Descrizione") }}</label>
         <input type="text" class="form-control" id="description" name="description" maxlength="200"
@@ -263,7 +263,7 @@
     <button type="submit" form="quickForm" class="btn btn-primary w-100">
       <i class="fas fa-play"></i>&nbsp;{{ _("Inizia a segnare") }}
     </button>
-    <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+    <div class="text-center" style="font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
       {{ _("Nessuno deve accettare: a fine partita confermate il risultato in due.") }}
     </div>
   </div>

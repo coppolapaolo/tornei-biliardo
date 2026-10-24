@@ -464,6 +464,51 @@ Layout condiviso per profilo proprio e profilo pubblico:
 | `small` | Dettagli, note, timestamp |
 | `fw-bold` | Enfasi, valori importanti |
 
+### Dimensioni del testo: seguono il telefono, fino a un tetto
+
+Dal 24 ottobre 2026 nessuna dimensione del testo si scrive in pixel. Su iPhone
+«Dimensioni testo» (Impostazioni › Schermo e luminosità) ingrandisce l'app come
+ingrandisce le app native, fino a un tetto oltre il quale il layout fitto si
+rompe. Chi ha bisogno di più ha lo zoom a due dita, che il `viewport` non
+blocca. Presidio: `tests/new/unit/test_testo_segue_il_telefono.py`.
+
+| Si scrive | Per | Alla misura normale | Al tetto |
+|-----------|-----|---------------------|----------|
+| `calc(13 * var(--c7-tpx))` | tutto il testo | 13px | ×23/17, cioè +35% |
+| `calc(26 * var(--c7-tpx-lento))` | titoli e cifre da 24px in su, il titolo della testata, le iniziali dell'avatar, il tastierino del referto | 26px | ×20/17, cioè +18% |
+
+Alla misura normale entrambi valgono **un pixel esatto**: l'app è identica a
+quella di prima, ed è verificato al pixel contro `main` su telefono e desktop.
+Il passo lento è quello di iOS stesso, dove al massimo il corpo passa da 17 a
+23 e il titolo grande da 34 a 40: ciò che è già grande non ha bisogno di
+crescere, ed è lui a rompere le righe.
+
+**Come si calcola.** Su iOS `body` prende `font: -apple-system-body` (17px con
+il cursore a metà), altrove `17/16 rem`. Da lì `--c7-tpx = min(1em, 23px) / 17`,
+registrata con `@property` come lunghezza, così l'`em` si risolve una volta
+sola su `body`. `rem` resta quello del browser, perché Bootstrap ci misura
+margini e spaziature, che non devono crescere col testo.
+
+**Quando il testo cresce, cosa deve cedere.**
+
+- **Altezze minime, non fisse**, per tutto ciò che contiene testo: `.btn`
+  (`min-height` più `height: fit-content`, così una riga flex non lo stira),
+  `.c7-state`. Un'etichetta che va a capo fa crescere il contenitore invece di
+  uscirne.
+- **`minmax(0, 1fr)`, non `1fr`**, nelle griglie di comandi: con `1fr` la
+  colonna si allarga fino alla parola più lunga e la griglia esce dallo
+  schermo (il tastierino del referto, «NON COLPITA»).
+- **Una cifra composta non va a capo**: `.c7-num` è `nowrap`, perché «4 — 3»
+  spezzato su due righe non si legge più.
+- **Quando lo spazio è contato rispetto al testo, si decide in `em`** con una
+  container query: le pillole delle tessere scendono sotto il titolo
+  (`.c7-tessera__testa`, sotto 21em), l'avatar della classifica lascia il posto
+  al nome (`.c7-rows`, sotto 24em). Le soglie stanno sotto la larghezza di un
+  telefono alla misura normale, quindi lì non scattano.
+- **Si verifica a più tacche**, non a una: 17, 19, 21 e 23 pixel di corpo,
+  emulati in WebKit dando a `rem` il valore di iOS; e una volta sul simulatore
+  (`xcrun simctl ui <iPhone> content_size …`) per la catena vera.
+
 ---
 
 ## Form Conventions
@@ -1311,6 +1356,7 @@ Principi, in ordine di importanza:
 | 2026-09-20 | Il voto di un esercizio si dà con **cinque bilie numerate** (`.c7-ballvote`, token `--c7-ball-1…5`), non con le stelle; accanto alla media, sulle card, una bilia in piccolo (`.c7-ballmark`) | Decisione dell'utente: una scala da 1 a 5 nel biliardo ha già i suoi oggetti, e le stelle sono il lessico di un negozio. I cinque colori sono **iconografia del gioco**, non semantici: non si usano per dire «ok» o «attenzione». Piatte, senza gradienti; toccare di nuovo la propria bilia toglie il voto |
 | 2026-09-27 | Le conferme seguono cosa fa l'azione: Annulla in tre secondi se frequente e reversibile, foglio col nome dell'azione se tocca altri o non si disfa, mai `confirm()` del browser | La migrazione del gennaio 2026 non era presidiata e 17 `confirm()` erano ricomparsi; in produzione il browser aveva zittito i dialoghi e «Accetta» non faceva nulla. Ora ci sono due presidi statici (ADR-074) |
 | 2026-09-30 | Touch target minimo a **48px** (`--c7-touch`) anche nella sezione «Touch Target» | La sezione diceva ancora 44px, il minimo di Bootstrap, mentre il design system usa 48px dall'adozione del 7c: due numeri diversi per la stessa regola. Vale il token. Chi legge senza occhiali fatica già con testi e comandi piccoli sul telefono |
+| 2026-10-24 | Testo che segue «Dimensioni testo» di iOS, con tetto (`--c7-tpx`, `--c7-tpx-lento`) | Le dimensioni in pixel non seguivano le impostazioni del telefono: chi alzava il cursore doveva zoomare. Tetto a 23/17 per il testo e 20/17 per titoli, cifre grandi e comandi fitti, come fa iOS; alla misura normale tutto resta identico al pixel. Vedi «Dimensioni del testo» |
 
 ---
 

@@ -54,7 +54,7 @@
       {% if _girone_partita %}{{ _('Girone %(nome)s', nome=nome_del_girone(match.bracket_group)) }}{% endif %}
       {% if _nome_finale %}{{ t.nome_partita(_nome_finale, match.round_number) }}{% endif %}
       {% if (_girone_partita or _nome_finale) and _finita and match.corrections %} · {% endif %}
-      {% if _finita and match.corrections %}<i class="fas fa-pen" style="font-size:9px"></i> {{ _('corretto') }}{% endif %}
+      {% if _finita and match.corrections %}<i class="fas fa-pen" style="font-size:calc(9 * var(--c7-tpx))"></i> {{ _('corretto') }}{% endif %}
     </div>
     {% endif %}
   </div>

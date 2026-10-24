@@ -118,7 +118,7 @@
                     card.appendChild(hr);
 
                     const dl = document.createElement('dl');
-                    dl.style.cssText = 'display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin:0;font-size:13px';
+                    dl.style.cssText = 'display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin:0;font-size:calc(13 * var(--c7-tpx))';
 
                     let venue = gara.venue_name || '-';
                     if (gara.city) venue += ' (' + gara.city + ')';

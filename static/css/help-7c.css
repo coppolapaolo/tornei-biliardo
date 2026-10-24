@@ -20,7 +20,7 @@
    stanca la lettura, quindi qui — e solo dentro la prosa della guida — si
    torna al peso normale. Manrope 400 è già fra i pesi caricati. */
 .help-prose {
-  font-size: 15px;
+  font-size: calc(15 * var(--c7-tpx));
   font-weight: 400;
   line-height: 1.65;
   color: var(--c7-ink-soft);
@@ -44,7 +44,7 @@
    testata appiccicata e sembra che il collegamento sia sbagliato. */
 .help-h2 {
   margin: 8px 0 0;
-  font-size: 20px;
+  font-size: calc(20 * var(--c7-tpx));
   font-weight: 800;
   letter-spacing: -.02em;
   color: var(--c7-ink);
@@ -52,7 +52,7 @@
 }
 .help-h2__link {
   margin-left: 8px;
-  font-size: 13px;
+  font-size: calc(13 * var(--c7-tpx));
   color: var(--c7-ink-faint);
   opacity: 0;
   text-decoration: none;
@@ -84,7 +84,7 @@
 .help-shot--wide img { max-width: 100%; }
 .help-shot figcaption {
   margin-top: 10px;
-  font-size: 12.5px;
+  font-size: calc(12.5 * var(--c7-tpx));
   font-weight: 700;
   color: var(--c7-ink-muted);
   line-height: 1.45;
@@ -102,13 +102,13 @@
   color: var(--c7-accent-ink);
   font-family: var(--c7-font-mono);
   font-weight: 800;
-  font-size: 14px;
-  line-height: 30px;
+  font-size: calc(14 * var(--c7-tpx));
+  line-height: calc(30 * var(--c7-tpx-lento));
   text-align: center;
 }
 .help-step__body { flex: 1; min-width: 0; }
 .help-step__title {
-  font-size: 15px;
+  font-size: calc(15 * var(--c7-tpx));
   font-weight: 800;
   color: var(--c7-ink);
   letter-spacing: -.01em;
@@ -126,18 +126,18 @@
 }
 .help-option + .help-option { margin-top: 10px; }
 .help-option__name {
-  font-size: 14px;
+  font-size: calc(14 * var(--c7-tpx));
   font-weight: 800;
   color: var(--c7-ink);
 }
 .help-option__values {
   margin-top: 2px;
   font-family: var(--c7-font-mono);
-  font-size: 12px;
+  font-size: calc(12 * var(--c7-tpx));
   font-weight: 700;
   color: var(--c7-accent);
 }
-.help-option__text { margin-top: 6px; font-size: 14px; }
+.help-option__text { margin-top: 6px; font-size: calc(14 * var(--c7-tpx)); }
 
 /* --- Domande frequenti ---------------------------------------------------- */
 .help-faq { border-radius: var(--c7-r-control); background: var(--c7-card); }
@@ -146,7 +146,7 @@
   list-style: none;
   cursor: pointer;
   padding: 13px 14px;
-  font-size: 14.5px;
+  font-size: calc(14.5 * var(--c7-tpx));
   font-weight: 800;
   color: var(--c7-ink);
   display: flex;
@@ -157,7 +157,7 @@
 .help-faq summary::-webkit-details-marker { display: none; }
 .help-faq summary::after {
   content: "\f078";
-  font: 900 12px "Font Awesome 6 Free";
+  font: 900 calc(12 * var(--c7-tpx)) "Font Awesome 6 Free";
   margin-left: auto;
   color: var(--c7-ink-muted);
 }
@@ -178,14 +178,14 @@
 }
 .help-cardlink:hover { background: var(--c7-sunken); }
 .help-cardlink__title {
-  font-size: 16px;
+  font-size: calc(16 * var(--c7-tpx));
   font-weight: 800;
   letter-spacing: -.02em;
   color: var(--c7-ink);
 }
 .help-cardlink__desc {
   margin-top: 4px;
-  font-size: 13.5px;
+  font-size: calc(13.5 * var(--c7-tpx));
   font-weight: 600;
   color: var(--c7-ink-muted);
   line-height: 1.5;
@@ -199,7 +199,7 @@
 }
 .help-minutes {
   font-family: var(--c7-font-mono);
-  font-size: 11px;
+  font-size: calc(11 * var(--c7-tpx));
   font-weight: 700;
   color: var(--c7-ink-faint);
 }
@@ -210,7 +210,7 @@
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
-  font-size: 12px;
+  font-size: calc(12 * var(--c7-tpx));
   font-weight: 700;
   color: var(--c7-ink-muted);
 }
@@ -229,7 +229,7 @@
 }
 .help-updown a:hover { background: var(--c7-sunken); }
 .help-updown .c7-label { display: block; }
-.help-updown__title { font-size: 14px; font-weight: 800; color: var(--c7-ink); }
+.help-updown__title { font-size: calc(14 * var(--c7-tpx)); font-weight: 800; color: var(--c7-ink); }
 .help-updown a.is-next { text-align: right; }
 
 /* --- Indice laterale (solo desktop) --------------------------------------- */
@@ -242,7 +242,7 @@
   display: block;
   padding: 7px 10px;
   border-radius: var(--c7-r-chip);
-  font-size: 13px;
+  font-size: calc(13 * var(--c7-tpx));
   font-weight: 700;
   color: var(--c7-ink-muted);
   text-decoration: none;
@@ -261,12 +261,12 @@
   padding: 12px 14px;
 }
 .help-hint + .help-hint { margin-top: 8px; }
-.help-hint__label { font-size: 14px; font-weight: 800; color: var(--c7-ink); }
-.help-hint__short { margin-top: 4px; font-size: 13.5px; color: var(--c7-ink-soft); line-height: 1.5; }
+.help-hint__label { font-size: calc(14 * var(--c7-tpx)); font-weight: 800; color: var(--c7-ink); }
+.help-hint__short { margin-top: 4px; font-size: calc(13.5 * var(--c7-tpx)); color: var(--c7-ink-soft); line-height: 1.5; }
 .help-hint__anchor {
   margin-top: 6px;
   font-family: var(--c7-font-mono);
-  font-size: 11.5px;
+  font-size: calc(11.5 * var(--c7-tpx));
   font-weight: 700;
   color: var(--c7-ink-faint);
 }
@@ -282,7 +282,7 @@
   border-radius: var(--c7-r-pill);
   background: var(--c7-accent-tint);
   color: var(--c7-accent-tint-ink);
-  font-size: 11px;
+  font-size: calc(11 * var(--c7-tpx));
   font-weight: 800;
   vertical-align: middle;
 }

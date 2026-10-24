@@ -51,23 +51,23 @@
       </div>
     </div>
 
-    <label class="d-flex align-items-center gap-2" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+    <label class="d-flex align-items-center gap-2" style="font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
       <input type="checkbox" name="confirm_new" class="form-check-input mt-0">
       {{ _('Crea comunque, è davvero un’altra squadra') }}
     </label>
 
     <button type="submit" class="btn btn-primary w-100">{{ _('Salva la squadra') }}</button>
 
-    <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+    <div style="font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
       {{ _('Vale solo per questa gara e non cambia il tuo profilo. Puoi cambiarla finché il primo turno non è partito.') }}
     </div>
   </form>
 
   {% else %}
-  <div style="font-size:14px;font-weight:700">
+  <div style="font-size:calc(14 * var(--c7-tpx));font-weight:700">
     {{ user_inscription.squadra.name if user_inscription.squadra else _('Senza squadra in questa gara') }}
   </div>
-  <div style="margin-top:6px;font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+  <div style="margin-top:6px;font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
     {{ _('Il primo turno è partito: il tabellone è già estratto, quindi le squadre non si cambiano più.') }}
   </div>
   {% endif %}

@@ -27,7 +27,7 @@
     {% for screen, hints in by_screen.items() %}
     <div class="c7-card">
         <div class="c7-kicker">{{ _('Schermata') }}</div>
-        <div class="fw-bold" style="font-family:var(--c7-font-mono);font-size:13px">{{ screen }}</div>
+        <div class="fw-bold" style="font-family:var(--c7-font-mono);font-size:calc(13 * var(--c7-tpx))">{{ screen }}</div>
 
         {% set tour = tours.get(screen) %}
         {% if tour %}

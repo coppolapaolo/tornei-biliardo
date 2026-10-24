@@ -65,7 +65,7 @@
         </div>
       </div>
       {% if row.previous is not none %}
-      <span class="c7-num" style="font-size:12px;color:var(--c7-ink-muted)">
+      <span class="c7-num" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-muted)">
         {{ _("prima %(n)s", n=row.previous_label) }}
       </span>
       {% endif %}
@@ -127,7 +127,7 @@
   {% elif vedo_le_note and session.notes %}
   <section class="c7-card">
     <div class="c7-label">{{ _("Note della seduta") }}</div>
-    <p style="margin:8px 0 0;font-size:14px;white-space:pre-line">{{ session.notes }}</p>
+    <p style="margin:8px 0 0;font-size:calc(14 * var(--c7-tpx));white-space:pre-line">{{ session.notes }}</p>
   </section>
   {% endif %}
 

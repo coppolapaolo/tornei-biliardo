@@ -19,42 +19,44 @@
 <article class="c7-card d-flex flex-column gap-3">
 
   {# ── Testata ─────────────────────────────────────────────────────── #}
-  <div class="d-flex align-items-start gap-2">
-    <div class="flex-fill">
-      <div class="c7-tessera__title">{{ card.name }}</div>
-      <div class="c7-tessera__meta">
-        {% if card.campionato_name %}{{ card.campionato_name }} <span class="c7-sep">·</span>{% endif %}
-        {{ _('Playoff') }}
-        {% if gara %}
-          {% set _disciplina, _distanza = gara.formato_breve %}
-          {% if _disciplina %}<span class="c7-sep">·</span> {{ _disciplina }}{% endif %}
-          {% if _distanza %}<span class="c7-sep">·</span> {{ _distanza }}{% endif %}
-        {% elif card.discipline %}
-          {#- Finale non ancora creata: la disciplina scelta nella configurazione. #}
-          <span class="c7-sep">·</span> {{ card.discipline|discipline_display }}
+  <div class="c7-tessera__testa">
+    <div class="c7-tessera__head">
+      <div class="c7-tessera__who">
+        <div class="c7-tessera__title">{{ card.name }}</div>
+        <div class="c7-tessera__meta">
+          {% if card.campionato_name %}{{ card.campionato_name }} <span class="c7-sep">·</span>{% endif %}
+          {{ _('Playoff') }}
+          {% if gara %}
+            {% set _disciplina, _distanza = gara.formato_breve %}
+            {% if _disciplina %}<span class="c7-sep">·</span> {{ _disciplina }}{% endif %}
+            {% if _distanza %}<span class="c7-sep">·</span> {{ _distanza }}{% endif %}
+          {% elif card.discipline %}
+            {#- Finale non ancora creata: la disciplina scelta nella configurazione. #}
+            <span class="c7-sep">·</span> {{ card.discipline|discipline_display }}
+          {% endif %}
+        </div>
+        <div class="c7-tessera__meta">
+          {% if card.date %}
+          <span class="c7-num" style="font-size:calc(12 * var(--c7-tpx))">{{ card.date|date_local }}</span>
+          {% endif %}
+          {% if card.location %}{% if card.date %}<span class="c7-sep">·</span> {% endif %}{{ card.location }}{% endif %}
+        </div>
+      </div>
+      <div class="c7-tessera__states">
+        {% if card.is_in_lista %}
+          <span class="c7-state c7-state--warn">{{ _("Lista d'attesa") }} #{{ card.posizione_in_lista }}</span>
+        {% elif card.is_iscritto %}
+          <span class="c7-state c7-state--accent">{{ _('Iscritto') }}</span>
+        {% endif %}
+        {% if card.is_prova %}
+          <span class="c7-state c7-state--warn"><i class="fas fa-flask me-1"></i>{{ _('Di prova') }}</span>
+        {% endif %}
+        {% if card.is_chiuso or not card.inviti_aperti %}
+          <span class="c7-state c7-state--muted">{{ _('Iscrizioni chiuse') }}</span>
+        {% else %}
+          <span class="c7-state c7-state--ok">{{ _('Inviti in corso') }}</span>
         {% endif %}
       </div>
-      <div class="c7-tessera__meta">
-        {% if card.date %}
-        <span class="c7-num" style="font-size:12px">{{ card.date|date_local }}</span>
-        {% endif %}
-        {% if card.location %}{% if card.date %}<span class="c7-sep">·</span> {% endif %}{{ card.location }}{% endif %}
-      </div>
-    </div>
-    <div class="c7-tessera__states">
-      {% if card.is_in_lista %}
-        <span class="c7-state c7-state--warn">{{ _("Lista d'attesa") }} #{{ card.posizione_in_lista }}</span>
-      {% elif card.is_iscritto %}
-        <span class="c7-state c7-state--accent">{{ _('Iscritto') }}</span>
-      {% endif %}
-      {% if card.is_prova %}
-        <span class="c7-state c7-state--warn"><i class="fas fa-flask me-1"></i>{{ _('Di prova') }}</span>
-      {% endif %}
-      {% if card.is_chiuso or not card.inviti_aperti %}
-        <span class="c7-state c7-state--muted">{{ _('Iscrizioni chiuse') }}</span>
-      {% else %}
-        <span class="c7-state c7-state--ok">{{ _('Inviti in corso') }}</span>
-      {% endif %}
     </div>
   </div>
 
@@ -65,7 +67,7 @@
       <div class="progress-bar" role="progressbar" style="width:{{ pct if pct < 100 else 100 }}%"
            aria-valuenow="{{ card.confermati }}" aria-valuemin="0" aria-valuemax="{{ card.posti }}"></div>
     </div>
-    <div class="d-flex align-items-center gap-2 mt-2" style="font-size:12px;font-weight:700">
+    <div class="d-flex align-items-center gap-2 mt-2" style="font-size:calc(12 * var(--c7-tpx));font-weight:700">
       <span class="flex-fill c7-tessera__muted">
         {% if card.quota %}
           {{ _('Quota') }} <span class="c7-num">{{ card.quota|quota }}</span>
@@ -87,12 +89,12 @@
   <div class="c7-inset c7-inset--warn">
     {% if card.lista_per_posti %}
       <div class="c7-kicker">{{ _('La gara è al completo') }}</div>
-      <p class="mb-0 mt-1" style="font-size:12px;font-weight:600;line-height:1.55">
+      <p class="mb-0 mt-1" style="font-size:calc(12 * var(--c7-tpx));font-weight:600;line-height:1.55">
         {{ _("Se qualcuno si ritira entri tu, in ordine di posizione: succede da solo, non devi rifare l'iscrizione.") }}
       </p>
     {% else %}
       <div class="c7-kicker">{{ _('Sei fuori dalla zona playoff') }}</div>
-      <p class="mb-0 mt-1" style="font-size:12px;font-weight:600;line-height:1.55">
+      <p class="mb-0 mt-1" style="font-size:calc(12 * var(--c7-tpx));font-weight:600;line-height:1.55">
         {{ _("Se un qualificato rifiuta, l'invito passa al primo degli esclusi, e così via. Quando tocca a te ricevi l'invito da accettare.") }}
       </p>
     {% endif %}

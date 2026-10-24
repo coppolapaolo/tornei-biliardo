@@ -89,24 +89,24 @@
   </div>
   <div class="c7-grid" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px">
     <div>
-      <div class="c7-num-lg" style="font-size:24px">{{ drill_chart.first }}</div>
+      <div class="c7-num-lg" style="font-size:calc(24 * var(--c7-tpx-lento))">{{ drill_chart.first }}</div>
       <div class="c7-rows__sub">{{ _("Prima prova") }}</div>
     </div>
     <div>
-      <div class="c7-num-lg" style="font-size:24px">{{ drill_chart.last }}</div>
+      <div class="c7-num-lg" style="font-size:calc(24 * var(--c7-tpx-lento))">{{ drill_chart.last }}</div>
       <div class="c7-rows__sub">{{ _("Ultima prova") }}</div>
     </div>
     <div>
-      <div class="c7-num-lg" style="font-size:24px">{{ drill_chart.best }}{% if selected_drill.max_score %}<span style="font-size:15px;opacity:.7">/{{ selected_drill.max_score }}</span>{% endif %}</div>
+      <div class="c7-num-lg" style="font-size:calc(24 * var(--c7-tpx-lento))">{{ drill_chart.best }}{% if selected_drill.max_score %}<span style="font-size:calc(15 * var(--c7-tpx));opacity:.7">/{{ selected_drill.max_score }}</span>{% endif %}</div>
       <div class="c7-rows__sub">{{ _("Il migliore") }}</div>
     </div>
   </div>
   {% elif selected_drill.pass_fail_only %}
-  <p class="mb-0" style="font-size:14px;font-weight:600">
+  <p class="mb-0" style="font-size:calc(14 * var(--c7-tpx));font-weight:600">
     {{ _("Questo esercizio è superato o non superato: non c'è un punteggio da mettere in grafico.") }}
   </p>
   {% else %}
-  <p class="mb-0" style="font-size:14px;font-weight:600">
+  <p class="mb-0" style="font-size:calc(14 * var(--c7-tpx));font-weight:600">
     {{ _("Servono almeno due prove nel periodo scelto per disegnare un andamento.") }}
   </p>
   {% endif %}

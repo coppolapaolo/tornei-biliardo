@@ -63,7 +63,7 @@ show_admin_management=False, show_director_management=False, users=[], can_manag
             </div>
             {% if not users %}
             {# Perche' l'elenco e' vuoto: senza questa riga sembra un guasto. #}
-            <p class="text-muted mt-2" style="font-size: 13px;">
+            <p class="text-muted mt-2" style="font-size: calc(13 * var(--c7-tpx));">
                 {{ _('Si possono aggiungere solo utenti con ruolo direttore vicini alla sede della gara.') }}
             </p>
             {% endif %}

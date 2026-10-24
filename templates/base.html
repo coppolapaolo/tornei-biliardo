@@ -70,11 +70,11 @@
     {% if debug_info.debug_mode %}
     <style>
         .debug-footer { background:#1a1a1a; color:#00ff00; font-family:'Courier New',monospace;
-            font-size:12px; padding:10px; margin-top:20px; border-top:3px solid #ff4444; }
+            font-size:calc(12 * var(--c7-tpx)); padding:10px; margin-top:20px; border-top:3px solid #ff4444; }
         .debug-footer h6 { color:#ffff00; margin-bottom:5px; }
         .debug-footer .debug-item { margin-bottom:3px; }
         .debug-footer .debug-value { color:#00ffff; }
-        .debug-footer .quick-login-btn { font-size:10px; padding:2px 6px; margin:1px; height:auto; border-radius:6px; }
+        .debug-footer .quick-login-btn { font-size:calc(10 * var(--c7-tpx)); padding:2px 6px; margin:1px; height:auto; min-height:0; border-radius:6px; }
     </style>
     {% endif %}
 
@@ -332,7 +332,7 @@
                    class="d-flex align-items-center gap-2 w-100" style="height:auto;padding:0">
                     <span class="c7-avatar">{{ current_user.username[:2] | upper }}</span>
                     <span class="flex-fill text-start">
-                        <span class="d-block" style="font-size:12px;font-weight:800">{{ current_user.username }}</span>
+                        <span class="d-block" style="font-size:calc(12 * var(--c7-tpx));font-weight:800">{{ current_user.username }}</span>
                         <span class="c7-side__role">
                             {% if current_user.is_admin %}{{ _('amministratore') }}
                             {% elif current_user.is_director %}{{ _('direttore') }}
@@ -481,7 +481,7 @@
 
             {# Footer pubblico: raggiungibilita' dell'informativa privacy/cookie. #}
             <footer class="c7-content pt-3 pb-4">
-                <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+                <div class="text-center" style="font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
                     <span>{{ config.APP_NAME }}</span>
                     {# La versione in chiaro: dice quale rilascio sta girando
                        senza dover leggere un log. La fonte e' Config.VERSION,

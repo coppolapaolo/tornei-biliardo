@@ -7,7 +7,7 @@
   <div style="text-align: center; margin-bottom: 24px;">
     <div class="c7-kicker">{{ config.APP_NAME }}</div>
     <h1 style="margin: 6px 0 0;">{{ _('Test dei cookie') }}</h1>
-    <p class="text-muted" style="margin-top: 8px; font-size: 14px;">
+    <p class="text-muted" style="margin-top: 8px; font-size: calc(14 * var(--c7-tpx));">
       {{ _('Questa pagina controlla, direttamente sul tuo dispositivo, se i cookie funzionano su questo sito.') }}
     </p>
   </div>
@@ -18,24 +18,24 @@
   <div class="c7-stack" id="diagnosi" data-stato="in-corso">
     <div class="c7-card" style="padding: 14px 16px;" id="riga-indirizzo" data-esito="attesa">
       <strong>{{ _('Indirizzo') }}</strong>
-      <div class="text-muted" style="font-size: 13px;" id="testo-indirizzo">…</div>
+      <div class="text-muted" style="font-size: calc(13 * var(--c7-tpx));" id="testo-indirizzo">…</div>
     </div>
     <div class="c7-card" style="padding: 14px 16px;" id="riga-abilitati" data-esito="attesa">
       <strong>{{ _('Il browser dichiara di accettare i cookie') }}</strong>
-      <div class="text-muted" style="font-size: 13px;" id="testo-abilitati">…</div>
+      <div class="text-muted" style="font-size: calc(13 * var(--c7-tpx));" id="testo-abilitati">…</div>
     </div>
     <div class="c7-card" style="padding: 14px 16px;" id="riga-scrittura" data-esito="attesa">
       <strong>{{ _('Il browser salva un cookie di prova') }}</strong>
-      <div class="text-muted" style="font-size: 13px;" id="testo-scrittura">…</div>
+      <div class="text-muted" style="font-size: calc(13 * var(--c7-tpx));" id="testo-scrittura">…</div>
     </div>
     <div class="c7-card" style="padding: 14px 16px;" id="riga-giro" data-esito="attesa">
       <strong>{{ _('Il cookie di accesso arriva al server') }}</strong>
-      <div class="text-muted" style="font-size: 13px;" id="testo-giro">…</div>
+      <div class="text-muted" style="font-size: calc(13 * var(--c7-tpx));" id="testo-giro">…</div>
     </div>
 
     <div class="c7-card" style="padding: 14px 16px; display: none;" id="verdetto">
       <strong id="verdetto-titolo"></strong>
-      <div style="font-size: 14px; margin-top: 6px;" id="verdetto-testo"></div>
+      <div style="font-size: calc(14 * var(--c7-tpx)); margin-top: 6px;" id="verdetto-testo"></div>
     </div>
 
     <a href="{{ url_for('auth.login') }}" class="btn btn-primary w-100">{{ _('Vai al login') }}</a>

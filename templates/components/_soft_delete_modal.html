@@ -9,10 +9,10 @@
             <form id="softDeleteForm" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-body">
-                    <p style="margin: 0 0 6px; font-size: 15px;">
+                    <p style="margin: 0 0 6px; font-size: calc(15 * var(--c7-tpx));">
                         <span id="softDeleteModalMessage"></span><strong id="softDeleteEntityName"></strong>?
                     </p>
-                    <p id="softDeleteExtraMessage" class="text-muted" style="display: none; font-size: 13px; margin: 0 0 16px;"></p>
+                    <p id="softDeleteExtraMessage" class="text-muted" style="display: none; font-size: calc(13 * var(--c7-tpx)); margin: 0 0 16px;"></p>
 
                     <div class="c7-label" style="margin-top: 18px;">{{ _("Cosa fare con le partite esistenti") }}</div>
                     <div class="c7-stack">

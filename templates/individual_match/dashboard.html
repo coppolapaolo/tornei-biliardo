@@ -36,9 +36,9 @@
     {{ user.username[:2]|upper if user else '—' }}
   </span>
   <div class="flex-fill" style="min-width:0">
-    <div style="font-size:16px;font-weight:800;letter-spacing:-.02em">{{ user.username if user else _('Avversario') }}</div>
+    <div style="font-size:calc(16 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ user.username if user else _('Avversario') }}</div>
     {% if detail %}
-    <div style="margin-top:3px;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">{{ detail }}</div>
+    <div style="margin-top:3px;font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">{{ detail }}</div>
     {% endif %}
   </div>
 </div>
@@ -61,12 +61,12 @@
       <i class="fas fa-play"></i>
     </span>
     <div class="flex-fill" style="min-width:0">
-      <div style="font-size:16px;font-weight:800;letter-spacing:-.02em">{{ _("Giochi adesso?") }}</div>
-      <div style="margin-top:3px;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+      <div style="font-size:calc(16 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ _("Giochi adesso?") }}</div>
+      <div style="margin-top:3px;font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
         {{ _("Scegli l'avversario e sei al segnapunti") }}
       </div>
     </div>
-    <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+    <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
   </a>
 
   {# ---------- Segni la partita di altri due (ADR-084) ----------
@@ -81,12 +81,12 @@
       <i class="fas fa-pen-to-square"></i>
     </span>
     <div class="flex-fill" style="min-width:0">
-      <div style="font-size:16px;font-weight:800;letter-spacing:-.02em">{{ _("Segna la partita di altri due") }}</div>
-      <div style="margin-top:3px;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+      <div style="font-size:calc(16 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ _("Segna la partita di altri due") }}</div>
+      <div style="margin-top:3px;font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
         {{ _("Tieni tu il referto TPA: a fine partita confermano loro") }}
       </div>
     </div>
-    <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+    <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
   </a>
   {% endif %}
 
@@ -124,7 +124,7 @@
         {% else %}
         <span class="c7-state c7-state--err">{{ _('In corso') }}</span>
         {% endif %}
-        <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+        <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
       </a>
       {% endfor %}
     </div>
@@ -271,7 +271,7 @@
           </div>
         </div>
         <span class="c7-state c7-state--warn">{{ _('In attesa') }}</span>
-        <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+        <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
       </a>
       {% endfor %}
     </div>
@@ -304,7 +304,7 @@
             <span class="c7-num">{{ match.player1_score }}–{{ match.player2_score }}</span>
           </div>
         </div>
-        <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+        <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
       </a>
       {% endfor %}
     </div>
@@ -357,45 +357,45 @@
   <section class="c7-rows">
     <a class="c7-rows__row" href="{{ url_for('individual_match.quick_match') }}"
        style="color:inherit;text-decoration:none">
-      <i class="fas fa-play" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <i class="fas fa-play" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
       <div class="c7-rows__main"><div class="c7-rows__title" data-help="sfida-avvio-rapido">{{ _("Avvio rapido") }}</div></div>
-      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
     </a>
     <a class="c7-rows__row d-lg-none" href="{{ url_for('individual_match.create_proposal') }}"
        style="color:inherit;text-decoration:none">
-      <i class="fas fa-plus" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <i class="fas fa-plus" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
       <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Nuova proposta") }}</div></div>
-      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
     </a>
     <a class="c7-rows__row" href="{{ url_for('individual_match.proposal_list') }}"
        style="color:inherit;text-decoration:none">
-      <i class="fas fa-envelope" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <i class="fas fa-envelope" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
       <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Tutte le proposte") }}</div></div>
-      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
     </a>
     <a class="c7-rows__row" href="{{ url_for('individual_match.match_list') }}"
        style="color:inherit;text-decoration:none">
-      <i class="fas fa-list" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <i class="fas fa-list" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
       <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Tutte le sfide") }}</div></div>
-      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
     </a>
     <a class="c7-rows__row" href="{{ url_for('individual_match.manage_availability') }}"
        style="color:inherit;text-decoration:none">
-      <i class="fas fa-calendar" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <i class="fas fa-calendar" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
       <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Le mie disponibilità") }}</div></div>
-      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
     </a>
     <a class="c7-rows__row" href="{{ url_for('individual_match.discover_players') }}"
        style="color:inherit;text-decoration:none">
-      <i class="fas fa-compass" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <i class="fas fa-compass" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
       <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Trova giocatori") }}</div></div>
-      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
     </a>
     <a class="c7-rows__row" href="{{ url_for('individual_match.user_statistics') }}"
        style="color:inherit;text-decoration:none">
-      <i class="fas fa-chart-line" style="font-size:14px;color:var(--c7-accent);width:18px"></i>
+      <i class="fas fa-chart-line" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
       <div class="c7-rows__main"><div class="c7-rows__title">{{ _("Statistiche") }}</div></div>
-      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
     </a>
   </section>
 </div>

@@ -22,11 +22,11 @@
     <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
       <div>
         <div class="c7-kicker">{{ _("Nome") }}</div>
-        <div class="mt-1" style="font-size:14px;font-weight:800">{{ wizard_data.name }}</div>
+        <div class="mt-1" style="font-size:calc(14 * var(--c7-tpx));font-weight:800">{{ wizard_data.name }}</div>
       </div>
       <div>
         <div class="c7-kicker">{{ _("Classifica") }}</div>
-        <div class="mt-1" style="font-size:14px;font-weight:800">
+        <div class="mt-1" style="font-size:calc(14 * var(--c7-tpx));font-weight:800">
           {% if wizard_data.default_classification_system == 'WINS' %}{{ _("Vittorie") }}
           {% elif wizard_data.default_classification_system == 'RACK' %}{{ _("Triangoli totali") }}
           {% elif wizard_data.default_classification_system == 'POINTS' %}{{ _("Punti") }}
@@ -36,11 +36,11 @@
       </div>
       <div>
         <div class="c7-kicker">{{ _("Strategia") }}</div>
-        <div class="mt-1" style="font-size:14px;font-weight:800">{{ wizard_data.campionato_type|nome_formula }}</div>
+        <div class="mt-1" style="font-size:calc(14 * var(--c7-tpx));font-weight:800">{{ wizard_data.campionato_type|nome_formula }}</div>
       </div>
       <div>
         <div class="c7-kicker">{{ _("Gare") }}</div>
-        <div class="c7-num mt-1" style="font-size:14px">{{ wizard_data.planned_gare_count }}</div>
+        <div class="c7-num mt-1" style="font-size:calc(14 * var(--c7-tpx))">{{ wizard_data.planned_gare_count }}</div>
       </div>
       {% if wizard_data.is_prova %}
       <div>
@@ -51,7 +51,7 @@
     </div>
   </div>
 
-  <p class="mb-3" style="font-size:13px;font-weight:600;color:var(--c7-ink-muted)">
+  <p class="mb-3" style="font-size:calc(13 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
     {{ _("Questi valori vengono usati come default quando crei una gara. Potrai sempre cambiarli sulla singola gara.") }}
   </p>
 

@@ -38,10 +38,10 @@
     <section class="c7-card">
       <div class="c7-kicker">{{ _('Total Performance Average') }}</div>
       <h3 style="margin:6px 0 0">{{ _('Prendi il referto della partita') }}</h3>
-      <p style="margin:10px 0 0;font-size:13px;font-weight:600;line-height:1.55;color:var(--c7-ink-soft)">
+      <p style="margin:10px 0 0;font-size:calc(13 * var(--c7-tpx));font-weight:600;line-height:1.55;color:var(--c7-ink-soft)">
         {{ _('Invece dei soli triangoli vinti, annoti ogni turno al tavolo: quante bilie sono entrate e perché il turno è finito. Da lì esce il TPA, la percentuale di azioni riuscite — lo stesso conto che Accu-Stats usa per i professionisti.') }}
       </p>
-      <p style="margin:10px 0 0;font-size:13px;font-weight:600;line-height:1.55;color:var(--c7-ink-soft)">
+      <p style="margin:10px 0 0;font-size:calc(13 * var(--c7-tpx));font-weight:600;line-height:1.55;color:var(--c7-ink-soft)">
         {{ _('Il referto lo tiene chi lo apre; l\'altro giocatore lo vede aggiornarsi. I triangoli vinti finiscono da soli nel punteggio della partita: non c\'è niente da segnare due volte.') }}
       </p>
     </section>
@@ -236,7 +236,7 @@
       {% endif %}
 
       <details class="c7-card c7-tpa__legend" id="tpaLegenda">
-        <summary style="font-size:13px;font-weight:800;cursor:pointer">{{ _('Cosa vuol dire ogni lettera') }}</summary>
+        <summary style="font-size:calc(13 * var(--c7-tpx));font-weight:800;cursor:pointer">{{ _('Cosa vuol dire ogni lettera') }}</summary>
         <div class="c7-tpa-legend" data-help="referto-annotazioni-piccole">
           <span><b>M</b> {{ _('sbagli un tiro d\'attacco') }}</span>
           <span><b>K</b> {{ _('tiro di sponda obbligato, non vedi la bilia') }}</span>
@@ -253,7 +253,7 @@
         {% if state.can_write %}
         <div class="form-check form-switch" style="margin:12px 0 0">
           <input class="form-check-input" type="checkbox" role="switch" id="tpaParole" checked>
-          <label class="form-check-label" for="tpaParole" style="font-size:13px;font-weight:700;margin-left:10px">{{ _('Mostra la parola sotto le lettere del tastierino') }}</label>
+          <label class="form-check-label" for="tpaParole" style="font-size:calc(13 * var(--c7-tpx));font-weight:700;margin-left:10px">{{ _('Mostra la parola sotto le lettere del tastierino') }}</label>
         </div>
         {% endif %}
       </details>

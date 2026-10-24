@@ -139,7 +139,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         {% if available_challenges %}
         <div class="c7-card">
             <h3 class="mb-1">{{ _('Esercizi disponibili') }}</h3>
-            <p class="text-muted mb-3" style="font-size: 13px; font-weight: 600;">
+            <p class="text-muted mb-3" style="font-size: calc(13 * var(--c7-tpx)); font-weight: 600;">
                 {{ _('Gli esercizi sono prove tecniche che puoi completare durante la partita.') }}
             </p>
             <div class="c7-stack" style="gap: 8px;">
@@ -147,7 +147,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                 <a href="{{ url_for('player.challenge_detail', gara_challenge_id=gara_challenge.id) }}"
                     class="c7-card" style="background: var(--c7-sunken); padding: 14px 16px; text-decoration: none; color: inherit;">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="flex-fill" style="font-size: 14px; font-weight: 800;">{{ gara_challenge.challenge.get_display_name() }}</span>
+                        <span class="flex-fill" style="font-size: calc(14 * var(--c7-tpx)); font-weight: 800;">{{ gara_challenge.challenge.get_display_name() }}</span>
                         {% if current_user.is_authenticated and current_user.id in player_challenge_progress %}
                         {% set progress = player_challenge_progress[current_user.id] %}
                         {% set challenge_data = progress.get('challenges', [])|selectattr('gara_challenge.id',
@@ -159,7 +159,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
                         {% endif %}
                         {% endif %}
                     </div>
-                    <div class="text-muted" style="font-size: 12px; font-weight: 600; margin-top: 4px;">
+                    <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); font-weight: 600; margin-top: 4px;">
                         {{ gara_challenge.challenge.description|truncate(60) }}
                     </div>
                 </a>

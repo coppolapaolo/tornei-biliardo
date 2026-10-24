@@ -72,7 +72,7 @@
            ('livello', _("Livello"), f.level),
            ('voto', _("Voto"), f.min_rating)] %}
       <button type="button" class="c7-seg__item{{ ' is-on' if chiave == asse_aperto }}" data-axis-tab="{{ chiave }}" role="tab">
-        {{ etichetta }}{% if acceso %}&nbsp;<i class="fas fa-circle" style="font-size:6px"></i>{% endif %}
+        {{ etichetta }}{% if acceso %}&nbsp;<i class="fas fa-circle" style="font-size:calc(6 * var(--c7-tpx))"></i>{% endif %}
       </button>
       {% endfor %}
     </div>

@@ -47,7 +47,7 @@
     <div>
         <div class="d-flex align-items-baseline" style="gap: 10px; margin-bottom: 10px;">
             <h3 style="margin: 0;">{% if _nomi_finali.get(round_num) %}{{ _tb.nome_turno(_nomi_finali.get(round_num)) }}{% else %}{{ _('Turno %(num)s', num=round_num) }}{% endif %}</h3>
-            <span class="text-muted" style="font-size: 12px;">
+            <span class="text-muted" style="font-size: calc(12 * var(--c7-tpx));">
                 {{ first_match.get_effective_discipline()|discipline_display }}
                 <span class="c7-sep">·</span> {{ first_match.distance_config|format_distance }}
             </span>
@@ -89,7 +89,7 @@
     <div>
         <div class="d-flex align-items-baseline" style="gap: 10px; margin-bottom: 10px;">
             <h3 style="margin: 0; color: var(--c7-ink-muted);">{% if _nomi_finali.get(round_num) %}{{ _tb.nome_turno(_nomi_finali.get(round_num)) }}{% else %}{{ _('Turno %(num)s', num=round_num) }}{% endif %}</h3>
-            <span class="text-muted" style="font-size: 12px;">
+            <span class="text-muted" style="font-size: calc(12 * var(--c7-tpx));">
                 {{ first_match.get_effective_discipline()|discipline_display }}
                 <span class="c7-sep">·</span> {{ first_match.distance_config|format_distance }}
             </span>

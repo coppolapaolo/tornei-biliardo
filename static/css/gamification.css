@@ -138,7 +138,7 @@
 
 /* Legacy toast-icon support (can be removed if not needed) */
 .gamification-toast.xp-gain .toast-icon {
-    font-size: 28px;
+    font-size: calc(28 * var(--c7-tpx-lento));
     animation: xpBounce 0.6s ease-out;
 }
 
@@ -150,7 +150,7 @@
 }
 
 .xp-amount {
-    font-size: 24px;
+    font-size: calc(24 * var(--c7-tpx-lento));
     font-weight: 700;
     color: var(--xp-green);
     animation: xpCountUp 0.8s ease-out;
@@ -195,7 +195,7 @@
 }
 
 .gamification-toast.level-up .toast-icon {
-    font-size: 36px;
+    font-size: calc(36 * var(--c7-tpx-lento));
     animation: levelUpStar 1s ease-out;
 }
 
@@ -214,7 +214,7 @@
 }
 
 .level-number {
-    font-size: 32px;
+    font-size: calc(32 * var(--c7-tpx-lento));
     font-weight: 800;
     background: linear-gradient(135deg, var(--level-gold-start) 0%, var(--level-gold-end) 100%);
     -webkit-background-clip: text;
@@ -262,7 +262,7 @@
 }
 
 .gamification-toast.achievement .toast-icon {
-    font-size: 32px;
+    font-size: calc(32 * var(--c7-tpx-lento));
     animation: achievementUnlock 0.8s ease-out;
 }
 
@@ -301,7 +301,7 @@
 }
 
 .gamification-toast.streak .toast-icon {
-    font-size: 32px;
+    font-size: calc(32 * var(--c7-tpx-lento));
     animation: fireFlicker 0.5s ease-in-out infinite alternate;
 }
 
@@ -311,7 +311,7 @@
 }
 
 .streak-count {
-    font-size: 28px;
+    font-size: calc(28 * var(--c7-tpx-lento));
     font-weight: 700;
     color: var(--streak-gold);
 }
@@ -323,7 +323,7 @@
     padding: 4px 10px;
     background: var(--streak-freeze-bg);
     border-radius: 20px;
-    font-size: 14px;
+    font-size: calc(14 * var(--c7-tpx));
     color: var(--streak-freeze-text);
     animation: freezeGlow 1s ease-in-out infinite alternate;
 }
@@ -345,7 +345,7 @@
 }
 
 .toast-title {
-    font-size: 14px;
+    font-size: calc(14 * var(--c7-tpx));
     font-weight: 600;
     color: var(--toast-text-muted);
     text-transform: uppercase;
@@ -353,13 +353,13 @@
 }
 
 .toast-message {
-    font-size: 16px;
+    font-size: calc(16 * var(--c7-tpx));
     font-weight: 500;
     color: var(--toast-text);
 }
 
 .toast-subtitle {
-    font-size: 13px;
+    font-size: calc(13 * var(--c7-tpx));
     color: var(--toast-text-dim);
 }
 
@@ -508,7 +508,7 @@
     background: linear-gradient(135deg, var(--badge-indigo-start) 0%, var(--badge-indigo-end) 100%);
     color: var(--toast-text);
     font-weight: 700;
-    font-size: 18px;
+    font-size: calc(18 * var(--c7-tpx));
     box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
 }
 
@@ -587,11 +587,12 @@
     color: var(--c7-accent-ink, #f2f8f7);
 }
 
-/* I numeri di servizio in mono, come ogni quota/conteggio in 7c. */
+/* I numeri di servizio in mono, come ogni quota/conteggio in 7c. Passo
+   lento: la pill ha l'altezza contata e sta nella testata accanto al titolo. */
 .gami-badge__level,
 .gami-badge__xp {
     font-family: var(--c7-font-mono, monospace);
-    font-size: 13px;
+    font-size: calc(13 * var(--c7-tpx-lento));
     font-weight: 700;
     line-height: 1;
     font-variant-numeric: tabular-nums;
@@ -601,7 +602,7 @@
 /* L'XP e' il dato di contorno: si spegne e sotto i 576px non c'e' spazio. */
 .gami-badge__xp {
     display: none;
-    font-size: 12px;
+    font-size: calc(12 * var(--c7-tpx-lento));
     color: var(--c7-accent-dim, #a9c4c7);
 }
 
@@ -647,7 +648,7 @@
 .gami-badge-ring > i {
     position: relative;
     z-index: 1;
-    font-size: 10px;
+    font-size: calc(10 * var(--c7-tpx-lento));
     color: var(--c7-accent-bright, #8fcde8);
 }
 

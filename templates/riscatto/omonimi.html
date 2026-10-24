@@ -15,7 +15,7 @@
   {% for c in candidati %}
   <section class="c7-card c7-stack">
     <div>
-      <div style="font-size:17px;font-weight:800">{{ c.giocatore.username }}</div>
+      <div style="font-size:calc(17 * var(--c7-tpx));font-weight:800">{{ c.giocatore.username }}</div>
       <div class="c7-rows__sub">{{ ngettext("iscritto a %(n)s gara", "iscritto a %(n)s gare", c.n_gare, n=c.n_gare) }}</div>
     </div>
     {% if c.mia %}

@@ -40,11 +40,11 @@
 {% macro _titolo(testo, conteggio, link_url=None, link_testo=None, dot=False) %}
   <div class="d-flex align-items-center gap-3 mb-3">
     {% if dot %}<span class="c7-live__dot"></span>{% endif %}
-    <h2 class="mb-0 flex-fill" style="font-size:17px">
+    <h2 class="mb-0 flex-fill" style="font-size:calc(17 * var(--c7-tpx))">
       {{ testo }}
-      {% if conteggio %}<span class="c7-num ms-1" style="font-size:13px;color:var(--c7-ink-muted)">{{ conteggio }}</span>{% endif %}
+      {% if conteggio %}<span class="c7-num ms-1" style="font-size:calc(13 * var(--c7-tpx));color:var(--c7-ink-muted)">{{ conteggio }}</span>{% endif %}
     </h2>
-    {% if link_url %}<a href="{{ link_url }}" style="font-size:12px">{{ link_testo }}</a>{% endif %}
+    {% if link_url %}<a href="{{ link_url }}" style="font-size:calc(12 * var(--c7-tpx))">{{ link_testo }}</a>{% endif %}
   </div>
 {% endmacro %}
 
@@ -129,7 +129,7 @@
   </div>
   {% set altre = gare.concluse_totali - gare.concluse|length %}
   {% if altre > 0 %}
-  <div class="text-center mt-3" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+  <div class="text-center mt-3" style="font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
     {{ ngettext("L'ultima e quelle dell'ultimo mese: un'altra è nello storico.",
                 "L'ultima e quelle dell'ultimo mese: le altre %(num)s sono nello storico.",
                 altre, num=altre) }}
@@ -165,7 +165,7 @@
   </div>
   {% set altri = campionati.conclusi_totali - campionati.conclusi|length %}
   {% if altri > 0 %}
-  <div class="text-center mt-3" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+  <div class="text-center mt-3" style="font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
     {{ ngettext("L'ultimo e quelli dell'ultimo mese: un altro è nello storico.",
                 "L'ultimo e quelli dell'ultimo mese: gli altri %(num)s sono nello storico.",
                 altri, num=altri) }}

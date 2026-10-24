@@ -59,10 +59,10 @@
                         {% set diff = v.precedente - v.posizione %}
                         <span class="c7-num" style="color: var(--c7-ink-muted);">{{ v.precedente }}</span>
                         {% if diff > 0 %}
-                        <i class="fas fa-arrow-up" style="color: var(--c7-ok); font-size: 11px;"
+                        <i class="fas fa-arrow-up" style="color: var(--c7-ok); font-size: calc(11 * var(--c7-tpx));"
                            title="{{ ngettext('Sale di %(num)d posizione', 'Sale di %(num)d posizioni', diff, num=diff) }}"></i>
                         {% elif diff < 0 %}
-                        <i class="fas fa-arrow-down" style="color: var(--c7-err); font-size: 11px;"
+                        <i class="fas fa-arrow-down" style="color: var(--c7-err); font-size: calc(11 * var(--c7-tpx));"
                            title="{{ ngettext('Scende di %(num)d posizione', 'Scende di %(num)d posizioni', -diff, num=-diff) }}"></i>
                         {% endif %}
                         {% else %}
@@ -116,7 +116,7 @@
                            nome, non in una colonna che nella colonna laterale
                            non entrerebbe (issue #152). #}
                         {% set _gr = girone_della_riga(player_class) if _con_girone else none %}
-                        {% if _gr %}<div style="font-size: 12px; color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)s girone %(nome)s', pos=_gr[1]|ordinale, nome=_gr[0]) }}</div>{% endif %}
+                        {% if _gr %}<div style="font-size: calc(12 * var(--c7-tpx)); color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)s girone %(nome)s', pos=_gr[1]|ordinale, nome=_gr[0]) }}</div>{% endif %}
                         {# Le finali per piazzamento (ADR-081): com'è andata la finale. #}
                         {% set _f = _finali.get(player_class.user_id) if _finali else none %}
                         {% if _f %}{{ taglio.segno({'finale': _f}) }}{% endif %}
@@ -154,10 +154,10 @@
                         {% set diff = _prima - _pos %}
                         <span class="c7-num" style="color: var(--c7-ink-muted);">{{ _prima }}</span>
                         {% if diff > 0 %}
-                        <i class="fas fa-arrow-up" style="color: var(--c7-ok); font-size: 11px;"
+                        <i class="fas fa-arrow-up" style="color: var(--c7-ok); font-size: calc(11 * var(--c7-tpx));"
                            title="{{ ngettext('Sale di %(num)d posizione', 'Sale di %(num)d posizioni', diff, num=diff) }}"></i>
                         {% elif diff < 0 %}
-                        <i class="fas fa-arrow-down" style="color: var(--c7-err); font-size: 11px;"
+                        <i class="fas fa-arrow-down" style="color: var(--c7-err); font-size: calc(11 * var(--c7-tpx));"
                            title="{{ ngettext('Scende di %(num)d posizione', 'Scende di %(num)d posizioni', -diff, num=-diff) }}"></i>
                         {% endif %}
                         {% else %}

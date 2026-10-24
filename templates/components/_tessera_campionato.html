@@ -16,8 +16,8 @@
   <div class="c7-tessera__row{{ ' is-me' if riga.is_me }}">
     <span class="c7-pos{{ ' c7-pos--' ~ riga.posizione if riga.posizione <= 3 }}">{{ riga.posizione }}</span>
     <span class="flex-fill text-truncate">{{ riga.username }}</span>
-    <span class="c7-tessera__muted" style="font-size:12px;font-weight:600;flex-shrink:0">
-      <span class="c7-num" style="font-size:12px">{{ riga.valore }}</span>
+    <span class="c7-tessera__muted" style="font-size:calc(12 * var(--c7-tpx));font-weight:600;flex-shrink:0">
+      <span class="c7-num" style="font-size:calc(12 * var(--c7-tpx))">{{ riga.valore }}</span>
       {% if misura == 'triangoli' %}{{ ngettext('triangolo', 'triangoli', riga.valore) }}
       {% elif misura == 'punti' %}{{ ngettext('punto', 'punti', riga.valore) }}
       {% else %}{{ ngettext('vittoria', 'vittorie', riga.valore) }}{% endif %}
@@ -29,38 +29,40 @@
 {% set campionato = card.campionato %}
 <article class="c7-card d-flex flex-column gap-3">
 
-  <div class="d-flex align-items-start gap-2">
-    <div class="flex-fill">
-      <div class="c7-tessera__title">{{ card.name }}</div>
-      <div class="c7-tessera__meta">
-        {{ campionato|formato_campionato }}
-        <span class="c7-sep">·</span>
-        {{ campionato.conteggio_gare.gare_testo }}
-        {% if card.is_concluso %}
-          {% if card.ultima_data %}
-          <span class="c7-sep">·</span> {{ _('ultima gara il') }}
-          <span class="c7-num" style="font-size:12px">{{ card.ultima_data|date_local }}</span>
+  <div class="c7-tessera__testa">
+    <div class="c7-tessera__head">
+      <div class="c7-tessera__who">
+        <div class="c7-tessera__title">{{ card.name }}</div>
+        <div class="c7-tessera__meta">
+          {{ campionato|formato_campionato }}
+          <span class="c7-sep">·</span>
+          {{ campionato.conteggio_gare.gare_testo }}
+          {% if card.is_concluso %}
+            {% if card.ultima_data %}
+            <span class="c7-sep">·</span> {{ _('ultima gara il') }}
+            <span class="c7-num" style="font-size:calc(12 * var(--c7-tpx))">{{ card.ultima_data|date_local }}</span>
+            {% endif %}
+          {% elif card.next_prova_date %}
+            <span class="c7-sep">·</span> {{ _('prossima') }}
+            <span class="c7-num" style="font-size:calc(12 * var(--c7-tpx))">{{ card.next_prova_date|date_local }}</span>
+          {% else %}
+            <span class="c7-sep">·</span> {{ _('nessuna gara programmata') }}
           {% endif %}
-        {% elif card.next_prova_date %}
-          <span class="c7-sep">·</span> {{ _('prossima') }}
-          <span class="c7-num" style="font-size:12px">{{ card.next_prova_date|date_local }}</span>
-        {% else %}
-          <span class="c7-sep">·</span> {{ _('nessuna gara programmata') }}
-        {% endif %}
+        </div>
       </div>
-    </div>
-    <div class="c7-tessera__states">
-      {% if card.is_concluso %}
-        {% if card.hai_diretto %}<span class="c7-state c7-state--info">{{ _('Hai diretto') }}</span>{% endif %}
-        {% if card.hai_giocato %}<span class="c7-state c7-state--accent">{{ _('Hai giocato') }}</span>{% endif %}
-      {% else %}
-        {% if card.can_manage %}<span class="c7-state c7-state--info">{{ _('Dirigi') }}</span>{% endif %}
-        {% if card.is_inscribed %}<span class="c7-state c7-state--accent">{{ _('Iscritto') }}</span>{% endif %}
-      {% endif %}
-      {% if campionato.is_prova %}
-        <span class="c7-state c7-state--warn"><i class="fas fa-flask me-1"></i>{{ _('Di prova') }}</span>
-      {% endif %}
-      <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
+      <div class="c7-tessera__states">
+        {% if card.is_concluso %}
+          {% if card.hai_diretto %}<span class="c7-state c7-state--info">{{ _('Hai diretto') }}</span>{% endif %}
+          {% if card.hai_giocato %}<span class="c7-state c7-state--accent">{{ _('Hai giocato') }}</span>{% endif %}
+        {% else %}
+          {% if card.can_manage %}<span class="c7-state c7-state--info">{{ _('Dirigi') }}</span>{% endif %}
+          {% if card.is_inscribed %}<span class="c7-state c7-state--accent">{{ _('Iscritto') }}</span>{% endif %}
+        {% endif %}
+        {% if campionato.is_prova %}
+          <span class="c7-state c7-state--warn"><i class="fas fa-flask me-1"></i>{{ _('Di prova') }}</span>
+        {% endif %}
+        <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
+      </div>
     </div>
   </div>
 
@@ -86,7 +88,7 @@
     <div class="c7-kicker">{{ _('Prossime gare') }}</div>
     <div class="d-flex flex-column gap-2 mt-1">
       {% for gara in card.prossime %}
-      <div class="d-flex align-items-baseline gap-2" style="font-size:12px;font-weight:700">
+      <div class="d-flex align-items-baseline gap-2" style="font-size:calc(12 * var(--c7-tpx));font-weight:700">
         <span class="c7-num c7-tessera__muted" style="flex-shrink:0">{{ gara.date|date_local }}</span>
         <span class="text-truncate flex-fill">
           {{ gara.display_name }}
@@ -98,11 +100,11 @@
       {% set st = gara.get_real_status() %}
       {% if st == GaraStatus.INSCRIPTION.value and gara.inscription_end %}
       <div class="c7-tessera__meta" style="color:var(--c7-warn)">
-        {{ _('Le iscrizioni chiudono il') }} <span class="c7-num" style="font-size:12px">{{ gara.inscription_end|datetime_local }}</span>
+        {{ _('Le iscrizioni chiudono il') }} <span class="c7-num" style="font-size:calc(12 * var(--c7-tpx))">{{ gara.inscription_end|datetime_local }}</span>
       </div>
       {% elif st == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value and gara.inscription_start %}
       <div class="c7-tessera__meta">
-        {{ _('Le iscrizioni aprono il') }} <span class="c7-num" style="font-size:12px">{{ gara.inscription_start|datetime_local }}</span>
+        {{ _('Le iscrizioni aprono il') }} <span class="c7-num" style="font-size:calc(12 * var(--c7-tpx))">{{ gara.inscription_start|datetime_local }}</span>
       </div>
       {% endif %}
       {% endfor %}

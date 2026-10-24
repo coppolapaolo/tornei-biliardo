@@ -32,10 +32,10 @@
   {% if seduta_aperta and feature_visible('sheet.run') %}
   <section class="c7-card c7-card--accent">
     <div class="c7-kicker">{{ _("Seduta cominciata") }}</div>
-    <h2 style="margin:6px 0 10px;font-size:20px;font-weight:800;letter-spacing:-.03em">
+    <h2 style="margin:6px 0 10px;font-size:calc(20 * var(--c7-tpx));font-weight:800;letter-spacing:-.03em">
       {{ seduta_aperta.sheet.name }}
     </h2>
-    <p style="margin:0;font-size:13px;font-weight:600;opacity:.85">
+    <p style="margin:0;font-size:calc(13 * var(--c7-tpx));font-weight:600;opacity:.85">
       {{ _("L'hai cominciata %(quando)s.", quando=seduta_aperta.started_at|day_friendly) }}
     </p>
     <a href="{{ url_for('sheet.run', session_id=seduta_aperta.id) }}"
@@ -71,9 +71,9 @@
   {% set c = today.resume.challenge %}
   <section class="c7-card c7-card--accent" data-help="esercizi-riprendi">
     <div class="c7-kicker">{{ _("Riprendi da qui") }}</div>
-    <h2 style="margin:6px 0 10px;font-size:20px;font-weight:800;letter-spacing:-.03em">{{ c.get_display_name() }}</h2>
+    <h2 style="margin:6px 0 10px;font-size:calc(20 * var(--c7-tpx));font-weight:800;letter-spacing:-.03em">{{ c.get_display_name() }}</h2>
     {{ ex.tags(c) }}
-    <p style="margin:12px 0 0;font-size:13px;font-weight:600;opacity:.85">
+    <p style="margin:12px 0 0;font-size:calc(13 * var(--c7-tpx));font-weight:600;opacity:.85">
       {{ _("L'ultima volta: %(when)s.", when=today.resume.mine.last_attempted_at|day_friendly) }}
       {{ ex.my_line(today.resume) }}.
     </p>
@@ -85,8 +85,8 @@
   {% else %}
   <section class="c7-card c7-card--accent">
     <div class="c7-kicker">{{ _("Per cominciare") }}</div>
-    <h2 style="margin:6px 0 8px;font-size:20px;font-weight:800;letter-spacing:-.03em">{{ _("Scegli un esercizio e provalo") }}</h2>
-    <p style="margin:0;font-size:13px;font-weight:600;opacity:.85">{{ _("Registri una prova dopo l'altra, e la prossima volta riparti da qui.") }}</p>
+    <h2 style="margin:6px 0 8px;font-size:calc(20 * var(--c7-tpx));font-weight:800;letter-spacing:-.03em">{{ _("Scegli un esercizio e provalo") }}</h2>
+    <p style="margin:0;font-size:calc(13 * var(--c7-tpx));font-weight:600;opacity:.85">{{ _("Registri una prova dopo l'altra, e la prossima volta riparti da qui.") }}</p>
     <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-primary w-100" style="margin-top:14px">{{ _("Apri il catalogo") }}</a>
   </section>
   {% endif %}
@@ -141,7 +141,7 @@
       <span class="c7-rows__title d-block">{{ _("Apri il catalogo") }}</span>
       <span class="c7-rows__sub d-block">{{ ngettext("%(num)s esercizio, da filtrare per abilità, gesto, livello e voto", "%(num)s esercizi, da filtrare per abilità, gesto, livello e voto", today.total) }}</span>
     </span>
-    <i class="fas fa-chevron-right" style="font-size:11px;color:var(--c7-ink-faint)"></i>
+    <i class="fas fa-chevron-right" style="font-size:calc(11 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
   </a>
   {% endif %}
 
@@ -157,7 +157,7 @@
       <span class="c7-rows__title d-block">{{ _("Le tue schede") }}</span>
       <span class="c7-rows__sub d-block">{{ _("La sequenza di esercizi che fai in sala, nell'ordine in cui la fai") }}</span>
     </span>
-    <i class="fas fa-chevron-right" style="font-size:11px;color:var(--c7-ink-faint)"></i>
+    <i class="fas fa-chevron-right" style="font-size:calc(11 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
   </a>
   {% endif %}
 </div>

@@ -78,8 +78,8 @@
         <div class="d-flex align-items-center gap-3">
           <span class="c7-tile c7-tile--sm"><i class="fas fa-location-dot"></i></span>
           <div class="flex-fill" style="min-width:0">
-            <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ venue.venue_name }}</div>
-            <div style="margin-top:3px;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+            <div style="font-size:calc(15 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ venue.venue_name }}</div>
+            <div style="margin-top:3px;font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
               {% if venue.available_days %}
                 {% for d in venue.available_days %}{{ day_names.get(d|int, d) }}{% if not loop.last %} · {% endif %}{% endfor %}
               {% else %}{{ _("Tutti i giorni") }}{% endif %}
@@ -147,7 +147,7 @@
     {# ---------- Perché serve (card scura del prototipo) ---------- #}
     <div class="c7-card c7-card--accent">
       <div class="c7-kicker">{{ _("Perché serve") }}</div>
-      <p class="mb-0" style="margin-top:8px;font-size:15px;font-weight:700;line-height:1.45">
+      <p class="mb-0" style="margin-top:8px;font-size:calc(15 * var(--c7-tpx));font-weight:700;line-height:1.45">
         {{ _("Gli avversari vedono solo i giorni che hai segnato: le proposte arrivano già compatibili e si chiude in un messaggio.") }}
       </p>
     </div>

@@ -23,7 +23,7 @@
   </div>
 
   {% if _conclusa %}
-  <div style="font-size:15px;font-weight:800" class="c7-num">{{ gara.get_available_tables()|join(', ') or '—' }}</div>
+  <div style="font-size:calc(15 * var(--c7-tpx));font-weight:800" class="c7-num">{{ gara.get_available_tables()|join(', ') or '—' }}</div>
   <div class="c7-nota" style="margin-top:6px">{{ _('I tavoli usati, nell’ordine di assegnazione.') }}</div>
   {% else %}
   <form method="POST" action="{{ url_for('admin.competition.update_tables_config', gara_id=gara.id) }}" class="c7-stack">

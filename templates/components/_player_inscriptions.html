@@ -40,7 +40,7 @@
             <a href="{{ url_for('admin.competition.gara_detail', gara_id=inscription.gara.id) }}"
                style="text-decoration: none; color: inherit; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap;">
                 <span style="font-weight: 600;">{{ inscription.gara.display_name }}</span>
-                <span class="text-muted c7-num" style="font-size: 12px;">{{ inscription.gara.date|date_local }}</span>
+                <span class="text-muted c7-num" style="font-size: calc(12 * var(--c7-tpx));">{{ inscription.gara.date|date_local }}</span>
                 {{ status_badge(inscription.gara, 'gara') }}
                 {{ position_badge(inscription.gara) }}
             </a>
@@ -75,7 +75,7 @@
             </ul>
         {% endif %}
     {% else %}
-        <p class="text-muted" style="margin: 12px 0 0; font-size: 13px;">
+        <p class="text-muted" style="margin: 12px 0 0; font-size: calc(13 * var(--c7-tpx));">
             {{ _("Non sei ancora iscritto a nessuna gara.") }}
         </p>
     {% endif %}

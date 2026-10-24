@@ -28,7 +28,7 @@
 {# Le condizioni della sfida: erano ricopiate tre volte, una per linguetta. #}
 {% macro terms(proposal) -%}
 {%- if proposal.scheduled_at %}
-<div style="margin-top:10px;font-size:14px;font-weight:800">{{ proposal.scheduled_at|datetime_local }}</div>
+<div style="margin-top:10px;font-size:calc(14 * var(--c7-tpx));font-weight:800">{{ proposal.scheduled_at|datetime_local }}</div>
 {%- endif %}
 <div class="c7-rows__sub" style="margin-top:{{ '4px' if proposal.scheduled_at else '10px' }}">
   {%- if proposal.location_display %}{{ proposal.location_display }} <span class="c7-sep">·</span> {% endif -%}
@@ -41,7 +41,7 @@
   {%- endif %}
 </div>
 {%- if proposal.description %}
-<p style="margin:10px 0 0;font-size:13px;font-weight:500;line-height:1.45;color:var(--c7-ink-soft)">
+<p style="margin:10px 0 0;font-size:calc(13 * var(--c7-tpx));font-weight:500;line-height:1.45;color:var(--c7-ink-soft)">
   {{ proposal.description }}
 </p>
 {%- endif %}

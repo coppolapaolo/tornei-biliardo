@@ -154,3 +154,27 @@
     --c7-dur-quick: 0ms;
   }
 }
+
+/* --- Testo che segue il telefono ------------------------------------------
+   Un «pixel di testo»: ogni dimensione del testo si scrive
+   `calc(N * var(--c7-tpx))`, e con le impostazioni di default vale N pixel
+   esatti. Su iPhone cresce con «Dimensioni testo», fino al tetto fissato
+   sulla regola `body` del tema, che è anche dove il valore si calcola.
+   Registrata come lunghezza perché l'`em` della formula si risolva una volta
+   sola, su body: i figli ereditano il numero, non la formula da rifare a ogni
+   livello (`test_testo_segue_il_telefono.py`). */
+@property --c7-tpx {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 1px;
+}
+/* Lo stesso, ma con un tetto più basso, per ciò che deve crescere meno:
+   titoli e cifre grandi (da 24px in su), già leggibili, che sono loro a
+   rompere le righe — fa così anche iOS, dove al massimo il corpo passa da 17
+   a 23 e il titolo grande da 34 a 40 — e i comandi fitti come il tastierino
+   del referto, dove ogni tasto ha già la sua colonna contata. */
+@property --c7-tpx-lento {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 1px;
+}

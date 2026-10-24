@@ -28,7 +28,7 @@
     <div class="c7-rows">
       {% for entry in classification %}
       <div class="c7-rows__row" style="flex-wrap:wrap">
-        <span class="c7-num" style="width:26px;font-size:15px;font-weight:800;
+        <span class="c7-num" style="width:26px;font-size:calc(15 * var(--c7-tpx));font-weight:800;
               color:{{ 'var(--c7-accent)' if entry.position <= 3 else 'var(--c7-ink-muted)' }}">
           {{ entry.position }}
         </span>
@@ -41,7 +41,7 @@
             {{ _("somma di tutti i tentativi") }}: <span class="c7-num">{{ entry.total_all_attempts }}</span>
           </div>
         </div>
-        <span class="c7-num" style="font-size:17px;font-weight:800">{{ entry.total_best_score }}</span>
+        <span class="c7-num" style="font-size:calc(17 * var(--c7-tpx));font-weight:800">{{ entry.total_best_score }}</span>
         <button class="c7-iconbtn" data-bs-toggle="collapse" data-bs-target="#details-{{ entry.user.id }}"
                 aria-expanded="false" aria-controls="details-{{ entry.user.id }}"
                 aria-label="{{ _('Mostra il dettaglio') }}">
@@ -56,7 +56,7 @@
                 {{ ch.thumb(detail.challenge, 36, 'var(--c7-r-chip)') }}
                 <div class="flex-fill" style="min-width:0">
                   {# `challenge.name` non esiste sul modello: il titolo era vuoto. #}
-                  <div style="font-size:13px;font-weight:800">{{ detail.challenge.get_display_name() }}</div>
+                  <div style="font-size:calc(13 * var(--c7-tpx));font-weight:800">{{ detail.challenge.get_display_name() }}</div>
                   <div class="c7-rows__sub">
                     <span class="c7-num">{{ detail.attempt_count }}/{{ detail.max_attempts }}</span> {{ _("tentativi") }}
                   </div>
@@ -115,7 +115,7 @@
         <div class="d-flex align-items-start gap-3">
           {{ ch.thumb(challenge, 44, 'var(--c7-r-chip)') }}
           <div class="flex-fill" style="min-width:0">
-            <div style="font-size:14px;font-weight:800;letter-spacing:-.02em">{{ challenge.get_display_name() }}</div>
+            <div style="font-size:calc(14 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ challenge.get_display_name() }}</div>
             <div class="c7-rows__sub" style="margin-top:3px">
               {{ _("dopo il turno %(n)s", n=gara_challenge.round_number) }}
               <span class="c7-sep">·</span>
@@ -128,15 +128,15 @@
         {% if stat.gara_challenge.id == gara_challenge.id %}
         <div class="c7-topline d-flex gap-3">
           <div class="flex-fill">
-            <div class="c7-num" style="font-size:15px;font-weight:800">{{ stat.attempts }}</div>
+            <div class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ stat.attempts }}</div>
             <div class="c7-rows__sub">{{ _("tentativi") }}</div>
           </div>
           <div class="flex-fill">
-            <div class="c7-num" style="font-size:15px;font-weight:800">{{ stat.participating_players }}</div>
+            <div class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ stat.participating_players }}</div>
             <div class="c7-rows__sub">{{ _("giocatori") }}</div>
           </div>
           <div class="flex-fill">
-            <div class="c7-num" style="font-size:15px;font-weight:800">{{ stat.avg_score }}</div>
+            <div class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ stat.avg_score }}</div>
             <div class="c7-rows__sub">{{ _("media") }}</div>
           </div>
         </div>

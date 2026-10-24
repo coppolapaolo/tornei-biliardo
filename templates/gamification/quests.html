@@ -39,13 +39,13 @@
           {% if quest_info.is_completed %}
           <span class="c7-state c7-state--ok">{{ _('Completata') }}</span>
           {% endif %}
-          <span style="margin-left:auto;font-size:12px;font-weight:800;color:var(--c7-accent)">
+          <span style="margin-left:auto;font-size:calc(12 * var(--c7-tpx));font-weight:800;color:var(--c7-accent)">
             +<span class="c7-num">{{ quest.xp_reward }}</span> XP
           </span>
         </div>
 
-        <div style="margin-top:12px;font-size:16px;font-weight:800;letter-spacing:-.02em">{{ _(quest.name) }}</div>
-        <p style="margin:5px 0 0;font-size:13px;font-weight:500;line-height:1.45;color:var(--c7-ink-soft)">
+        <div style="margin-top:12px;font-size:calc(16 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ _(quest.name) }}</div>
+        <p style="margin:5px 0 0;font-size:calc(13 * var(--c7-tpx));font-weight:500;line-height:1.45;color:var(--c7-ink-soft)">
           {{ _(quest.description) }}
         </p>
 
@@ -54,7 +54,7 @@
              aria-valuenow="{{ quest_info.progress_percentage|round|int }}" aria-valuemin="0" aria-valuemax="100">
           <div class="progress-bar" style="width: {{ quest_info.progress_percentage }}%"></div>
         </div>
-        <div class="d-flex justify-content-between" style="margin-top:8px;font-size:12px;font-weight:700;color:var(--c7-ink-muted)">
+        <div class="d-flex justify-content-between" style="margin-top:8px;font-size:calc(12 * var(--c7-tpx));font-weight:700;color:var(--c7-ink-muted)">
           <span class="c7-num">{{ participation.current_progress }} / {{ participation.target_progress }}</span>
           <span>
             {{ _('Scade') }} {{ quest.end_date|datetime_local }}
@@ -66,10 +66,10 @@
         </div>
         {% else %}
         <div style="margin-top:14px;padding:12px 14px;border-radius:var(--c7-r-control);background:var(--c7-bg);
-                    font-size:12px;font-weight:700;color:var(--c7-ink-soft)">
+                    font-size:calc(12 * var(--c7-tpx));font-weight:700;color:var(--c7-ink-soft)">
           {{ _('Partecipi automaticamente giocando') }}
         </div>
-        <div style="margin-top:8px;font-size:12px;font-weight:700;color:var(--c7-ink-muted)">
+        <div style="margin-top:8px;font-size:calc(12 * var(--c7-tpx));font-weight:700;color:var(--c7-ink-muted)">
           {{ _('Scade') }} {{ quest.end_date|datetime_local }}
         </div>
         {% endif %}
@@ -98,15 +98,15 @@
           <span class="c7-state c7-state--muted">
             {{ gami.quest_type_labels.get(quest.quest_type.value, quest.quest_type.value) }}
           </span>
-          <span style="margin-left:auto;font-size:12px;font-weight:800">
+          <span style="margin-left:auto;font-size:calc(12 * var(--c7-tpx));font-weight:800">
             +<span class="c7-num">{{ quest.xp_reward }}</span> XP
           </span>
         </div>
-        <div style="margin-top:12px;font-size:15px;font-weight:800;letter-spacing:-.02em">{{ _(quest.name) }}</div>
-        <p style="margin:5px 0 0;font-size:12px;font-weight:600;line-height:1.45">
+        <div style="margin-top:12px;font-size:calc(15 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ _(quest.name) }}</div>
+        <p style="margin:5px 0 0;font-size:calc(12 * var(--c7-tpx));font-weight:600;line-height:1.45">
           {{ _(quest.description)|truncate(90) }}
         </p>
-        <div style="margin-top:10px;font-size:12px;font-weight:700">
+        <div style="margin-top:10px;font-size:calc(12 * var(--c7-tpx));font-weight:700">
           {# Stringa completa e non un frammento: «Inizia» da solo collideva con
              l'omonimo pulsante di `exam/detail.html`, dove e' un imperativo. Un
              msgid per due significati costringe la traduzione a sceglierne uno,
@@ -130,7 +130,7 @@
       {% set quest = quest_info.quest %}
       {% set participation = quest_info.participation %}
       <div class="c7-rows__row">
-        <i class="fas fa-circle-check" style="font-size:14px;color:var(--c7-ok)"></i>
+        <i class="fas fa-circle-check" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-ok)"></i>
         <div class="c7-rows__main">
           <div class="c7-rows__title">{{ _(quest.name) }}</div>
           <div class="c7-rows__sub">
@@ -140,7 +140,7 @@
             {%- endif %}
           </div>
         </div>
-        <span class="c7-num" style="font-size:12px;font-weight:800;color:var(--c7-ink-muted)">
+        <span class="c7-num" style="font-size:calc(12 * var(--c7-tpx));font-weight:800;color:var(--c7-ink-muted)">
           +{{ participation.xp_awarded if participation else quest.xp_reward }}
         </span>
       </div>

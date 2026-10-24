@@ -15,7 +15,7 @@
   <div class="c7-rows">
     {% for entry in challenge_classification[:10] %}
     <div class="c7-rows__row">
-      <span class="c7-num" style="width:26px;font-size:15px;font-weight:800;
+      <span class="c7-num" style="width:26px;font-size:calc(15 * var(--c7-tpx));font-weight:800;
             color:{{ 'var(--c7-accent)' if entry.position <= 3 else 'var(--c7-ink-muted)' }}">
         {{ entry.position }}
       </span>
@@ -27,7 +27,7 @@
           {{ _("esercizi") }}
         </div>
       </div>
-      <span class="c7-num" style="font-size:15px;font-weight:800">{{ entry.total_best_score }}</span>
+      <span class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ entry.total_best_score }}</span>
     </div>
     {% endfor %}
   </div>

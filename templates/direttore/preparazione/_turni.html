@@ -34,7 +34,7 @@
         {{ _('Un turno solo: si gioca alla distanza della gara.') }}
         {% endif %}
       </div>
-      <div style="margin-top:10px;font-size:15px;font-weight:800">{{ gara.discipline|discipline_display }} <span class="c7-sep">·</span> {{ gara.distance_config|format_distance }}</div>
+      <div style="margin-top:10px;font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ gara.discipline|discipline_display }} <span class="c7-sep">·</span> {{ gara.distance_config|format_distance }}</div>
     </div>
     {% elif not in_preparazione %}
     {# A iscrizioni aperte nulla cambia sotto i piedi degli iscritti: si legge. #}

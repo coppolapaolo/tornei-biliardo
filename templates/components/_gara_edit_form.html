@@ -66,18 +66,18 @@
            diverso dal campionato non è un'anomalia da segnalare. #}
         {% set is_inherited = gara.is_playoff or (gara_system == campionato_default) or (gara_system == 'RACKS' and campionato_default == 'RACK') %}
         <div class="c7-card c7-card--locked d-flex align-items-center gap-2"
-             style="height:56px;padding:0 16px;font-size:15px;font-weight:700">
-          <i class="fas fa-lock" style="font-size:12px"></i>
+             style="height:56px;padding:0 16px;font-size:calc(15 * var(--c7-tpx));font-weight:700">
+          <i class="fas fa-lock" style="font-size:calc(12 * var(--c7-tpx))"></i>
           {% if gara_system == 'WINS' %}{{ _('Vittorie') }}
           {% elif gara_system in ['RACK', 'RACKS'] %}{{ _('Triangoli totali') }}
           {% elif gara_system == 'POINTS' %}{{ _('Punti') }}
           {% else %}{{ gara_system }}{% endif %}
-          <span class="ms-auto" style="font-size:11px;color:var(--c7-ink-faint)">{{ _('dai playoff') if gara.is_playoff else _('dal campionato') }}</span>
+          <span class="ms-auto" style="font-size:calc(11 * var(--c7-tpx));color:var(--c7-ink-faint)">{{ _('dai playoff') if gara.is_playoff else _('dal campionato') }}</span>
         </div>
         <input type="hidden" name="classification_system" value="{{ gara_system }}">
         {% if not is_inherited %}
         <div class="form-text" style="color:var(--c7-warn-ink)">
-          <i class="fas fa-triangle-exclamation" style="font-size:10px"></i>
+          <i class="fas fa-triangle-exclamation" style="font-size:calc(10 * var(--c7-tpx))"></i>
           {{ _('Diverso dal campionato') }} ({{ _('default') }}:
           {% if campionato_default == 'WINS' %}{{ _('Vittorie') }}
           {% elif campionato_default == 'RACK' %}{{ _('Triangoli totali') }}
@@ -236,7 +236,7 @@
           {% endfor %}
         </select>
         <div id="trio_warning" class="form-text" style="display:none;color:var(--c7-err-ink)">
-          <i class="fas fa-circle-exclamation" style="font-size:10px"></i>
+          <i class="fas fa-circle-exclamation" style="font-size:calc(10 * var(--c7-tpx))"></i>
           {{ _('La partita a tre vale solo per distanze da 2 a 7') }}
         </div>
       </div>
@@ -380,8 +380,8 @@
         <div class="form-text">{{ _("Con l'acchito il segnapunti chiede chi ha vinto e chi apre: chi vince può mandare al tavolo l'avversario.") }}</div>
         {% else %}
         <div class="c7-card c7-card--locked d-flex align-items-center gap-2"
-             style="height:56px;padding:0 16px;font-size:15px;font-weight:700">
-          <i class="fas fa-lock" style="font-size:12px"></i>{{ gara.effective_start_rule.display_name }}
+             style="height:56px;padding:0 16px;font-size:calc(15 * var(--c7-tpx));font-weight:700">
+          <i class="fas fa-lock" style="font-size:calc(12 * var(--c7-tpx))"></i>{{ gara.effective_start_rule.display_name }}
         </div>
         {% endif %}
       </div>
@@ -401,8 +401,8 @@
         <div class="form-text">{{ _('Vale per tutte le partite della gara: sulla singola partita non si cambia.') }}</div>
         {% else %}
         <div class="c7-card c7-card--locked d-flex align-items-center gap-2"
-             style="height:56px;padding:0 16px;font-size:15px;font-weight:700">
-          <i class="fas fa-lock" style="font-size:12px"></i>{{ gara.effective_break_rule.display_name }}
+             style="height:56px;padding:0 16px;font-size:calc(15 * var(--c7-tpx));font-weight:700">
+          <i class="fas fa-lock" style="font-size:calc(12 * var(--c7-tpx))"></i>{{ gara.effective_break_rule.display_name }}
         </div>
         {% endif %}
       </div>
@@ -484,7 +484,7 @@
 {% if debug_info.debug_mode %}
 <div class="c7-card mt-4" data-help-capture-hide style="background:var(--c7-ink);color:var(--c7-on-ink)">
   <div class="c7-kicker" style="color:var(--c7-on-ink-muted)">DEBUG · EDIT GARA</div>
-  <div class="mt-2" style="font-family:var(--c7-font-mono);font-size:12px;line-height:1.7">
+  <div class="mt-2" style="font-family:var(--c7-font-mono);font-size:calc(12 * var(--c7-tpx));line-height:1.7">
     Gara ID: {{ gara.id }}<br>
     Can be modified: {{ gara.can_be_modified() }}<br>
     Distance={{ gara.distance }} · Is_Race_To={{ gara.is_race_to }} · Rounds={{ gara.rounds_count }}

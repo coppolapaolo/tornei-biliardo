@@ -27,7 +27,7 @@
           <span class="c7-kicker d-block mb-1">
             <span class="c7-num">{{ s.created_at|datetime_local }}</span>
           </span>
-          <h3 class="mb-1" style="font-size:16px">{{ s.titolo }}</h3>
+          <h3 class="mb-1" style="font-size:calc(16 * var(--c7-tpx))">{{ s.titolo }}</h3>
           <span{% if loop.first %} data-help="segnalazione-stato"{% endif %} class="c7-state
             {%- if s.stato == 'risolta' %} c7-state--ok
             {%- elif s.stato == 'non_prevista' %} c7-state--muted
@@ -39,7 +39,7 @@
       {% if s.nota_pubblica %}
       <div class="c7-card mt-3" style="background:var(--c7-bg)">
         <div class="c7-kicker mb-2">{{ _('La nostra risposta') }}</div>
-        <p class="mb-0" style="font-size:14px">{{ s.nota_pubblica }}</p>
+        <p class="mb-0" style="font-size:calc(14 * var(--c7-tpx))">{{ s.nota_pubblica }}</p>
       </div>
       {% endif %}
     </article>
@@ -68,7 +68,7 @@
         <div class="c7-kicker mb-1">
           <span class="c7-num">{{ s.stato_cambiato_il|datetime_local }}</span>
         </div>
-        <p class="mb-0" style="font-size:14px">
+        <p class="mb-0" style="font-size:calc(14 * var(--c7-tpx))">
           <strong>{{ s.titolo }}</strong> — {{ etichette_stato[s.stato]|lower }}
         </p>
         {% if s.nota_pubblica %}

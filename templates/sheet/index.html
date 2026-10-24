@@ -44,7 +44,7 @@
     <div class="c7-kicker">
       {{ _("%(chi)s ti propone una scheda", chi=proposta.instructor.username) }}
     </div>
-    <h2 style="margin:6px 0 10px;font-size:18px;font-weight:800;letter-spacing:-.02em">
+    <h2 style="margin:6px 0 10px;font-size:calc(18 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">
       {{ proposta.source_sheet.name if proposta.source_sheet else _("Una scheda") }}
     </h2>
     <div class="c7-rows__sub">
@@ -68,7 +68,7 @@
   {% set ultima = ultime.get(scheda.id) %}
   <section class="c7-card{{ ' c7-card--accent' if aperta else '' }}">
     {% if aperta %}<div class="c7-kicker">{{ _("Seduta cominciata") }}</div>{% endif %}
-    <h2 style="margin:{{ '6px' if aperta else '0' }} 0 10px;font-size:18px;font-weight:800;letter-spacing:-.02em">
+    <h2 style="margin:{{ '6px' if aperta else '0' }} 0 10px;font-size:calc(18 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">
       <a href="{{ url_for('sheet.detail', sheet_id=scheda.id) }}"
          style="color:inherit;text-decoration:none">{{ scheda.name }}</a>
     </h2>
