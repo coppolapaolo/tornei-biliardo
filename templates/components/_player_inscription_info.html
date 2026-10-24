@@ -12,7 +12,7 @@
     </div>
 
     {% if user_inscription %}
-    <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0; font-size: 13px;">
+    <dl style="display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0; font-size: calc(13 * var(--c7-tpx));">
         {# `created_at`: il campo `inscription_date` non e' mai esistito sul
            modello Inscription, quindi Jinja lo risolveva a Undefined e la data
            era sempre "N/D" — senza alcun errore da nessuna parte. #}
@@ -32,7 +32,7 @@
         {% endif %}
     </dl>
     {% else %}
-    <p class="text-muted" style="margin: 0; font-size: 13px; line-height: 1.55;">
+    <p class="text-muted" style="margin: 0; font-size: calc(13 * var(--c7-tpx)); line-height: 1.55;">
         {{ _('Stai guardando questa gara come ospite: vedi risultati e classifica, ma non partecipi.') }}
     </p>
     {% endif %}

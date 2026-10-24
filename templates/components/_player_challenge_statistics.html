@@ -55,7 +55,7 @@
         {{ _("Superata") if entry.passed else _("Non superata") }}
       </span>
       {% else %}
-      <span class="c7-num" style="font-size:15px;font-weight:800">{{ entry.score }}</span>
+      <span class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ entry.score }}</span>
       {% endif %}
     </div>
     {% endfor %}

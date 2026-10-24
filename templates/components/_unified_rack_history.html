@@ -37,7 +37,7 @@ Parametri:
                 {# Chi ha segnato conta solo quando non e' il vincitore stesso:
                    e' l'informazione che serve in caso di contestazione. #}
                 {% if row.rack.added_by and row.rack.added_by.id != row.rack.winner_id %}
-                <span class="text-muted" style="display: block; font-size: 11px; font-weight: 600;">
+                <span class="text-muted" style="display: block; font-size: calc(11 * var(--c7-tpx)); font-weight: 600;">
                     {{ _('segnato da %(user)s', user=row.rack.added_by.username) }}
                     {% if row.rack.added_at %}<span class="c7-sep">·</span> <span class="c7-num">{{ row.rack.added_at|time_local }}</span>{% endif %}
                 </span>
@@ -53,7 +53,7 @@ Parametri:
 {% if deleted_racks|length %}
 <section class="c7-stack" style="margin-top: 18px;">
     <h3 style="margin: 0; color: var(--c7-ink-muted);">{{ _('Triangoli rimossi') }}</h3>
-    <p class="text-muted" style="margin: 0; font-size: 12px;">{{ _('Registro completo, utile in caso di contestazione.') }}</p>
+    <p class="text-muted" style="margin: 0; font-size: calc(12 * var(--c7-tpx));">{{ _('Registro completo, utile in caso di contestazione.') }}</p>
     <div class="c7-table-wrap table-responsive">
         <table class="table">
             <thead>

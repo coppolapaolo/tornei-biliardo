@@ -24,7 +24,7 @@
 
         <hr class="c7-divider">
 
-        <dl style="display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; margin: 0; font-size: 13px;">
+        <dl style="display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; margin: 0; font-size: calc(13 * var(--c7-tpx));">
             {% if venue.number_of_tables %}
             <dt class="text-muted" style="font-weight: 700;">{{ _("Tavoli") }}</dt>
             <dd class="c7-num" style="margin: 0; text-align: right;">{{ venue.number_of_tables }}</dd>
@@ -80,8 +80,8 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="venue_id" value="{{ venue.id }}">
                 <div class="modal-body">
-                    <p class="text-muted" style="margin: 0 0 14px; font-size: 13px;">{{ _("Chi gestisce una sala può:") }}</p>
-                    <ul style="margin: 0; padding-left: 18px; font-size: 13px; font-weight: 600; line-height: 1.7;">
+                    <p class="text-muted" style="margin: 0 0 14px; font-size: calc(13 * var(--c7-tpx));">{{ _("Chi gestisce una sala può:") }}</p>
+                    <ul style="margin: 0; padding-left: 18px; font-size: calc(13 * var(--c7-tpx)); font-weight: 600; line-height: 1.7;">
                         <li>{{ _("Aggiornare le informazioni della sala") }}</li>
                         <li>{{ _("Modificare servizi e dettagli") }}</li>
                         <li>{{ _("Caricare le foto") }}</li>

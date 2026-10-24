@@ -44,7 +44,7 @@
       {% elif is_finished %}
         {# Conclusa: il tavolo dove si è giocato, se lo sappiamo (issue #154) #}
         {% if match.played_on_table %}
-        <span class="text-muted" style="font-size: 12px;">{{ _('Tavolo') }} <span class="c7-num">{{ match.played_on_table }}</span></span>
+        <span class="text-muted" style="font-size: calc(12 * var(--c7-tpx));">{{ _('Tavolo') }} <span class="c7-num">{{ match.played_on_table }}</span></span>
         {% endif %}
       {% elif user_can_manage and available_tables %}
         {% if match.is_trio and match.trio_match %}
@@ -64,7 +64,7 @@
         </button>
         {% endif %}
       {% elif match.table_assignment %}
-        <span class="text-muted" style="font-size: 12px;">{{ _('Tavolo') }} <span class="c7-num">{{ match.table_assignment }}</span></span>
+        <span class="text-muted" style="font-size: calc(12 * var(--c7-tpx));">{{ _('Tavolo') }} <span class="c7-num">{{ match.table_assignment }}</span></span>
       {% endif %}
       {# Il menu della partita (canvas, 2S): cambia tavolo, azzera, apri il
          segnapunti. Il foglio e' uno solo e legge questi attributi. #}
@@ -95,17 +95,17 @@
 
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
         <div>
-          <div style="font-size: 13px; font-weight: 800; {% if p1_forfeit %}color: var(--c7-ink-faint); text-decoration: line-through;{% endif %}">{{ trio.player1.username }}</div>
+          <div style="font-size: calc(13 * var(--c7-tpx)); font-weight: 800; {% if p1_forfeit %}color: var(--c7-ink-faint); text-decoration: line-through;{% endif %}">{{ trio.player1.username }}</div>
           <div class="c7-num-lg">{{ trio.player1_racks }}</div>
           {% if p1_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
         </div>
         <div>
-          <div style="font-size: 13px; font-weight: 800; {% if p2_forfeit %}color: var(--c7-ink-faint); text-decoration: line-through;{% endif %}">{{ trio.player2.username }}</div>
+          <div style="font-size: calc(13 * var(--c7-tpx)); font-weight: 800; {% if p2_forfeit %}color: var(--c7-ink-faint); text-decoration: line-through;{% endif %}">{{ trio.player2.username }}</div>
           <div class="c7-num-lg">{{ trio.player2_racks }}</div>
           {% if p2_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
         </div>
         <div>
-          <div style="font-size: 13px; font-weight: 800; {% if p3_forfeit %}color: var(--c7-ink-faint); text-decoration: line-through;{% endif %}">{{ trio.player3.username }}</div>
+          <div style="font-size: calc(13 * var(--c7-tpx)); font-weight: 800; {% if p3_forfeit %}color: var(--c7-ink-faint); text-decoration: line-through;{% endif %}">{{ trio.player3.username }}</div>
           <div class="c7-num-lg">{{ trio.player3_racks }}</div>
           {% if p3_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
         </div>
@@ -114,18 +114,18 @@
     {% else %}
       <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center;">
         <div style="text-align: right;">
-          <div style="font-size: 14px; font-weight: 800; {% if p1_forfeit %}color: var(--c7-ink-faint); text-decoration: line-through;{% endif %}">
+          <div style="font-size: calc(14 * var(--c7-tpx)); font-weight: 800; {% if p1_forfeit %}color: var(--c7-ink-faint); text-decoration: line-through;{% endif %}">
             {{ match.player1.username }}
             {% if p1_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
           </div>
           {% if not match.is_bye %}<div class="c7-num-lg">{{ match.player1_score }}</div>{% endif %}
         </div>
-        <span style="font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .5;">vs</span>
+        <span style="font-size: calc(11 * var(--c7-tpx)); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .5;">vs</span>
         <div>
           {% if match.is_bye %}
-          <div style="font-size: 14px; font-weight: 800; opacity: .6;">{{ (_('Riposo') if match.is_riposo else _('X a tavolino')) }}</div>
+          <div style="font-size: calc(14 * var(--c7-tpx)); font-weight: 800; opacity: .6;">{{ (_('Riposo') if match.is_riposo else _('X a tavolino')) }}</div>
           {% else %}
-          <div style="font-size: 14px; font-weight: 800; {% if p2_forfeit %}color: var(--c7-ink-faint); text-decoration: line-through;{% endif %}">
+          <div style="font-size: calc(14 * var(--c7-tpx)); font-weight: 800; {% if p2_forfeit %}color: var(--c7-ink-faint); text-decoration: line-through;{% endif %}">
             {{ match.player2.username }}
             {% if p2_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
           </div>
@@ -163,7 +163,7 @@
           action="{{ url_for('admin.competition.validate_x_replacement', gara_id=match.gara_id, round_number=match.round_number, user_id=match.player1_id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div style="flex: 1;">
-        <label class="form-label" style="font-size:12px;margin-bottom:2px">{{ _('Punteggio') }}</label>
+        <label class="form-label" style="font-size:calc(12 * var(--c7-tpx));margin-bottom:2px">{{ _('Punteggio') }}</label>
         <input type="number" name="score" class="form-control form-control-sm"
                min="0" max="{{ match.effective_distance }}" step="1"
                value="{{ ponte.challenge_attempt.score if ponte and ponte.challenge_attempt and ponte.challenge_attempt.score is not none else '' }}"
@@ -193,9 +193,9 @@
       {% endif %}
 
       {% if not can_modify %}
-        <div class="text-muted" style="text-align: center; font-size: 12px;"><i class="fas fa-lock"></i> {{ _('Bloccato') }}</div>
+        <div class="text-muted" style="text-align: center; font-size: calc(12 * var(--c7-tpx));"><i class="fas fa-lock"></i> {{ _('Bloccato') }}</div>
       {% elif not has_table and not is_finished %}
-        <div class="text-muted" style="text-align: center; font-size: 12px;">{{ _('Assegna un tavolo per abilitare le azioni') }}</div>
+        <div class="text-muted" style="text-align: center; font-size: calc(12 * var(--c7-tpx));">{{ _('Assegna un tavolo per abilitare le azioni') }}</div>
       {% else %}
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           {% if not is_finished %}

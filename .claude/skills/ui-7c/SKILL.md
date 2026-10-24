@@ -74,6 +74,12 @@ Allora **si interpreta**, non si inventa:
   protagonista** di una schermata (il punteggio) è Manrope 800, come nel
   prototipo: è un titolo, non un dato tabellare. Aggiungi
   `font-variant-numeric: tabular-nums` dove il numero cambia sotto gli occhi.
+- **Mai una dimensione del testo in pixel**: `calc(13 * var(--c7-tpx))`, o
+  `--c7-tpx-lento` per titoli e cifre da 24px in su e comandi fitti. Segue
+  «Dimensioni testo» dell'iPhone fino a un tetto, e alla misura normale vale
+  13px esatti. Ciò che contiene testo ha altezza **minima**, non fissa; le
+  griglie di comandi usano `minmax(0, 1fr)`. Regole in `UI_CONVENTIONS.md`,
+  «Dimensioni del testo»; presidio `test_testo_segue_il_telefono.py`.
 - **Il verde è la conferma conclusiva di un flusso** ("Crea gara"), non solo il
   semantico "ok". Il rosso pieno solo per il pallino live; le azioni
   distruttive usano fondo tenue `--c7-err-bg`.

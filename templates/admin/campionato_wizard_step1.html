@@ -160,13 +160,13 @@
 
     <div class="c7-card">
       <h3 class="mb-1">{{ _("Playoff finali") }}</h3>
-      <p class="mb-3" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+      <p class="mb-3" style="font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
         {{ _("Gare speciali a fine campionato: i qualificati ricevono un invito.") }}
       </p>
 
       <div class="c7-card mb-3" style="background:var(--c7-bg)">
         <div class="d-flex align-items-center gap-3">
-          <i class="fas fa-crown" style="font-size:15px;color:var(--c7-warn)"></i>
+          <i class="fas fa-crown" style="font-size:calc(15 * var(--c7-tpx));color:var(--c7-warn)"></i>
           <label for="playoff_elite_enabled" class="flex-fill mb-0" style="cursor:pointer">
             <span class="c7-choice__title d-block" data-help="campionato-playoff-elite">{{ _("Playoff Elite") }}</span>
             <span class="c7-choice__desc d-block">{{ _("Per i primi classificati") }}</span>
@@ -185,7 +185,7 @@
 
       <div class="c7-card" style="background:var(--c7-bg)">
         <div class="d-flex align-items-center gap-3">
-          <i class="fas fa-graduation-cap" style="font-size:15px;color:var(--c7-accent)"></i>
+          <i class="fas fa-graduation-cap" style="font-size:calc(15 * var(--c7-tpx));color:var(--c7-accent)"></i>
           <label for="playoff_academy_enabled" class="flex-fill mb-0" style="cursor:pointer">
             <span class="c7-choice__title d-block" data-help="campionato-playoff-academy">{{ _("Playoff Academy") }}</span>
             <span class="c7-choice__desc d-block">{{ _("Per i classificati successivi") }}</span>

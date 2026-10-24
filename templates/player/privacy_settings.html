@@ -101,11 +101,11 @@
   {# Esportazione GDPR #}
   <section class="c7-card" style="margin-top: 24px;">
     <div class="c7-kicker">{{ _("I tuoi dati") }}</div>
-    <h2 style="margin: 6px 0 0; font-size: 17px;">{{ _("Scarica una copia di tutto") }}</h2>
-    <p class="text-muted" style="margin: 8px 0 0; font-size: 13px; line-height: 1.55;">
+    <h2 style="margin: 6px 0 0; font-size: calc(17 * var(--c7-tpx));">{{ _("Scarica una copia di tutto") }}</h2>
+    <p class="text-muted" style="margin: 8px 0 0; font-size: calc(13 * var(--c7-tpx)); line-height: 1.55;">
       {{ _("Account, partite, iscrizioni, classifiche, esercizi e progressi. È un tuo diritto (GDPR art. 20).") }}
     </p>
-    <p class="text-muted" style="margin: 10px 0 0; font-size: 12px;">
+    <p class="text-muted" style="margin: 10px 0 0; font-size: calc(12 * var(--c7-tpx));">
       {{ _("L'archivio si prepara in background: ti arriva una notifica quando è pronto, e il link vale 24 ore.") }}
     </p>
     <form method="POST" action="{{ url_for('player.request_gdpr_export') }}" style="margin-top: 16px;">

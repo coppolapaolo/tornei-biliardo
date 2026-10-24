@@ -31,7 +31,7 @@
   .drill-builder *{box-sizing:border-box}
   .drill-builder{height:100%}
   .drill-builder{margin:0;background:var(--db-panel);color:var(--db-ink);
-    font-family:var(--c7-font);font-size:13px;
+    font-family:var(--c7-font);font-size:calc(13 * var(--c7-tpx));
     display:flex;flex-direction:column;overflow:hidden}
   .drill-builder main{flex:1 1 auto;display:flex;min-height:0}
   .drill-builder #panel{width:300px;flex:0 0 300px;overflow-y:auto;background:var(--db-panel);
@@ -39,7 +39,7 @@
   .drill-builder #panel::-webkit-scrollbar{width:9px}
   .drill-builder #panel::-webkit-scrollbar-thumb{background:var(--c7-line);border-radius:9px}
   .drill-builder .sec{margin-bottom:16px}
-  .drill-builder .sec > h2{font-weight:800;font-size:11px;
+  .drill-builder .sec > h2{font-weight:800;font-size:calc(11 * var(--c7-tpx));
     letter-spacing:.14em;text-transform:uppercase;color:var(--db-muted);
     margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--db-line)}
   .drill-builder .row{display:flex;gap:6px;flex-wrap:wrap}
@@ -53,7 +53,7 @@
      spazio. */
   .drill-builder .row{--bs-gutter-x:0;--bs-gutter-y:0;margin:0}
   .drill-builder .row > *{width:auto;max-width:none;padding-left:0;padding-right:0;margin-top:0}
-  .drill-builder button, .drill-builder select, .drill-builder input[type=text]{font-family:inherit;font-size:12.5px;color:var(--db-ink)}
+  .drill-builder button, .drill-builder select, .drill-builder input[type=text]{font-family:inherit;font-size:calc(12.5 * var(--c7-tpx));color:var(--db-ink)}
   .drill-builder .btn{background:var(--db-control);border:1px solid var(--db-line);border-radius:var(--db-radius);
     padding:6px 9px;cursor:pointer;transition:.12s;line-height:1.2;font-weight:700}
   .drill-builder .btn:hover{border-color:var(--c7-ink-faint);background:var(--db-sunken)}
@@ -62,7 +62,7 @@
      e `.c7-choice.is-selected`) — inchiostro pieno, non un colore in piu'. */
   .drill-builder .btn.on{background:var(--db-ink);border-color:var(--db-ink);color:var(--c7-on-ink)}
   .drill-builder .btn.wide{flex:1 1 auto;text-align:center}
-  .drill-builder .btn.sm{padding:4px 5px;font-size:11px}
+  .drill-builder .btn.sm{padding:4px 5px;font-size:calc(11 * var(--c7-tpx))}
   .drill-builder .btn.ghostbtn{background:transparent}
 
   /* --- La striscia degli strumenti ---------------------------------------
@@ -73,7 +73,7 @@
   .drill-builder .tools{display:flex;flex-wrap:wrap;gap:6px}
   .drill-builder .tool{flex:1 1 84px;min-height:52px;display:flex;flex-direction:column;
     align-items:center;justify-content:center;gap:3px;text-align:center}
-  .drill-builder .tool i{font-size:15px}
+  .drill-builder .tool i{font-size:calc(15 * var(--c7-tpx))}
   .drill-builder .tool--icon{flex:0 0 52px;min-width:52px}
   /* Il separatore fa due mestieri secondo il formato: nel pannello e' una riga
      che manda annulla/ripeti/elimina a capo (sono comandi, non strumenti),
@@ -84,7 +84,7 @@
      che domanda fa — «quanto vicino» o «dentro o fuori». */
   .drill-builder .shape{display:flex;flex-direction:column;align-items:center;gap:2px;
     min-height:48px;padding:6px 4px;line-height:1.15}
-  .drill-builder .shape small{color:var(--db-muted);font-size:10.5px;font-weight:600}
+  .drill-builder .shape small{color:var(--db-muted);font-size:calc(10.5 * var(--c7-tpx));font-weight:600}
   .drill-builder .shape.on small{color:var(--c7-on-ink-muted)}
 
   .drill-builder select{background:var(--db-control);border:1px solid var(--db-line);border-radius:var(--db-radius);
@@ -103,7 +103,7 @@
     border-radius:var(--db-radius);padding:6px 4px;width:100%;min-width:0;text-align:center;
     color:var(--db-ink);font-family:var(--c7-font-mono)}
   .drill-builder .target-values input:focus{outline:1px solid var(--db-accent);border-color:var(--db-accent)}
-  .drill-builder .field > span{display:block;color:var(--db-muted);font-size:11px;margin-bottom:3px;letter-spacing:.04em}
+  .drill-builder .field > span{display:block;color:var(--db-muted);font-size:calc(11 * var(--c7-tpx));margin-bottom:3px;letter-spacing:.04em}
   .drill-builder .field b{color:var(--db-ink);font-family:var(--c7-font-mono);font-variant-numeric:tabular-nums}
   .drill-builder #palette{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:2px}
   .drill-builder .pball{position:relative;aspect-ratio:1;border-radius:50%;border:1px solid transparent;
@@ -124,12 +124,12 @@
     padding:14px;background:var(--db-stage)}
   .drill-builder #stage svg{max-width:100%;max-height:100%;touch-action:none;display:block}
   .drill-builder #stage.mode-line svg, .drill-builder #stage.mode-text svg, .drill-builder #stage.mode-shot svg{cursor:crosshair}
-  .drill-builder .tip{color:var(--db-muted);font-size:11px;line-height:1.5;margin:8px 0 0}
+  .drill-builder .tip{color:var(--db-muted);font-size:calc(11 * var(--c7-tpx));line-height:1.5;margin:8px 0 0}
   .drill-builder .tip kbd{background:var(--db-control);border:1px solid var(--db-line);border-bottom-width:2px;
-    border-radius:3px;padding:0 4px;font-family:var(--c7-font-mono);font-size:11px}
+    border-radius:3px;padding:0 4px;font-family:var(--c7-font-mono);font-size:calc(11 * var(--c7-tpx))}
   .drill-builder #tipwrap{display:flex;gap:10px;align-items:center}
   .drill-builder #tipsvg{width:104px;height:104px;flex:0 0 104px;cursor:crosshair;touch-action:none}
-  .drill-builder #tipinfo{font-size:11.5px;color:var(--db-muted);line-height:1.6}
+  .drill-builder #tipinfo{font-size:calc(11.5 * var(--c7-tpx));color:var(--db-muted);line-height:1.6}
   .drill-builder #tipinfo b{color:var(--db-ink);font-weight:700}
   .drill-builder #shotHint{background:var(--c7-accent-tint);border-left:2px solid var(--db-accent);padding:6px 8px;
     border-radius:0 4px 4px 0;color:var(--c7-accent-tint-ink);margin:0 0 8px}

@@ -21,13 +21,13 @@
                 <td data-label="{{ _("Gara") }}">
                     <strong>{{ gara.name }}</strong>
                     {% if gara.description %}
-                    <div class="text-muted" style="font-size: 12px; font-weight: 600;">{{ gara.description[:60] }}…</div>
+                    <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); font-weight: 600;">{{ gara.description[:60] }}…</div>
                     {% endif %}
                 </td>
                 <td data-label="{{ _("Disciplina") }}">
                     {% set _disciplina, _distanza = gara.formato_breve %}
                     {{ _disciplina }}
-                    <div class="text-muted" style="font-size: 12px; font-weight: 600;">{{ _distanza }}</div>
+                    <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); font-weight: 600;">{{ _distanza }}</div>
                 </td>
                 <td data-label="{{ _("Data") }}"><span class="c7-num">{{ gara.date|date_local }}</span></td>
                 <td data-label="{{ _("Sala") }}">{{ gara.location or "—" }}</td>

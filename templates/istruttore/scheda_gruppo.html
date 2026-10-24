@@ -28,7 +28,7 @@
   {% if vista.scheda %}
   <section class="c7-card c7-card--accent" data-help="istruttore-scheda-gruppo">
     <div class="c7-kicker">{{ _("Ce l'hanno in comune") }}</div>
-    <h2 style="margin:4px 0 0;font-size:19px;font-weight:800;letter-spacing:-.02em">
+    <h2 style="margin:4px 0 0;font-size:calc(19 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">
       {{ vista.scheda.modello.name }}
     </h2>
   </section>
@@ -58,7 +58,7 @@
   {% if vista.scheda.senza %}
   <section class="c7-inset">
     <div class="c7-kicker">{{ _("Non l'hanno ricevuta") }}</div>
-    <p style="margin:4px 0 0;font-size:13px;line-height:1.45">
+    <p style="margin:4px 0 0;font-size:calc(13 * var(--c7-tpx));line-height:1.45">
       {{ _("Sono entrati nel corso dopo: %(chi)s. Mandandola di nuovo arriva a loro — a chi ce l'ha già non si ripete.",
             chi=vista.scheda.senza|map(attribute='username')|join(', ')) }}
     </p>

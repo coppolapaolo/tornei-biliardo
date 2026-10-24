@@ -27,7 +27,7 @@
            alt="{{ _('Disposizione dell\'esercizio') }}"
            onerror="this.style.display='none'">
       {% else %}
-      <i class="fas fa-bullseye" style="font-size:34px;opacity:.5"></i>
+      <i class="fas fa-bullseye" style="font-size:calc(34 * var(--c7-tpx-lento));opacity:.5"></i>
       {% endif %}
     </div>
     <p class="c7-drillboard__rule">{{ challenge.description }}</p>

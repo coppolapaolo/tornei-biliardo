@@ -65,10 +65,14 @@ def test_il_tastierino_e_su_tre_colonne_a_ogni_larghezza():
     originale. Una volta un breakpoint a 640px portava i numeri su sei colonne
     e, a pari specificita', si prendeva anche le lettere: ora nessuna media
     query tocca le colonne di `.c7-tpa-pad`.
+
+    `minmax(0, 1fr)` e non `1fr`: col testo grande dell'iPhone la colonna di
+    «NON COLPITA» si allargava fino alla parola e il tastierino usciva dallo
+    schermo (`test_testo_segue_il_telefono.py`).
     """
     css = CSS.read_text(encoding="utf-8")
     regole = re.findall(r"\.c7-tpa-pad[^{}]*\{[^}]*grid-template-columns:([^;}]*)", css)
-    assert [r.strip() for r in regole] == ["repeat(3, 1fr)"]
+    assert [r.strip() for r in regole] == ["repeat(3, minmax(0, 1fr))"]
 
 
 def test_le_tre_colonne_del_referto_arrivano_solo_quando_c_e_posto():

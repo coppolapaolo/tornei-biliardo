@@ -19,7 +19,7 @@
     <div class="d-flex align-items-center gap-3">
       {{ ch.thumb(challenge, 48) }}
       <div class="flex-fill" style="min-width:0">
-        <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ challenge.get_display_name() }}</div>
+        <div style="font-size:calc(15 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ challenge.get_display_name() }}</div>
         <div class="c7-rows__sub" style="margin-top:3px">
           {{ _("dal turno %(n)s", n=gara_challenge.round_number) }}
           <span class="c7-sep">·</span>

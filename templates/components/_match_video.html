@@ -27,18 +27,18 @@
   </div>
 
   {% if descrizione %}
-  <p style="margin: 10px 0 0; font-size: 14px; font-weight: 700; overflow-wrap: anywhere;">{{ descrizione }}</p>
+  <p style="margin: 10px 0 0; font-size: calc(14 * var(--c7-tpx)); font-weight: 700; overflow-wrap: anywhere;">{{ descrizione }}</p>
   {% endif %}
 
   {% if match.video_url %}
   <a class="btn btn-secondary w-100" style="margin-top: 12px;"
      href="{{ match.video_url }}" target="_blank" rel="noopener noreferrer">
     <i class="fab fa-youtube"></i>&nbsp;{{ _('Guarda il video') }}
-    <i class="fas fa-arrow-up-right-from-square" style="font-size: 11px;" aria-hidden="true"></i>
+    <i class="fas fa-arrow-up-right-from-square" style="font-size: calc(11 * var(--c7-tpx));" aria-hidden="true"></i>
     <span class="visually-hidden">{{ _('(si apre in una scheda nuova)') }}</span>
   </a>
   {% elif can_edit %}
-  <p class="text-muted" style="margin: 10px 0 0; font-size: 13px; font-weight: 600;">
+  <p class="text-muted" style="margin: 10px 0 0; font-size: calc(13 * var(--c7-tpx)); font-weight: 600;">
     {{ _('Se la partita è stata ripresa, aggiungi il link al video su YouTube: lo vedranno tutti quelli che aprono questa pagina.') }}
   </p>
   {% endif %}
@@ -46,7 +46,7 @@
   {% if can_edit %}
   {% set vuoto = not match.video_url and not descrizione %}
   <details style="margin-top: 14px;">
-    <summary style="font-size: 13px; font-weight: 800; cursor: pointer;">
+    <summary style="font-size: calc(13 * var(--c7-tpx)); font-weight: 800; cursor: pointer;">
       {%- if vuoto %}{{ _('Aggiungi video e descrizione') if with_description else _('Aggiungi il video') }}
       {%- else %}{{ _('Modifica video e descrizione') if with_description else _('Modifica il video') }}{% endif -%}
     </summary>
@@ -67,7 +67,7 @@
         <input type="text" inputmode="url" autocomplete="off" class="form-control"
                id="matchInfoVideo" name="video_url" maxlength="300"
                value="{{ match.video_url or '' }}" placeholder="https://youtu.be/…">
-        <div class="text-muted" style="font-size: 12px; font-weight: 600; margin-top: 6px;">
+        <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); font-weight: 600; margin-top: 6px;">
           {{ _('Un video di YouTube, anche una diretta o uno short. Lascia vuoto per toglierlo.') }}
         </div>
       </div>
@@ -85,6 +85,6 @@
 {% macro subtitle(match, length=60, style='') -%}
 {%- if match.description -%}
 <div class="text-muted" title="{{ match.description }}"
-     style="margin-top:6px;font-size:12px;font-weight:700;overflow-wrap:anywhere;{{ style }}">{{ match.description|truncate(length) }}</div>
+     style="margin-top:6px;font-size:calc(12 * var(--c7-tpx));font-weight:700;overflow-wrap:anywhere;{{ style }}">{{ match.description|truncate(length) }}</div>
 {%- endif -%}
 {%- endmacro %}

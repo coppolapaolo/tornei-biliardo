@@ -11,7 +11,7 @@
   <ol class="list-unstyled mb-0">
     {% for voce in storia %}
     <li class="{% if not loop.last %}mb-3 pb-3{% endif %}" {% if not loop.last %}style="border-bottom:1px solid var(--c7-line)"{% endif %}>
-      <div style="font-size:13px;color:var(--c7-ink-muted)">
+      <div style="font-size:calc(13 * var(--c7-tpx));color:var(--c7-ink-muted)">
         {{ voce.created_at|datetime_local }}
         · {% if voce.author %}{{ voce.author.username }}{% else %}{{ _('correzione dei dati') }}{% endif %}
         {%- if voce.author_role == 'admin' %} ({{ _('amministratore') }}){% elif voce.author_role == 'direttore' %} ({{ _('direttore') }}){% endif %}

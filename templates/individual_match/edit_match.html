@@ -29,7 +29,7 @@
      triangolo questa pagina non si apre piu' (il server la rifiuta comunque). #}
   <div class="c7-card c7-card--warn" style="margin-bottom:16px">
     <div class="c7-rows__row" style="border:0;padding:0">
-      <i class="fas fa-circle-info" style="font-size:14px;color:var(--c7-warn);width:18px"></i>
+      <i class="fas fa-circle-info" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-warn);width:18px"></i>
       <div class="c7-rows__main">
         <div class="c7-rows__title">{{ _("Si cambia finché non avete segnato") }}</div>
         <div class="c7-rows__sub">
@@ -121,7 +121,7 @@
     <button type="submit" form="editForm" class="btn btn-primary w-100">
       <i class="fas fa-check"></i>&nbsp;{{ _("Salva") }}
     </button>
-    <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+    <div class="text-center" style="font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
       {{ _("Vale per questa partita soltanto: le prossime ripartono da qui.") }}
     </div>
   </div>

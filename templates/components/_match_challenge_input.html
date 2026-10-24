@@ -34,7 +34,7 @@
   <div class="d-flex align-items-center gap-2">
     <span class="c7-avatar">{{ player.username[:2]|upper }}</span>
     <div class="flex-fill" style="min-width:0">
-      <div style="font-size:14px;font-weight:800">{{ player.username }}</div>
+      <div style="font-size:calc(14 * var(--c7-tpx));font-weight:800">{{ player.username }}</div>
       <div class="c7-rows__sub">
         {%- if data %}
         <span class="c7-num">{{ data.attempts_count }}/{{ data.max_attempts }}</span> {{ _("tentativi") }}
@@ -56,7 +56,7 @@
     </select>
     {% else %}
     <input type="number" class="form-control" data-challenge-score min="0"
-           placeholder="{{ _('Punteggio') }}" style="max-width:140px">
+           placeholder="{{ _('Punteggio') }}" style="max-width:calc(140 * var(--c7-tpx))">
     {% endif %}
     <button type="button" class="btn btn-primary c7-btn-narrow"
             onclick="recordChallengeAttempt({{ gara_challenge.id }}, {{ player.id }}, '{{ slot }}')">
@@ -83,8 +83,8 @@
     <div class="d-flex align-items-start gap-3">
       {{ ch.thumb(challenge, 48) }}
       <div class="flex-fill" style="min-width:0">
-        <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ challenge.get_display_name() }}</div>
-        <p class="mb-0" style="margin-top:4px;font-size:13px;font-weight:500;line-height:1.45;color:var(--c7-ink-soft)">
+        <div style="font-size:calc(15 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ challenge.get_display_name() }}</div>
+        <p class="mb-0" style="margin-top:4px;font-size:calc(13 * var(--c7-tpx));font-weight:500;line-height:1.45;color:var(--c7-ink-soft)">
           {{ challenge.description }}
         </p>
       </div>

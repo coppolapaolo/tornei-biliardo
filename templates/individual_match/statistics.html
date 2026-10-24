@@ -39,7 +39,7 @@
 
     {% if tpa.tpa is none %}
     <div class="c7-card">
-      <p style="margin:0;font-size:13px;font-weight:600;line-height:1.5;color:var(--c7-ink-soft)">
+      <p style="margin:0;font-size:calc(13 * var(--c7-tpx));font-weight:600;line-height:1.5;color:var(--c7-ink-soft)">
         {{ _("Il TPA compare dopo il primo referto compilato durante una partita.") }}
       </p>
       <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-secondary w-100" style="margin-top:12px">
@@ -80,7 +80,7 @@
             (_("Posizione"), 'position')] %}
         <div class="c7-rows__row">
           <div class="c7-rows__main"><div class="c7-rows__title">{{ label }}</div></div>
-          <span class="c7-num" style="font-size:15px;font-weight:800">{{ tpa.errors_by_kind[key] }}</span>
+          <span class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ tpa.errors_by_kind[key] }}</span>
         </div>
         {% endfor %}
       </div>
@@ -114,7 +114,7 @@
             {%- if entry.date %} <span class="c7-sep">·</span> {{ entry.date|date_local }}{% endif %}
           </div>
         </div>
-        <span class="c7-num" style="font-size:15px;font-weight:800">
+        <span class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">
           {{ entry.tpa|tpa_display }}
         </span>
       </a>
@@ -217,7 +217,7 @@
         {% endfor %}
       </div>
       {% if statistics.current_streak %}
-      <div style="margin-top:14px;font-size:13px;font-weight:700;color:var(--c7-ink-soft)">
+      <div style="margin-top:14px;font-size:calc(13 * var(--c7-tpx));font-weight:700;color:var(--c7-ink-soft)">
         <i class="fas fa-fire" style="color:{{ 'var(--c7-ok)' if statistics.current_streak_type == 'win' else 'var(--c7-ink-muted)' }}"></i>
         {% if statistics.current_streak_type == 'win' %}
         {{ ngettext("%(n)s vittoria di fila", "%(n)s vittorie di fila",
@@ -246,7 +246,7 @@
             <span class="c7-num">{{ stat.wins }}–{{ stat.losses }}</span>
           </div>
         </div>
-        <span class="c7-num" style="font-size:15px;font-weight:800">{{ "%.0f"|format(stat.win_percentage) }}%</span>
+        <span class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ "%.0f"|format(stat.win_percentage) }}%</span>
       </div>
       {% endfor %}
     </div>
@@ -270,7 +270,7 @@
           <div class="c7-rows__title">{{ h2h.opponent_username }}</div>
           <div class="c7-rows__sub">{{ ngettext("%(n)s sfida", "%(n)s sfide", h2h.total_matches, n=h2h.total_matches) }}</div>
         </div>
-        <span class="c7-num" style="font-size:15px;font-weight:800;
+        <span class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800;
               color:{{ 'var(--c7-ok)' if h2h.wins > h2h.losses else 'var(--c7-err)' if h2h.wins < h2h.losses else 'inherit' }}">
           {{ h2h.wins }}–{{ h2h.losses }}
         </span>
@@ -294,7 +294,7 @@
             {{ ngettext("%(n)s vinta", "%(n)s vinte", month_stat.wins, n=month_stat.wins) }}
           </div>
         </div>
-        <span class="c7-num" style="font-size:15px;font-weight:800">{{ "%.0f"|format(month_stat.win_percentage) }}%</span>
+        <span class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ "%.0f"|format(month_stat.win_percentage) }}%</span>
       </div>
       {% endfor %}
     </div>
@@ -319,7 +319,7 @@
         <div class="c7-rows__title">{{ _("I tuoi traguardi") }}</div>
         <div class="c7-rows__sub">{{ _("Achievement, livelli e strisce") }}</div>
       </div>
-      <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+      <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
     </a>
   </div>
   {% endif %}

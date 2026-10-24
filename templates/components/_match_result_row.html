@@ -57,7 +57,7 @@
         {% if p1_wins %}<i class="fas fa-crown" style="color: var(--c7-warn);"></i>{% endif %}
         {% if p1_forfeit %}<i class="fas fa-ban" style="color: var(--c7-ink-faint);" title="{{ _('Forfait') }}"></i>{% endif %}
     </td>
-    <td class="text-center" style="color: var(--c7-ink-faint); font-size: 12px;">vs</td>
+    <td class="text-center" style="color: var(--c7-ink-faint); font-size: calc(12 * var(--c7-tpx));">vs</td>
     <td>
         {% if match.is_bye %}
         <span style="color: var(--c7-ink-muted);">{{ (_('Riposo') if match.is_riposo else _('X a tavolino')) }}</span>
@@ -75,9 +75,9 @@
         <span class="c7-num">{{ match.player1_score }}–{{ match.player2_score }}</span>
         {# Interrotta dal direttore prima della distanza (ADR-077). #}
         {% if match.closed_on_time %}
-        <span style="font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); white-space: nowrap;"
+        <span style="font-size: calc(11 * var(--c7-tpx)); font-weight: 700; color: var(--c7-ink-muted); white-space: nowrap;"
               title="{{ _('Interrotta dal direttore prima della distanza') }}">
-            <i class="fas fa-stopwatch" style="font-size: 9px;"></i> {{ _('a tempo') }}
+            <i class="fas fa-stopwatch" style="font-size: calc(9 * var(--c7-tpx));"></i> {{ _('a tempo') }}
         </span>
         {% endif %}
         {# Un risultato corretto dopo la chiusura lo dice qui, dove il
@@ -86,9 +86,9 @@
            partita (issue #90). #}
         {% if match.corrections %}
         <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}"
-           style="font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); white-space: nowrap;"
+           style="font-size: calc(11 * var(--c7-tpx)); font-weight: 700; color: var(--c7-ink-muted); white-space: nowrap;"
            title="{{ _('Il risultato è stato corretto dopo la chiusura: apri la partita per vedere da cosa a cosa') }}">
-            <i class="fas fa-pen" style="font-size: 9px;"></i> {{ _('corretto') }}
+            <i class="fas fa-pen" style="font-size: calc(9 * var(--c7-tpx));"></i> {{ _('corretto') }}
         </a>
         {% endif %}
         {% elif match.player1_score > 0 or match.player2_score > 0 %}
@@ -159,7 +159,7 @@
         {% if match.table_assignment %}
         <span class="c7-num">{{ _('Tavolo') }} {{ match.table_assignment }}</span>
         {% else %}
-        <span class="text-muted" style="font-size: 12px;">{{ _('In attesa') }}</span>
+        <span class="text-muted" style="font-size: calc(12 * var(--c7-tpx));">{{ _('In attesa') }}</span>
         {% endif %}
         {% endif %}
     </td>
@@ -209,9 +209,9 @@
                 {% endif %}
             {% endif %}
         {% elif not match.is_bye and not match_can_modify.get(match.id, True) %}
-        <span class="text-muted" style="font-size: 12px;"><i class="fas fa-lock"></i> {{ _('Bloccato') }}</span>
+        <span class="text-muted" style="font-size: calc(12 * var(--c7-tpx));"><i class="fas fa-lock"></i> {{ _('Bloccato') }}</span>
         {% elif not match.is_bye and not match.table_assignment and not is_finished and not match.is_at_distance %}
-        <span class="text-muted" style="font-size: 12px;">{{ _('Assegna un tavolo') }}</span>
+        <span class="text-muted" style="font-size: calc(12 * var(--c7-tpx));">{{ _('Assegna un tavolo') }}</span>
         {% endif %}
     </td>
     {% endif %}

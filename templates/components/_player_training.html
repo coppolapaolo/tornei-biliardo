@@ -56,7 +56,7 @@
         {% else %}
         <div style="text-align:right">
           <div class="c7-label">{{ _("Record") }}</div>
-          <div style="font-size:22px;font-weight:800;letter-spacing:-.03em">{{ drill.best_score
+          <div style="font-size:calc(22 * var(--c7-tpx));font-weight:800;letter-spacing:-.03em">{{ drill.best_score
             if drill.best_score is not none else "—" }}</div>
         </div>
         {% endif %}
@@ -88,7 +88,7 @@
         {% for attempt in drill.attempts|reverse %}
         <div class="c7-rows__row">
           <div class="c7-rows__main">
-            <div class="c7-rows__title c7-num" style="font-size:14px">
+            <div class="c7-rows__title c7-num" style="font-size:calc(14 * var(--c7-tpx))">
               {{ attempt.attempted_at|datetime_local }}
             </div>
             {% if attempt.gara_name %}
@@ -102,7 +102,7 @@
             {{ _("Superato") if attempt.passed else _("Non superato") }}
           </span>
           {% else %}
-          <span class="c7-num" style="font-size:15px;font-weight:800">{{ attempt.score }}</span>
+          <span class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ attempt.score }}</span>
           {% endif %}
         </div>
         {% endfor %}
@@ -148,7 +148,7 @@
         {{ _("Superato") if exam.passed else _("Non superato") }}
       </span>
       {% else %}
-      <span class="c7-num" style="font-size:15px;font-weight:800">{{ exam.total_score }}</span>
+      <span class="c7-num" style="font-size:calc(15 * var(--c7-tpx));font-weight:800">{{ exam.total_score }}</span>
       {% endif %}
     </div>
     {% endfor %}

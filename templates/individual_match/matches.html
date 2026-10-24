@@ -35,7 +35,7 @@
   <a class="c7-card c7-card--warn d-flex align-items-center gap-3 text-decoration-none"
      href="{{ url_for('individual_match.pending_confirmations') }}">
     <i class="fas fa-hourglass-half"></i>
-    <span class="flex-fill" style="font-size:14px;font-weight:700">
+    <span class="flex-fill" style="font-size:calc(14 * var(--c7-tpx));font-weight:700">
       {{ ngettext("Una partita aspetta la tua conferma: finché resta aperta non puoi lanciare né accettare sfide.",
                   "%(num)d partite aspettano la tua conferma: finché restano aperte non puoi lanciare né accettare sfide.",
                   da_confermare|length) }}
@@ -51,7 +51,7 @@
   <a class="c7-card c7-card--warn d-flex align-items-center gap-3 text-decoration-none"
      href="{{ url_for('individual_match.review_matches') }}" data-help="sfida-revisione">
     <i class="fas fa-list-check"></i>
-    <span class="flex-fill" style="font-size:14px;font-weight:700">
+    <span class="flex-fill" style="font-size:calc(14 * var(--c7-tpx));font-weight:700">
       {{ ngettext("Una partita registrata contro di te prima che avessi un account aspetta che tu la riconosca o la contesti.",
                   "%(num)d partite registrate contro di te prima che avessi un account aspettano che tu le riconosca o le contesti.",
                   da_rivedere) }}
@@ -184,8 +184,8 @@
       {# Punteggio: il proprio a sinistra, sempre. #}
       <div class="d-flex align-items-center gap-3" style="margin-top:14px">
         <div class="flex-fill" style="min-width:0">
-          <div style="font-size:14px;font-weight:800">{{ current_user.username }}</div>
-          <div style="margin-top:3px;font-size:14px;font-weight:800;color:var(--c7-ink-muted)">
+          <div style="font-size:calc(14 * var(--c7-tpx));font-weight:800">{{ current_user.username }}</div>
+          <div style="margin-top:3px;font-size:calc(14 * var(--c7-tpx));font-weight:800;color:var(--c7-ink-muted)">
             {{ opponent.username if opponent else _('Avversario') }}
           </div>
         </div>

@@ -142,7 +142,7 @@
           <span class="c7-rows__title d-block">{{ _('Tabellone') }}</span>
           <span class="c7-rows__sub d-block">{{ _('Il percorso della gara, turno per turno') }}</span>
         </span>
-        <i class="fas fa-chevron-right" style="font-size: 12px; color: var(--c7-ink-faint);"></i>
+        <i class="fas fa-chevron-right" style="font-size: calc(12 * var(--c7-tpx)); color: var(--c7-ink-faint);"></i>
       </a>
     </div>
     {% endif %}
@@ -251,7 +251,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
       </div>
       <div class="modal-body">
-        <p class="text-muted" style="font-size:13px">
+        <p class="text-muted" style="font-size:calc(13 * var(--c7-tpx))">
           {{ _('Questa gara tiene lontani i compagni di squadra nel sorteggio. Dicci con chi giochi, così il tabellone può farlo.') }}
         </p>
         {% include "components/_squadra_choice.html" %}

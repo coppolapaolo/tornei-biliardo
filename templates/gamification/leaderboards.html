@@ -28,7 +28,7 @@
             <span class="c7-avatar">{{ entry.user.username[:2]|upper }}</span>
             <strong style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ entry.user.username }}</strong>
             {% if entry.is_viewer %}<span class="c7-state c7-state--accent">{{ _('Tu') }}</span>{% endif %}
-            <span class="c7-num" style="font-size: 17px;">{{ entry.score|int }}</span>
+            <span class="c7-num" style="font-size: calc(17 * var(--c7-tpx));">{{ entry.score|int }}</span>
         </div>
         {% endfor %}
         <div class="c7-kicker" style="padding: 10px 16px 6px; text-align: right;">{{ unit_label }}</div>
@@ -71,7 +71,7 @@
     </div>
 
     <div class="tab-pane fade {% if active_tab == 'contribution' %}show active{% endif %}" id="contribution" role="tabpanel">
-        <p class="text-muted" style="margin: 0 0 14px; font-size: 13px;">
+        <p class="text-muted" style="margin: 0 0 14px; font-size: calc(13 * var(--c7-tpx));">
             {{ _('Esercizi creati per gli altri, gare organizzate e proposte accettate.') }}
         </p>
         {{ render_board(contribution_board, _('Punti contributo'),

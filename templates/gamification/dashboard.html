@@ -20,12 +20,12 @@
     <div class="d-flex align-items-center gap-3">
       {# Il livello e' la cifra protagonista: Manrope, non mono. #}
       <div style="width:56px;height:56px;border-radius:var(--c7-r-field);background:rgba(242,248,247,.14);
-                  display:grid;place-items:center;font-size:24px;font-weight:800;letter-spacing:-.04em">
+                  display:grid;place-items:center;font-size:calc(24 * var(--c7-tpx-lento));font-weight:800;letter-spacing:-.04em">
         {{ progress.current_level }}
       </div>
       <div class="flex-fill">
         <div class="c7-kicker" data-help="profilo-livello">{{ _('Livello') }}</div>
-        <div style="margin-top:4px;font-size:15px;font-weight:700">
+        <div style="margin-top:4px;font-size:calc(15 * var(--c7-tpx));font-weight:700">
           <span class="c7-num">{{ progress.total_xp }}</span> {{ _('XP totali') }}
         </div>
       </div>
@@ -38,7 +38,7 @@
          aria-valuenow="{{ progress.progress_percentage|round|int }}" aria-valuemin="0" aria-valuemax="100">
       <div class="progress-bar" style="width: {{ progress.progress_percentage }}%"></div>
     </div>
-    <div class="d-flex justify-content-between" style="margin-top:10px;font-size:12px;font-weight:700;color:var(--c7-accent-dim)">
+    <div class="d-flex justify-content-between" style="margin-top:10px;font-size:calc(12 * var(--c7-tpx));font-weight:700;color:var(--c7-accent-dim)">
       <span><span class="c7-num">{{ progress.current_xp }} / {{ progress.xp_for_next_level }}</span> XP</span>
       <span>{{ progress.progress_percentage|round|int }}% {{ _('al livello') }} {{ progress.current_level + 1 }}</span>
     </div>
@@ -58,7 +58,7 @@
       <div class="c7-rows__row">
         {# Un'icona sola, accesa se la streak e' viva. Il fuoco era un'emoji
            con drop-shadow: in 7c e' un'icona in palette. #}
-        <i class="fas fa-fire" style="font-size:15px;color:{{ 'var(--c7-err)' if is_live else 'var(--c7-ink-faint)' }}"></i>
+        <i class="fas fa-fire" style="font-size:calc(15 * var(--c7-tpx));color:{{ 'var(--c7-err)' if is_live else 'var(--c7-ink-faint)' }}"></i>
         <div class="c7-rows__main">
           <div class="c7-rows__title">{{ gami.streak_labels.get(streak_type, streak_type) }}</div>
           <div class="c7-rows__sub">
@@ -66,7 +66,7 @@
                 streak_info.longest_streak, num=streak_info.longest_streak) }}
           </div>
         </div>
-        <span style="font-size:20px;font-weight:800;letter-spacing:-.03em;{{ '' if is_live else 'color:var(--c7-ink-muted)' }}">
+        <span style="font-size:calc(20 * var(--c7-tpx));font-weight:800;letter-spacing:-.03em;{{ '' if is_live else 'color:var(--c7-ink-muted)' }}">
           {{ streak_info.current_streak }}
         </span>
       </div>
@@ -93,12 +93,12 @@
       {% for feature in locked_features[:4] %}
       <div class="c7-card">
         <div class="d-flex align-items-center gap-2">
-          <i class="fas fa-lock" style="font-size:13px;color:var(--c7-ink-muted)"></i>
-          <strong style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ feature.feature_name }}</strong>
+          <i class="fas fa-lock" style="font-size:calc(13 * var(--c7-tpx));color:var(--c7-ink-muted)"></i>
+          <strong style="font-size:calc(15 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ feature.feature_name }}</strong>
         </div>
 
         {% if feature.description %}
-        <p style="margin:8px 0 0;font-size:12px;font-weight:600;line-height:1.45;color:var(--c7-ink-muted)">
+        <p style="margin:8px 0 0;font-size:calc(12 * var(--c7-tpx));font-weight:600;line-height:1.45;color:var(--c7-ink-muted)">
           {{ feature.description|truncate(80) }}
         </p>
         {% endif %}
@@ -109,11 +109,11 @@
         {% if not loop.first %}<hr class="c7-divider">{% endif %}
         <div class="c7-stack" style="margin-top:12px;gap:8px">
           {% for cond in rule_set.conditions %}
-          <div class="d-flex align-items-center gap-2" style="font-size:13px;font-weight:600;color:var(--c7-ink-soft)">
+          <div class="d-flex align-items-center gap-2" style="font-size:calc(13 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-soft)">
             {% if cond.is_met %}
-            <i class="fas fa-circle-check" style="font-size:13px;color:var(--c7-ok)"></i>
+            <i class="fas fa-circle-check" style="font-size:calc(13 * var(--c7-tpx));color:var(--c7-ok)"></i>
             {% else %}
-            <i class="far fa-circle" style="font-size:13px;color:var(--c7-ink-faint)"></i>
+            <i class="far fa-circle" style="font-size:calc(13 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
             {% endif %}
             <span class="flex-fill">{{ cond.description }}</span>
             {% if cond.current_value is defined and cond.required_value is defined %}
@@ -126,7 +126,7 @@
 
         {% if feature.next_action %}
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--c7-line-soft);
-                    font-size:12px;font-weight:700;color:var(--c7-accent)">
+                    font-size:calc(12 * var(--c7-tpx));font-weight:700;color:var(--c7-accent)">
           {{ feature.next_action }}
         </div>
         {% endif %}
@@ -135,7 +135,7 @@
     </div>
 
     {% if locked_features|length > 4 %}
-    <div style="text-align:center;font-size:12px;font-weight:700;color:var(--c7-ink-faint)">
+    <div style="text-align:center;font-size:calc(12 * var(--c7-tpx));font-weight:700;color:var(--c7-ink-faint)">
       {{ ngettext('e un\'altra funzionalità da sbloccare', 'e altre %(num)d funzionalità da sbloccare',
           locked_features|length - 4, num=locked_features|length - 4) }}
     </div>
@@ -160,7 +160,7 @@
         {% else %}
         <div class="c7-tile c7-tile--sm"><i class="fas fa-trophy"></i></div>
         {% endif %}
-        <div style="margin-top:12px;font-size:14px;font-weight:800">{{ achievement.name }}</div>
+        <div style="margin-top:12px;font-size:calc(14 * var(--c7-tpx));font-weight:800">{{ achievement.name }}</div>
         <div class="c7-rows__sub">
           {%- if ua.unlocked_at %}{{ ua.unlocked_at|date_local }}{% endif %}
           {%- if achievement.xp_reward %} <span class="c7-sep">·</span> <span class="c7-num">+{{ achievement.xp_reward }}</span> XP{% endif %}
@@ -191,12 +191,12 @@
       <div class="c7-card">
         <div class="d-flex align-items-center gap-2">
           <span class="c7-state c7-state--muted">{{ gami.quest_type_labels.get(quest.quest_type.value, quest.quest_type.value) }}</span>
-          <span style="margin-left:auto;font-size:12px;font-weight:800;color:var(--c7-accent)">
+          <span style="margin-left:auto;font-size:calc(12 * var(--c7-tpx));font-weight:800;color:var(--c7-accent)">
             +<span class="c7-num">{{ quest.xp_reward }}</span> XP
           </span>
         </div>
-        <div style="margin-top:12px;font-size:15px;font-weight:800;letter-spacing:-.02em">{{ _(quest.name) }}</div>
-        <p style="margin:5px 0 0;font-size:13px;font-weight:500;line-height:1.45;color:var(--c7-ink-soft)">
+        <div style="margin-top:12px;font-size:calc(15 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ _(quest.name) }}</div>
+        <p style="margin:5px 0 0;font-size:calc(13 * var(--c7-tpx));font-weight:500;line-height:1.45;color:var(--c7-ink-soft)">
           {{ _(quest.description)|truncate(90) }}
         </p>
 
@@ -205,12 +205,12 @@
              aria-valuenow="{{ quest_info.progress_percentage|round|int }}" aria-valuemin="0" aria-valuemax="100">
           <div class="progress-bar" style="width: {{ quest_info.progress_percentage }}%"></div>
         </div>
-        <div style="margin-top:8px;font-size:12px;font-weight:700;color:var(--c7-ink-muted)">
+        <div style="margin-top:8px;font-size:calc(12 * var(--c7-tpx));font-weight:700;color:var(--c7-ink-muted)">
           {{ quest_info.progress_percentage|round|int }}% {{ _('completato') }}
         </div>
         {% else %}
         <div style="margin-top:14px;padding:12px 14px;border-radius:var(--c7-r-control);background:var(--c7-bg);
-                    font-size:12px;font-weight:700;color:var(--c7-ink-soft)">
+                    font-size:calc(12 * var(--c7-tpx));font-weight:700;color:var(--c7-ink-soft)">
           {{ _('Partecipi automaticamente giocando') }}
         </div>
         {% endif %}

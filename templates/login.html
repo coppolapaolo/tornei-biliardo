@@ -44,7 +44,7 @@
         <button type="submit" class="btn btn-primary w-100">{{ _('Accedi') }}</button>
     </form>
 
-    <p class="text-muted" style="text-align: center; margin-top: 20px; font-size: 13px;">
+    <p class="text-muted" style="text-align: center; margin-top: 20px; font-size: calc(13 * var(--c7-tpx));">
         {{ _('Non hai un account?') }} <a href="{{ url_for('auth.register', next=next_url) }}">{{ _('Registrati') }}</a>
     </p>
 </div>

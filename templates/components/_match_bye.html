@@ -7,14 +7,14 @@
 {# Il riposo del girone all'italiana: non vale niente (SPECIFICHE.md, nota del 2026-10-11). #}
 <div class="c7-card c7-card--info">
     <div class="c7-kicker">{{ _('Riposo') }}</div>
-    <div style="font-size: 13px; font-weight: 600; line-height: 1.5; margin-top: 8px;">
+    <div style="font-size: calc(13 * var(--c7-tpx)); font-weight: 600; line-height: 1.5; margin-top: 8px;">
         {{ _('%(player)s riposa in questo turno: il riposo non vale punti.', player=match.player1.username) }}
     </div>
 </div>
 {% elif match.is_bye %}
 <div class="c7-card c7-card--info">
     <div class="c7-kicker">{{ _('X a tavolino') }}</div>
-    <div style="font-size: 13px; font-weight: 600; line-height: 1.5; margin-top: 8px;">
+    <div style="font-size: calc(13 * var(--c7-tpx)); font-weight: 600; line-height: 1.5; margin-top: 8px;">
         {{ _('%(player)s passa al turno successivo senza giocare.', player=match.player1.username) }}
     </div>
     <div class="c7-num-lg" style="margin-top: 10px;">{{ match.player1_score }} – 0</div>

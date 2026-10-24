@@ -68,7 +68,7 @@
             <button type="submit" class="btn btn-primary w-100">
                 <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
             </button>
-            <div class="text-muted" style="font-size: 12px; font-weight: 600;">
+            <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); font-weight: 600;">
                 {{ config.num_rounds }} {{ _('girone/i') }} ({{ config.num_rounds * 3 }} rack)
                 {% if config.bonus_racks > 0 %}
                 + {{ config.bonus_racks }} bonus ({{ _('aggiunto automaticamente') }})
@@ -96,7 +96,7 @@
             <button type="submit" class="btn btn-primary w-100">
                 <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
             </button>
-            <div class="text-muted" style="font-size: 12px; font-weight: 600;">
+            <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); font-weight: 600;">
                 {{ match.distance_config|format_distance }}:
                 {% if match.distance_config.is_race_to_racks %}
                 {{ _('vince chi raggiunge %(score)s punti (max %(max)s per giocatore)', score=match.effective_distance, max=match.effective_distance) }}
@@ -118,7 +118,7 @@
             <button class="btn btn-success w-100" onclick="validateMatch({{ match.id }})">
                 <i class="fas fa-check-circle"></i> {{ _('Valida Risultato') }}
             </button>
-            <div class="text-muted" style="font-size: 12px; font-weight: 600;">
+            <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); font-weight: 600;">
                 {{ _('Valida il risultato per completare la partita e liberare il tavolo') }}
             </div>
         </div>
@@ -204,7 +204,7 @@
             <button type="submit" class="btn btn-secondary w-100">
                 <i class="fas fa-pen"></i> {{ _('Correggi il risultato') }}
             </button>
-            <div class="text-muted" style="font-size: 12px; font-weight: 600;">
+            <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); font-weight: 600;">
                 {{ _('La correzione resta scritta sulla partita: chi aveva visto il risultato di prima capisce perché è cambiato.') }}
             </div>
         </form>
@@ -248,7 +248,7 @@
         <button class="btn btn-secondary w-100" onclick="updateMatchTimes({{ match.id }})">
             <i class="fas fa-save"></i> {{ _('Aggiorna Tempi') }}
         </button>
-        <div class="text-muted" style="font-size: 12px; font-weight: 600;">
+        <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); font-weight: 600;">
             {{ _('Inserisci solo orario, il giorno viene inferito dalla data della gara') }}
         </div>
     </div>

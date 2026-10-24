@@ -72,7 +72,7 @@
 
   {% elif match.is_player(current_user.id) %}
     {% if match.awaits_decision_from(current_user.id) %}
-    <p style="margin:10px 0 0;font-size:13px;font-weight:600;line-height:1.45;color:var(--c7-ink-soft)">
+    <p style="margin:10px 0 0;font-size:calc(13 * var(--c7-tpx));font-weight:600;line-height:1.45;color:var(--c7-ink-soft)">
       {{ _("%(name)s ha chiuso il referto. La riconosci? Se uno dei due la rifiuta, non conta per nessuno dei due.", name=chi_segna) }}
     </p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">

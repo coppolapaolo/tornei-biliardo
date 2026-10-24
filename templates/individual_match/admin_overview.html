@@ -84,7 +84,7 @@
           </div>
         </div>
         {{ st.pastiglia(match) }}
-        <i class="fas fa-chevron-right" style="font-size:12px;color:var(--c7-ink-faint)"></i>
+        <i class="fas fa-chevron-right" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-faint)"></i>
       </a>
       {% endfor %}
     </div>
@@ -98,7 +98,7 @@
     <div class="c7-card d-flex flex-wrap gap-2">
       {% for location in active_locations %}
       <span class="c7-pill" style="background:var(--c7-bg)">
-        <i class="fas fa-location-dot" style="font-size:11px"></i>{{ location }}
+        <i class="fas fa-location-dot" style="font-size:calc(11 * var(--c7-tpx))"></i>{{ location }}
       </span>
       {% endfor %}
     </div>

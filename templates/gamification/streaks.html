@@ -20,16 +20,16 @@
   {% if primary_streak %}
   <section class="c7-card c7-card--accent"
            style="border-radius:var(--c7-r-card-lg);padding:26px 22px;text-align:center">
-    <i class="fas fa-fire" style="font-size:22px;color:#FF8A7E"></i>
+    <i class="fas fa-fire" style="font-size:calc(22 * var(--c7-tpx));color:#FF8A7E"></i>
     {# Cifra protagonista: Manrope, non mono. #}
-    <div style="margin-top:10px;font-size:68px;font-weight:800;letter-spacing:-.06em;line-height:1">
+    <div style="margin-top:10px;font-size:calc(68 * var(--c7-tpx-lento));font-weight:800;letter-spacing:-.06em;line-height:1">
       {{ primary_streak.current_streak }}
     </div>
-    <div style="margin-top:6px;font-size:15px;font-weight:700">
+    <div style="margin-top:6px;font-size:calc(15 * var(--c7-tpx));font-weight:700">
       {{ ngettext('settimana consecutiva di attività', 'settimane consecutive di attività',
           primary_streak.current_streak) }}
     </div>
-    <div style="margin-top:4px;font-size:12px;font-weight:600;color:var(--c7-accent-dim)">
+    <div style="margin-top:4px;font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-accent-dim)">
       {{ _('Record personale') }}:
       {{ ngettext('%(num)d settimana', '%(num)d settimane',
           primary_streak.longest_streak, num=primary_streak.longest_streak) }}
@@ -37,8 +37,8 @@
 
     {% if primary_streak.freeze_count > 0 %}
     <div style="margin-top:16px;display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 14px;
-                border-radius:var(--c7-r-pill);background:rgba(242,248,247,.14);font-size:12px;font-weight:800">
-      <i class="fas fa-snowflake" style="font-size:11px;color:var(--c7-accent-bright)"></i>
+                border-radius:var(--c7-r-pill);background:rgba(242,248,247,.14);font-size:calc(12 * var(--c7-tpx));font-weight:800">
+      <i class="fas fa-snowflake" style="font-size:calc(11 * var(--c7-tpx));color:var(--c7-accent-bright)"></i>
       {{ ngettext('%(num)d freeze disponibile', '%(num)d freeze disponibili',
           primary_streak.freeze_count, num=primary_streak.freeze_count) }}
     </div>
@@ -54,8 +54,8 @@
              {% if streak_info.is_at_risk %}style="border:1.5px solid var(--c7-err-bg)"{% endif %}>
       <div class="d-flex align-items-center gap-2">
         <i class="fas {{ gami.streak_icons.get(streak_type, 'fa-fire') }}"
-           style="font-size:14px;color:var(--c7-accent)"></i>
-        <strong style="font-size:15px;font-weight:800;letter-spacing:-.02em">
+           style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent)"></i>
+        <strong style="font-size:calc(15 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">
           {{ gami.streak_labels.get(streak_type, streak_type) }}
         </strong>
         {% if streak_info.is_at_risk %}
@@ -69,11 +69,11 @@
 
       <div class="d-flex" style="margin-top:14px;gap:20px">
         <div>
-          <div style="font-size:28px;font-weight:800;letter-spacing:-.04em">{{ streak_info.current_streak }}</div>
+          <div style="font-size:calc(28 * var(--c7-tpx-lento));font-weight:800;letter-spacing:-.04em">{{ streak_info.current_streak }}</div>
           <div class="c7-rows__sub">{{ _('Attuale') }}</div>
         </div>
         <div>
-          <div style="font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--c7-ink-muted)">
+          <div style="font-size:calc(28 * var(--c7-tpx-lento));font-weight:800;letter-spacing:-.04em;color:var(--c7-ink-muted)">
             {{ streak_info.longest_streak }}
           </div>
           <div class="c7-rows__sub">{{ _('Record') }}</div>
@@ -88,8 +88,8 @@
         {% set is_reached = weeks in reached or (weeks|string ~ '_weeks') in reached %}
         <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
           <i class="fas {{ icon }}"
-             style="font-size:15px;color:{{ 'var(--c7-accent)' if is_reached else 'var(--c7-line)' }}"></i>
-          <span class="c7-num" style="font-size:11px;font-weight:700;color:{{ 'var(--c7-ink-soft)' if is_reached else 'var(--c7-ink-faint)' }}">
+             style="font-size:calc(15 * var(--c7-tpx));color:{{ 'var(--c7-accent)' if is_reached else 'var(--c7-line)' }}"></i>
+          <span class="c7-num" style="font-size:calc(11 * var(--c7-tpx));font-weight:700;color:{{ 'var(--c7-ink-soft)' if is_reached else 'var(--c7-ink-faint)' }}">
             {{ weeks }} {{ _('sett.') }}
           </span>
         </div>
@@ -97,7 +97,7 @@
       </div>
 
       {% if streak_info.next_milestone %}
-      <div style="margin-top:12px;font-size:12px;font-weight:700;color:var(--c7-ink-muted)">
+      <div style="margin-top:12px;font-size:calc(12 * var(--c7-tpx));font-weight:700;color:var(--c7-ink-muted)">
         {{ _('Prossimo traguardo') }}:
         {{ ngettext('%(num)d settimana', '%(num)d settimane',
             streak_info.next_milestone, num=streak_info.next_milestone) }}
@@ -110,7 +110,7 @@
          stato, non un comando morto. #}
       {% if streak_info.is_at_risk %}
       <div style="margin-top:14px;padding:12px 14px;border-radius:var(--c7-r-control);background:var(--c7-bg);
-                  font-size:12px;font-weight:600;color:var(--c7-ink-soft);line-height:1.45">
+                  font-size:calc(12 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-soft);line-height:1.45">
         {% if streak_info.freeze_count > 0 %}
         {{ ngettext('Questa settimana non hai ancora giocato. Hai %(num)d freeze da parte: quando la funzione sarà attiva potrai usarlo per non azzerare la streak.',
                     'Questa settimana non hai ancora giocato. Hai %(num)d freeze da parte: quando la funzione sarà attiva potrai usarne uno per non azzerare la streak.',
@@ -134,7 +134,7 @@
   {# ---------- Come funzionano ---------- #}
   <section class="c7-card c7-card--locked">
     <div class="c7-kicker">{{ _('Come funzionano') }}</div>
-    <div class="c7-stack" style="margin-top:10px;gap:7px;font-size:12px;font-weight:600;line-height:1.45">
+    <div class="c7-stack" style="margin-top:10px;gap:7px;font-size:calc(12 * var(--c7-tpx));font-weight:600;line-height:1.45">
       <span>{{ _('Ogni settimana in cui giochi almeno una partita la streak sale.') }}</span>
       <span>{{ _('A 4, 12 e 52 settimane ottieni un freeze (massimo 3 accumulabili).') }}</span>
       <span>{{ _('Un freeze copre una settimana saltata senza azzerare la streak.') }}</span>

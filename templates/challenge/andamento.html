@@ -142,7 +142,7 @@
         <span class="c7-num">{{ riga.delta|abs }}</span>
       </span>
       {% endif %}
-      <span class="c7-num-lg" style="font-size:20px;min-width:56px;text-align:right">{{ riga.pct }}%</span>
+      <span class="c7-num-lg" style="font-size:calc(20 * var(--c7-tpx));min-width:56px;text-align:right">{{ riga.pct }}%</span>
     </div>
     {% endfor %}
   </section>

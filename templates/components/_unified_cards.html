@@ -12,7 +12,7 @@
           {% if item.type == 'campionato' %}{{ _('Campionato') }}{% else %}{{ _('Gara') }}{% endif %}
         </div>
         <h3 style="margin: 5px 0 0;">{{ item.name }}</h3>
-        <div class="text-muted" style="font-size: 12px; margin-top: 3px;">
+        <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); margin-top: 3px;">
           {% if item.type == 'campionato' %}
           {{ item.entity|formato_campionato }} <span class="c7-sep">·</span> {{ item.entity.conteggio_gare.gare_testo }}
           {% else %}
@@ -26,7 +26,7 @@
     <hr class="c7-divider">
 
     {# Data e luogo #}
-    <div style="font-size: 12px; font-weight: 700;">
+    <div style="font-size: calc(12 * var(--c7-tpx)); font-weight: 700;">
       {% if item.next_prova_date %}
       <div>
         {% if item.type == 'campionato' %}<span class="text-muted">{{ _('Prossima gara') }}</span> {% endif %}
@@ -51,7 +51,7 @@
       {% if item.entity.challenge_mode %}<span class="c7-state c7-state--warn">{{ _('Esercizi') }}</span>{% endif %}
     </div>
     {% else %}
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-size: 12px; font-weight: 700;">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-size: calc(12 * var(--c7-tpx)); font-weight: 700;">
       <span class="text-muted">
         {# Il listino per categoria (ADR-079) al posto della quota unica. #}
         {% set _listino = listino_quote(item.entity) %}
@@ -73,14 +73,14 @@
       <span class="c7-state c7-state--ok">{{ _('Iscrizioni aperte') }}</span>
       {% endif %}
       {% if item.entity.inscription_end %}
-      <div class="text-muted" style="font-size: 12px; margin-top: 6px;">{{ _('Chiudono il') }} <span class="c7-num">{{ item.entity.inscription_end|datetime_local }}</span></div>
+      <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); margin-top: 6px;">{{ _('Chiudono il') }} <span class="c7-num">{{ item.entity.inscription_end|datetime_local }}</span></div>
       {% endif %}
     </div>
     {% elif item.entity.get_real_status() == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value %}
     <div style="margin-top: 12px;">
       <span class="c7-state c7-state--muted">{{ _('Iscrizioni non ancora aperte') }}</span>
       {% if item.entity.inscription_start %}
-      <div class="text-muted" style="font-size: 12px; margin-top: 6px;">{{ _('Aprono il') }} <span class="c7-num">{{ item.entity.inscription_start|datetime_local }}</span></div>
+      <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); margin-top: 6px;">{{ _('Aprono il') }} <span class="c7-num">{{ item.entity.inscription_start|datetime_local }}</span></div>
       {% endif %}
     </div>
     {% elif item.entity.status == GaraStatus.COMPLETED.value %}
@@ -90,7 +90,7 @@
       <div class="c7-kicker">{{ _('Podio') }}</div>
       <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
         {% for p in podium[:3] %}
-        <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+        <div style="display: flex; align-items: center; gap: 10px; font-size: calc(13 * var(--c7-tpx));">
           <span class="c7-num" style="width: 18px; color: {% if p.posizione_mostrata == 1 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ p.posizione_mostrata }}</span>
           <strong style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.username }}</strong>
         </div>

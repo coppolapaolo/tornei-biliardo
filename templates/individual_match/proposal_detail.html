@@ -43,17 +43,17 @@
         </span>
       </div>
 
-      <div style="margin-top:14px;font-size:22px;font-weight:800;letter-spacing:-.03em">
+      <div style="margin-top:14px;font-size:calc(22 * var(--c7-tpx));font-weight:800;letter-spacing:-.03em">
         {{ proposal.scheduled_at|datetime_local }}
       </div>
-      <div style="margin-top:4px;font-size:13px;font-weight:600;color:var(--c7-ink-muted)">
+      <div style="margin-top:4px;font-size:calc(13 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-muted)">
         {{ proposal.location_display }}
       </div>
 
       <dl class="c7-topline" style="margin-bottom:0">
         <div class="d-flex justify-content-between gap-3" style="padding:8px 0">
           <dt class="c7-label" style="margin:0">{{ _("Distanza") }}</dt>
-          <dd class="mb-0" style="font-size:13px;font-weight:700;text-align:right">
+          <dd class="mb-0" style="font-size:calc(13 * var(--c7-tpx));font-weight:700;text-align:right">
             {%- if proposal.distance is none %}<i class="fas fa-infinity"></i> {{ _('Libera') }}
             {%- elif proposal.is_multi_set %}
             {{ _('Al %(sets)s set', sets=proposal.match_distance) }},
@@ -68,17 +68,17 @@
         {% if proposal.match_description %}
         <div class="d-flex justify-content-between gap-3" style="padding:8px 0">
           <dt class="c7-label" style="margin:0">{{ _("Partita") }}</dt>
-          <dd class="mb-0" style="font-size:13px;font-weight:700;text-align:right;overflow-wrap:anywhere">{{ proposal.match_description }}</dd>
+          <dd class="mb-0" style="font-size:calc(13 * var(--c7-tpx));font-weight:700;text-align:right;overflow-wrap:anywhere">{{ proposal.match_description }}</dd>
         </div>
         {% endif %}
         <div class="d-flex justify-content-between gap-3" style="padding:8px 0">
           <dt class="c7-label" style="margin:0">{{ _("Proposta da") }}</dt>
-          <dd class="mb-0" style="font-size:13px;font-weight:700;text-align:right">{{ proposal.proposer.username }}</dd>
+          <dd class="mb-0" style="font-size:calc(13 * var(--c7-tpx));font-weight:700;text-align:right">{{ proposal.proposer.username }}</dd>
         </div>
         {% if proposal.accepted_by %}
         <div class="d-flex justify-content-between gap-3" style="padding:8px 0">
           <dt class="c7-label" style="margin:0">{{ _("Accettata da") }}</dt>
-          <dd class="mb-0" style="font-size:13px;font-weight:700;text-align:right">
+          <dd class="mb-0" style="font-size:calc(13 * var(--c7-tpx));font-weight:700;text-align:right">
             {{ proposal.accepted_by.username }}
             {%- if proposal.accepted_at %}<br>
             <span style="font-weight:600;color:var(--c7-ink-muted)">{{ proposal.accepted_at|datetime_local }}</span>
@@ -89,14 +89,14 @@
         {% if status == 'pending' %}
         <div class="d-flex justify-content-between gap-3" style="padding:8px 0">
           <dt class="c7-label" style="margin:0">{{ _("Scade") }}</dt>
-          <dd class="mb-0" style="font-size:13px;font-weight:700;text-align:right">{{ proposal.expires_at|datetime_local }}</dd>
+          <dd class="mb-0" style="font-size:calc(13 * var(--c7-tpx));font-weight:700;text-align:right">{{ proposal.expires_at|datetime_local }}</dd>
         </div>
         {% endif %}
       </dl>
 
       {% if proposal.description %}
       <div style="margin-top:14px;padding:12px 14px;border-radius:var(--c7-r-control);background:var(--c7-bg);
-                  font-size:13px;font-weight:600;line-height:1.45;color:var(--c7-ink-soft)">
+                  font-size:calc(13 * var(--c7-tpx));font-weight:600;line-height:1.45;color:var(--c7-ink-soft)">
         {{ proposal.description }}
       </div>
       {% endif %}
@@ -108,7 +108,7 @@
        href="{{ url_for('individual_match.match_detail', match_id=proposal.individual_match.id) }}">
       <div class="flex-fill">
         <div class="c7-kicker">{{ _("Sfida creata") }}</div>
-        <div style="margin-top:6px;font-size:16px;font-weight:800;letter-spacing:-.02em">{{ _("Vai alla partita") }}</div>
+        <div style="margin-top:6px;font-size:calc(16 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">{{ _("Vai alla partita") }}</div>
       </div>
       <span class="c7-shortcut__go"><i class="fas fa-arrow-right"></i></span>
     </a>
@@ -170,7 +170,7 @@
         {% set inv_status = invitation.status.value %}
         <div class="c7-rows__row{{ ' c7-rows__row--dim' if inv_status in ('rejected', 'expired', 'cancelled') }}">
           <i class="fas {{ lbl.invitation_icons.get(inv_status, 'fa-clock') }}"
-             style="font-size:13px;width:18px;color:var(--c7-ink-muted)"></i>
+             style="font-size:calc(13 * var(--c7-tpx));width:18px;color:var(--c7-ink-muted)"></i>
           <div class="c7-rows__main">
             <div class="c7-rows__title">{{ invitation.invited_user.username }}</div>
             <div class="c7-rows__sub">{{ lbl.invitation_labels.get(inv_status, inv_status) }}</div>
@@ -182,7 +182,7 @@
     {% elif not is_direct %}
     <div class="c7-card">
       <div class="c7-kicker">{{ _("Proposta aperta") }}</div>
-      <p class="mb-0" style="margin-top:8px;font-size:13px;font-weight:600;color:var(--c7-ink-soft);line-height:1.45">
+      <p class="mb-0" style="margin-top:8px;font-size:calc(13 * var(--c7-tpx));font-weight:600;color:var(--c7-ink-soft);line-height:1.45">
         {{ _("È visibile a tutta la community: la prende il primo che accetta.") }}
       </p>
     </div>

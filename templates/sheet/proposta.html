@@ -28,7 +28,7 @@
   {# ── La proposta, col suo comando ───────────────────────────────────── #}
   <section class="c7-card">
     <div class="c7-kicker">{{ _("Un istruttore ti propone una scheda") }}</div>
-    <h2 style="margin:6px 0 10px;font-size:18px;font-weight:800;letter-spacing:-.02em">
+    <h2 style="margin:6px 0 10px;font-size:calc(18 * var(--c7-tpx));font-weight:800;letter-spacing:-.02em">
       {{ modello.name }}
     </h2>
     <div class="c7-chips">
@@ -46,7 +46,7 @@
     {% if proposta.message %}
     <div class="c7-inset" style="margin-top:12px">
       <div class="c7-kicker">{{ _("dice %(chi)s", chi=proposta.instructor.username) }}</div>
-      <p style="margin:4px 0 0;font-size:14px;line-height:1.5">{{ proposta.message }}</p>
+      <p style="margin:4px 0 0;font-size:calc(14 * var(--c7-tpx));line-height:1.5">{{ proposta.message }}</p>
     </div>
     {% endif %}
 

@@ -25,11 +25,11 @@
   <div class="d-flex align-items-start gap-3 flex-wrap">
     <div class="flex-fill min-width-0">
       <div class="c7-kicker"><i class="fas fa-flask me-1"></i>{{ _("Competizione di prova") }}</div>
-      <div style="font-size:14px;font-weight:700">
+      <div style="font-size:calc(14 * var(--c7-tpx));font-weight:700">
         {{ _("Solo tu la vedi. Gli iscritti sono giocatori fittizi; ELO, XP e statistiche non cambiano.") }}
       </div>
       {% if _scadenza %}
-      <div class="mt-1" style="font-size:12px;font-weight:600">
+      <div class="mt-1" style="font-size:calc(12 * var(--c7-tpx));font-weight:600">
         {{ _("Sparisce da sola il") }}
         <span class="c7-num">{{ _scadenza|date_local }}</span>.
       </div>

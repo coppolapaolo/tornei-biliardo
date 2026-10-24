@@ -36,7 +36,7 @@
   {% if not can_edit %}
   <section class="c7-card c7-card--accent">
     <div class="c7-kicker">{{ _("La scheda di %(chi)s", chi=sheet.owner.username) }}</div>
-    <p style="margin:6px 0 0;font-size:14px">
+    <p style="margin:6px 0 0;font-size:calc(14 * var(--c7-tpx))">
       {{ _("La leggi perché te l'ha aperta. Vedi le sedute e come procede; non puoi cambiarla né scriverci.") }}
     </p>
     <form method="POST" action="{{ url_for('sheet.leave_sheet', sheet_id=sheet.id) }}"
@@ -75,7 +75,7 @@
     {% if sheet.threshold %}
     <div class="c7-kpi">
       <div class="c7-kpi__v">
-        {{ registro.above_count }}<span style="color:var(--c7-ok)"><i class="fas fa-check" style="font-size:14px"></i></span>
+        {{ registro.above_count }}<span style="color:var(--c7-ok)"><i class="fas fa-check" style="font-size:calc(14 * var(--c7-tpx))"></i></span>
       </div>
       <div class="c7-kpi__l">{{ _("Volte sopra la soglia") }}</div>
     </div>
@@ -98,7 +98,7 @@
         <div class="c7-rows__sub{% if riga.tone %} c7-summary__v--{{ riga.tone }}{% endif %}">{{ riga.note }}</div>
         {% endif %}
       </div>
-      <span class="c7-num" style="font-size:12px;color:var(--c7-ink-muted)">{{ riga.recent_label }}</span>
+      <span class="c7-num" style="font-size:calc(12 * var(--c7-tpx));color:var(--c7-ink-muted)">{{ riga.recent_label }}</span>
     </div>
     {% endfor %}
   </section>

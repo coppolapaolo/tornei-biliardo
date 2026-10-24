@@ -21,8 +21,8 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="flex: 1; min-width: 0;">
-                <label class="form-check-label" for="auto-delete-enabled" style="font-size: 14px; font-weight: 800;">{{ _("Cancella da sola le notifiche lette") }}</label>
-                <div class="text-muted" style="font-size: 12px; font-weight: 600; margin-top: 2px;">{{ _("Restano nell'elenco per il numero di giorni che scegli.") }}</div>
+                <label class="form-check-label" for="auto-delete-enabled" style="font-size: calc(14 * var(--c7-tpx)); font-weight: 800;">{{ _("Cancella da sola le notifiche lette") }}</label>
+                <div class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); font-weight: 600; margin-top: 2px;">{{ _("Restano nell'elenco per il numero di giorni che scegli.") }}</div>
             </div>
             <div class="form-switch form-check" style="padding-left: 0;">
                 <input type="checkbox" class="form-check-input" id="auto-delete-enabled" name="auto_delete_enabled" style="margin-left: 0;" {% if auto_delete_days %}checked{% endif %}>
@@ -33,8 +33,8 @@
             <input type="number" class="form-control" id="auto-delete-days" name="auto_delete_days"
                    value="{{ auto_delete_days or 30 }}" min="1" max="365" style="width: 110px;"
                    {% if not auto_delete_days %}disabled{% endif %}>
-            <span class="text-muted" style="font-size: 13px; font-weight: 700;">{{ _("giorni") }}</span>
-            <span id="auto-delete-status" class="text-muted" style="font-size: 12px; margin-left: auto;"></span>
+            <span class="text-muted" style="font-size: calc(13 * var(--c7-tpx)); font-weight: 700;">{{ _("giorni") }}</span>
+            <span id="auto-delete-status" class="text-muted" style="font-size: calc(12 * var(--c7-tpx)); margin-left: auto;"></span>
         </div>
     </form>
 </section>
@@ -49,7 +49,7 @@
 <form id="notification-form" action="{{ url_for('player.delete_selected_notifications') }}" method="POST" style="margin-top: 22px;">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px;">
-        <label for="select-all" style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700;">
+        <label for="select-all" style="display: flex; align-items: center; gap: 8px; font-size: calc(13 * var(--c7-tpx)); font-weight: 700;">
             <input type="checkbox" id="select-all" class="form-check-input" style="margin: 0;">
             {{ _("Seleziona tutte") }}
         </label>
@@ -75,9 +75,9 @@
                         {% endif %}
                     </div>
 
-                    <h3 style="margin: 8px 0 0; font-size: 15px;">{{ content.title }}</h3>
-                    <p class="text-muted" style="margin: 4px 0 0; font-size: 13px; line-height: 1.5;">{{ content.message }}</p>
-                    <div class="text-muted" style="margin-top: 8px; font-size: 12px; font-weight: 600;">
+                    <h3 style="margin: 8px 0 0; font-size: calc(15 * var(--c7-tpx));">{{ content.title }}</h3>
+                    <p class="text-muted" style="margin: 4px 0 0; font-size: calc(13 * var(--c7-tpx)); line-height: 1.5;">{{ content.message }}</p>
+                    <div class="text-muted" style="margin-top: 8px; font-size: calc(12 * var(--c7-tpx)); font-weight: 600;">
                         <span class="c7-num">{{ notification.created_at|datetime_local }}</span>
                         {% if notification.status.value == 'read' %}
                         <span class="c7-sep">·</span> {{ _("letta il") }} <span class="c7-num">{{ notification.read_at|datetime_local }}</span>
