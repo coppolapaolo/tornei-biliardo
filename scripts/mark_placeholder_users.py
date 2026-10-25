@@ -10,6 +10,14 @@ direttore, con email e password che nessuno ha mai usato. Questi utenti sono
 non registrati a tutti gli effetti: segnarli ``is_placeholder`` li rende
 riscattabili (ADR-086). I criteri stanno in ``models/user/placeholder_storici.py``.
 
+**Solo le gare vive** (emendamento del 2026-10-25). «Ha giocato» vuol dire
+almeno un'iscrizione a una gara non eliminata e non di prova, fuori da un
+campionato o dentro uno non eliminato e non di prova (``gara_viva``). Chi è
+iscritto solo a gare eliminate non si segna — con ``--user-id`` lo script lo
+dice — e la prima gara da cui si ricostruisce il creatore è la prima gara
+viva. Il 25/10/2026 la prova generale elencava otto account di prova iscritti
+solo a gare eliminate, con «nessun creatore ricostruibile».
+
 **Un utente alla volta.** ``--user-id`` (ripetibile, o con più id) limita lo
 script agli utenti dati, per provare su uno prima di farlo su tutti. Si
 combina con la prova generale e con ``--commit``. Un utente che non rispetta
@@ -96,12 +104,18 @@ def _descrivi_ricostruzione(ricostruzione: Any) -> str:
 
 
 def _riga(utente: Any) -> str:
-    return "#%s %s — %s · creato %s · %s iscrizioni%s" % (
+    from models.user.placeholder_storici import iscrizioni_vive
+
+    vive = iscrizioni_vive(utente)
+    tutte = len(utente.inscriptions)
+    altre = f" (+{tutte - vive} a gare eliminate)" if tutte > vive else ""
+    return "#%s %s — %s · creato %s · %s iscrizioni%s%s" % (
         utente.id,
         utente.username,
         utente.full_name or "senza nome e cognome",
         utente.created_at,
-        len(utente.inscriptions),
+        vive,
+        altre,
         " · email presente" if utente.email else "",
     )
 
