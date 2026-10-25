@@ -2420,6 +2420,19 @@ def _sfide_terzi_e_riscatti(db, players) -> dict:
     andrea, paolo, davide, chiara = players[2], players[4], players[6], players[7]
     ids: dict = {}
 
+    # Un non registrato lo creano solo direttori e istruttori (#720), e qui
+    # Andrea ne crea tre. Il ruolo glielo concede gia' `_istruttore_e_allievi`,
+    # che pero' si salta quando mancano gli esercizi a esito netto — succede
+    # senza le immagini non versionate di `static/uploads/challenges`, cioe'
+    # in ogni checkout nuovo: lì l'avvio rapido contro Stefano Gallo veniva
+    # rifiutato e il seed si fermava. Idempotente: col dataset completo il
+    # ruolo c'e' gia' e la catena delle nomine resta quella, admin al
+    # direttore e direttore ad Andrea: concede solo chi il ruolo ce l'ha.
+    admin = User.query.filter_by(role=UserRole.ADMIN.value).first()
+    director = User.query.filter_by(username=DEMO_DIRECTOR[0]).first()
+    _concedi_istruttore(db, admin, director)
+    _concedi_istruttore(db, director, andrea)
+
     # 1. Una sfida finita 3-1 e firmata solo da Davide: il dettaglio gli
     #    mostra «Ritira la sfida», e il riquadro «Video e descrizione» pieno.
     sfida = IndividualMatch(
