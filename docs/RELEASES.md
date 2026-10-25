@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.84.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.84.0...v1.84.1) (2026-10-25)
+
+
+### Correzioni
+
+* il seed della guida torna a girare con le regole dei non registrati ([#727](https://github.com/coppolapaolo/tornei-biliardo/issues/727)) ([9b4d071](https://github.com/coppolapaolo/tornei-biliardo/commit/9b4d0710996544993bbd8c6b1c8272764dbfe653))
+* l'admin elimina un utente dalla sua scheda, e la conferma dice chi ([#728](https://github.com/coppolapaolo/tornei-biliardo/issues/728)) ([bd5476d](https://github.com/coppolapaolo/tornei-biliardo/commit/bd5476d1894b11c3f3c3238decd5ea46ab370178))
+* lo script dei non registrati guarda solo le gare non eliminate ([#725](https://github.com/coppolapaolo/tornei-biliardo/issues/725)) ([9ec73d6](https://github.com/coppolapaolo/tornei-biliardo/commit/9ec73d611276e2ee5328c76d099c11957f70586c))
+
 ## [1.84.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.83.1...v1.84.0) (2026-10-19)
 
 
