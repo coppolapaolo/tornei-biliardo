@@ -89,7 +89,8 @@ perché i campi sono cifrati con Fernet — dopo l'onboarding si apre
 default, `--commit` per scrivere) segna `is_placeholder` chi ha almeno
 un'iscrizione, nessuna riga `user_session`, `last_active_at` NULL,
 `onboarding_completed` falso, e non è admin, fittizio, già non registrato o
-cancellato (`models/user/placeholder_storici.py`). Senza creatore, li
+cancellato (`models/user/placeholder_storici.py`). L'iscrizione deve essere a
+una gara **viva**: vedi l'emendamento del 2026-10-25. Senza creatore, li
 riscatta solo l'admin.
 
 **Correzione di passaggio.** `auth.register` non spediva la mail di verifica:
@@ -458,6 +459,39 @@ gara (…)» quando sono più d'uno, togliendo dall'elenco chi guarda.
   `test_riscatto_giocatori.py::TestChiDecide::test_l_admin_decide_anche_quando_c_e_il_creatore`
   (che sostituisce il test della regola vecchia),
   `test_specifiche_conformita.py::TestRiscattoDeiNonRegistrati`.
+
+## Emendamento 2026-10-25 — contano solo le gare vive
+
+**Che cosa è successo.** In produzione la prova generale dello script elencava
+otto account di prova iscritti **solo** a gare eliminate: con `--commit`
+sarebbero diventati riscattabili senza niente da riscattare, e per ognuno lo
+script diceva «nessun creatore ricostruibile».
+
+**Perché.** Il filtro soft delete è un `with_loader_criteria`, e vale solo per
+le entità presenti nella query. La `exists()` di `candidati_storici` — e di
+`storici_da_completare`, e il controllo `_ha_iscrizioni` — guardava la sola
+`Inscription`, senza nominare `Gara`: contava anche le iscrizioni a gare
+eliminate. `prima_iscrizione` invece fa la join con `Gara`, il filtro scattava
+e le perdeva: candidato per una regola, senza prima gara per l'altra.
+
+**La regola.** «Ha giocato» vuol dire almeno un'iscrizione a una **gara
+viva** (`gara_viva`): `Gara.deleted_at` NULL, `Gara.is_prova` falso, e fuori da
+un campionato oppure dentro un campionato con `deleted_at` NULL e `is_prova`
+falso. È quello che l'app mostra ancora. La gara di un campionato eliminato di
+solito è eliminata anch'essa (`Campionato.soft_delete` scende sulle gare), ma
+la condizione non ci conta. Le prove si escludono per coerenza: un giocatore
+vero non vi si può iscrivere, e i fittizi sono già fuori per `is_fittizio`.
+
+La condizione è scritta per esteso, senza appoggiarsi ai filtri di sessione,
+ed è **una sola espressione** (`ha_iscrizioni_vive`) usata dalla query dei
+candidati, da quella degli storici da completare e dal controllo per utente
+`criteri_mancanti`; `prima_iscrizione` usa la stessa `gara_viva`, quindi la
+prima gara è la prima gara viva. A chi ha iscrizioni ma nessuna viva lo script
+dice «è iscritto solo a gare eliminate (o di un campionato eliminato, o di
+prova)», distinto da «non è iscritto a nessuna gara».
+
+- Test: `test_riscatto_storici_creatore_e_admin.py::TestSoloGareNonEliminate`
+  e l'estensione di `test_i_criteri_spiegati_coincidono_con_quelli_dello_script`.
 
 ## Riferimenti
 
