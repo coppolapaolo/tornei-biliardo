@@ -32,7 +32,7 @@
                 {{ _("Unisce l'account SORGENTE in quello DESTINAZIONE: tutte le partite, iscrizioni, XP e statistiche passano alla destinazione, poi la sorgente viene anonimizzata. ELO e classifiche vengono ricalcolati. L'operazione non è reversibile.") }}
             </p>
             <form action="{{ url_for('admin.user.merge_users') }}" method="POST"
-                  onsubmit='return confirmSubmit(this, {{ _("Confermi l'unione? La sorgente verrà anonimizzata e l'azione non è reversibile.")|tojson }})'>
+                  onsubmit='return confermaUnione(this)'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-5">
@@ -43,7 +43,7 @@
                             <option value="">{{ _("Seleziona...") }}</option>
                             {% for ud in users %}
                             {% if not ud[0].is_admin and not ud[0].is_deleted %}
-                            <option value="{{ ud[0].id }}">{{ ud[0].username }}{% if ud[0].email %} ({{ ud[0].email }}){% endif %}</option>
+                            <option value="{{ ud[0].id }}" data-username="{{ ud[0].username }}">{{ ud[0].username }}{% if ud[0].full_name %} · {{ ud[0].full_name }}{% endif %}{% if ud[0].email %} · {{ ud[0].email }}{% endif %}</option>
                             {% endif %}
                             {% endfor %}
                         </select>
@@ -56,7 +56,7 @@
                             <option value="">{{ _("Seleziona...") }}</option>
                             {% for ud in users %}
                             {% if not ud[0].is_admin and not ud[0].is_deleted %}
-                            <option value="{{ ud[0].id }}">{{ ud[0].username }}{% if ud[0].email %} ({{ ud[0].email }}){% endif %}</option>
+                            <option value="{{ ud[0].id }}" data-username="{{ ud[0].username }}">{{ ud[0].username }}{% if ud[0].full_name %} · {{ ud[0].full_name }}{% endif %}{% if ud[0].email %} · {{ ud[0].email }}{% endif %}</option>
                             {% endif %}
                             {% endfor %}
                         </select>
@@ -117,7 +117,7 @@
                 {% endfor %}
                 <input type="search" id="userSearch" class="form-control form-control-sm"
                        style="min-width: 200px;"
-                       placeholder="{{ _('Cerca per username o email...') }}"
+                       placeholder="{{ _('Cerca per username, nome o email...') }}"
                        aria-label="{{ _('Cerca utenti') }}">
                 <select id="roleFilter" class="form-select form-select-sm" style="width: auto;"
                         aria-label="{{ _('Filtra per ruolo') }}">
@@ -143,25 +143,25 @@
     </div>
     <div class="card-body">
         {% if users %}
+        {# Una riga dice chi è l'utente, non cosa gli si può fare. Fino al
+           25/10/2026 la riga aveva quindici colonne e in fondo i comandi —
+           ruoli, verifica, il cestino dell'eliminazione — raggiungibili solo
+           scorrendo a destra, quando il nome nella prima colonna era già
+           uscito dallo schermo (segnalazione dell'admin). Ora il nome porta
+           alla scheda, dove stanno eliminazione, unione, ruolo di direttore e
+           verifica dell'email; nella riga resta solo il menu dei ruoli
+           concedibili, accanto al nome. #}
         <div class="table-responsive">
             <table class="table table-striped c7-table-cards" id="usersTable">
                 <thead>
                     <tr>
                         <th class="sortable" data-sort="text">{{ _("Utente") }} <i class="fas fa-sort text-muted"></i></th>
-                        <th>{{ _("Email") }}</th>
-                        <th>{{ _("Telefono") }}</th>
                         <th class="sortable" data-sort="text">{{ _("Ruolo") }} <i class="fas fa-sort text-muted"></i></th>
-                        <th class="sortable" data-sort="number">{{ _("Esaminatore") }} <i class="fas fa-sort text-muted"></i></th>
-                        <th class="sortable" data-sort="number">{{ _("Beta") }} <i class="fas fa-sort text-muted"></i></th>
-                        <th class="sortable" data-sort="number">{{ _("Verificato") }} <i class="fas fa-sort text-muted"></i></th>
-                        <th class="sortable" data-sort="number">{{ _("ELO") }} <i class="fas fa-sort text-muted"></i></th>
-                        <th>{{ _("Gamification") }}</th>
-                        <th>{{ _("Richiesta") }}</th>
+                        <th class="sortable c7-col-largo" data-sort="number">{{ _("Verificato") }} <i class="fas fa-sort text-muted"></i></th>
+                        <th class="sortable c7-col-largo" data-sort="number">{{ _("ELO") }} <i class="fas fa-sort text-muted"></i></th>
                         <th class="sortable" data-sort="number">{{ _("Iscrizioni") }} <i class="fas fa-sort text-muted"></i></th>
                         <th class="sortable" data-sort="number">{{ _("Partite") }} <i class="fas fa-sort text-muted"></i></th>
-                        <th class="sortable" data-sort="number">{{ _("Vittorie") }} <i class="fas fa-sort text-muted"></i></th>
-                        <th class="sortable" data-sort="text">{{ _("Registrato") }} <i class="fas fa-sort text-muted"></i></th>
-                        <th>{{ _("Azioni") }}</th>
+                        <th class="sortable c7-col-largo" data-sort="text">{{ _("Registrato") }} <i class="fas fa-sort text-muted"></i></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -171,25 +171,62 @@
                     {% set total_matches = user_data[2] or 0 %}
                     {% set matches_won = user_data[3] or 0 %}
                     {# `examiner_ids` e non `user.is_examiner`: la property
-                       interroga il DB a ogni chiamata, e qui siamo in un ciclo.
-                       Per l'admin torna sempre True — la colonna lo dice a
-                       parte, senza offrire comandi che non hanno senso. #}
+                       interroga il DB a ogni chiamata, e qui siamo in un ciclo. #}
                     {% set is_examiner = user.id in examiner_ids %}
                     {% set is_beta = user.id in beta_ids %}
                     <tr data-username="{{ user.username|lower }}"
+                        data-nome="{{ (user.full_name or '')|lower }}"
                         data-email="{{ (user.email or '')|lower }}"
                         data-role="{{ user.role }}"
                         data-examiner="{{ '1' if is_examiner else '0' }}"
                         data-verified="{{ '1' if user.is_verified else '0' }}">
-                        <td data-label="{{ _("Utente") }}">
+                        <td data-label="{{ _("Utente") }}" data-sort-value="{{ user.username|lower }}">
+                            <div class="c7-utente-cella">
                             <a href="{{ url_for('admin.user.user_detail', user_id=user.id) }}"
-                               class="fw-bold text-decoration-none">
-                                {{ user.username }}
+                               class="c7-utente text-decoration-none"
+                               aria-label="{{ _('Apri la scheda di %(username)s', username=user.username) }}">
+                                <span class="c7-avatar c7-avatar--sm" aria-hidden="true">{{ user.username[:2]|upper }}</span>
+                                <span class="c7-utente__nomi">
+                                    <span class="c7-utente__username">{{ user.username }}</span>
+                                    {% if user.full_name %}<span class="c7-utente__nome">{{ user.full_name }}</span>{% endif %}
+                                    {% if user.email %}
+                                    {#- Se va a capo, va a capo dopo la chiocciola e non a metà dominio. -#}
+                                    {%- set parti = user.email.split('@', 1) -%}
+                                    <span class="c7-utente__nome c7-utente__email">{{ parti[0] }}{% if parti|length > 1 %}@<wbr>{{ parti[1] }}{% endif %}</span>
+                                    {%- endif %}
+                                </span>
+                                <i class="fas fa-chevron-right c7-utente__chev" aria-hidden="true"></i>
                             </a>{{ badge_non_registrato(user) }}
+                            {% if current_user.is_admin and not user.is_admin %}
+                            {# I ruoli concedibili si danno anche da qui, per
+                               nominarne tre di fila senza aprire tre schede
+                               (ADR-041): ma da un menu **accanto al nome**,
+                               che si apre col nome in testa, e il foglio di
+                               conferma lo ripete. Eliminare, unire e togliere
+                               il ruolo di direttore stanno solo nella scheda.
+                               `strategy: fixed`: la tabella sta in un
+                               contenitore che taglia ciò che sborda. #}
+                            <div class="dropdown c7-utente__menu">
+                                <button type="button" class="btn c7-utente__menubtn"
+                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                        data-bs-popper-config='{"strategy":"fixed"}'
+                                        aria-label="{{ _('Ruoli di %(username)s', username=user.username) }}">
+                                    <i class="fas fa-ellipsis"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><h6 class="dropdown-header">{{ user.username }}</h6></li>
+                                    {{ ruoli.comandi(azioni_ruoli(user, titolari_ruoli), user,
+                                                     url_for('admin.user.users_list'), forma='menu') }}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.user.user_detail', user_id=user.id) }}">
+                                        <i class="fas fa-id-card fa-fw"></i> {{ _("Apri la scheda utente") }}</a></li>
+                                </ul>
+                            </div>
+                            {% endif %}
+                            </div>
                         </td>
-                        <td data-label="{{ _("Email") }}">{{ user.email or '-' }}</td>
-                        <td data-label="{{ _("Telefono") }}">{{ user.phone or '-' }}</td>
-                        <td data-label="{{ _("Ruolo") }}">
+                        <td data-label="{{ _("Ruolo") }}" data-sort-value="{{ user.role }}">
+                            <span class="d-inline-flex flex-wrap gap-1 justify-content-end justify-content-lg-start">
                             {% if user.is_admin %}
                             <span class="badge bg-dark">{{ _("Admin") }}</span>
                             {% elif user.is_director %}
@@ -197,133 +234,38 @@
                             {% else %}
                             <span class="badge bg-primary">{{ _("Giocatore") }}</span>
                             {% endif %}
-                        </td>
-                        <td data-label="{{ _("Esaminatore") }}" data-sort-value="{{ '1' if is_examiner else '0' }}">
-                            {% if user.is_admin %}
-                            <span class="text-muted" title="{{ _('Un amministratore può già fare tutto ciò che fa un esaminatore') }}">—</span>
-                            {% elif is_examiner %}
-                            <span class="badge bg-info text-dark">
-                                <i class="fas fa-user-graduate"></i> {{ _("Sì") }}
-                            </span>
-                            {% else %}
-                            <span class="badge bg-light text-muted">{{ _("No") }}</span>
+                            {% if is_examiner and not user.is_admin %}
+                            <span class="badge bg-info text-dark"><i class="fas fa-user-graduate"></i> {{ _("Esaminatore") }}</span>
                             {% endif %}
-                        </td>
-                        <td data-label="{{ _("Beta") }}" data-sort-value="{{ '1' if is_beta else '0' }}">
-                            {% if user.is_admin %}
-                            <span class="text-muted" title="{{ _('Un amministratore vede già tutto: la concessione non aggiungerebbe niente') }}">—</span>
-                            {% elif is_beta %}
-                            <span class="badge bg-info text-dark">
-                                <i class="fas fa-flask"></i> {{ _("Sì") }}
-                            </span>
-                            {% else %}
-                            <span class="badge bg-light text-muted">{{ _("No") }}</span>
+                            {% if is_beta and not user.is_admin %}
+                            <span class="badge bg-info text-dark"><i class="fas fa-flask"></i> {{ _("Beta") }}</span>
                             {% endif %}
+                            {% if user.gamification_override %}
+                            <span class="badge bg-warning text-dark" title="{{ _('Bypass completo delle regole gamification') }}"><i class="fas fa-unlock"></i> {{ _("Override") }}</span>
+                            {% endif %}
+                            </span>
                         </td>
-                        <td data-label="{{ _("Verificato") }}" data-sort-value="{{ '1' if user.is_verified else '0' }}">
+                        <td data-label="{{ _("Verificato") }}" class="c7-col-largo" data-sort-value="{{ '1' if user.is_verified else '0' }}">
                             {% if user.is_verified %}
                             <span class="badge bg-success"><i class="fas fa-check"></i> {{ _("Sì") }}</span>
                             {% else %}
                             <span class="badge bg-warning text-dark"><i class="fas fa-times"></i> {{ _("No") }}</span>
                             {% endif %}
                         </td>
-                        <td data-label="{{ _("ELO") }}" data-sort-value="{{ user.elo_rating if user.elo_rating is not none else -1 }}">
+                        <td data-label="{{ _("ELO") }}" class="c7-num c7-col-largo" data-sort-value="{{ user.elo_rating if user.elo_rating is not none else -1 }}">
                             {{ user.elo_rating if user.elo_rating is not none else '-' }}
                         </td>
-                        <td data-label="{{ _("Gamification") }}">
-                            {% if user.gamification_override %}
-                            <span class="badge bg-warning text-dark" title="{{ _('Bypass completo delle regole gamification') }}">
-                                <i class="fas fa-unlock"></i> {{ _("Override") }}
-                            </span>
-                            {% else %}
-                            <span class="badge bg-light text-muted">
-                                <i class="fas fa-lock"></i> {{ _("Normale") }}
-                            </span>
-                            {% endif %}
+                        <td data-label="{{ _("Iscrizioni") }}" class="c7-num" data-sort-value="{{ total_inscriptions }}">
+                            {{ total_inscriptions }}
                         </td>
-                        <td data-label="{{ _("Richiesta") }}">
-                            {% set dr = user|attr('director_request')|default(None, true) %}
-                            {% if dr %}
-                            {{ dr | status_badge('director_request') }}
-                            {% else %}
-                            <span class="text-muted">{{ _("Nessuna") }}</span>
-                            {% endif %}
-                        </td>
-                        <td data-label="{{ _("Iscrizioni") }}" data-sort-value="{{ total_inscriptions }}">
-                            <span class="badge bg-info">{{ total_inscriptions }}</span>
-                        </td>
-                        <td data-label="{{ _("Partite") }}" data-sort-value="{{ total_matches }}">
-                            <span class="badge bg-secondary">{{ total_matches }}</span>
-                        </td>
-                        <td data-label="{{ _("Vittorie") }}" data-sort-value="{{ matches_won }}">
-                            <span class="badge bg-success">{{ matches_won }}</span>
+                        <td data-label="{{ _("Partite") }}" class="c7-num" data-sort-value="{{ total_matches }}">
+                            {{ total_matches }}
                             {% if total_matches > 0 %}
-                            <small class="text-muted">
-                                ({{ "%.1f"|format((matches_won / total_matches * 100)) }}%)
-                            </small>
+                            <small class="text-muted" title="{{ _('vinte') }}">· {{ matches_won }} {{ _("vinte") }}</small>
                             {% endif %}
                         </td>
-                        <td data-label="{{ _("Registrato") }}" data-sort-value="{{ user.created_at.isoformat() if user.created_at else '' }}">
+                        <td data-label="{{ _("Registrato") }}" class="c7-num c7-col-largo" data-sort-value="{{ user.created_at.isoformat() if user.created_at else '' }}">
                             <small>{{ user.created_at|date_local }}</small>
-                        </td>
-                        <td data-label="{{ _("Azioni") }}">
-                            <div class="btn-group" role="group">
-                                <a href="{{ url_for('admin.user.user_detail', user_id=user.id) }}"
-                                    class="btn btn-sm btn-primary">
-                                    <i class="fas fa-eye"></i> {{ _("Dettagli") }}
-                                </a>
-                                {% if user.is_director %}
-                                <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}"
-                                    method="POST" style="display: inline;"
-                                    onsubmit='return confirmSubmit(this, {{ _("Togliere a questo utente il ruolo di direttore di gara?")|tojson }})'>
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-user-minus"></i> {{ _("Rimuovi direttore di gara") }}
-                                    </button>
-                                </form>
-                                {% endif %}
-                                {% if current_user.is_admin and not user.is_admin %}
-                                {# Ruoli concedibili (ADR-041): ortogonali a
-                                   `user.role`, quindi si concedono e si
-                                   revocano qui accanto senza toccare
-                                   direttore/giocatore. I pulsanti si ricavano
-                                   da `GRANT_POLICY`: un ruolo nuovo compare
-                                   qui il giorno che entra nel meccanismo.
-                                   `next` riporta a questa lista invece che
-                                   alla scheda dell'utente: chi ne sta
-                                   promuovendo tre di fila non vuole tornare
-                                   indietro ogni volta. #}
-                                {{ ruoli.comandi(azioni_ruoli(user, titolari_ruoli),
-                                                 user, url_for('admin.user.users_list')) }}
-                                {% if not user.is_verified %}
-                                <form action="{{ url_for('admin.user.verify_user_email', user_id=user.id) }}"
-                                    method="POST" style="display: inline;">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-success"
-                                            title="{{ _('Segna email come verificata') }}">
-                                        <i class="fas fa-check"></i> {{ _("Verifica") }}
-                                    </button>
-                                </form>
-                                <form action="{{ url_for('admin.user.resend_verification', user_id=user.id) }}"
-                                    method="POST" style="display: inline;">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-info"
-                                            title="{{ _('Reinvia email di verifica') }}">
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>
-                                </form>
-                                {% endif %}
-                                <form action="{{ url_for('admin.user.anonymize_user', user_id=user.id) }}"
-                                    method="POST" style="display: inline;"
-                                    onsubmit='return confirmSubmit(this, {{ _("Eliminare definitivamente questo utente? I dati personali verranno anonimizzati e l'azione non è reversibile.")|tojson }})'>
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                            title="{{ _('Elimina (anonimizza) utente') }}">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                                {% endif %}
-                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -361,6 +303,22 @@
 {% block scripts %}
 {{ super() }}
 <script>
+// La conferma dell'unione nomina i due account: «Confermi l'unione?» non
+// diceva quali, e due tendine con cento nomi si sbagliano facilmente.
+function confermaUnione(form) {
+    const nome = function (sel) {
+        const opt = sel.options[sel.selectedIndex];
+        return (opt && opt.dataset.username) || '';
+    };
+    const sorgente = nome(form.elements.source_id);
+    const destinazione = nome(form.elements.target_id);
+    const riempi = function (testo) {
+        return testo.split('{source}').join(sorgente).split('{target}').join(destinazione);
+    };
+    return confirmSubmit(form,
+        riempi({{ _("Unire {source} in {target}? Partite, iscrizioni, XP e statistiche di {source} passano a {target}, poi {source} viene anonimizzato. Non si annulla.")|tojson }}),
+        {confirmText: riempi({{ _("Unisci {source} in {target}")|tojson }})});
+}
 (function () {
     const table = document.getElementById('usersTable');
     if (!table) return;
@@ -384,6 +342,7 @@
         rows.forEach(function (row) {
             const matchesTerm = !term
                 || (row.dataset.username || '').indexOf(term) !== -1
+                || (row.dataset.nome || '').indexOf(term) !== -1
                 || (row.dataset.email || '').indexOf(term) !== -1;
             const matchesRole = !role || row.dataset.role === role;
             const matchesExaminer = !examiner || row.dataset.examiner === examiner;

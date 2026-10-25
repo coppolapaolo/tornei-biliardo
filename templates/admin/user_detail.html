@@ -1,21 +1,30 @@
 {% extends "base.html" %}
+{% from "components/_nome_giocatore.html" import badge_non_registrato %}
 
-{% block title %}{{ user.username }} - Scheda Utente{% endblock %}
+{% block title %}{{ _("%(username)s - Scheda utente", username=user.username) }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back" href="{{ url_for('admin.user.users_list') }}"
+   aria-label="{{ _('Torna agli utenti') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ user.username }}{% endblock %}
+{% block page_sub %}{% if user.full_name %}{{ user.full_name }} · {% endif %}{{ _("Scheda utente") }} {{ badge_non_registrato(user) }}{% endblock %}
 
 {% block content %}
-{% include "components/_user_profile_header.html" %}
-
-<div class="row">
-    <div class="col-md-8">
+<div class="c7-cols">
+    <div>
         {% include "components/_user_general_stats.html" %}
         {% include "components/_user_recent_matches_table.html" %}
         {% include "components/_user_campionato_classifications_table.html" %}
     </div>
 
-    <div class="col-md-4">
+    <div>
         {% include "components/_user_info_card.html" %}
         {% include "components/_user_accessi_card.html" %}
         {% include "components/_user_inscriptions_card.html" %}
+        {% if current_user.is_admin and eliminabile %}
+        {% include "admin/_elimina_utente.html" %}
+        {% endif %}
     </div>
 </div>
 {% endblock %}

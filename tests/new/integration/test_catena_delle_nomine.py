@@ -81,16 +81,19 @@ def test_l_admin_puo_assegnare_ogni_ruolo_concedibile(app, db_session, admin):
     assert RoleGrantService.has_role(tizio.id, GrantableRole.INSTRUCTOR)
 
 
-def test_l_elenco_utenti_offre_un_pulsante_per_ogni_ruolo(app, db_session, admin):
+def test_la_scheda_utente_offre_un_pulsante_per_ogni_ruolo(app, db_session, admin):
     """I pulsanti si ricavano da `GRANT_POLICY`, non si scrivono a mano.
 
     È questo che è mancato: aggiungere un ruolo al meccanismo non bastava a
-    farlo comparire dove lo si assegna.
+    farlo comparire dove lo si assegna. Dal 25/10/2026 il posto è la scheda
+    dell'utente, sotto il suo nome, e non più la riga dell'elenco, dove i
+    comandi stavano lontani dal nome
+    (`test_admin_elimina_utente_col_nome.py`).
     """
-    _make_user()
+    tizio = _make_user()
     client = _client_for(app, admin.username)
 
-    pagina = client.get("/admin/users").get_data(as_text=True)
+    pagina = client.get(f"/admin/user/{tizio.id}").get_data(as_text=True)
 
     for ruolo in GRANT_POLICY:
         assert f"/roles/grant/{ruolo.value}/" in pagina, ruolo.value

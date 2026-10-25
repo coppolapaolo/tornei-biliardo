@@ -10,6 +10,7 @@ from sqlalchemy.engine.row import Row
 from sqlalchemy import func
 from models.base import db
 from models.user.models import User
+from models.user.role_enum import UserRole
 from models.transaction.manager import read_only
 
 
@@ -91,14 +92,14 @@ class UserStatsService:
                         ),
                     ),
                 ),
-                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
+                Match.status.in_(MatchStatus.finished_values()),
             )
             .count()
         )
 
         won_matches = Match.query.filter(
             Match.winner_id == user_id,
-            Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
+            Match.status.in_(MatchStatus.finished_values()),
         ).count()
 
         lost_matches = total_matches - won_matches
@@ -215,7 +216,7 @@ class UserStatsService:
                 ).label("won_as_p2"),
             )
             .filter(
-                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
+                Match.status.in_(MatchStatus.finished_values()),
                 Match.player2_id.isnot(None),
             )
             .group_by(Match.player2_id)
@@ -235,7 +236,7 @@ class UserStatsService:
                 ).label("won_as_p1"),
             )
             .filter(
-                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
+                Match.status.in_(MatchStatus.finished_values()),
                 Match.player1_id.isnot(None),
             )
             .group_by(Match.player1_id)
@@ -258,7 +259,7 @@ class UserStatsService:
             )
             .join(Match, Match.id == TrioMatch.match_id)
             .filter(
-                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
+                Match.status.in_(MatchStatus.finished_values()),
                 TrioMatch.player3_id.isnot(None),
             )
             .group_by(TrioMatch.player3_id)
@@ -283,7 +284,7 @@ class UserStatsService:
                     + func.coalesce(match_subq_p3.c.won_as_p3, 0)
                 ).label("won_matches"),
             )
-            .filter(User.role != "admin")  # Exclude special admin user
+            .filter(User.role != UserRole.ADMIN.value)  # Exclude special admin user
             .outerjoin(inscription_subq, inscription_subq.c.user_id == User.id)
             .outerjoin(match_subq_p1, match_subq_p1.c.user_id == User.id)
             .outerjoin(match_subq_p2, match_subq_p2.c.user_id == User.id)
@@ -347,7 +348,7 @@ class UserStatsService:
                         ),
                     ),
                 ),
-                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
+                Match.status.in_(MatchStatus.finished_values()),
             )
             .order_by(Match.updated_at.desc())
             .limit(limit)
