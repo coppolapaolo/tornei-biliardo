@@ -104,6 +104,16 @@ vanno comunque lanciati con `ENCRYPTION_KEY='...' python scripts/...` (la
 console non eredita le env del WSGI; `auto_deploy.py` se le legge da solo,
 vedi sopra).
 
+**Variabili facoltative**: `PUBLIC_BASE_URL` è l'origine di **ogni link nelle
+email** (verifica, reset password, attivazione di un non registrato). Nel WSGI
+**non c'è, e va bene così**: in produzione `Config.environment_settings()` usa
+`https://www.torneibiliardo.it` (`config.py`). Si imposta solo se il sito
+cambia dominio. Non si torna mai a `request.host_url`: con un header `Host`
+falsificato il link col token arriverebbe a un dominio altrui (presa
+dell'account, ADR-086 emendamento 2026-10-19; un solo helper,
+`utils/indirizzo_pubblico.py`). Se la variabile c'è con un valore sbagliato,
+vince lei: è l'unico modo di rompere i link.
+
 **⚠️ Migration sui PII senza chiave (incidente 2026-06-25)**: il fail-fast
 richiede `FLASK_ENV=production`. In console/task quella variabile non c'è,
 quindi la mancanza di `ENCRYPTION_KEY` degrada in silenzio sulla chiave di
