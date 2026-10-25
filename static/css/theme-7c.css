@@ -781,6 +781,35 @@ a.c7-choice.is-selected { color: var(--c7-accent-ink); }
   .c7-table-cards td:first-child::before { display: none; }
 }
 
+/* Chi è, nella prima cella di una riga di utenti (elenco admin, #14a):
+   iniziali, username e sotto nome e cognome. È il collegamento alla scheda,
+   dove stanno i comandi: la riga si legge, non si comanda. */
+.c7-utente {
+  display: inline-flex; align-items: center; gap: 10px;
+  min-height: 48px; min-width: 0; color: inherit;
+}
+.c7-utente__nomi { display: flex; flex-direction: column; min-width: 0; text-align: left; line-height: 1.25; }
+.c7-utente__username { font-weight: 800; overflow-wrap: anywhere; }
+.c7-utente__nome { font-size: calc(12 * var(--c7-tpx)); font-weight: 600; color: var(--c7-ink-muted); }
+.c7-utente__chev { font-size: calc(11 * var(--c7-tpx)); color: var(--c7-ink-faint); }
+.c7-utente__email { overflow-wrap: break-word; }
+/* Nome a sinistra, menu della riga sempre allo stesso posto a destra della
+   cella: con i nomi di lunghezza diversa i «…» non fanno la scala. */
+.c7-utente-cella { display: flex; align-items: center; gap: 6px; width: 100%; }
+.c7-utente__menu { margin-left: auto; }
+.c7-utente__menubtn {
+  width: 48px; height: 48px; padding: 0;
+  display: inline-grid; place-items: center;
+  background: transparent; color: var(--c7-ink-muted);
+}
+/* Colonne di contorno di una tabella larga. Fra 992 e 1300px, con la barra
+   laterale aperta, la tabella ha fra 670 e 970px, e queste farebbero
+   scorrere la riga a destra. Sotto lg la tabella è una pila di card e le
+   mostra tutte; oltre i 1300px tornano. */
+@media (min-width: 992px) and (max-width: 1299.98px) {
+  .c7-col-largo { display: none; }
+}
+
 .c7-table-wrap,
 .table-responsive {
   /* Le due ombre ai lati dicono che la tabella continua fuori dal bordo.

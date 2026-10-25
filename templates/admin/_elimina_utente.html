@@ -1,0 +1,69 @@
+{# templates/admin/_elimina_utente.html — Design System 7c
+
+   L'eliminazione di un account, dalla sua scheda. Prima stava nell'elenco
+   utenti, come cestino in fondo a una riga di quindici colonne: per
+   raggiungerlo si scorreva a destra e il nome, nella prima colonna, usciva
+   dallo schermo; il dialogo diceva «questo utente» e il messaggio dopo non
+   nominava nessuno (segnalazione dell'admin, 25/10/2026).
+
+   Qui il comando sta sotto il nome della pagina, e il foglio ripete chi è,
+   quanto ha giocato e cosa succede, con il pulsante «Elimina <username>»
+   (ADR-074: il pulsante dice cosa fa). Foglio dedicato e non
+   `confirmSubmit`: il foglio condiviso ha una riga di testo, e qui le cose
+   da leggere prima di premere sono quattro.
+
+   Contesto: `user`, `stats` (da `UserStatsService.get_user_statistics`). #}
+{% import "direttore/_macros.html" as d with context %}
+{% set _ruolo = _("Amministratore") if user.is_admin
+                else (_("Direttore di gara") if user.is_director
+                else (_("Giocatore non registrato") if user.is_placeholder
+                else _("Giocatore"))) %}
+{% set _iscrizioni = stats.inscription_count|default(0) %}
+{% set _partite = stats.total_matches|default(0) %}
+
+<div class="c7-card mt-4">
+    <div class="c7-label">{{ _("Elimina l'account") }}</div>
+    <p class="c7-nota mt-1 mb-3">
+        {{ _("Toglie i dati personali di %(username)s. Le partite restano, senza il suo nome. Non si annulla.", username=user.username) }}
+    </p>
+    <button type="button" class="btn btn-danger w-100"
+            data-bs-toggle="modal" data-bs-target="#eliminaUtenteModal">
+        <i class="fas fa-user-slash"></i> {{ _("Elimina %(username)s…", username=user.username) }}
+    </button>
+</div>
+
+<div class="modal fade c7-sheet" id="eliminaUtenteModal" tabindex="-1" aria-labelledby="eliminaUtenteTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="eliminaUtenteTitolo">{{ _("Eliminare %(username)s?", username=user.username) }}</h3>
+        <div class="c7-sheet__sub">{{ _("Controlla che sia l'account giusto: dopo non si torna indietro.") }}</div>
+      </div>
+      <form method="POST" action="{{ url_for('admin.user.anonymize_user', user_id=user.id) }}"
+            id="eliminaUtenteForm" class="modal-body c7-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="c7-rows">
+          {{ d.riga('fa-user', user.username,
+                    (user.full_name ~ ' · ' if user.full_name else '') ~ _ruolo ~ (' · ' ~ user.email if user.email else '')) }}
+          {{ d.riga('fa-list-ol',
+                    ngettext("%(num)s iscrizione", "%(num)s iscrizioni", _iscrizioni) ~ ' · ' ~ ngettext("%(num)s partita", "%(num)s partite", _partite),
+                    _("restano nelle gare e nelle classifiche, con un nome tecnico al posto del suo")) }}
+          {{ d.riga('fa-eraser', _("Dati personali tolti"),
+                    _("username, nome e cognome, email, telefono e lo storico degli accessi"), tone='err') }}
+          {{ d.riga('fa-lock', _("Non potrà più entrare"),
+                    _("la password viene invalidata e l'account non si ripristina"), tone='err') }}
+          {% if user.is_director %}
+          {{ d.riga('fa-flask', _("Le sue competizioni di prova si cancellano"),
+                    _("le gare vere che dirige restano"), tone='warn') }}
+          {% endif %}
+        </div>
+        <div class="c7-nota">{{ _("L'eliminazione non si annulla.") }}</div>
+        <button type="submit" class="btn btn-danger w-100">
+          <i class="fas fa-user-slash"></i> {{ _("Elimina %(username)s", username=user.username) }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">{{ _("Annulla") }}</button>
+      </form>
+    </div>
+  </div>
+</div>

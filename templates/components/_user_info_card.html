@@ -8,7 +8,32 @@
     <div class="card-body">
         <p><strong>{{ _("Username") }}:</strong> {{ user.username }}</p>
         <p><strong>{{ _("Nome") }}:</strong> {{ user.full_name or _('Non specificato') }}</p>
-        <p><strong>{{ _("Email") }}:</strong> {{ user.email }}</p>
+        <p><strong>{{ _("Email") }}:</strong> {{ user.email or _('Non specificata') }}
+            {% if user.is_verified %}
+            <span class="badge bg-success"><i class="fas fa-check"></i> {{ _("verificata") }}</span>
+            {% else %}
+            <span class="badge bg-warning text-dark">{{ _("da confermare") }}</span>
+            {% endif %}
+        </p>
+        {# Verifica e reinvio stavano nell'elenco utenti, in fondo alla riga
+           (segnalazione del 25/10/2026): qui stanno accanto all'email di cui
+           parlano. #}
+        {% if current_user.is_admin and not user.is_admin and not user.is_verified and user.email %}
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <form action="{{ url_for('admin.user.verify_user_email', user_id=user.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-check"></i> {{ _("Segna come verificata") }}
+                </button>
+            </form>
+            <form action="{{ url_for('admin.user.resend_verification', user_id=user.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-paper-plane"></i> {{ _("Reinvia la verifica") }}
+                </button>
+            </form>
+        </div>
+        {% endif %}
         <p><strong>{{ _("Telefono") }}:</strong> {{ user.phone or _('Non specificato') }}</p>
         <p><strong>{{ _("Ruolo") }}:</strong>
             {% if user.is_director %}
@@ -16,7 +41,7 @@
             {% if current_user.is_admin %}
         <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}" method="POST"
             style="display: inline; margin-left: 10px;"
-            onsubmit='return confirmSubmit(this, {{ _("Sei sicuro di voler rimuovere il ruolo di direttore a %(name)s?", name=user.username)|tojson }})'>
+            onsubmit='return confirmSubmit(this, {{ _("Togliere a %(name)s il ruolo di direttore di gara? Torna giocatore.", name=user.username)|tojson }}, {confirmText: {{ _("Togli il ruolo a %(name)s", name=user.username)|tojson }}})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-danger btn-sm">
                 <i class="fas fa-user-minus"></i> {{ _("Rimuovi ruolo") }}
@@ -28,7 +53,7 @@
         {% if current_user.is_admin %}
         <form action="{{ url_for('admin.user.promote_director', user_id=user.id) }}" method="POST"
             style="display: inline; margin-left: 10px;"
-            onsubmit='return confirmSubmit(this, {{ _("Promuovere %(name)s a Direttore di Gara?", name=user.username)|tojson }})'>
+            onsubmit='return confirmSubmit(this, {{ _("Promuovere %(name)s a direttore di gara?", name=user.username)|tojson }}, {confirmText: {{ _("Promuovi %(name)s", name=user.username)|tojson }}, confirmClass: "btn-success"})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-success btn-sm">
                 <i class="fas fa-user-plus"></i> {{ _("Promuovi a Direttore") }}
@@ -62,7 +87,7 @@
             {% endif %}
         <form action="{{ url_for('admin.user.toggle_gamification_override', user_id=user.id) }}" method="POST"
             style="display: inline; margin-left: 10px;"
-            onsubmit='return confirmSubmit(this, {{ _("%(action)s Override Gamification per %(name)s?", action=(_("Disattivare") if user.gamification_override else _("Attivare")), name=user.username)|tojson }})'>
+            onsubmit='return confirmSubmit(this, {{ _("%(action)s Override Gamification per %(name)s?", action=(_("Disattivare") if user.gamification_override else _("Attivare")), name=user.username)|tojson }}, {confirmText: {{ (_("Disattiva per %(name)s", name=user.username) if user.gamification_override else _("Attiva per %(name)s", name=user.username))|tojson }}, confirmClass: "btn-warning"})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit"
                 class="btn btn-outline-{{ 'danger' if user.gamification_override else 'warning' }} btn-sm">
@@ -112,7 +137,7 @@
         <hr class="my-3">
         <p><strong>{{ _("Imposta Password") }}:</strong></p>
         <form action="{{ url_for('admin.user.set_user_password', user_id=user.id) }}" method="POST"
-            onsubmit='return confirmSubmit(this, {{ _("Impostare una nuova password per %(name)s?", name=user.username)|tojson }})'>
+            onsubmit='return confirmSubmit(this, {{ _("Impostare una nuova password per %(name)s?", name=user.username)|tojson }}, {confirmText: {{ _("Imposta la password di %(name)s", name=user.username)|tojson }}, confirmClass: "btn-warning"})'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row g-2 align-items-end">
                 <div class="col-5">

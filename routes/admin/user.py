@@ -20,6 +20,17 @@ user_service = UserService()
 user_bp = Blueprint("user", __name__)
 
 
+def _username(user_id: int) -> str:
+    """Lo username da scrivere nel messaggio di un'azione su quell'account.
+
+    Si legge prima dell'azione: eliminazione e unione lo sostituiscono con
+    quello tecnico. Un id che non esiste lo rifiuterà il servizio; qui basta
+    non sollevare.
+    """
+    user = db.session.get(User, user_id)
+    return user.username if user else f"#{user_id}"
+
+
 @user_bp.route("/users")
 @admin_required
 def users_list():
@@ -69,7 +80,7 @@ def user_detail(user_id):
         user = user_data["user"]
 
         # se l'utente è admin, ritorna alla lista utenti
-        if user.role == "admin":
+        if user.is_admin:
             return redirect(url_for("admin.user.users_list"))
 
         # Get additional data through service methods
@@ -83,11 +94,17 @@ def user_detail(user_id):
 
         abort(404)
 
+    from flask_login import current_user
     from models.user.session_queries import UserSessionQueryService
+
+    # Gli stessi due rifiuti di `UserProfileService.anonymize_user`, letti
+    # prima: un comando che il servizio respingerebbe non si offre.
+    eliminabile = not user.is_fittizio and user.id != current_user.id
 
     return render_template(
         "admin/user_detail.html",
         user=user,
+        eliminabile=eliminabile,
         accessi=UserSessionQueryService.per_utente(user_id, limite=10),
         inscriptions=inscriptions,
         matches=matches,
@@ -176,10 +193,15 @@ def demote_director(user_id):
     from models.user.services import UserService
     from flask_login import current_user
 
+    from flask_babel import _
+
     return handle_service_action(
         action=lambda: UserService.demote_director_to_player(user_id, current_user.id),
         redirect_url=url_for("admin.user.user_detail", user_id=user_id),
-        success_message="Utente degradato da direttore a giocatore.",
+        success_message=_(
+            "%(username)s non è più direttore di gara: torna giocatore.",
+            username=_username(user_id),
+        ),
         error_prefix=None,
     )
 
@@ -191,12 +213,16 @@ def promote_director(user_id):
     from models.user.permission_service import UserPermissionService
     from flask_login import current_user
 
+    from flask_babel import _
+
     return handle_service_action(
         action=lambda: UserPermissionService.promote_to_director(
             user_id, current_user.id
         ),
         redirect_url=url_for("admin.user.user_detail", user_id=user_id),
-        success_message="Utente promosso a direttore di gara.",
+        success_message=_(
+            "%(username)s è ora direttore di gara.", username=_username(user_id)
+        ),
         error_prefix=None,
     )
 
@@ -205,10 +231,15 @@ def promote_director(user_id):
 @admin_required
 def toggle_gamification_override(user_id):
     """Toggle gamification_override for a user (admin bypass)"""
+    from flask_babel import _
+
     return handle_service_action(
         action=lambda: UserService.toggle_gamification_override(user_id),
         redirect_url=url_for("admin.user.user_detail", user_id=user_id),
-        success_message="Gamification Override aggiornato.",
+        success_message=_(
+            "Override della gamification aggiornato per %(username)s.",
+            username=_username(user_id),
+        ),
     )
 
 
@@ -219,10 +250,18 @@ def anonymize_user(user_id: int):
     from flask_login import current_user
     from flask_babel import _
 
+    # Il nome si legge **prima**: dopo, l'account si chiama
+    # `deleted-<id>-<data>`, e un messaggio che dice «utente eliminato» senza
+    # dire quale non permette di accorgersi di aver premuto sulla riga
+    # sbagliata (segnalazione dell'admin, 25/10/2026).
     return handle_service_action(
         action=lambda: UserService.anonymize_user(user_id, current_user.id),
         redirect_url=url_for("admin.user.users_list"),
-        success_message=_("Utente eliminato (anonimizzato) con successo."),
+        success_message=_(
+            "%(username)s eliminato: i dati personali sono stati tolti, "
+            "le sue partite restano senza il suo nome.",
+            username=_username(user_id),
+        ),
         error_prefix=None,
     )
 
@@ -241,10 +280,17 @@ def merge_users():
         flash(_("Seleziona sia l'account sorgente sia quello destinazione."), "error")
         return redirect(url_for("admin.user.users_list"))
 
+    # Come per l'eliminazione: i nomi si leggono prima, perché dopo la
+    # sorgente è anonimizzata.
     return handle_service_action(
         action=lambda: UserService.merge_users(source_id, target_id, current_user.id),
         redirect_url=url_for("admin.user.users_list"),
-        success_message=_("Account uniti con successo."),
+        success_message=_(
+            "%(source)s unito in %(target)s: partite, iscrizioni e statistiche "
+            "ora sono di %(target)s.",
+            source=_username(source_id),
+            target=_username(target_id),
+        ),
         error_prefix=None,
     )
 
@@ -257,8 +303,11 @@ def verify_user_email(user_id: int):
 
     return handle_service_action(
         action=lambda: UserService.set_email_verified(user_id),
-        redirect_url=url_for("admin.user.users_list"),
-        success_message=_("Email verificata manualmente."),
+        redirect_url=url_for("admin.user.user_detail", user_id=user_id),
+        success_message=_(
+            "Email di %(username)s segnata come verificata.",
+            username=_username(user_id),
+        ),
         error_prefix=None,
     )
 
@@ -278,8 +327,11 @@ def resend_verification(user_id: int):
 
     return handle_service_action(
         action=action,
-        redirect_url=url_for("admin.user.users_list"),
-        success_message=_("Email di verifica reinviata."),
+        redirect_url=url_for("admin.user.user_detail", user_id=user_id),
+        success_message=_(
+            "Email di verifica reinviata a %(username)s.",
+            username=_username(user_id),
+        ),
         error_prefix=None,
     )
 

@@ -11,6 +11,14 @@
    Qui si cicla su `azioni_ruoli(user)`, che viene da `GRANT_POLICY`. I testi
    stanno in `models/user/role_copy.py`.
 
+   Il foglio di conferma porta lo username come **titolo** e il nome
+   dell'azione sul pulsante (ADR-074): «Promuovere a Esaminatore?» da solo non
+   diceva chi (segnalazione dell'admin, 25/10/2026).
+
+   Tre forme: `scheda` (una riga per ruolo, nella scheda dell'utente), `menu`
+   (voci del menu della riga, nell'elenco utenti: stanno accanto al nome, non
+   in fondo alla riga) e `riga` (pulsanti in fila).
+
    Niente `id` e niente `<script>`: il componente si include due volte nella
    stessa pagina senza rompere niente (vedi `templates/CLAUDE.md`). #}
 
@@ -25,29 +33,29 @@
     {% endif %}
   {%- endif %}
 
-  {% if azione.posseduto %}
-  <form action="{{ url_for('roles.revoke_role', role=azione.valore, user_id=user.id) }}"
-        method="POST" style="display:inline{{ '; margin-left:10px' if forma == 'scheda' }}"
-        onsubmit='return confirmSubmit(this, {{ azione.copy.revoca_conferma|string|tojson }})'>
+  {% set _url = url_for('roles.revoke_role', role=azione.valore, user_id=user.id) if azione.posseduto
+                else url_for('roles.grant_role', role=azione.valore, user_id=user.id) %}
+  {% set _domanda = azione.copy.revoca_conferma if azione.posseduto else azione.copy.concedi_conferma %}
+  {% set _nome_azione = azione.copy.revoca if azione.posseduto else azione.copy.concedi %}
+  {% if forma == 'menu' %}<li>{% endif %}
+  <form action="{{ _url }}" method="POST"
+        {% if forma != 'menu' %}style="display:inline{{ '; margin-left:10px' if forma == 'scheda' }}"{% endif %}
+        onsubmit='return confirmSubmit(this, {{ _domanda|string|tojson }}, {title: {{ user.username|tojson }}, confirmText: {{ (_nome_azione|string ~ " · " ~ user.username)|tojson }}, confirmClass: {{ ("btn-danger" if azione.posseduto else "btn-success")|tojson }}})'>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="next" value="{{ next_url }}">
-    <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ azione.copy.revoca }}">
-      <i class="fas {{ azione.copy.icona }}"></i> {{ azione.copy.revoca }}
+    {% if forma == 'menu' %}
+    <button type="submit" class="dropdown-item{{ ' text-danger' if azione.posseduto }}">
+      <i class="fas {{ azione.copy.icona }} fa-fw"></i> {{ _nome_azione }}
     </button>
-  </form>
-  {% else %}
-  <form action="{{ url_for('roles.grant_role', role=azione.valore, user_id=user.id) }}"
-        method="POST" style="display:inline{{ '; margin-left:10px' if forma == 'scheda' }}"
-        onsubmit='return confirmSubmit(this, {{ azione.copy.concedi_conferma|string|tojson }})'>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <input type="hidden" name="next" value="{{ next_url }}">
+    {% else %}
     <button type="submit"
-            class="btn btn-sm {{ 'btn-outline-success' if forma == 'scheda' else 'btn-outline-info' }}"
-            title="{{ azione.copy.concedi }}">
-      <i class="fas {{ azione.copy.icona }}"></i> {{ azione.copy.concedi }}
+            class="btn btn-sm {{ 'btn-outline-danger' if azione.posseduto else ('btn-outline-success' if forma == 'scheda' else 'btn-outline-info') }}"
+            title="{{ _nome_azione }}">
+      <i class="fas {{ azione.copy.icona }}"></i> {{ _nome_azione }}
     </button>
+    {% endif %}
   </form>
-  {% endif %}
+  {% if forma == 'menu' %}</li>{% endif %}
 
   {%- if forma == 'scheda' %}</p>{% endif %}
   {%- endfor %}
