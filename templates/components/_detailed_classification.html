@@ -1,4 +1,4 @@
-{% from "components/_nome_giocatore.html" import nome_giocatore, badge_non_registrato %}
+{% from "components/_nome_giocatore.html" import nome_in_classifica %}
 <!-- Classifica dettagliata — 7c -->
 {# B14: respect gara.classification_system, not matchmaking_strategy.
    - WINS / POSITION → primary "Vittorie" + secondary "Diff. Rack"
@@ -41,7 +41,7 @@
                 {% set player_class = v.riga %}
                 <tr{% if v.primo_fuori %} class="c7-taglio-tr"{% endif %}>
                     <td><span class="c7-num" style="{% if v.posizione <= 3 %}color: var(--c7-accent);{% else %}color: var(--c7-ink-faint);{% endif %}">{{ v.posizione }}</span></td>
-                    <td><strong>{{ nome_giocatore(player_class.user) }}</strong> {{ taglio.segno(v) }}</td>
+                    <td><strong>{{ nome_in_classifica(player_class.user) }}</strong> {{ taglio.segno(v) }}</td>
                     {% if is_points %}
                     <td><span class="c7-num">{{ player_class.points or 0 }}</span></td>
                     {% elif not is_rack_only %}
@@ -111,7 +111,7 @@
                     <td>
                         <span class="c7-num" style="{% if _pos <= 3 %}color: var(--c7-accent);{% else %}color: var(--c7-ink-faint);{% endif %}">{{ _pos }}</span>
                     </td>
-                    <td><strong>{{ nome_giocatore(player_class.user) }}</strong>
+                    <td><strong>{{ nome_in_classifica(player_class.user) }}</strong>
                         {# A gara finita, da dove viene ognuno (ADR-076): sotto il
                            nome, non in una colonna che nella colonna laterale
                            non entrerebbe (issue #152). #}

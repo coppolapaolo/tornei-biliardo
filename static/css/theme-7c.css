@@ -5253,6 +5253,13 @@ html[data-vista-attiva="tutte"] [data-vista-scelta="tutte"] { background: var(--
 }
 /* Sotto il nome, su una riga sua (iscritti): il testo si allinea al nome. */
 .c7-rows__main > .c7-nonreg-riscatta { margin-left: -6px; }
+/* In classifica (`nome_in_classifica`): sotto il nome, e va a capo. Senza
+   a capo «Sei tu? Riscatta» allargava la colonna Giocatore oltre i 380px
+   della colonna laterale della pagina gara (rilievo del 2026-10-29). */
+.c7-nonreg-riscatta--sotto {
+  display: block; width: fit-content; margin: 0; padding: 4px 0 2px;
+  white-space: normal; line-height: 1.3;
+}
 
 /* «Nuovo giocatore non registrato» sotto la ricerca degli iscrivibili: si apre
    solo quando serve, la ricerca resta il gesto principale. */

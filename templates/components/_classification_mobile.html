@@ -1,5 +1,5 @@
 {# templates/components/_classification_mobile.html — 7c #}
-{% from "components/_nome_giocatore.html" import nome_giocatore, badge_non_registrato %}
+{% from "components/_nome_giocatore.html" import nome_in_classifica %}
 
 {# Classifica compatta/completa. Expects: classification, round_number. Optional: ssr_scores_map
    Gironi multipli (ADR-076): mentre si gioca una card per girone, ciascuna
@@ -28,7 +28,7 @@
       {{ taglio.riga_del_taglio(v) }}
       <div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px; {% if not loop.last %}border-bottom: 1px solid var(--c7-line-soft);{% endif %}">
         <span class="c7-num" style="width: 26px; text-align: center; color: {% if v.posizione <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ v.posizione }}</span>
-        <span style="flex: 1; min-width: 0;"><strong>{{ nome_giocatore(entry.user) }}</strong>{{ taglio.sotto(v) }}</span>
+        <span style="flex: 1; min-width: 0;"><strong>{{ nome_in_classifica(entry.user) }}</strong>{{ taglio.sotto(v) }}</span>
         {% if is_points %}
         <span class="c7-num" title="{{ _('Punti') }}">{{ entry.points or 0 }}</span>
         {% elif not is_rack_only %}
@@ -59,7 +59,7 @@
     <div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px; {% if not loop.last %}border-bottom: 1px solid var(--c7-line-soft);{% endif %}">
       <span class="c7-num" style="width: 26px; text-align: center; color: {% if _pos <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ _pos }}</span>
       {% set _gr = girone_della_riga(entry) %}
-      <span style="flex: 1; min-width: 0;"><strong>{{ nome_giocatore(entry.user) }}</strong>{% if _gr %}<span class="d-block" style="font-size: calc(12 * var(--c7-tpx)); color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)s girone %(nome)s', pos=_gr[1]|ordinale, nome=_gr[0]) }}</span>{% endif %}{% set _f = _finali.get(entry.user_id) if _finali else none %}{% if _f %}{{ taglio.sotto({'finale': _f}) }}{% endif %}</span>
+      <span style="flex: 1; min-width: 0;"><strong>{{ nome_in_classifica(entry.user) }}</strong>{% if _gr %}<span class="d-block" style="font-size: calc(12 * var(--c7-tpx)); color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)s girone %(nome)s', pos=_gr[1]|ordinale, nome=_gr[0]) }}</span>{% endif %}{% set _f = _finali.get(entry.user_id) if _finali else none %}{% if _f %}{{ taglio.sotto({'finale': _f}) }}{% endif %}</span>
       {% if ssr_scores_map is defined and ssr_scores_map %}
         {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
         {% if ssr_score is not none %}
@@ -90,7 +90,7 @@
       <div style="display: flex; align-items: center; gap: 12px;">
         <span class="c7-num" style="width: 26px; text-align: center; color: {% if _pos <= 3 %}var(--c7-accent){% else %}var(--c7-ink-faint){% endif %};">{{ _pos }}</span>
         {% set _gr = girone_della_riga(entry) %}
-        <span style="flex: 1; min-width: 0;"><strong>{{ nome_giocatore(entry.user) }}</strong>{% if _gr %}<span class="d-block" style="font-size: calc(12 * var(--c7-tpx)); color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)s girone %(nome)s', pos=_gr[1]|ordinale, nome=_gr[0]) }}</span>{% endif %}{% set _f = _finali.get(entry.user_id) if _finali else none %}{% if _f %}{{ taglio.sotto({'finale': _f}) }}{% endif %}</span>
+        <span style="flex: 1; min-width: 0;"><strong>{{ nome_in_classifica(entry.user) }}</strong>{% if _gr %}<span class="d-block" style="font-size: calc(12 * var(--c7-tpx)); color: var(--c7-ink-muted);" title="{{ _('Posizione nel girone') }}">{{ _('%(pos)s girone %(nome)s', pos=_gr[1]|ordinale, nome=_gr[0]) }}</span>{% endif %}{% set _f = _finali.get(entry.user_id) if _finali else none %}{% if _f %}{{ taglio.sotto({'finale': _f}) }}{% endif %}</span>
         {% if ssr_scores_map is defined and ssr_scores_map %}
           {% set ssr_score = ssr_scores_map.get(entry.user_id) %}
           {% if ssr_score is not none %}
