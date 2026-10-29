@@ -275,6 +275,9 @@ blocks:
       **The match has just closed**: **Undo last rack** is still there, in the
       green box. It removes the wrong rack and puts the match back in progress,
       so you can replay it. This holds until the director validates the result.
+      If your table has meanwhile gone to the next match, finish anyway: the
+      buttons stay on even without a table, and the director gets a notice to
+      sort the tables out.
 
   - type: text
     text: >-

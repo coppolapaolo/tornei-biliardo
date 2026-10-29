@@ -364,6 +364,26 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         return tempo.vista(self)
 
     @property
+    def aspetta_un_tavolo(self) -> bool:
+        """Senza tavolo non si comincia; una partita già cominciata non si ferma.
+
+        Il tavolo serve per **iniziare**: dice ai due dove giocare. Una partita
+        che ha già triangoli e si ritrova senza — «Annulla ultimo triangolo»
+        dopo che la chiusura l'aveva passato ad altri — è un errore di
+        inserimento da correggere, e i due sono ancora lì a giocare. Fino al
+        2026-10-29 il segnapunti spegneva il +1 e lasciava acceso solo
+        «Annulla»: si poteva solo andare indietro.
+        """
+        if self.table_assignment:
+            return False
+        if (self.player1_score or 0) + (self.player2_score or 0):
+            return False
+        if self.is_trio:
+            # I triangoli del trio stanno su `TrioRack`, non su `self.racks`.
+            return self.trio_match is None or self.trio_match.total_racks_played == 0
+        return not any(not rack.is_deleted for rack in self.racks or [])
+
+    @property
     def is_time_expired(self) -> bool:
         """Tempo scaduto su una partita ancora in corso. Solo visivo."""
         from models.match import tempo

@@ -236,7 +236,7 @@
                 </span>
             </div>
 
-            {% if not match.table_assignment %}
+            {% if match.aspetta_un_tavolo %}
             {# No table assigned - show warning #}
             <div class="alert alert-warning text-center mb-3">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -281,7 +281,7 @@
             {# ═══════════════════════════════════════════════════════════════════════════
                FORFEIT SECTION: Allow player or admin to declare forfeit
                ═══════════════════════════════════════════════════════════════════════════ #}
-            {% if not trio.forfeit_player_id and (user_can_manage or user_is_player) and match.table_assignment %}
+            {% if not trio.forfeit_player_id and (user_can_manage or user_is_player) and not match.aspetta_un_tavolo %}
             <div class="text-center mt-2 mb-3">
                 {% if user_can_manage %}
                     {# Admin/Director can forfeit any player #}

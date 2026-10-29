@@ -178,6 +178,12 @@ class TrioScoringService:
                 match_obj.status = MatchStatus.PLAYING.value
                 match_obj.winner_id = None
 
+                # La chiusura aveva liberato il tavolo, come nella partita a
+                # due: lo stesso rimedio (`models/match/riapertura.py`).
+                from .riapertura import riprendi_il_tavolo
+
+                riprendi_il_tavolo(match_obj)
+
         # Update current players to show the matchup for the removed rack
         TrioScoringService._update_current_players(trio)
 

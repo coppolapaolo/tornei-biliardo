@@ -257,6 +257,13 @@ def stato_partita(match) -> StatoPartita:
         return StatoPartita.DA_VALIDARE
     if match.table_assignment:
         return StatoPartita.IN_CORSO
+    # Riaperta dai giocatori dopo che il suo tavolo era passato ad altri: si
+    # sta giocando, senza tavolo (`models/match/riapertura.py`). «Da giocare»
+    # ne nasconderebbe il punteggio; la card offre comunque «Assegna tavolo».
+    if match.status == MatchStatus.PLAYING.value and not getattr(
+        match, "aspetta_un_tavolo", True
+    ):
+        return StatoPartita.IN_CORSO
     return StatoPartita.DA_GIOCARE
 
 

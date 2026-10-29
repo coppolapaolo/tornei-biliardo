@@ -273,6 +273,9 @@ blocks:
       **La partita si è appena chiusa**: c'è ancora **Annulla ultimo triangolo**, nel
       riquadro verde. Toglie il triangolo sbagliato e riporta la partita in corso,
       così potete rigiocarlo. Vale finché il direttore non valida il risultato.
+      Se intanto il vostro tavolo è passato alla partita successiva, finite lo
+      stesso: i tasti restano accesi anche senza tavolo, e il direttore riceve
+      un avviso per sistemare i tavoli.
 
   - type: text
     text: >-

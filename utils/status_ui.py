@@ -373,9 +373,12 @@ def match_scoring_state(match: Any, user: Any) -> Dict[str, Any]:
         (is_p1 and match.player2_confirmed) or (is_p2 and match.player1_confirmed)
     )
 
-    # Un tavolo non assegnato blocca il punteggio tanto quanto la distanza
-    # raggiunta: in entrambi i casi il rack non va segnato.
-    needs_table = hasattr(match, "table_assignment") and not match.table_assignment
+    # Senza tavolo non si comincia: il primo rack non va segnato. Una partita
+    # già cominciata invece continua (`Match.aspetta_un_tavolo`).
+    if hasattr(match, "aspetta_un_tavolo"):
+        needs_table = bool(match.aspetta_un_tavolo)
+    else:
+        needs_table = hasattr(match, "table_assignment") and not match.table_assignment
     can_add = in_progress and not at_distance and not needs_table
 
     winner_id = None
