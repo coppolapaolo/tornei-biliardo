@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-25 12:19+0100\n"
+"POT-Creation-Date: 2026-10-29 10:12+0100\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -4591,6 +4591,53 @@ msgstr "The result was recorded by the director: it cannot be changed."
 msgid "Triangolo non trovato."
 msgstr "Rack not found."
 
+#: models/match/riapertura.py:96
+#, python-format
+msgid ""
+"%(partita)s è stata riaperta dopo l'ultimo triangolo, ma il tavolo "
+"%(tavolo)s era già passato a %(altra)s. Le è stato assegnato il tavolo "
+"%(nuovo)s: i due però probabilmente stanno ancora giocando al %(tavolo)s,"
+" e %(altra)s potrebbero trovarlo occupato."
+msgstr ""
+"%(partita)s was reopened after the last rack, but table %(tavolo)s had "
+"already gone to %(altra)s. It has been given table %(nuovo)s: the two are"
+" probably still playing at %(tavolo)s, though, and %(altra)s may find it "
+"taken."
+
+#: models/match/riapertura.py:108
+#, python-format
+msgid ""
+"%(partita)s è stata riaperta dopo l'ultimo triangolo e si gioca senza "
+"tavolo: il %(tavolo)s era già passato a %(altra)s, che potrebbero "
+"trovarlo ancora occupato. Assegnale un tavolo appena se ne libera uno."
+msgstr ""
+"%(partita)s was reopened after the last rack and is being played without "
+"a table: table %(tavolo)s had already gone to %(altra)s, who may find it "
+"still taken. Assign it a table as soon as one is free."
+
+#: models/match/riapertura.py:118
+#, python-format
+msgid ""
+"%(partita)s è stata riaperta dopo l'ultimo triangolo: le è stato "
+"assegnato il tavolo %(nuovo)s."
+msgstr ""
+"%(partita)s was reopened after the last rack: it has been given table "
+"%(nuovo)s."
+
+#: models/match/riapertura.py:124
+#, python-format
+msgid ""
+"%(partita)s è stata riaperta dopo l'ultimo triangolo e si gioca senza "
+"tavolo. Assegnale un tavolo appena se ne libera uno."
+msgstr ""
+"%(partita)s was reopened after the last rack and is being played without "
+"a table. Assign it a table as soon as one is free."
+
+#: models/match/riapertura.py:133
+#, python-format
+msgid "Tavolo da sistemare · %(gara)s"
+msgstr "Table to sort out · %(gara)s"
+
 #: models/match/scoring_service.py:223 models/match/trio_scoring_service.py:148
 msgid ""
 "Il risultato è già stato validato: per correggerlo serve il direttore di "
@@ -4599,36 +4646,36 @@ msgstr ""
 "This result has already been validated: correcting it requires the "
 "tournament director"
 
-#: models/match/scoring_service.py:351
+#: models/match/scoring_service.py:358
 msgid "La partita a tre si segna dal suo tabellino, non dai triangoli a due"
 msgstr ""
 "A three-player match is scored from its own score sheet, not from two-"
 "player racks"
 
-#: models/match/scoring_service.py:359
+#: models/match/scoring_service.py:366
 msgid "La partita è già finita, non è possibile aggiungere altri punti"
 msgstr "The match is already over, no more points can be added"
 
-#: models/match/scoring_service.py:582
+#: models/match/scoring_service.py:589
 #, python-format
 msgid "Partita già completata - limite raggiunto per '%(distanza)s'"
 msgstr "Match already complete - limit reached for '%(distanza)s'"
 
-#: models/match/scoring_service.py:591 models/match/scoring_service.py:668
+#: models/match/scoring_service.py:598 models/match/scoring_service.py:675
 #, python-format
 msgid ""
 "Non è possibile superare il limite di %(n)s triangoli totali per questa "
 "partita"
 msgstr "The limit of %(n)s total racks for this match cannot be exceeded"
 
-#: models/match/scoring_service.py:657
+#: models/match/scoring_service.py:664
 #, python-format
 msgid ""
 "In una partita 'al %(n)s', entrambi i giocatori non possono avere %(n)s o"
 " più punti!"
 msgstr "In a 'race to %(n)s' match, both players cannot have %(n)s or more points!"
 
-#: models/match/scoring_service.py:676
+#: models/match/scoring_service.py:683
 #, python-format
 msgid ""
 "In modalità 'esatto numero', il totale dei triangoli (%(totale)s) deve "
@@ -9472,7 +9519,7 @@ msgstr "Thanks: your entry is confirmed."
 #: templates/components/_match_scoreboard.html:156
 #: templates/components/_multi_set_score_display.html:14
 #: templates/components/_unified_match_score.html:23
-#: templates/components/_unified_rack_input.html:23
+#: templates/components/_unified_rack_input.html:27
 #: templates/components/_user_recent_matches_table.html:32
 #: templates/components/_user_recent_matches_table.html:73
 #: templates/direttore/_card_partita.html:73
@@ -11553,8 +11600,8 @@ msgstr "the direction"
 #: templates/components/_match_scoreboard.html:363
 #: templates/components/_playoff_invitations.html:48
 #: templates/components/_trio_rack_input.html:209
-#: templates/components/_unified_rack_input.html:259
-#: templates/components/_unified_rack_input.html:265
+#: templates/components/_unified_rack_input.html:263
+#: templates/components/_unified_rack_input.html:269
 #: templates/individual_match/dashboard.html:153
 #: templates/individual_match/match_detail.html:182
 #: templates/individual_match/proposal_detail.html:134
@@ -11578,8 +11625,8 @@ msgstr ""
 #: templates/components/_match_scoreboard.html:366
 #: templates/components/_playoff_invitations.html:53
 #: templates/components/_trio_rack_input.html:217
-#: templates/components/_unified_rack_input.html:260
-#: templates/components/_unified_rack_input.html:266
+#: templates/components/_unified_rack_input.html:264
+#: templates/components/_unified_rack_input.html:270
 #: templates/individual_match/_partita_di_altri_due.html:88
 #: templates/individual_match/_partita_di_altri_due.html:89
 #: templates/individual_match/match_detail.html:183
@@ -17520,7 +17567,7 @@ msgid "Un’altra distanza"
 msgstr "Another distance"
 
 #: templates/components/_campo_distanza_fase_finale.html:38
-#: templates/components/_unified_rack_input.html:139
+#: templates/components/_unified_rack_input.html:143
 msgid "al"
 msgstr "to"
 
@@ -19581,8 +19628,8 @@ msgstr "by %(chi)s on %(quando)s"
 #: templates/components/_match_corrections.html:35
 #: templates/components/_multi_set_score_display.html:21
 #: templates/components/_multi_set_score_display.html:60
-#: templates/components/_unified_rack_input.html:139
-#: templates/components/_unified_rack_input.html:181
+#: templates/components/_unified_rack_input.html:143
+#: templates/components/_unified_rack_input.html:185
 #: templates/direttore/preparazione/_turni.html:135
 msgid "Set"
 msgstr "Set"
@@ -19744,7 +19791,7 @@ msgid "acchito · apre"
 msgstr "lag · breaks"
 
 #: templates/components/_match_scoreboard.html:335
-#: templates/components/_unified_rack_input.html:192
+#: templates/components/_unified_rack_input.html:196
 msgid "vince"
 msgstr "wins"
 
@@ -19753,7 +19800,7 @@ msgid "Registrata da un solo giocatore: l'avversario non è registrato."
 msgstr "Recorded by one player only: the opponent is not registered."
 
 #: templates/components/_match_scoreboard.html:377
-#: templates/components/_unified_rack_input.html:200
+#: templates/components/_unified_rack_input.html:204
 msgid "Hai confermato. Manca la conferma dell'avversario."
 msgstr "You confirmed. Your opponent still has to."
 
@@ -19767,13 +19814,13 @@ msgstr "Result recorded."
 
 #: templates/components/_match_scoreboard.html:387
 #: templates/components/_trio_rack_input.html:402
-#: templates/components/_unified_rack_input.html:295
+#: templates/components/_unified_rack_input.html:299
 msgid "Annulla ultimo triangolo"
 msgstr "Undo last rack"
 
 #: templates/components/_match_scoreboard.html:401
-#: templates/components/_unified_rack_input.html:208
-#: templates/components/_unified_rack_input.html:302
+#: templates/components/_unified_rack_input.html:212
+#: templates/components/_unified_rack_input.html:306
 msgid "Serve un tavolo assegnato prima di iniziare."
 msgstr "A table must be assigned before starting."
 
@@ -21917,17 +21964,17 @@ msgid "Valida risultato"
 msgstr "Validate result"
 
 #: templates/components/_trio_rack_input.html:188
-#: templates/components/_unified_rack_input.html:246
+#: templates/components/_unified_rack_input.html:250
 msgid "Hai confermato"
 msgstr "You confirmed"
 
 #: templates/components/_trio_rack_input.html:192
-#: templates/components/_unified_rack_input.html:247
+#: templates/components/_unified_rack_input.html:251
 msgid "In attesa di"
 msgstr "Waiting for"
 
 #: templates/components/_trio_rack_input.html:197
-#: templates/components/_unified_rack_input.html:233
+#: templates/components/_unified_rack_input.html:237
 msgid "Il risultato è pronto per la conferma."
 msgstr "The result is ready to be confirmed."
 
@@ -21936,7 +21983,7 @@ msgid "hanno confermato"
 msgstr "confirmed"
 
 #: templates/components/_trio_rack_input.html:203
-#: templates/components/_unified_rack_input.html:255
+#: templates/components/_unified_rack_input.html:259
 msgid "Conferma o rifiuta per chiudere la partita."
 msgstr "Confirm or reject to close the match."
 
@@ -21964,8 +22011,8 @@ msgstr "Match in progress"
 
 #: templates/components/_trio_rack_input.html:290
 #: templates/components/_trio_rack_input.html:305
-#: templates/components/_unified_rack_input.html:213
-#: templates/components/_unified_rack_input.html:307
+#: templates/components/_unified_rack_input.html:217
+#: templates/components/_unified_rack_input.html:311
 msgid "Dichiara forfait"
 msgstr "Declare forfeit"
 
@@ -21975,14 +22022,14 @@ msgid "Forfait: %(name)s"
 msgstr "Forfeit: %(name)s"
 
 #: templates/components/_trio_rack_input.html:351
-#: templates/components/_unified_rack_input.html:191
-#: templates/components/_unified_rack_input.html:224
+#: templates/components/_unified_rack_input.html:195
+#: templates/components/_unified_rack_input.html:228
 #: templates/public/schermo_sala.html:149
 msgid "Partita conclusa"
 msgstr "Match finished"
 
 #: templates/components/_trio_rack_input.html:353
-#: templates/components/_unified_rack_input.html:225
+#: templates/components/_unified_rack_input.html:229
 msgid ""
 "Se l'ultimo triangolo è stato segnato per errore puoi ancora annullarlo, "
 "finché il direttore non valida il risultato."
@@ -22124,45 +22171,45 @@ msgstr "Removed by"
 msgid "Rimosso"
 msgstr "Removed"
 
-#: templates/components/_unified_rack_input.html:137
+#: templates/components/_unified_rack_input.html:141
 msgid "Segnapunti"
 msgstr "Scoreboard"
 
-#: templates/components/_unified_rack_input.html:148
+#: templates/components/_unified_rack_input.html:152
 msgid "Nessun set in corso"
 msgstr "No set in progress"
 
-#: templates/components/_unified_rack_input.html:153
-#: templates/components/_unified_rack_input.html:185
+#: templates/components/_unified_rack_input.html:157
+#: templates/components/_unified_rack_input.html:189
 msgid "Inizia il set"
 msgstr "Start the set"
 
-#: templates/components/_unified_rack_input.html:181
+#: templates/components/_unified_rack_input.html:185
 #: templates/public/schermo_sala.html:57
 msgid "concluso"
 msgstr "finished"
 
-#: templates/components/_unified_rack_input.html:182
+#: templates/components/_unified_rack_input.html:186
 msgid "ha vinto il set."
 msgstr "won the set."
 
-#: templates/components/_unified_rack_input.html:196
+#: templates/components/_unified_rack_input.html:200
 msgid "Accetta il risultato"
 msgstr "Accept the result"
 
-#: templates/components/_unified_rack_input.html:232
+#: templates/components/_unified_rack_input.html:236
 msgid "Distanza raggiunta"
 msgstr "Distance reached"
 
-#: templates/components/_unified_rack_input.html:240
+#: templates/components/_unified_rack_input.html:244
 msgid "Entrambi i giocatori hanno confermato."
 msgstr "Both players have confirmed."
 
-#: templates/components/_unified_rack_input.html:254
+#: templates/components/_unified_rack_input.html:258
 msgid "ha confermato"
 msgstr "confirmed"
 
-#: templates/components/_unified_rack_input.html:263
+#: templates/components/_unified_rack_input.html:267
 msgid "Conferma il risultato finale."
 msgstr "Confirm the final result."
 

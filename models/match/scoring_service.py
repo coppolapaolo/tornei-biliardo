@@ -262,6 +262,13 @@ class ScoringService:
             MatchStateService.emit_reopened_event(match)
             match.status = MatchStatus.PLAYING.value
 
+            # La chiusura aveva liberato il tavolo, e magari l'aveva già dato
+            # alla partita in attesa: la riaperta se lo riprende, o ne prende
+            # un altro, e i direttori sanno cosa è successo.
+            from .riapertura import riprendi_il_tavolo
+
+            riprendi_il_tavolo(match)
+
     # -----------------------------
     # FORFEIT HANDLING
     # -----------------------------

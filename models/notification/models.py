@@ -40,6 +40,8 @@ class NotificationType(Enum):
     #: Le impostazioni di una gara a cui sei iscritto sono cambiate: le
     #: modifiche ravvicinate arrivano in una notifica sola (ADR-075).
     GARA_MODIFICATA = "gara_modificata"
+    # Al direttore: una partita riaperta non ha ritrovato il suo tavolo
+    TAVOLO_DA_SISTEMARE = "tavolo_da_sistemare"
 
     PLAYOFF_INVITATION = "playoff_invitation"  # Invited to playoffs
     PLAYOFF_DEADLINE = "playoff_deadline"  # Playoff response deadline approaching

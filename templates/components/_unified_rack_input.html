@@ -19,6 +19,10 @@ Parametri:
 {% set forfeit_func = forfeit_js_func|default('forfeitMatch') %}
 {% set show_forfeit_btn = show_forfeit|default(False) %}
 {% set need_table = require_table_assignment|default(False) %}
+{# Il tavolo serve per cominciare, non per continuare: una partita riaperta
+   da «Annulla ultimo triangolo» dopo che il suo tavolo era passato ad altri
+   deve poter correggere e finire (`Match.aspetta_un_tavolo`, 2026-10-29). #}
+{% set senza_tavolo = need_table and match.aspetta_un_tavolo is defined and match.aspetta_un_tavolo %}
 {% set p1_name = player1_name|default(match.player1.username) %}
 {% set p2_name = player2_name|default(match.player2.username if match.player2 else _('X a tavolino')) %}
 {% set start_set_func = start_next_set_js_func|default('startNextSet') %}
@@ -112,7 +116,7 @@ Parametri:
 {% set opponent_name = p2_name if current_user.id == match.player1_id else p1_name %}
 
 {% set can_add = (not match_at_distance) %}
-{% if need_table and match.table_assignment is defined and not match.table_assignment %}
+{% if senza_tavolo %}
     {% set can_add = False %}
 {% endif %}
 
@@ -150,12 +154,12 @@ Parametri:
                 {# Il numero è quello che comincia davvero: questo riquadro
                    compare sia prima del primo set sia **fra un set e
                    l'altro**, e lì «Inizia il set 1» era una bugia. #}
-                <button class="btn btn-primary btn-lg" onclick="{{ start_set_func }}(this)" {% if need_table and match.table_assignment is defined and not match.table_assignment %}disabled{% endif %}>{{ _('Inizia il set') }} {{ (match.sets|length if match.sets else 0) + 1 }}</button>
+                <button class="btn btn-primary btn-lg" onclick="{{ start_set_func }}(this)" {% if senza_tavolo %}disabled{% endif %}>{{ _('Inizia il set') }} {{ (match.sets|length if match.sets else 0) + 1 }}</button>
             </div>
         </div>
 
         {% elif active_set and not set_completed and not current_user_confirmed %}
-        {% set no_table = need_table and match.table_assignment is defined and not match.table_assignment %}
+        {% set no_table = senza_tavolo %}
         <div class="c7-rackpad">
             <button type="button" class="c7-rackpad__btn {{ 'c7-rackpad__btn--mine' if not mine_is_p2 }}" onclick="{{ add_rack }}({{ match.player1_id }}, this)" {% if no_table %}disabled{% endif %}>
                 <span class="c7-rackpad__plus">+1</span>
@@ -202,7 +206,7 @@ Parametri:
         {% endif %}
         {% endif %}
 
-        {% if need_table and match.table_assignment is defined and not match.table_assignment %}
+        {% if senza_tavolo %}
         <div class="c7-flash c7-flash--warning">
             <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
             <span class="c7-flash__body">{{ _('Serve un tavolo assegnato prima di iniziare.') }}</span>
@@ -296,7 +300,7 @@ Parametri:
         </button>
         {% endif %}
 
-        {% if is_in_progress and need_table and match.table_assignment is defined and not match.table_assignment %}
+        {% if is_in_progress and senza_tavolo %}
         <div class="c7-flash c7-flash--warning">
             <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
             <span class="c7-flash__body">{{ _('Serve un tavolo assegnato prima di iniziare.') }}</span>
