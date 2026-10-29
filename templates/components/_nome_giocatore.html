@@ -32,12 +32,21 @@
 {%- endif -%}
 {%- endmacro %}
 
-{% macro riscatta(giocatore) -%}
+{% macro riscatta(giocatore, sotto=false) -%}
 {%- if giocatore and giocatore.is_placeholder and puo_riscattare(giocatore) -%}
-<a class="c7-nonreg-riscatta" href="{{ url_for('main.riscatta_giocatore', user_id=giocatore.user_id or giocatore.id) }}">{{ _('Sei tu? Riscatta') }}</a>
+<a class="c7-nonreg-riscatta{% if sotto %} c7-nonreg-riscatta--sotto{% endif %}" href="{{ url_for('main.riscatta_giocatore', user_id=giocatore.user_id or giocatore.id) }}">{{ _('Sei tu? Riscatta') }}</a>
 {%- endif -%}
 {%- endmacro %}
 
 {% macro nome_giocatore(giocatore, riscatto=true) -%}
 {{ giocatore.username }}{{ badge_non_registrato(giocatore) }}{% if riscatto %}{{ riscatta(giocatore) }}{% endif %}
+{%- endmacro %}
+
+{# In classifica: il nome e, sotto, il solo «Sei tu? Riscatta», che va a capo.
+   Niente segno «non registrato»: affiancato al link, senza a capo, allargava
+   la colonna Giocatore oltre la colonna laterale da 380px della pagina gara
+   (rilievo del 2026-10-29). Il link basta a dirlo a chi lo vede; chi non lo
+   vede — il creatore, l'admin — il segno lo trova fra gli iscritti. #}
+{% macro nome_in_classifica(giocatore) -%}
+{{ giocatore.username }}{{ riscatta(giocatore, sotto=true) }}
 {%- endmacro %}

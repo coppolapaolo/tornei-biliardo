@@ -195,6 +195,47 @@ class TestPulsante:
         assert _get(_anonimo(app), _pagina_riscatto(_user())).status_code == 404
 
 
+class TestInClassifica:
+    """In classifica il nome porta solo «Sei tu? Riscatta», sotto il nome.
+
+    Nella colonna laterale della pagina gara la classifica ha 380px: i due
+    segni affiancati, entrambi senza a capo, allargavano la colonna Giocatore
+    da 93 a 124px e le ultime colonne uscivano dal bordo (rilievo del
+    2026-10-29). Chi non vede il link — il creatore, l'admin — il segno lo
+    trova nella lista degli iscritti.
+    """
+
+    _CLASSIFICHE = (
+        "templates/components/_detailed_classification.html",
+        "templates/components/_classification_mobile.html",
+        "templates/components/_campionato_general_classification.html",
+    )
+
+    def test_solo_il_link_e_su_una_riga_sua(self, app):
+        from flask import render_template_string
+
+        giocatore = _placeholder()
+        with app.test_request_context("/"):
+            g.pop("_login_user", None)
+            html = render_template_string(
+                '{% from "components/_nome_giocatore.html" import nome_in_classifica %}'
+                "{{ nome_in_classifica(giocatore) }}",
+                giocatore=giocatore,
+            )
+        assert giocatore.username in html
+        assert "c7-nonreg-riscatta--sotto" in html
+        assert _pagina_riscatto(giocatore) in html
+        assert 'c7-nonreg"' not in html and "non registrato" not in html
+
+    def test_le_classifiche_usano_la_forma_compatta(self):
+        from pathlib import Path
+
+        for percorso in self._CLASSIFICHE:
+            testo = Path(percorso).read_text(encoding="utf-8")
+            assert "nome_in_classifica(" in testo, percorso
+            assert "nome_giocatore(" not in testo, percorso
+
+
 # ------------------------------------------------------- il percorso completo
 
 
