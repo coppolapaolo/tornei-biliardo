@@ -320,9 +320,16 @@ class Campionato(db.Model):
         return ConteggioGare.da_gare(getattr(self, "gare", None) or [])
 
     def has_playoff_configurations(self) -> bool:
-        """Check if campionato has playoff configurations."""
-        configurations = getattr(self, "playoff_configurations", [])
-        return len(configurations) > 0
+        """True se il campionato ha almeno una configurazione playoff **attiva**.
+
+        Una configurazione disattivata con la ✕ non è un playoff. Fino al
+        2026-10-31 contava anche quella, e un campionato che aveva tolto i
+        playoff dopo la terminazione restava «In attesa dei playoff» per
+        sempre: lo stato cercava una finale fra le attive e non la trovava
+        (`test_playoff_disattivati_non_bloccano.py`).
+        """
+        configurations = getattr(self, "playoff_configurations", None) or []
+        return any(cfg.is_active for cfg in configurations)
 
     def all_gare_concluded(self) -> bool:
         """True se tutte le gare attive sono di fatto concluse.
