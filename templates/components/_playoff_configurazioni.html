@@ -1,0 +1,70 @@
+{# templates/components/_playoff_configurazioni.html — le configurazioni dei
+   playoff prima degli inviti: matita, ✕ e «Aggiungi configurazione». Serve
+   alla linguetta Playoff della pagina del campionato e, a stagione in corso,
+   al modulo di modifica (issue #732). Richiede `configurazioni` (le
+   PlayoffConfiguration attive), `campionato`, `discipline_choices`,
+   `strategie_playoff` e `ritorno`, l'indirizzo a cui tornare dopo ogni
+   salvataggio. #}
+{% for cfg in configurazioni %}
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>{{ cfg.name }}</strong>
+        <div>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse"
+                    data-bs-target="#edit-config-{{ cfg.id }}" aria-label="{{ _('Modifica %(nome)s', nome=cfg.name) }}">
+                <i class="fas fa-edit"></i>
+            </button>
+            <form method="POST" class="d-inline"
+                  action='{{ url_for("admin.campionato.playoff_deactivate_config", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ ritorno }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="{{ _('Disattiva %(nome)s', nome=cfg.name) }}"
+                        onclick='return confirmSubmit(this.form, {{ _("Disattivare questa configurazione?")|tojson }}, {confirmText: {{ _("Disattiva")|tojson }}, confirmClass: "btn-danger"})'>
+                    <i class="fas fa-times"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <p class="mb-1">{{ _("Posizioni") }}: {{ cfg.positions_from }} — {{ cfg.positions_to }} | {{ _("Max partecipanti") }}: {{ cfg.max_participants }}</p>
+        {% if cfg.min_garas_played %}
+        <p class="mb-1 text-muted">{{ _("Min. gare giocate") }}: {{ cfg.min_garas_played }}</p>
+        {% endif %}
+
+        <div id="edit-config-{{ cfg.id }}" class="collapse mt-3">
+            {% set criteri_bloccati = false %}{% include "components/_playoff_config_form.html" %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div class="mb-3">
+    <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="collapse" data-bs-target="#add-playoff-config">
+        <i class="fas fa-plus"></i> {{ _("Aggiungi configurazione") }}
+    </button>
+    <div id="add-playoff-config" class="collapse mt-2">
+        <form method="POST" action='{{ url_for("admin.campionato.playoff_add_config", campionato_id=campionato.id) }}'>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="next" value="{{ ritorno }}">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <input type="text" name="name" class="form-control form-control-sm" placeholder="{{ _('Nome') }}" aria-label="{{ _('Nome') }}" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="positions_from" class="form-control form-control-sm" placeholder="{{ _('Da pos.') }}" aria-label="{{ _('Da pos.') }}" min="1" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="positions_to" class="form-control form-control-sm" placeholder="{{ _('A pos.') }}" aria-label="{{ _('A pos.') }}" min="1" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="max_participants" class="form-control form-control-sm" placeholder="{{ _('Max') }}" aria-label="{{ _('Max') }}" min="2" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-sm btn-success">
+                        <i class="fas fa-plus"></i> {{ _("Aggiungi") }}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

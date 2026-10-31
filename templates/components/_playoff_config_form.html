@@ -1,10 +1,11 @@
 {# templates/components/_playoff_config_form.html — la configurazione dei
    playoff (ADR-075). Richiede `cfg`, `campionato`, `discipline_choices`,
-   `strategie_playoff`, `criteri_bloccati`: a inviti partiti chi si qualifica
+   `strategie_playoff`, `criteri_bloccati` e, facoltativo, `ritorno`: a inviti partiti chi si qualifica
    non si cambia più, come si gioca la finale sì, fino al suo avvio. #}
 <form method="POST"
       action='{{ url_for("admin.campionato.playoff_edit_config", campionato_id=campionato.id, config_id=cfg.id) }}'>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if ritorno is defined and ritorno %}<input type="hidden" name="next" value="{{ ritorno }}">{% endif %}
     <div class="row g-2">
         <div class="col-md-3">
             <label class="form-label">{{ _("Nome") }}</label>

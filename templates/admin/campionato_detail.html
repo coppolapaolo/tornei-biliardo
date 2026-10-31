@@ -108,71 +108,10 @@
     <section class="c7-stack" data-c7-tab="playoff">
       {% if playoff_status and playoff_status.has_playoffs and not _playoff_avviati %}
       {{ d.sezione(_('Configurazioni dei playoff'), nota=_('si modificano fino all’avvio')) }}
-            {% for cs in playoff_status.configurations %}
-                {% set cfg = cs.configuration %}
-                <div class="card mb-3">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <strong>{{ cfg.name }}</strong>
-                        <div>
-                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse"
-                                    data-bs-target="#edit-config-{{ cfg.id }}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <form method="POST" class="d-inline"
-                                  action='{{ url_for("admin.campionato.playoff_deactivate_config", campionato_id=campionato.id, config_id=cfg.id) }}'>
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                        onclick='return confirmSubmit(this.form, {{ _("Disattivare questa configurazione?")|tojson }}, {confirmText: {{ _("Disattiva")|tojson }}, confirmClass: "btn-danger"})'>
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <p class="mb-1">{{ _("Posizioni") }}: {{ cfg.positions_from }} — {{ cfg.positions_to }} | {{ _("Max partecipanti") }}: {{ cfg.max_participants }}</p>
-                        {% if cfg.min_garas_played %}
-                        <p class="mb-1 text-muted">{{ _("Min. gare giocate") }}: {{ cfg.min_garas_played }}</p>
-                        {% endif %}
-
-                        <div id="edit-config-{{ cfg.id }}" class="collapse mt-3">
-                            {% set criteri_bloccati = false %}{% include "components/_playoff_config_form.html" %}
-                        </div>
-
-                    </div>
-                </div>
-            {% endfor %}
-
-            {# Add new config form #}
-            <div class="mb-3">
-                <button class="btn btn-sm btn-outline-success" data-bs-toggle="collapse" data-bs-target="#add-playoff-config">
-                    <i class="fas fa-plus"></i> {{ _("Aggiungi configurazione") }}
-                </button>
-                <div id="add-playoff-config" class="collapse mt-2">
-                    <form method="POST" action='{{ url_for("admin.campionato.playoff_add_config", campionato_id=campionato.id) }}'>
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <div class="row g-2">
-                            <div class="col-md-3">
-                                <input type="text" name="name" class="form-control form-control-sm" placeholder="{{ _('Nome') }}" required>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="number" name="positions_from" class="form-control form-control-sm" placeholder="{{ _('Da pos.') }}" min="1" required>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="number" name="positions_to" class="form-control form-control-sm" placeholder="{{ _('A pos.') }}" min="1" required>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="number" name="max_participants" class="form-control form-control-sm" placeholder="{{ _('Max') }}" min="2" required>
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    <i class="fas fa-plus"></i> {{ _("Aggiungi") }}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
+      {% with configurazioni=playoff_status.configurations|map(attribute='configuration')|list,
+              ritorno=url_for('admin.campionato.campionato_detail', campionato_id=campionato.id) %}
+      {% include "components/_playoff_configurazioni.html" %}
+      {% endwith %}
 
       {% elif _playoff_in_corso %}
       {# Finale cominciata: gli inviti sono chiusi e non si toccano più, resta
@@ -406,33 +345,10 @@
                Bottone visibile solo se i playoff non sono ancora stati avviati. #}
             {% if not playoff_started %}
             <div class="mt-3">
-                <button class="btn btn-sm btn-outline-success" data-bs-toggle="collapse" data-bs-target="#add-playoff-config-empty">
-                    <i class="fas fa-plus"></i> {{ _("Aggiungi configurazione") }}
-                </button>
-                <div id="add-playoff-config-empty" class="collapse mt-2">
-                    <form method="POST" action='{{ url_for("admin.campionato.playoff_add_config", campionato_id=campionato.id) }}'>
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <div class="row g-2">
-                            <div class="col-md-3">
-                                <input type="text" name="name" class="form-control form-control-sm" placeholder="{{ _('Nome') }}" required>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="number" name="positions_from" class="form-control form-control-sm" placeholder="{{ _('Da pos.') }}" min="1" required>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="number" name="positions_to" class="form-control form-control-sm" placeholder="{{ _('A pos.') }}" min="1" required>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="number" name="max_participants" class="form-control form-control-sm" placeholder="{{ _('Max') }}" min="2" required>
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    <i class="fas fa-plus"></i> {{ _("Aggiungi") }}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+              {% with configurazioni=[],
+                      ritorno=url_for('admin.campionato.campionato_detail', campionato_id=campionato.id) %}
+              {% include "components/_playoff_configurazioni.html" %}
+              {% endwith %}
             </div>
             {% endif %}
       </div>
