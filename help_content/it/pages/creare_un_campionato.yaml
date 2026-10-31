@@ -154,7 +154,7 @@ blocks:
       - "Al **passo 1** del wizard scegli il preset in **«Parti da un preset»**: si compilano tipo, sistema e numero di gare. Al **passo 2** l'app scrive da sola anche i valori delle gare: controllali e cambiali come vuoi."
       - "**«Salva come preset»** sta al passo 2 del wizard e nella modifica del campionato; dalle **Impostazioni** di un campionato già creato puoi salvarlo così com'è, anche a campionato concluso."
       - "Al **passo 1** il preset accende anche **Playoff Elite** e **Playoff Academy** con i loro posti, e il campionato nasce con le regole dei playoff del preset. I posti puoi cambiarli: le posizioni si ricalcolano come sempre. Il passo 1 ne crea al massimo due: se il preset ne ha di più, la pagina lo dice e gli altri li aggiungi dalla pagina del campionato."
-      - "Nella **modifica** del campionato il preset non tocca i playoff, che si cambiano dalla pagina del campionato: la pagina lo dice, e dice anche se gli inviti sono già partiti."
+      - "Nella **modifica** del campionato il preset non tocca i playoff. Finché il campionato è in corso si cambiano nel riquadro **Playoff finali**, in fondo alla stessa pagina; dopo la terminazione, dalla linguetta **Playoff** della pagina del campionato, che dice anche se gli inviti sono già partiti."
       - "Il campionato creato non resta legato al preset: se dopo lo cambi o lo cancelli, il campionato non cambia."
       - "I preset li ritrovi tutti, di gara e di campionato, nella pagina **[I miei preset](/aiuto/organizzare/i_miei_preset)**."
 

@@ -233,6 +233,15 @@ blocks:
       on the championship page: the band at the top always says where the
       play-offs stand and what the next thing to do is.
 
+  - type: note
+    tone: info
+    text: >-
+      During the season the play-offs are changed from **Edit**, in the **Final
+      playoffs** box at the bottom of the page: you can widen or narrow them
+      depending on how many people play, add one, or remove them with the ✕.
+      Without play-offs, the championship closes on the competitions alone when
+      it ends.
+
   - type: steps
     items:
       - title: "Terminate the championship"

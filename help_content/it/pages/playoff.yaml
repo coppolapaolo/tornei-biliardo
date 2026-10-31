@@ -230,6 +230,14 @@ blocks:
       del campionato: la fascia in cima dice sempre a che punto sono i
       playoff e qual è la prossima cosa da fare.
 
+  - type: note
+    tone: info
+    text: >-
+      Durante la stagione i playoff si cambiano da **Modifica**, nel riquadro
+      **Playoff finali** in fondo alla pagina: puoi allargarli o restringerli in
+      base a quanti giocano, aggiungerne uno, o toglierli con la ✕. Senza
+      playoff, alla terminazione il campionato si chiude sulle sole gare.
+
   - type: steps
     items:
       - title: "Termina il campionato"

@@ -701,12 +701,28 @@ def edit_campionato(campionato_id):
     # senza la voce, il salvataggio la sostituiva in silenzio con la X.
     odd_policies = opzioni_dispari()
 
+    # I playoff si cambiano anche da qui finché il campionato è in corso
+    # (issue #732): il modulo di creazione li propone, e a stagione avviata
+    # il direttore li allarga in base alla partecipazione o li toglie.
+    from models.playoff.models import PlayoffConfiguration
+
+    configurazioni_playoff = (
+        PlayoffConfiguration.query.filter_by(
+            campionato_id=campionato_id, is_active=True
+        )
+        .order_by(PlayoffConfiguration.id)
+        .all()
+    )
+
     return render_template(
         "admin/campionato_edit.html",
         campionato=campionato,
         venues=venues,
         matchmaking_strategies=matchmaking_strategies,
         odd_policies=odd_policies,
+        configurazioni_playoff=configurazioni_playoff,
+        discipline_choices=Discipline.get_choices(),
+        strategie_playoff=CAMPIONATO_TYPES,
     )
 
 
@@ -1010,6 +1026,21 @@ def _alla_pagina_del_campionato(campionato_id: int):
     )
 
 
+def _ritorno(campionato_id: int):
+    """Dove torna chi ha toccato i playoff: la pagina da cui è partito.
+
+    Le configurazioni si cambiano dalla linguetta Playoff e, a stagione in
+    corso, dal modulo di modifica del campionato (issue #732): ciascuno passa
+    il suo indirizzo in ``next``. Un indirizzo esterno non vale.
+    """
+    from utils.safe_redirect import safe_next_url
+
+    destinazione = safe_next_url(request.form.get("next"))
+    if destinazione:
+        return redirect(destinazione)
+    return _alla_pagina_del_campionato(campionato_id)
+
+
 @campionato_bp.route(
     "/<int:campionato_id>/playoff/<int:config_id>/calendario", methods=["POST"]
 )
@@ -1302,9 +1333,7 @@ def playoff_edit_config(campionato_id, config_id):
         flash(_("Configurazione playoff aggiornata."), "success")
     except ValueError as ve:
         flash(str(ve), "error")
-        return redirect(
-            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
-        )
+        return _ritorno(campionato_id)
 
     # La finale c'è già e non è avviata: il cambio le si propone, non le si
     # impone (ADR-075), come il campionato fa con le sue gare.
@@ -1323,9 +1352,7 @@ def playoff_edit_config(campionato_id, config_id):
                     voce_id=voci[0].id,
                 )
             )
-    return redirect(
-        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
-    )
+    return _ritorno(campionato_id)
 
 
 @campionato_bp.route(
@@ -1457,9 +1484,7 @@ def playoff_add_config(campionato_id):
 
     if not name or not positions_from or not positions_to or not max_participants:
         flash(_("Tutti i campi obbligatori devono essere compilati."), "error")
-        return redirect(
-            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
-        )
+        return _ritorno(campionato_id)
 
     kwargs = {}
     min_garas = request.form.get("min_garas_played", type=int)
@@ -1481,9 +1506,7 @@ def playoff_add_config(campionato_id):
     except ValueError as ve:
         flash(str(ve), "error")
 
-    return redirect(
-        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
-    )
+    return _ritorno(campionato_id)
 
 
 @campionato_bp.route(
@@ -1506,9 +1529,7 @@ def playoff_deactivate_config(campionato_id, config_id):
     except ValueError as ve:
         flash(str(ve), "error")
 
-    return redirect(
-        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
-    )
+    return _ritorno(campionato_id)
 
 
 @campionato_bp.route("/<int:campionato_id>/toggle_active", methods=["POST"])

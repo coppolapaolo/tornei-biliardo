@@ -26,6 +26,34 @@
         </div>
         {% endif %}
         {% include "components/_campionato_edit_form.html" %}
+
+        {# I playoff fuori dal modulo principale: ogni configurazione ha i
+           suoi form, che in HTML non si annidano (issue #732). #}
+        <div class="card mt-4" id="playoff-finali">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-trophy text-primary"></i> {{ _("Playoff finali") }}</h5>
+            </div>
+            <div class="card-body">
+                {% if campionato.terminated_at %}
+                <p class="mb-0">
+                    {{ _("Il campionato è terminato: i playoff si gestiscono dalla linguetta Playoff della pagina del campionato.") }}
+                    <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=campionato.id) }}">{{ _("Vai al campionato") }}</a>
+                </p>
+                {% else %}
+                <p class="text-muted">
+                    {% if configurazioni_playoff %}
+                    {{ _("Si possono cambiare fino all'invio degli inviti, dopo la terminazione: allarga o restringi chi entra in base alla partecipazione, oppure togli i playoff con la ✕ e la classifica del campionato si deciderà sulle sole gare.") }}
+                    {% else %}
+                    {{ _("Nessun playoff: la classifica del campionato si decide sulle sole gare. Puoi aggiungerli finché il campionato è in corso.") }}
+                    {% endif %}
+                </p>
+                {% with configurazioni=configurazioni_playoff,
+                        ritorno=url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) ~ '#playoff-finali' %}
+                {% include "components/_playoff_configurazioni.html" %}
+                {% endwith %}
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
