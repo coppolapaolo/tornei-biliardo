@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.84.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.84.1...v1.84.2) (2026-10-31)
+
+
+### Correzioni
+
+* in classifica il non registrato ha solo «Sei tu? Riscatta» ([#730](https://github.com/coppolapaolo/tornei-biliardo/issues/730)) ([62be2a5](https://github.com/coppolapaolo/tornei-biliardo/commit/62be2a51b9e797b43d78ebe0f6800ecf7cd06195))
+* la partita riaperta riprende il tavolo e non si blocca ([#729](https://github.com/coppolapaolo/tornei-biliardo/issues/729)) ([1ceedee](https://github.com/coppolapaolo/tornei-biliardo/commit/1ceedeedf9c26b9120e02142513b84096d765e32))
+* tolti i playoff, il campionato terminato risulta completato ([#733](https://github.com/coppolapaolo/tornei-biliardo/issues/733)) ([426d9e5](https://github.com/coppolapaolo/tornei-biliardo/commit/426d9e5c0f604c0b1962e6ba7b4526fb7133964c))
+
 ## [1.84.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.84.0...v1.84.1) (2026-10-25)
 
 
