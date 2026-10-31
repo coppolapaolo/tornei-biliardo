@@ -1266,17 +1266,20 @@ class PlayoffService:
         if campionato is None:
             raise NotFoundError("Campionato non trovato")
 
-        if campionato.get_status() != TournamentStatus.AWAITING_PLAYOFF.value:
-            raise ValueError(
-                "Il campionato deve essere terminato per avviare i playoff"
-            )
-
         configs = PlayoffConfiguration.query.filter_by(
             campionato_id=campionato_id, is_active=True
         ).all()
 
+        # Prima delle configurazioni, poi dello stato: un campionato terminato
+        # che ha disattivato i suoi playoff è Completato, e sentirsi dire
+        # «deve essere terminato» non spiegherebbe niente.
         if not configs:
             raise ValueError("Nessuna configurazione playoff attiva")
+
+        if campionato.get_status() != TournamentStatus.AWAITING_PLAYOFF.value:
+            raise ValueError(
+                "Il campionato deve essere terminato per avviare i playoff"
+            )
 
         # Pre-flight: check ALL configs before any creation
         if any(c.has_qualifications() for c in configs):
