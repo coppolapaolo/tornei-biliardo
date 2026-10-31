@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.85.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.84.2...v1.85.0) (2026-10-31)
+
+
+### Funzioni nuove
+
+* i playoff si cambiano dal modulo di modifica del campionato ([#734](https://github.com/coppolapaolo/tornei-biliardo/issues/734)) ([99951aa](https://github.com/coppolapaolo/tornei-biliardo/commit/99951aaa0269070ffceee19140cd81e0979cef4c)), closes [#732](https://github.com/coppolapaolo/tornei-biliardo/issues/732)
+
 ## [1.84.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.84.1...v1.84.2) (2026-10-31)
 
 
