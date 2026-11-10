@@ -242,7 +242,12 @@ class TestLaNotaPubblica:
         parola finisca sotto gli occhi di chi ha segnalato."""
         assert (
             FeedbackService.nota_pubblica(
-                [{"body": "boh, forse è lo stesso della #212"}]
+                [
+                    {
+                        "body": "boh, forse è lo stesso della #212",
+                        "author_association": "OWNER",
+                    }
+                ]
             )
             is None
         )
@@ -250,9 +255,12 @@ class TestLaNotaPubblica:
     def test_solo_il_commento_marcato(self):
         nota = FeedbackService.nota_pubblica(
             [
-                {"body": "nota interna"},
-                {"body": "@utente: ci stiamo lavorando, grazie!"},
-                {"body": "altra nota interna"},
+                {"body": "nota interna", "author_association": "OWNER"},
+                {
+                    "body": "@utente: ci stiamo lavorando, grazie!",
+                    "author_association": "OWNER",
+                },
+                {"body": "altra nota interna", "author_association": "OWNER"},
             ]
         )
         assert nota == "ci stiamo lavorando, grazie!"
@@ -262,14 +270,25 @@ class TestLaNotaPubblica:
         all'utente deve arrivare la versione buona."""
         nota = FeedbackService.nota_pubblica(
             [
-                {"body": "@utente: pensavamo fosse il telefono"},
-                {"body": "@utente: era un nostro errore, corretto"},
+                {
+                    "body": "@utente: pensavamo fosse il telefono",
+                    "author_association": "OWNER",
+                },
+                {
+                    "body": "@utente: era un nostro errore, corretto",
+                    "author_association": "OWNER",
+                },
             ]
         )
         assert nota == "era un nostro errore, corretto"
 
     def test_un_marcatore_senza_testo_non_e_una_nota(self):
-        assert FeedbackService.nota_pubblica([{"body": "@utente:   "}]) is None
+        assert (
+            FeedbackService.nota_pubblica(
+                [{"body": "@utente:   ", "author_association": "OWNER"}]
+            )
+            is None
+        )
 
 
 # ══ L'aggiornamento e le sue conseguenze ════════════════════════════════════
