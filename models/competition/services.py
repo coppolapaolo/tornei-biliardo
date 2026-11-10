@@ -1061,6 +1061,8 @@ class GaraService:
     @staticmethod
     def validate_gara_data(data: dict) -> dict:
         """Valida i campi della Gara e restituisce errori per campo."""
+        from models.matchmaking.configuration import BRACKET_STRATEGIES
+
         errors: dict = {}
 
         # name
@@ -1124,6 +1126,15 @@ class GaraService:
                     errors["max_participants"] = "Max participants deve essere >= min"
             except (TypeError, ValueError):
                 errors["max_participants"] = "Numero partecipanti massimo non valido"
+        elif data.get("matchmaking_strategy") in BRACKET_STRATEGIES:
+            # Sul tabellone il massimo non è un tetto facoltativo: è la
+            # capienza, da cui si ricavano i posti e la stima dei turni. Senza,
+            # la gara nasceva lo stesso e l'errore arrivava più avanti parlando
+            # di turni, un campo che sul tabellone non si chiede (#238).
+            errors["max_participants"] = _(
+                "Sul tabellone il numero massimo di iscritti è obbligatorio: "
+                "dichiara quanti posti ha il tabellone."
+            )
 
         # inscription dates (opzionali): end deve essere >= start
         start_raw = data.get("inscription_start")

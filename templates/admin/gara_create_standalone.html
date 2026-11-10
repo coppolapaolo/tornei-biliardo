@@ -674,8 +674,14 @@
             document.getElementById('summary-fee').textContent = i18n.fee.replace('{value}', feeInput.value || '0');
 
             // Advanced settings
-            const antiRematch = document.getElementById('anti_rematch_enabled').checked ? i18n.antiRematchOn : i18n.antiRematchOff;
-            document.getElementById('summary-anti-rematch').textContent = antiRematch;
+            // Sul tabellone la casella è nascosta ma resta spuntata: leggerla
+            // farebbe dire al riepilogo «anti-rematch attivo» mentre il server
+            // sta per salvare il contrario. Lì la voce non si mostra (#236).
+            const summaryAntiRematch = document.getElementById('summary-anti-rematch');
+            const sulTabellone = ['direct_elimination', 'double_knockout'].indexOf(strategySelect.value) >= 0;
+            summaryAntiRematch.hidden = sulTabellone;
+            summaryAntiRematch.textContent =
+                document.getElementById('anti_rematch_enabled').checked ? i18n.antiRematchOn : i18n.antiRematchOff;
 
             const firstRound = document.getElementById('first_round_policy');
             document.getElementById('summary-first-round').textContent =

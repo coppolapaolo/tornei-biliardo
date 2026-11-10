@@ -29,6 +29,7 @@ from models.match.break_rules import (
     StartRule,
 )
 from models.matchmaking.configuration import (
+    BRACKET_STRATEGIES,
     FirstRoundPolicy,
     MatchmakingStrategy,
     OddNumberPolicy,
@@ -137,6 +138,9 @@ class CampionatoFormParser:
         planned_gare_count = form.get("planned_gare_count")
 
         settings = CampionatoFormParser.parse_default_settings(form)
+        # Il tipo può essere quello di ripiego, che nel modulo non c'è.
+        if campionato_type in BRACKET_STRATEGIES:
+            settings["default_anti_rematch"] = False
         settings.update(CampionatoFormParser.parse_gironi(form))
         # Sommando i totali o a piazzamenti, e il sistema delle serate
         # (ADR-080): catene e punti proposti seguono quello delle gare.
@@ -376,7 +380,14 @@ class CampionatoFormParser:
             "default_rounds_count": default_rounds_count,
             "default_odd_policy": default_odd_policy,
             "default_first_round_policy": default_first_round_policy,
-            "default_anti_rematch": "default_anti_rematch" in form,
+            # Sul tabellone l'anti-reincontro non esiste (nell'eliminazione
+            # diretta non può capitare, nel doppio KO è previsto). Il modulo
+            # nasconde la casella, ma nascosta resta spuntata e il browser la
+            # invia: nascondere non è imporre (#236).
+            "default_anti_rematch": (
+                "default_anti_rematch" in form
+                and form.get("campionato_type") not in BRACKET_STRATEGIES
+            ),
             # Come si comincia e chi apre poi (ADR-056). Radice della catena:
             # un valore ignoto ricade sul default del progetto — che è il
             # comportamento storico, non una scelta nuova imposta a nessuno.

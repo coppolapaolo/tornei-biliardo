@@ -195,9 +195,14 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="max_participants" class="form-label">{{ _("Max Iscritti") }}</label>
+                                    {# Sul tabellone il massimo è la capienza, non un tetto
+                                       facoltativo: da lì discendono i posti e i turni (#238).
+                                       Il selettore della strategia qui non c'è — la eredita il
+                                       campionato — quindi l'obbligo si decide a render time. #}
+                                    <label for="create_max_participants" class="form-label">{{ _("Max Iscritti") }}{% if modal_is_bracket %} <span class="text-danger">*</span>{% endif %}</label>
                                     <input type="number" class="form-control" name="max_participants"
-                                        id="create_max_participants" min="2" max="64" placeholder="{{ _('Illimitato') }}">
+                                        id="create_max_participants" min="2" max="64"
+                                        {% if modal_is_bracket %}required{% else %}placeholder="{{ _('Illimitato') }}"{% endif %}>
                                 </div>
                             </div>
                             <div class="col-md-4">
