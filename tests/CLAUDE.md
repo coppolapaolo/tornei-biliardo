@@ -189,9 +189,8 @@ anti-invasiveness intensity scale (§11/§11-quater).
   giunto pagina↔API `tests/new/integration/test_help_hints_prova.py`.
 - **Run**: `cd tests/frontend && npm install && npm test`
   (jsdom is the only dependency; `node_modules` is gitignored).
-- **Standalone toolchain**: intentionally decoupled from pytest and not in CI
-  yet. Run it manually after touching `static/js/gamification.js` or the badge
-  markup in `templates/base.html`.
+- **Standalone toolchain**: decoupled from pytest; CI runs it as its own step.
+  Run it locally after touching the JS under `static/js/` that has a suite here.
 - **Scope**: covers the *automatable* subset of
   `docs/reference/GAMIFICATION_V3_MANUAL_TEST_REPORT.md` (24/36 rows `✅ auto`);
   the remaining 12 rows are visual and stay a human browser gate.
@@ -262,7 +261,7 @@ Tests organized by platform domains supporting community growth:
 4. **Validate**: Ensure all tests pass
 
 ### Continuous Integration
-- CI (`.github/workflows/ci.yml`, job `test-and-typecheck`) runs only `pytest tests/new/unit/ -n auto` and `pyright`. Integration, e2e and `tests/frontend/` do not run in CI: their failures surface only when run locally.
+- CI (`.github/workflows/ci.yml`, job `test-and-typecheck`) runs the unit tests (`-n auto`), integration and e2e (`-n 4`), `tests/frontend/` (`npm test`) and `pyright`. Until 2026-11 only the unit tests ran there: integration, e2e and frontend failures surfaced only when someone ran them locally.
 - No pre-commit hooks and no coverage gate are configured.
 
 ### Test Maintenance

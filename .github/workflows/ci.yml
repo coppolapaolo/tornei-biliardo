@@ -103,6 +103,26 @@ jobs:
         run: |
           PYTHONPATH=. pytest tests/new/unit/ -n auto --tb=short
 
+      # Integrazione ed e2e sono rimasti fuori dalla CI finche' i minuti di
+      # Actions erano contati: un loro guasto si vedeva solo a chi lanciava la
+      # suite in locale. Dal 16/09/2026 il repo e' pubblico e i minuti non
+      # sono piu' un vincolo. `-n 4` e non `-n auto`: con piu' worker SQLite
+      # va in deadlock e i test non finiscono piu'.
+      - name: Run integration and e2e tests
+        if: steps.scope.outputs.docs_only != 'true'
+        run: |
+          PYTHONPATH=. pytest tests/new/integration/ tests/new/e2e/ -n 4 --tb=short
+
+      # Il JavaScript deterministico, che il test client di Flask non esegue.
+      # Node e' gia' sul runner. `npm install` e non `npm ci`: il lockfile
+      # non e' versionato (`.gitignore`), e l'unica dipendenza e' jsdom.
+      - name: Run frontend tests
+        if: steps.scope.outputs.docs_only != 'true'
+        working-directory: tests/frontend
+        run: |
+          npm install
+          npm test
+
       - name: Run type check
         if: steps.scope.outputs.docs_only != 'true'
         run: pyright
