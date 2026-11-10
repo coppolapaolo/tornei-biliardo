@@ -175,6 +175,16 @@ class TrioScoringService:
             # Revert associated match status
             match_obj = db.session.get(Match, trio.match_id)
             if match_obj:
+                # La chiusura aveva mosso l'ELO: riaprire vuol dire anche
+                # annullarlo, come nella partita a due (`ScoringService.
+                # remove_rack_for_player`, ramo `riapri`). Fino al 2026-11-10
+                # l'evento mancava, e alla chiusura successiva l'idempotenza
+                # del motore lasciava i delta del risultato annullato.
+                from .state_service import MatchStateService
+
+                if MatchStatus.is_finished(match_obj.status):
+                    MatchStateService.emit_reopened_event(match_obj)
+
                 match_obj.status = MatchStatus.PLAYING.value
                 match_obj.winner_id = None
 
