@@ -284,9 +284,12 @@
                                         name="min_participants" value="6" min="2" required>
                                 </div>
                                 <div class="col-sm-6 mb-3">
-                                    <label for="max_participants" class="form-label">{{ _("Max Partecipanti") }}</label>
+                                    {# Sul tabellone è obbligatorio: asterisco e spiegazione li
+                                       accende `bracket_options.js` (#238). #}
+                                    <label for="max_participants" class="form-label">{{ _("Max Partecipanti") }} <span class="text-danger" data-capienza-obbligatoria hidden>*</span></label>
                                     <input type="number" class="form-control" id="max_participants"
                                         name="max_participants" placeholder="{{ _('Nessun limite') }}" min="2">
+                                    <div class="invalid-feedback">{{ _("Sul tabellone il numero massimo di iscritti è obbligatorio: dichiara quanti posti ha il tabellone.") }}</div>
                                 </div>
                             </div>
 

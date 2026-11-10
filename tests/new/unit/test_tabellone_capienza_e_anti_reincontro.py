@@ -129,3 +129,30 @@ def test_il_riepilogo_della_creazione_non_legge_la_casella_nascosta():
     html = _template("admin/gara_create_standalone.html")
 
     assert "summaryAntiRematch.hidden = sulTabellone;" in html
+
+
+@pytest.mark.parametrize(
+    "percorso",
+    ["admin/gara_create_standalone.html", "components/_gara_edit_form.html"],
+)
+def test_dove_la_strategia_si_sceglie_l_obbligo_si_vede(percorso):
+    """Il campo bloccava già il passo, ma senza asterisco e senza dire perché.
+
+    L'asterisco è nel template, spento; lo accende `bracket_options.js`
+    quando la strategia è a tabellone.
+    """
+    assert "data-capienza-obbligatoria hidden" in _template(percorso)
+
+    from pathlib import Path
+
+    radice = Path(__file__).resolve().parents[3]
+    script = (radice / "static/js/bracket_options.js").read_text(encoding="utf-8")
+    assert "[data-capienza-obbligatoria]" in script
+    assert "segno.hidden = !isBracket" in script
+
+
+def test_il_wizard_dice_perche_il_passo_non_avanza():
+    html = _template("admin/gara_create_standalone.html")
+    campo = html[html.index('name="max_participants"') :]
+
+    assert '<div class="invalid-feedback">' in campo[:400]
