@@ -154,6 +154,26 @@ class LevelService:
                 # No more level ups
                 break
 
+        # Con un importo negativo — l'XP di una prova annullata che torna
+        # indietro — si scende finché serve, come sopra si sale: il livello è
+        # una funzione dell'XP totale, ed è così che lo ricalcola anche
+        # `GamificationRecalcService._rebuild_level`. Senza, il livello restava
+        # quello nuovo e l'XP dentro il livello andava sotto zero.
+        # `highest_level_reached` non si tocca: è un massimo storico.
+        while user_level.current_xp < 0 and user_level.current_level > 1:
+            xp_del_livello_sotto = ConfigService.get_xp_for_next_level(
+                user_level.current_level - 1
+            )
+            if xp_del_livello_sotto <= 0:
+                break  # stessa guardia della salita: configurazione XP errata
+            user_level.current_level -= 1
+            user_level.current_xp += xp_del_livello_sotto
+        if user_level.current_xp < 0:
+            # Al primo livello non c'è più niente da togliere: l'XP non è un
+            # debito.
+            user_level.current_xp = 0
+            user_level.total_xp = max(user_level.total_xp, 0)
+
         new_level = user_level.current_level
 
         # Create XPTransaction for audit trail
@@ -270,13 +290,17 @@ class LevelService:
             }
 
         xp_for_next = ConfigService.get_xp_for_next_level(user_level.current_level)
+        # Mai negativo in ciò che si mostra: una riga scritta prima che
+        # `award_xp` sapesse scendere di livello può esserlo ancora, e si
+        # rimette a posto da sola al prossimo movimento di XP.
+        current_xp = max(user_level.current_xp, 0)
         progress_percentage = (
-            (user_level.current_xp / xp_for_next * 100) if xp_for_next > 0 else 0.0
+            (current_xp / xp_for_next * 100) if xp_for_next > 0 else 0.0
         )
 
         return {
             "current_level": user_level.current_level,
-            "current_xp": user_level.current_xp,
+            "current_xp": current_xp,
             "total_xp": user_level.total_xp,
             "xp_for_next_level": xp_for_next,
             "progress_percentage": round(progress_percentage, 1),
