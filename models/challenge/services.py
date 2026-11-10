@@ -605,14 +605,17 @@ class ChallengeService:
 
         challenge_id = attempt.challenge_id
         user_id = attempt.user_id
+        # Il giorno della prova serve al ricalcolo: se quella settimana resta
+        # viva per altra attività, la serie non si tocca.
+        tolta_il = attempt.attempted_at.date() if attempt.attempted_at else None
         ChallengeService._refund_xp_for_attempt(attempt)
         db.session.delete(attempt)
         db.session.flush()  # la riga deve essere sparita PRIMA del ricalcolo
-        ChallengeService._recompute_after_removal(user_id)
+        ChallengeService._recompute_after_removal(user_id, tolta_il)
         return challenge_id
 
     @staticmethod
-    def _recompute_after_removal(user_id: int) -> None:
+    def _recompute_after_removal(user_id: int, removed_on=None) -> None:
         """Rimette in riga serie settimanali e traguardi dopo la prova tolta.
 
         **Ricalcola, non sottrae**: se altri esercizi reggono comunque la serie
@@ -626,7 +629,9 @@ class ChallengeService:
         try:
             from models.gamification.recalc_service import GamificationRecalcService
 
-            GamificationRecalcService.recompute_after_drill_removed(user_id)
+            GamificationRecalcService.recompute_after_drill_removed(
+                user_id, removed_on=removed_on
+            )
         except Exception:
             logger.warning(
                 "Ricalcolo di serie e traguardi non riuscito per l'utente %s",

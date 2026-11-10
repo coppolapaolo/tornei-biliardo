@@ -387,7 +387,7 @@ allena tutti i giorni non deve perdere la serie per un tocco sbagliato.
 | cosa | come torna indietro |
 |---|---|
 | **XP della prova** | movimento compensativo (negativo), non cancellazione di quello originale: il registro racconta cos'è successo |
-| **serie `WEEKLY_DRILL` e `WEEKLY_ACTIVITY`** | ricostruite dalle settimane in cui l'attività c'è *davvero*. `WEEKLY_ACTIVITY` si nutre anche di partite e iscrizioni: se la settimana resta viva per quelle, resta viva |
+| **serie `WEEKLY_DRILL` e `WEEKLY_ACTIVITY`** | se la settimana della prova tolta resta viva per altra attività — `WEEKLY_ACTIVITY` si nutre anche di partite, sfide individuali e iscrizioni — **non si toccano**. Solo se resta vuota si ricostruiscono dalle date, e senza scendere sotto il valore di prima che quella settimana contasse: la ricostruzione non conosce i congelamenti spesi (dal 2026-11-10) |
 | **traguardi legati agli esercizi** | rivalutati sulla fonte di verità; cadono solo se il conto non li regge più, e restituiscono il loro XP |
 | **congelamenti e `milestone_*_reached`** | **non** si toccano: un congelamento speso non si rimette nel cassetto, e azzerare il flag aprirebbe un modo di guadagnarne uno nuovo |
 

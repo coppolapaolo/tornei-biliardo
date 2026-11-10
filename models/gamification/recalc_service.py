@@ -29,15 +29,19 @@ Known limitations (documented):
   ``requirement_type`` now derives its value from the domain source of truth, so
   the rebuild is self-correcting. Existing unlocks are always preserved.
 - ``WEEKLY_DRILL`` **is** rebuilt (since 2026-08-18) from drill attempts —
-  catalogue, gara and exam — because those are the same three sources the live
-  handlers record from.
+  catalogue, gara, exam and (since 2026-11-10) closed training-sheet sessions —
+  because those are the sources the live handlers record from. Match streaks
+  read both ``match`` and ``individual_match`` (since 2026-11-10).
+- **A rebuild treats every empty week as a break**: weeks the live service had
+  bridged with a freeze are not reconstructible either. ``_rebuild_streaks``
+  (user merge) can therefore return a shorter streak than the live one.
 """
 
 from __future__ import annotations
 
 import json
 import logging
-from datetime import timedelta
+from datetime import date, timedelta
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import func, or_
@@ -188,7 +192,9 @@ class GamificationRecalcService:
 
     @staticmethod
     @transactional(domain="gamification")
-    def recompute_after_drill_removed(user_id: int) -> Dict[str, Any]:
+    def recompute_after_drill_removed(
+        user_id: int, removed_on: Optional[date] = None
+    ) -> Dict[str, Any]:
         """Rimette in riga cio' che dipendeva da una prova appena cancellata.
 
         **Ricalcola, non sottrae.** La differenza e' tutto il punto: se altri
@@ -198,10 +204,12 @@ class GamificationRecalcService:
 
         Due cose si toccano e una no:
 
-        - **le serie settimanali** ``WEEKLY_DRILL`` e ``WEEKLY_ACTIVITY`` si
-          ricostruiscono dalle settimane in cui l'attivita' c'e' *davvero*.
-          ``WEEKLY_ACTIVITY`` si nutre anche di partite e iscrizioni: se la
-          settimana resta viva per quelle, resta viva;
+        - **le serie settimanali** ``WEEKLY_DRILL`` e ``WEEKLY_ACTIVITY``. Se
+          la settimana della prova tolta (``removed_on``) **resta viva** per
+          altra attivita', la serie non si tocca affatto. ``WEEKLY_ACTIVITY``
+          si nutre anche di partite, sfide e iscrizioni: se la settimana resta
+          viva per quelle, resta viva. Solo se la settimana resta vuota la
+          serie si ricostruisce dalle date;
         - **i traguardi legati agli esercizi** si rivalutano, e cadono solo se
           il conto non li regge piu';
         - **congelamenti e traguardi di serie gia' raggiunti** restano dove
@@ -209,11 +217,29 @@ class GamificationRecalcService:
           ``milestone_*_reached`` serve a non riassegnarlo due volte: azzerarlo
           per un annulla aprirebbe un modo di guadagnarne uno nuovo.
 
+        **La ricostruzione dalle date non conosce i congelamenti** — non
+        esiste un registro di quando sono stati spesi — e per lei ogni
+        settimana vuota e' una rottura, anche quella che il servizio vivo
+        aveva coperto. Per questo (dal 2026-11-10) non si applica alla cieca:
+
+        - settimana ancora viva → niente ricostruzione;
+        - settimana rimasta vuota, ed era l'ultima contata dalla serie → la
+          serie non scende sotto il valore che aveva prima che quella
+          settimana contasse, cioe' uno in meno. Registrare una prova e
+          annullarla riporta la serie dov'era, non piu' in basso;
+        - negli altri casi (una prova vecchia tolta dallo storico, o
+          ``removed_on`` assente) vale la ricostruzione di sempre.
+
         Ed e' anche il motivo per cui questo metodo non e' ``_rebuild_streaks``,
         che i congelamenti invece li azzera: quello ricostruisce un account dopo
         una fusione, qui si sta correggendo un tocco sbagliato.
         """
         per_type = GamificationRecalcService._activity_dates_by_streak(user_id)
+        settimana_tolta = (
+            GamificationRecalcService._week_start(removed_on)
+            if removed_on is not None
+            else None
+        )
         toccate = []
 
         for streak_type in (StreakType.WEEKLY_DRILL, StreakType.WEEKLY_ACTIVITY):
@@ -223,10 +249,32 @@ class GamificationRecalcService:
             if tracker is None:
                 continue  # non c'era niente da correggere
 
+            dates = per_type.get(streak_type, [])
+            if settimana_tolta is not None and any(
+                GamificationRecalcService._week_start(d) == settimana_tolta
+                for d in dates
+            ):
+                continue  # la settimana resta viva: la serie non si muove
+
             current, longest, last_date = GamificationRecalcService._streak_from_dates(
-                per_type.get(streak_type, [])
+                dates
             )
             prima = tracker.current_streak
+            if (
+                settimana_tolta is not None
+                and tracker.last_activity_year is not None
+                and settimana_tolta.isocalendar()[:2]
+                == (tracker.last_activity_year, tracker.last_activity_week)
+            ):
+                # La settimana tolta era l'ultima contata. Prima che contasse
+                # la serie valeva uno in meno, comunque ci fosse arrivata —
+                # anche passando da un congelamento, che la ricostruzione non
+                # vede. Lo stesso vale per il massimo, se era questa serie.
+                current = max(current, prima - 1, 0)
+                if tracker.longest_streak == prima:
+                    longest = max(longest, tracker.longest_streak - 1, 0)
+                else:
+                    longest = max(longest, tracker.longest_streak)
             tracker.current_streak = current
             # `longest_streak` puo' solo scendere fino al valore ricostruito: e'
             # un massimo storico, e qui la storia e' cambiata davvero.
@@ -328,6 +376,11 @@ class GamificationRecalcService:
         return rebuilt
 
     @staticmethod
+    def _week_start(day: date) -> date:
+        """Il lunedi' della settimana di quel giorno: la chiave di una settimana."""
+        return day - timedelta(days=day.weekday())
+
+    @staticmethod
     def _streak_from_dates(dates: List):
         """Return (current_streak, longest_streak, last_activity_date).
 
@@ -411,11 +464,42 @@ class GamificationRecalcService:
 
     @staticmethod
     def _match_activity_dates(user_id: int) -> List:
-        return [
+        """I giorni in cui l'utente ha chiuso una partita.
+
+        Due tabelle, come sempre quando si parla di partite: quelle di gara
+        (``match``) e le sfide individuali (``individual_match``). Le seconde
+        mancavano fino al 2026-11-10, mentre l'handler le conta.
+        """
+        di_gara = [
             m.ended_at.date()
             for m in GamificationRecalcService._finished_matches(user_id)
             if m.ended_at is not None
         ]
+        return di_gara + GamificationRecalcService._individual_match_activity_dates(
+            user_id
+        )
+
+    @staticmethod
+    def _individual_match_activity_dates(user_id: int) -> List:
+        """I giorni delle sfide individuali che hanno fatto scattare la serie.
+
+        Rispecchia ``handle_individual_match_completed_for_xp``: l'evento parte
+        solo alla conferma dei due giocatori, e senza vincitore (pareggio)
+        l'handler non registra niente.
+        """
+        from models.individual_match.models import IndividualMatch
+        from models.status_enum import MatchStatus
+
+        rows = IndividualMatch.query.filter(
+            IndividualMatch.status == MatchStatus.CONFIRMED_BY_BOTH,
+            IndividualMatch.winner_id.isnot(None),
+            IndividualMatch.ended_at.isnot(None),
+            or_(
+                IndividualMatch.player1_id == user_id,
+                IndividualMatch.player2_id == user_id,
+            ),
+        ).all()
+        return [m.ended_at.date() for m in rows]
 
     @staticmethod
     def _inscription_activity_dates(user_id: int) -> List:
@@ -428,11 +512,12 @@ class GamificationRecalcService:
     def _drill_activity_dates(user_id: int) -> List:
         """I giorni in cui l'utente ha completato un esercizio.
 
-        Tre sorgenti, perche' «allenarsi» succede in tre posti e per la serie
-        settimanale contano allo stesso modo: il catalogo, la gara (l'esercizio
-        al posto dell'X) e l'esame — che e' a sua volta una sequenza di
-        esercizi (ADR-042). Tenerne fuori uno vorrebbe dire dire al giocatore
-        che allenarsi li' non e' allenarsi.
+        Quattro sorgenti, perche' «allenarsi» succede in quattro posti e per la
+        serie settimanale contano allo stesso modo: il catalogo, la gara
+        (l'esercizio al posto dell'X), l'esame — che e' a sua volta una
+        sequenza di esercizi (ADR-042) — e la seduta di scheda chiusa, che
+        conta anche quando le sue caselle non hanno prove dietro. Tenerne fuori
+        una vorrebbe dire dire al giocatore che allenarsi li' non e' allenarsi.
         """
         from models.challenge.models import ChallengeAttempt
         from models.competition.gara_challenge import GaraChallengeAttempt
@@ -456,7 +541,30 @@ class GamificationRecalcService:
             if when is not None:
                 dates.append(when.date())
 
-        return dates + GamificationRecalcService._exam_activity_dates(user_id)
+        return (
+            dates
+            + GamificationRecalcService._exam_activity_dates(user_id)
+            + GamificationRecalcService._training_session_activity_dates(user_id)
+        )
+
+    @staticmethod
+    def _training_session_activity_dates(user_id: int) -> List:
+        """I giorni in cui l'utente ha chiuso una seduta di scheda non vuota.
+
+        Rispecchia ``handle_training_session_closed_for_xp``: una seduta chiusa
+        senza niente segnato non e' un allenamento e non conta.
+        """
+        from models.training_sheet.models import TrainingSession
+
+        rows = TrainingSession.query.filter(
+            TrainingSession.user_id == user_id,
+            TrainingSession.ended_at.isnot(None),
+        ).all()
+        return [
+            s.ended_at.date()
+            for s in rows
+            if any(entry.is_filled for entry in s.entries)
+        ]
 
     @staticmethod
     def _exam_activity_dates(user_id: int) -> List:
