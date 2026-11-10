@@ -842,6 +842,7 @@ class ChallengeService:
         return scelto
 
     @staticmethod
+    @transactional(domain="challenge")
     def create_x_replacement_attempt(
         user_id: int,
         gara_id: int,
@@ -904,10 +905,15 @@ class ChallengeService:
         return attempt
 
     @staticmethod
+    @transactional(domain="challenge")
     def complete_x_replacement_attempt(
         attempt_id: int, score: int, notes: Optional[str] = None
     ) -> ChallengeAttempt:
-        """Complete X replacement challenge and return match-equivalent result."""
+        """Complete X replacement challenge and return match-equivalent result.
+
+        La transazione è sua: il punteggio dichiarato si salva qui, e non
+        perché più sotto l'handler dell'XP salva la sessione per conto proprio.
+        """
         from models.competition.gara_bye_challenge import GaraByeChallenge
 
         attempt = db.session.get(ChallengeAttempt, attempt_id)
