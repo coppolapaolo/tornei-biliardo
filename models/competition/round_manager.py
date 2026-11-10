@@ -12,6 +12,7 @@ from flask_babel import lazy_gettext as _, ngettext
 
 from models.base import db
 from models.competition.models import Gara
+from models.exceptions import NotFoundError
 from models.match.models import Match
 from models.status_enum import GaraStatus, MatchStatus
 from models.classification.models import RoundClassification
@@ -234,8 +235,14 @@ class AdvancedRoundManager:
 
     @staticmethod
     @transactional(domain="competition")
-    def reset_match_with_validation(match_id: int) -> Tuple[bool, str]:
+    def reset_match_with_validation(
+        match_id: int, gara_id: Optional[int] = None
+    ) -> Tuple[bool, str]:
         """Reset a match with validation, classification updates and round progression.
+
+        ``gara_id``: la gara su cui chi chiama ha verificato il permesso. Se è
+        indicata, la partita deve appartenerle: altrimenti è «non trovata»
+        (``NotFoundError``), come per un id inesistente.
 
         Business Rules:
         - Validates round locking: blocked if subsequent rounds exist
@@ -257,6 +264,8 @@ class AdvancedRoundManager:
         match = db.session.get(Match, match_id)
         if not match:
             return False, str(_("Partita non trovata"))
+        if gara_id is not None and match.gara_id != gara_id:
+            raise NotFoundError(str(_("Partita non trovata in questa gara")))
 
         # Always validate modification permission (no override)
         can_modify, reason = AdvancedRoundManager.can_modify_match(match_id)
