@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-10 22:37+0100\n"
+"POT-Creation-Date: 2026-11-12 11:31+0100\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -301,29 +301,29 @@ msgstr ""
 msgid "Regolamento e informazioni"
 msgstr ""
 
-#: models/campionato/tournament_service.py:410
+#: models/campionato/tournament_service.py:413
 msgid ""
 "Un campionato che somma vittorie, triangoli o punti propone gare a girone"
 " unico: chi capita nel girone più numeroso giocherebbe una partita in "
 "più. Per i gironi scegli la classifica a piazzamenti."
 msgstr ""
 
-#: models/campionato/tournament_service.py:450
-#: models/competition/services.py:685
+#: models/campionato/tournament_service.py:453
+#: models/competition/services.py:687
 #: routes/admin/competition/form_parser.py:137
 msgid ""
 "Le finali per piazzamento si giocano fra due gironi: scegli «Gironi: fino"
 " a 2», oppure un'altra fase finale."
 msgstr ""
 
-#: models/campionato/tournament_service.py:524
+#: models/campionato/tournament_service.py:527
 #, python-format
 msgid ""
 "Il sistema di classifica non si può più cambiare: la gara «%(gara)s» è "
 "già avviata."
 msgstr ""
 
-#: models/campionato/tournament_service.py:582
+#: models/campionato/tournament_service.py:585
 #, python-format
 msgid ""
 "La gara «%(gara)s» è a tabellone: in un campionato che somma vittorie, "
@@ -331,14 +331,14 @@ msgid ""
 "resta a piazzamenti."
 msgstr ""
 
-#: models/campionato/tournament_service.py:632
+#: models/campionato/tournament_service.py:635
 #, python-format
 msgid ""
 "Con il nuovo sistema di classifica la gara «%(gara)s» non sarebbe valida:"
 " %(errori)s"
 msgstr ""
 
-#: models/campionato/tournament_service.py:1024
+#: models/campionato/tournament_service.py:1027
 msgid "Il peso del playoff è un intero maggiore di zero."
 msgstr ""
 
@@ -799,38 +799,38 @@ msgstr[1] ""
 msgid "A questo ritmo chiudi a %(proj)s: il tuo solito."
 msgstr ""
 
-#: models/challenge/services.py:445 models/prova/service.py:249
+#: models/challenge/services.py:449 models/prova/service.py:249
 #: models/prova/service.py:481 models/prova/service.py:492
 #: models/training_sheet/session_service.py:386
 msgid "Prova non trovata"
 msgstr ""
 
-#: models/challenge/services.py:447
+#: models/challenge/services.py:451
 msgid "Questa prova non è tua"
 msgstr ""
 
-#: models/challenge/services.py:774
+#: models/challenge/services.py:778
 msgid ""
 "Il direttore non ha ancora scelto l'esercizio da giocare al posto della X"
 " in questa gara."
 msgstr ""
 
-#: models/challenge/services.py:820 models/challenge/services.py:954
+#: models/challenge/services.py:824 models/challenge/services.py:958
 #, python-format
 msgid ""
 "Il punteggio della prova deve essere compreso fra 0 e %(massimo)s, la "
 "differenza più ampia ottenibile in questo turno."
 msgstr ""
 
-#: models/challenge/services.py:945
+#: models/challenge/services.py:949
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr ""
 
-#: models/challenge/services.py:1244
+#: models/challenge/services.py:1248
 msgid "Questo esercizio si registra colpo per colpo, non col totale."
 msgstr ""
 
-#: models/challenge/services.py:1262 models/challenge/shot_service.py:162
+#: models/challenge/services.py:1266 models/challenge/shot_service.py:162
 #: models/training_sheet/session_service.py:580
 msgid "Questa variante non è di questo esercizio"
 msgstr ""
@@ -1544,7 +1544,7 @@ msgstr ""
 
 #: models/competition/inscription_service.py:979
 #: models/competition/inscription_service.py:1040
-#: models/competition/services.py:1221
+#: models/competition/services.py:1243
 msgid "La data di inizio deve essere precedente alla data di fine!"
 msgstr ""
 
@@ -1557,10 +1557,10 @@ msgstr ""
 #: models/competition/round_creation.py:469
 #: models/competition/round_manager.py:50
 #: models/competition/round_service.py:70 models/competition/services.py:363
-#: models/competition/services.py:944 models/competition/services.py:979
-#: models/competition/services.py:995 models/competition/services.py:1216
-#: models/competition/services.py:1238 models/competition/services.py:1245
-#: models/competition/services.py:1252 models/competition/services.py:1484
+#: models/competition/services.py:946 models/competition/services.py:981
+#: models/competition/services.py:997 models/competition/services.py:1238
+#: models/competition/services.py:1260 models/competition/services.py:1267
+#: models/competition/services.py:1274 models/competition/services.py:1506
 #: models/competition/showcase_service.py:188
 #: models/competition/showcase_service.py:221
 #: models/competition/withdraw_policy_service.py:262
@@ -1589,6 +1589,14 @@ msgstr ""
 #: templates/components/_new_gara_modal.html:120
 #, python-format
 msgid "Gara %(number)s"
+msgstr ""
+
+#: models/competition/models.py:895 models/competition/services.py:1078
+#: models/competition/services.py:1157
+#: templates/admin/gara_create_standalone.html:292
+msgid ""
+"Sul tabellone il numero massimo di iscritti è obbligatorio: dichiara "
+"quanti posti ha il tabellone."
 msgstr ""
 
 #: models/competition/participant_reassign_service.py:373
@@ -1745,8 +1753,8 @@ msgstr ""
 #: models/competition/round_manager.py:130
 #: models/competition/round_manager.py:259
 #: models/individual_match/scored_match_service.py:221
-#: models/match/correction_service.py:74
-#: models/match/trio_scoring_service.py:367 models/tpa/services.py:210
+#: models/match/correction_service.py:80
+#: models/match/trio_scoring_service.py:377 models/tpa/services.py:210
 #: routes/admin/competition/matches.py:198 routes/admin/match/scoring.py:125
 #: routes/admin/match/scoring.py:153 routes/admin/match/scoring.py:284
 msgid "Partita non trovata"
@@ -1818,19 +1826,19 @@ msgstr ""
 msgid "Turno %(turno)s cancellato"
 msgstr ""
 
-#: models/competition/round_manager.py:449
+#: models/competition/round_manager.py:454
 #, python-format
 msgid "Nessuna partita conclusa nel turno %(turno)s"
 msgstr ""
 
-#: models/competition/round_manager.py:493
+#: models/competition/round_manager.py:498
 #, python-format
 msgid "%(num)d partita azzerata."
 msgid_plural "Tutte le %(num)d partite azzerate."
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/competition/round_manager.py:499
+#: models/competition/round_manager.py:504
 #, python-format
 msgid "%(num)d partita azzerata, errori: %(errori)d."
 msgid_plural "%(num)d partite azzerate, errori: %(errori)d."
@@ -1874,7 +1882,7 @@ msgstr ""
 msgid "Configurazione non valida: %(errori)s"
 msgstr ""
 
-#: models/competition/services.py:242 models/competition/services.py:514
+#: models/competition/services.py:242 models/competition/services.py:516
 #, python-format
 msgid "Configurazione classificazione non valida: %(errori)s"
 msgstr ""
@@ -1891,7 +1899,7 @@ msgstr ""
 msgid "Ci sono già %(dentro)s iscritti: la capienza non può scendere a %(nuovo)s."
 msgstr ""
 
-#: models/competition/services.py:649
+#: models/competition/services.py:651
 msgid ""
 "In un campionato che somma vittorie, triangoli o punti le gare restano a "
 "girone unico: chi capita nel girone più numeroso giocherebbe una partita "
@@ -1899,25 +1907,25 @@ msgid ""
 "piazzamenti."
 msgstr ""
 
-#: models/competition/services.py:696
+#: models/competition/services.py:698
 msgid ""
 "Il tabellone dopo i gironi si gioca solo con più gironi: scegli «Gironi: "
 "fino a 2» o più, oppure nessuna fase finale."
 msgstr ""
 
-#: models/competition/services.py:706
+#: models/competition/services.py:708
 msgid ""
 "Con le finali per piazzamento le partite si giocano «al N»: ogni finale "
 "assegna due posti, e il pareggio non esiste."
 msgstr ""
 
-#: models/competition/services.py:713
+#: models/competition/services.py:715
 msgid ""
 "Con il tabellone dopo i gironi le partite si giocano «al N»: nel "
 "tabellone qualcuno deve passare il turno, e il pareggio non esiste."
 msgstr ""
 
-#: models/competition/services.py:727
+#: models/competition/services.py:729
 msgid ""
 "In un campionato che somma vittorie, triangoli o punti le gare non hanno "
 "una fase finale: la classifica di una gara col tabellone viene dal "
@@ -1925,42 +1933,35 @@ msgid ""
 " campionati a piazzamenti."
 msgstr ""
 
-#: models/competition/services.py:983
+#: models/competition/services.py:985
 msgid "Impossibile cancellare la gara: ci sono già delle iscrizioni!"
 msgstr ""
 
-#: models/competition/services.py:999
+#: models/competition/services.py:1001
 msgid "La gara non può essere cancellata in questo stato!"
 msgstr ""
 
-#: models/competition/services.py:1034
+#: models/competition/services.py:1036
 #, python-format
 msgid ""
 "La %(gara)s del campionato '%(campionato)s' del %(data)s è stata "
 "cancellata."
 msgstr ""
 
-#: models/competition/services.py:1041
+#: models/competition/services.py:1043
 #, python-format
 msgid "La %(gara)s del %(data)s è stata cancellata."
 msgstr ""
 
-#: models/competition/services.py:1052
+#: models/competition/services.py:1054
 msgid "Gara Cancellata"
 msgstr ""
 
-#: models/competition/services.py:1135
-#: templates/admin/gara_create_standalone.html:292
-msgid ""
-"Sul tabellone il numero massimo di iscritti è obbligatorio: dichiara "
-"quanti posti ha il tabellone."
-msgstr ""
-
-#: models/competition/services.py:1272
+#: models/competition/services.py:1294
 msgid "Gli admin non possono essere direttori di gara"
 msgstr ""
 
-#: models/competition/services.py:1279
+#: models/competition/services.py:1301
 msgid "Solo gli utenti con ruolo direttore possono essere co-direttori"
 msgstr ""
 
@@ -2151,7 +2152,7 @@ msgstr ""
 msgid "Punteggi SSR per posizione %(posizione)s salvati"
 msgstr ""
 
-#: models/competition/spareggio_service.py:1036
+#: models/competition/spareggio_service.py:1040
 msgid "Classifica finale aggiornata"
 msgstr ""
 
@@ -3066,7 +3067,7 @@ msgid "Rimosso da co-direttore"
 msgstr ""
 
 #: models/events/notification_handlers.py:618
-#: models/individual_match/availability_service.py:270
+#: models/individual_match/availability_service.py:295
 msgid "Giocatore Disponibile"
 msgstr ""
 
@@ -3440,14 +3441,19 @@ msgstr ""
 msgid "Conquista almeno una vittoria questa settimana."
 msgstr ""
 
-#: models/individual_match/availability_service.py:262
+#: models/individual_match/availability_service.py:62
+#, python-format
+msgid "Non ho capito la fascia oraria «%(testo)s». Scrivila come 18:00-22:00."
+msgstr ""
+
+#: models/individual_match/availability_service.py:287
 #, python-format
 msgid "%(nome)s è disponibile a giocare presso %(luogo)s"
 msgstr ""
 
-#: models/individual_match/availability_service.py:263
-#: models/individual_match/proposal_service.py:246
-#: models/individual_match/proposal_service.py:572
+#: models/individual_match/availability_service.py:288
+#: models/individual_match/proposal_service.py:253
+#: models/individual_match/proposal_service.py:579
 #: models/individual_match/quick_match_service.py:520
 #: models/individual_match/services.py:194 models/notification/factory.py:264
 #: models/notification/factory.py:265
@@ -3466,8 +3472,8 @@ msgstr ""
 #: models/individual_match/individual_rack_service.py:228
 #: models/individual_match/individual_rack_service.py:239
 #: models/match/match_info_service.py:119 models/match/match_service.py:529
-#: models/match/match_service.py:580 models/match/scoring_service.py:171
-#: models/match/scoring_service.py:189
+#: models/match/match_service.py:580 models/match/scoring_service.py:182
+#: models/match/scoring_service.py:200
 msgid "Partita non trovata."
 msgstr ""
 
@@ -3486,9 +3492,9 @@ msgid "La tua sfida è programmata per il %(when)s%(location)s"
 msgstr ""
 
 #: models/individual_match/match_lifecycle_service.py:335
-#: models/individual_match/proposal_service.py:295
-#: models/individual_match/proposal_service.py:726
-#: models/individual_match/proposal_service.py:771
+#: models/individual_match/proposal_service.py:302
+#: models/individual_match/proposal_service.py:733
+#: models/individual_match/proposal_service.py:778
 msgid "Visualizza"
 msgstr ""
 
@@ -3615,103 +3621,103 @@ msgid ""
 "per nessuno dei due."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:88
-#: models/individual_match/proposal_service.py:217
+#: models/individual_match/proposal_service.py:95
+#: models/individual_match/proposal_service.py:224
 msgid "Non è possibile programmare una sfida nel passato"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:105
+#: models/individual_match/proposal_service.py:112
 msgid "Il giocatore invitato non esiste"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:114
+#: models/individual_match/proposal_service.py:121
 #, python-format
 msgid ""
 "%(nome)s non è ancora registrato: non può ricevere proposte di sfida. Se "
 "state giocando adesso, apri la partita con l'avvio rapido."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:277
-#: models/individual_match/proposal_service.py:559
+#: models/individual_match/proposal_service.py:284
+#: models/individual_match/proposal_service.py:566
 #: models/individual_match/quick_match_service.py:515
 #: models/individual_match/services.py:191
 #, python-format
 msgid "a %(loc)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:280
+#: models/individual_match/proposal_service.py:287
 #, python-format
 msgid "%(username)s propone una sfida aperta%(location)s il %(date)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:291
+#: models/individual_match/proposal_service.py:298
 msgid "Nuova proposta di sfida"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:372
+#: models/individual_match/proposal_service.py:379
 msgid "Giocatore già invitato a questa proposta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:551
+#: models/individual_match/proposal_service.py:558
 msgid "Proposta già accettata"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:569
+#: models/individual_match/proposal_service.py:576
 msgid "Proposta accettata!"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:571
+#: models/individual_match/proposal_service.py:578
 #, python-format
 msgid "%(player)s ha accettato la tua proposta di sfida%(location)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:577
+#: models/individual_match/proposal_service.py:584
 msgid "Vai alla sfida"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:592
+#: models/individual_match/proposal_service.py:599
 msgid "Proposta di sfida chiusa"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:594
+#: models/individual_match/proposal_service.py:601
 #, python-format
 msgid "La proposta di sfida%(location)s è stata accettata da un altro giocatore."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:660
+#: models/individual_match/proposal_service.py:667
 msgid "Proposta non trovata"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:663
+#: models/individual_match/proposal_service.py:670
 msgid "La proposta la cancella chi l'ha fatta."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:673
+#: models/individual_match/proposal_service.py:680
 msgid ""
 "Da questa proposta è nata una partita: per farla sparire annulla prima "
 "quella."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:717
-#: models/individual_match/proposal_service.py:762
+#: models/individual_match/proposal_service.py:724
+#: models/individual_match/proposal_service.py:769
 msgid "Proposta scaduta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:720
-#: models/individual_match/proposal_service.py:765
+#: models/individual_match/proposal_service.py:727
+#: models/individual_match/proposal_service.py:772
 #, python-format
 msgid "La tua proposta di sfida%(location)s è scaduta senza accettazioni."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:848
+#: models/individual_match/proposal_service.py:855
 msgid "Proposta di sfida aperta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:856
+#: models/individual_match/proposal_service.py:863
 msgid "Proposta di sfida conclusa"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:858
+#: models/individual_match/proposal_service.py:865
 #, python-format
 msgid "La proposta di sfida '%(title)s' è stata accettata da un altro giocatore."
 msgstr ""
@@ -4177,68 +4183,68 @@ msgstr ""
 msgid "La partita non è ancora cominciata: aspetta il tavolo."
 msgstr ""
 
-#: models/match/correction_service.py:77
+#: models/match/correction_service.py:83
 msgid "La X a tavolino non ha un risultato da correggere"
 msgstr ""
 
-#: models/match/correction_service.py:80
+#: models/match/correction_service.py:86
 msgid "Questa partita non appartiene a una gara"
 msgstr ""
 
-#: models/match/correction_service.py:170
+#: models/match/correction_service.py:191
 msgid "È pari: nel tabellone qualcuno deve passare."
 msgstr ""
 
-#: models/match/correction_service.py:215
+#: models/match/correction_service.py:236
 msgid "Nel trio servono i triangoli di tutti e tre i giocatori"
 msgstr ""
 
-#: models/match/correction_service.py:310
+#: models/match/correction_service.py:331
 msgid "Nella partita a set servono i punteggi dei set"
 msgstr ""
 
-#: models/match/correction_service.py:403
+#: models/match/correction_service.py:424
 msgid "Serve almeno un set"
 msgstr ""
 
-#: models/match/correction_service.py:409
-#: models/match/correction_service.py:472
-#: models/match/correction_service.py:511
+#: models/match/correction_service.py:430
+#: models/match/correction_service.py:493
+#: models/match/correction_service.py:532
 msgid "I triangoli non possono essere negativi"
 msgstr ""
 
-#: models/match/correction_service.py:414
+#: models/match/correction_service.py:435
 #: templates/direttore/_scripts.html:1666
 #, python-format
 msgid "La partita è decisa al set %(num)s: i set dopo non si giocano"
 msgstr ""
 
-#: models/match/correction_service.py:425
+#: models/match/correction_service.py:446
 #, python-format
 msgid "Il set %(num)s non è finito: si gioca al %(n)s"
 msgstr ""
 
-#: models/match/correction_service.py:435
+#: models/match/correction_service.py:456
 #, python-format
 msgid ""
 "Il set %(num)s non è finito: si giocano esattamente %(n)s triangoli, e "
 "uno deve vincerne di più"
 msgstr ""
 
-#: models/match/correction_service.py:451
+#: models/match/correction_service.py:472
 #: templates/direttore/_scripts.html:1679
 #, python-format
 msgid "Nessuno arriva a %(n)s set: la partita non è finita"
 msgstr ""
 
-#: models/match/correction_service.py:457
+#: models/match/correction_service.py:478
 #: templates/direttore/_scripts.html:1563
 #: templates/direttore/_scripts.html:1682
 #, python-format
 msgid "Si giocano esattamente %(n)s set"
 msgstr ""
 
-#: models/match/correction_service.py:478
+#: models/match/correction_service.py:499
 #: templates/direttore/_scripts.html:1545
 #, python-format
 msgid ""
@@ -4246,38 +4252,38 @@ msgid ""
 "%(n)s"
 msgstr ""
 
-#: models/match/correction_service.py:489
-#: models/match/trio_scoring_service.py:381
+#: models/match/correction_service.py:510
+#: models/match/trio_scoring_service.py:391
 #, python-format
 msgid "Nel trio ognuno gioca %(n)s triangoli: non se ne vincono di più."
 msgstr ""
 
-#: models/match/correction_service.py:498
+#: models/match/correction_service.py:519
 msgid "Questo punteggio non torna con l'ordine delle sfide."
 msgstr ""
 
-#: models/match/correction_service.py:524
+#: models/match/correction_service.py:545
 #, python-format
 msgid ""
 "Interrotta a tempo: nessuno può superare %(n)s triangoli, e uno solo può "
 "arrivarci"
 msgstr ""
 
-#: models/match/correction_service.py:534
+#: models/match/correction_service.py:555
 #, python-format
 msgid "Interrotta a tempo: si giocano al massimo %(n)s triangoli"
 msgstr ""
 
-#: models/match/correction_service.py:548
+#: models/match/correction_service.py:569
 #, python-format
 msgid "In una partita al %(n)s la vince chi arriva a %(n)s triangoli"
 msgstr ""
 
-#: models/match/correction_service.py:556
+#: models/match/correction_service.py:577
 msgid "Non possono arrivarci tutti e due: uno solo vince"
 msgstr ""
 
-#: models/match/correction_service.py:566
+#: models/match/correction_service.py:587
 #, python-format
 msgid ""
 "Si giocano esattamente %(n)s triangoli: la somma dei due punteggi deve "
@@ -4419,40 +4425,40 @@ msgstr ""
 msgid "Tavolo da sistemare · %(gara)s"
 msgstr ""
 
-#: models/match/scoring_service.py:223 models/match/trio_scoring_service.py:148
+#: models/match/scoring_service.py:77 models/match/scoring_service.py:381
+msgid "La partita è già finita, non è possibile aggiungere altri punti"
+msgstr ""
+
+#: models/match/scoring_service.py:234 models/match/trio_scoring_service.py:148
 msgid ""
 "Il risultato è già stato validato: per correggerlo serve il direttore di "
 "gara"
 msgstr ""
 
-#: models/match/scoring_service.py:358
+#: models/match/scoring_service.py:373
 msgid "La partita a tre si segna dal suo tabellino, non dai triangoli a due"
 msgstr ""
 
-#: models/match/scoring_service.py:366
-msgid "La partita è già finita, non è possibile aggiungere altri punti"
-msgstr ""
-
-#: models/match/scoring_service.py:589
+#: models/match/scoring_service.py:603
 #, python-format
 msgid "Partita già completata - limite raggiunto per '%(distanza)s'"
 msgstr ""
 
-#: models/match/scoring_service.py:598 models/match/scoring_service.py:675
+#: models/match/scoring_service.py:612 models/match/scoring_service.py:689
 #, python-format
 msgid ""
 "Non è possibile superare il limite di %(n)s triangoli totali per questa "
 "partita"
 msgstr ""
 
-#: models/match/scoring_service.py:664
+#: models/match/scoring_service.py:678
 #, python-format
 msgid ""
 "In una partita 'al %(n)s', entrambi i giocatori non possono avere %(n)s o"
 " più punti!"
 msgstr ""
 
-#: models/match/scoring_service.py:683
+#: models/match/scoring_service.py:697
 #, python-format
 msgid ""
 "In modalità 'esatto numero', il totale dei triangoli (%(totale)s) deve "
@@ -4463,30 +4469,30 @@ msgstr ""
 msgid "Non è possibile completare una partita che non è ancora iniziata"
 msgstr ""
 
-#: models/match/trio_scoring_service.py:223
+#: models/match/trio_scoring_service.py:233
 #, python-format
 msgid "Partita a tre %(id)s non trovata"
 msgstr ""
 
-#: models/match/trio_scoring_service.py:232
+#: models/match/trio_scoring_service.py:242
 #, python-format
 msgid ""
 "Il totale dei triangoli (%(totale)s) deve essere %(attesi)s per un trio "
 "con distanza %(distanza)s"
 msgstr ""
 
-#: models/match/trio_scoring_service.py:250
+#: models/match/trio_scoring_service.py:260
 #, python-format
 msgid ""
 "%(giocatore)s non può vincere più di %(massimo)s triangoli (ne gioca "
 "%(massimo)s su %(totale)s)"
 msgstr ""
 
-#: models/match/trio_scoring_service.py:370
+#: models/match/trio_scoring_service.py:380
 msgid "La partita è chiusa: si cambia azzerandola dal segnapunti."
 msgstr ""
 
-#: models/match/trio_scoring_service.py:388
+#: models/match/trio_scoring_service.py:398
 msgid ""
 "Questo punteggio non torna con l'ordine delle sfide: il primo triangolo è"
 " fra il primo e il secondo giocatore, il secondo fra il primo e il terzo."
@@ -4823,47 +4829,47 @@ msgid ""
 "Scegli «Solo i playoff», dove della finale conta solo l'ordine d'arrivo."
 msgstr ""
 
-#: models/playoff/services.py:903
+#: models/playoff/services.py:960
 msgid ""
 "La finale è già cominciata: le sue regole si cambiano dalla pagina della "
 "gara."
 msgstr ""
 
-#: models/playoff/services.py:937
+#: models/playoff/services.py:994
 msgid ""
 "Gli inviti sono già partiti: chi si qualifica non si cambia più. Si può "
 "ancora aggiungere o togliere un giocatore a mano."
 msgstr ""
 
-#: models/playoff/services.py:1129
+#: models/playoff/services.py:1186
 msgid "La scadenza degli inviti deve essere nel futuro."
 msgstr ""
 
-#: models/playoff/services.py:1131
+#: models/playoff/services.py:1188
 msgid "La data dei playoff deve essere nel futuro."
 msgstr ""
 
-#: models/playoff/services.py:1161
+#: models/playoff/services.py:1218
 msgid "La gara di playoff è già cominciata: data e scadenza non si cambiano più."
 msgstr ""
 
-#: models/playoff/services.py:1392
+#: models/playoff/services.py:1449
 #, python-format
 msgid "Invito Playoff — %(nome)s"
 msgstr ""
 
-#: models/playoff/services.py:1394
+#: models/playoff/services.py:1451
 #, python-format
 msgid ""
 "Sei stato qualificato per %(nome)s del campionato %(campionato)s. "
 "Conferma o rifiuta la partecipazione."
 msgstr ""
 
-#: models/playoff/services.py:1401 templates/individual_match/matches.html:210
+#: models/playoff/services.py:1458 templates/individual_match/matches.html:210
 msgid "Conferma o rifiuta"
 msgstr ""
 
-#: models/playoff/services.py:1612 models/playoff/services.py:1684
+#: models/playoff/services.py:1669 models/playoff/services.py:1741
 msgid "La gara di playoff è già cominciata: la lista non si modifica più."
 msgstr ""
 
@@ -7296,7 +7302,7 @@ msgstr ""
 msgid "Ruolo concesso (debug)."
 msgstr ""
 
-#: routes/admin/campionato.py:120 routes/admin/campionato.py:429
+#: routes/admin/campionato.py:120 routes/admin/campionato.py:433
 msgid "Il nome del campionato è obbligatorio"
 msgstr ""
 
@@ -7308,208 +7314,208 @@ msgstr ""
 msgid "Sessione wizard scaduta. Ricomincia la creazione."
 msgstr ""
 
-#: routes/admin/campionato.py:345 routes/admin/competition/crud.py:131
+#: routes/admin/campionato.py:349 routes/admin/competition/crud.py:131
 #, python-format
 msgid "Prova «%(name)s» creata: solo tu la vedi."
 msgstr ""
 
-#: routes/admin/campionato.py:353 routes/admin/campionato.py:457
+#: routes/admin/campionato.py:357 routes/admin/campionato.py:461
 #, python-format
 msgid "Campionato \"%(name)s\" creato con successo!"
 msgstr ""
 
-#: routes/admin/campionato.py:363
+#: routes/admin/campionato.py:367
 #, python-format
 msgid "Errore durante la creazione: %(error)s"
 msgstr ""
 
-#: routes/admin/campionato.py:406
+#: routes/admin/campionato.py:410
 msgid "Creazione campionato annullata"
 msgstr ""
 
-#: routes/admin/campionato.py:424
+#: routes/admin/campionato.py:428
 msgid "Non hai i permessi per creare un campionato."
 msgstr ""
 
-#: routes/admin/campionato.py:661
+#: routes/admin/campionato.py:665
 msgid "Campionato aggiornato: la modifica resta nella sua storia."
 msgstr ""
 
-#: routes/admin/campionato.py:798
+#: routes/admin/campionato.py:802
 #, python-format
 msgid "Valori applicati a %(num)d gara."
 msgid_plural "Valori applicati a %(num)d gare."
 msgstr[0] ""
 msgstr[1] ""
 
-#: routes/admin/campionato.py:804
+#: routes/admin/campionato.py:808
 msgid "Nessuna gara cambiata: restano con i loro valori."
 msgstr ""
 
-#: routes/admin/campionato.py:898
+#: routes/admin/campionato.py:902
 #, python-format
 msgid "Campionato \"%(name)s\" terminato con successo."
 msgstr ""
 
-#: routes/admin/campionato.py:904
+#: routes/admin/campionato.py:908
 msgid "Il campionato è già stato terminato."
 msgstr ""
 
-#: routes/admin/campionato.py:922
+#: routes/admin/campionato.py:926
 msgid "Parametri non validi."
 msgstr ""
 
-#: routes/admin/campionato.py:935
+#: routes/admin/campionato.py:939
 msgid "Requisito minimo gare aggiornato."
 msgstr ""
 
-#: routes/admin/campionato.py:980
+#: routes/admin/campionato.py:984
 #, python-format
 msgid "Playoff avviati: %(count)s giocatori qualificati."
 msgstr ""
 
-#: routes/admin/campionato.py:1007 routes/admin/campionato.py:1057
-#: routes/admin/campionato.py:1090 routes/admin/campionato.py:1399
+#: routes/admin/campionato.py:1011 routes/admin/campionato.py:1061
+#: routes/admin/campionato.py:1094 routes/admin/campionato.py:1403
 msgid "Configurazione playoff non trovata."
 msgstr ""
 
-#: routes/admin/campionato.py:1018 routes/admin/campionato.py:1377
+#: routes/admin/campionato.py:1022 routes/admin/campionato.py:1381
 msgid "Invito non trovato."
 msgstr ""
 
-#: routes/admin/campionato.py:1069
+#: routes/admin/campionato.py:1073
 msgid "Data e scadenza del playoff aggiornate."
 msgstr ""
 
-#: routes/admin/campionato.py:1104
+#: routes/admin/campionato.py:1108
 #, python-format
 msgid "Gara playoff \"%(name)s\" creata con successo."
 msgstr ""
 
-#: routes/admin/campionato.py:1129
+#: routes/admin/campionato.py:1133
 msgid "Seleziona un giocatore."
 msgstr ""
 
-#: routes/admin/campionato.py:1142
+#: routes/admin/campionato.py:1146
 msgid "Giocatore aggiunto ai playoff."
 msgstr ""
 
-#: routes/admin/campionato.py:1165
+#: routes/admin/campionato.py:1169
 msgid "Qualificazione non specificata."
 msgstr ""
 
-#: routes/admin/campionato.py:1180
+#: routes/admin/campionato.py:1184
 msgid "Giocatore rimosso dai playoff."
 msgstr ""
 
-#: routes/admin/campionato.py:1205
+#: routes/admin/campionato.py:1209
 msgid "Risposta non valida."
 msgstr ""
 
-#: routes/admin/campionato.py:1227
+#: routes/admin/campionato.py:1231
 msgid "Partecipazione confermata per conto del giocatore."
 msgstr ""
 
-#: routes/admin/campionato.py:1231 routes/admin/campionato.py:1736
+#: routes/admin/campionato.py:1235 routes/admin/campionato.py:1740
 #, python-format
 msgid "Rifiuto registrato: l'invito passa a %(name)s."
 msgstr ""
 
-#: routes/admin/campionato.py:1238 routes/admin/campionato.py:1743
+#: routes/admin/campionato.py:1242 routes/admin/campionato.py:1747
 msgid "Rifiuto registrato. Nessun altro giocatore idoneo da invitare."
 msgstr ""
 
-#: routes/admin/campionato.py:1267
+#: routes/admin/campionato.py:1271
 msgid "Regole della classifica finale aggiornate."
 msgstr ""
 
-#: routes/admin/campionato.py:1333
+#: routes/admin/campionato.py:1337
 msgid "Configurazione playoff aggiornata."
 msgstr ""
 
-#: routes/admin/campionato.py:1381
+#: routes/admin/campionato.py:1385
 msgid "Partecipazione riconfermata: resta scritto che l'hai fatto tu."
 msgstr ""
 
-#: routes/admin/campionato.py:1410
+#: routes/admin/campionato.py:1414
 #, python-format
 msgid "Inviti aggiornati: %(ritirati)d ritirati, %(nuovi)d nuovi."
 msgstr ""
 
-#: routes/admin/campionato.py:1418
+#: routes/admin/campionato.py:1422
 msgid "Gli inviti restano come sono."
 msgstr ""
 
-#: routes/admin/campionato.py:1420
+#: routes/admin/campionato.py:1424
 msgid "Scelta non valida."
 msgstr ""
 
-#: routes/admin/campionato.py:1456
+#: routes/admin/campionato.py:1460
 msgid "Finale aggiornata."
 msgstr ""
 
-#: routes/admin/campionato.py:1458
+#: routes/admin/campionato.py:1462
 msgid "La finale resta com'era."
 msgstr ""
 
-#: routes/admin/campionato.py:1486
+#: routes/admin/campionato.py:1490
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr ""
 
-#: routes/admin/campionato.py:1505
+#: routes/admin/campionato.py:1509
 msgid "Configurazione playoff aggiunta."
 msgstr ""
 
-#: routes/admin/campionato.py:1528
+#: routes/admin/campionato.py:1532
 msgid "Configurazione playoff disattivata."
 msgstr ""
 
-#: routes/admin/campionato.py:1626
+#: routes/admin/campionato.py:1630
 msgid ""
 "Una competizione di prova non ha vetrina né link pubblico: in un "
 "campionato vero qui trovi il link da condividere."
 msgstr ""
 
-#: routes/admin/campionato.py:1691 routes/admin/competition/prova.py:134
+#: routes/admin/campionato.py:1695 routes/admin/competition/prova.py:134
 #, python-format
 msgid "Prova «%(nome)s» eliminata."
 msgstr ""
 
-#: routes/admin/campionato.py:1732
+#: routes/admin/campionato.py:1736
 msgid "Invito accettato."
 msgstr ""
 
-#: routes/admin/campionato.py:1768
+#: routes/admin/campionato.py:1772
 msgid "Nessun invito in attesa."
 msgstr ""
 
-#: routes/admin/campionato.py:1770
+#: routes/admin/campionato.py:1774
 #, python-format
 msgid "%(quanti)s inviti accettati."
 msgstr ""
 
-#: routes/admin/campionato.py:1791
+#: routes/admin/campionato.py:1795
 msgid "Vetrina del campionato aggiornata."
 msgstr ""
 
-#: routes/admin/campionato.py:1820 routes/admin/competition/vetrina.py:151
+#: routes/admin/campionato.py:1824 routes/admin/competition/vetrina.py:151
 msgid "Nessuna immagine selezionata."
 msgstr ""
 
-#: routes/admin/campionato.py:1823 routes/admin/competition/vetrina.py:155
+#: routes/admin/campionato.py:1827 routes/admin/competition/vetrina.py:155
 msgid "Formato non supportato. Usa JPG, PNG o GIF."
 msgstr ""
 
-#: routes/admin/campionato.py:1836
+#: routes/admin/campionato.py:1840
 msgid "Locandina caricata: la useranno tutte le gare senza una propria."
 msgstr ""
 
-#: routes/admin/campionato.py:1841 routes/admin/competition/vetrina.py:173
+#: routes/admin/campionato.py:1845 routes/admin/competition/vetrina.py:173
 #, python-format
 msgid "Non è stato possibile caricare l'immagine: %(errore)s"
 msgstr ""
 
-#: routes/admin/campionato.py:1855
+#: routes/admin/campionato.py:1859
 msgid "Locandina rimossa."
 msgstr ""
 
@@ -8789,48 +8795,48 @@ msgstr ""
 msgid "Feature creata con successo"
 msgstr ""
 
-#: routes/individual_match/availability.py:89
+#: routes/individual_match/availability.py:90
 msgid "Devi selezionare una sala"
 msgstr ""
 
-#: routes/individual_match/availability.py:102
-#: routes/individual_match/availability.py:149
+#: routes/individual_match/availability.py:110
+#: routes/individual_match/availability.py:157
 #, python-format
 msgid "Sala #%(id)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:107
+#: routes/individual_match/availability.py:115
 #, python-format
 msgid "Disponibilità aggiornata per %(loc)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:221
+#: routes/individual_match/availability.py:229
 msgid "La località è obbligatoria per richiedere una sfida"
 msgstr ""
 
-#: routes/individual_match/availability.py:240
+#: routes/individual_match/availability.py:248
 msgid "Formato data/ora non valido"
 msgstr ""
 
-#: routes/individual_match/availability.py:264
+#: routes/individual_match/availability.py:272
 #, python-format
 msgid "Utente #%(id)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:269
+#: routes/individual_match/availability.py:277
 #, python-format
 msgid "Richiesta di sfida inviata a %(name)s"
 msgstr ""
 
-#: routes/individual_match/availability.py:290
+#: routes/individual_match/availability.py:298
 msgid "Record non trovato"
 msgstr ""
 
-#: routes/individual_match/availability.py:291
+#: routes/individual_match/availability.py:299
 msgid "Disponibilità non trovata"
 msgstr ""
 
-#: routes/individual_match/availability.py:296
+#: routes/individual_match/availability.py:304
 msgid "Disponibilità rimossa"
 msgstr ""
 
@@ -9130,31 +9136,31 @@ msgstr ""
 msgid "X a tavolino"
 msgstr ""
 
-#: routes/player/exports.py:548
+#: routes/player/exports.py:559
 msgid "Export GDPR Pronto"
 msgstr ""
 
-#: routes/player/exports.py:550
+#: routes/player/exports.py:561
 msgid "Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."
 msgstr ""
 
-#: routes/player/exports.py:552
+#: routes/player/exports.py:563
 msgid "Scarica"
 msgstr ""
 
-#: routes/player/exports.py:553
+#: routes/player/exports.py:564
 msgid "Errore Export GDPR"
 msgstr ""
 
-#: routes/player/exports.py:572
+#: routes/player/exports.py:583
 msgid "Export avviato. Riceverai una notifica quando sarà pronto per il download."
 msgstr ""
 
-#: routes/player/exports.py:597
+#: routes/player/exports.py:608
 msgid "Il file di export non esiste o è scaduto."
 msgstr ""
 
-#: routes/player/exports.py:604
+#: routes/player/exports.py:615
 msgid "Il file di export è scaduto. Richiedi un nuovo export."
 msgstr ""
 

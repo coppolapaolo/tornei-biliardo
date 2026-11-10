@@ -52,15 +52,16 @@ class TestMiDichiaroDisponibile:
         assert "1" in (disponibilita.available_days or "")
         assert "18:00-22:00" in sfida.pagina_disponibilita()
 
-    def test_una_fascia_scritta_a_parole_sparisce_senza_dirlo(self, sfida: SfidaDriver):
-        """Il campo è libero, la lettura no: `set_venue_availability` vuole
-        `HH:MM-HH:MM` e su tutto il resto fa `pass`.
+    def test_una_fascia_scritta_a_parole_viene_rifiutata_e_detta(
+        self, sfida: SfidaDriver
+    ):
+        """Il campo è libero, la lettura no: ciò che non si capisce si dice.
 
-        L'etichetta il formato lo dice («Ora di inizio e di fine, separate da
-        un trattino»), ma chi scrive «dopo le 21» preme Salva, legge
-        «Disponibilità aggiornata» e non ha più la sua fascia. Un campo che
-        accetta qualsiasi cosa e ne tiene una sola dovrebbe rifiutare il
-        resto, non ingoiarlo.
+        Fino al 2026-11-10 questo test si chiamava «sparisce senza dirlo» e
+        descriveva il difetto: chi scriveva «dopo le 21» premeva Salva,
+        leggeva «Disponibilità aggiornata» e non aveva più la sua fascia
+        (#216). Ora il salvataggio si ferma e la pagina dice cosa non ha
+        capito, con le parole di chi ha scritto.
         """
         io_ = sfida.crea_giocatore()
         sala = sfida.crea_sala()
@@ -69,9 +70,20 @@ class TestMiDichiaroDisponibile:
         risposta = sfida.dichiarati_disponibile(sala, preferred_times="dopo le 21")
 
         assert risposta.status_code in (200, 302)
+        assert sfida.mie_disponibilita(io_) == []
+        assert "dopo le 21" in sfida.pagina_disponibilita()
+
+    def test_il_suggerimento_scritto_largo_si_capisce(self, sfida: SfidaDriver):
+        """«18:00 - 22:00», con gli spazi: è il suggerimento del campo."""
+        io_ = sfida.crea_giocatore()
+        sala = sfida.crea_sala()
+        sfida.entra(io_)
+
+        sfida.dichiarati_disponibile(sala, preferred_times="18:00 - 22:00")
+
         disponibilita = sfida.mie_disponibilita(io_)[0]
-        assert disponibilita.preferred_time_start is None
-        assert "dopo le 21" not in sfida.pagina_disponibilita()
+        assert disponibilita.preferred_time_start.hour == 18
+        assert disponibilita.preferred_time_end.hour == 22
 
     def test_ridichiararsi_nella_stessa_sala_non_fa_un_doppione(
         self, sfida: SfidaDriver
@@ -304,7 +316,7 @@ class TestEPoiGiochiamo:
 
         # 1. Mi dichiaro disponibile.
         sfida.entra(disponibile)
-        sfida.dichiarati_disponibile(sala, preferred_times="la sera")
+        sfida.dichiarati_disponibile(sala, preferred_times="19:00-23:00")
         sfida.esci()
 
         # 2. Un altro mi trova.

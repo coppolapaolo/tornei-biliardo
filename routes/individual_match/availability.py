@@ -14,6 +14,7 @@ from flask_babel import _
 from flask_login import current_user
 
 from models.base import db
+from models.exceptions import ValidationError
 from models.individual_match.availability_service import AvailabilityService
 from models.individual_match.pending_confirmation import PendingConfirmationError
 from models.location.models import BilliardHall
@@ -90,13 +91,20 @@ def set_venue_availability():
             redirect_endpoint="individual_match.manage_availability",
         )
 
-    AvailabilityService.set_venue_availability(
-        user_id=current_user.id,
-        billiard_hall_id=venue_id,
-        is_available=is_available,
-        available_days=day_ints or None,
-        preferred_times=preferred_times or None,
-    )
+    try:
+        AvailabilityService.set_venue_availability(
+            user_id=current_user.id,
+            billiard_hall_id=venue_id,
+            is_available=is_available,
+            available_days=day_ints or None,
+            preferred_times=preferred_times or None,
+        )
+    except ValidationError as errore:
+        # Una fascia oraria che non si capisce: si dice, non si scarta (#216).
+        return _availability_error(
+            str(errore),
+            redirect_endpoint="individual_match.manage_availability",
+        )
 
     venue = db.session.get(BilliardHall, venue_id)
     venue_name = venue.name if venue else _("Sala #%(id)s", id=venue_id)
