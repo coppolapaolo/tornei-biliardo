@@ -217,6 +217,7 @@ class IndividualRackService:
     @transactional(domain="individual_match")
     def register_lag(
         match_id: int,
+        user_id: int,
         lag_winner_id: int,
         first_break_player_id: int,
     ) -> None:
@@ -226,18 +227,37 @@ class IndividualRackService:
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             raise NotFoundError(_("Partita non trovata."))
+        IndividualRackService._assert_segna(match, user_id)
         opening_service.register_lag(match, lag_winner_id, first_break_player_id)
 
     @staticmethod
     @transactional(domain="individual_match")
-    def toggle_run_out(match_id: int, rack_id: int) -> dict:
+    def toggle_run_out(match_id: int, user_id: int, rack_id: int) -> dict:
         """Marca o smarca un triangolo di sfida come chiuso in una visita."""
         from models.match import opening_service
 
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
             raise NotFoundError(_("Partita non trovata."))
+        IndividualRackService._assert_segna(match, user_id)
         return opening_service.toggle_run_out(match, rack_id)
+
+    @staticmethod
+    def _assert_segna(match: IndividualMatch, user_id: int) -> None:
+        """Chi può registrare acchito e runout: chi tiene il segnapunti.
+
+        La stessa regola di `add_rack_for_player`: i due giocatori, e nella
+        partita di altri due solo chi tiene il referto (ADR-084). Fino al
+        2026-11-10 queste due azioni non chiedevano chi le stava facendo.
+        """
+        if match.is_scored_by_third_party:
+            if user_id != match.scorer_id:
+                raise PermissionDeniedError(
+                    _("Questa partita la segna chi tiene il referto.")
+                )
+            return
+        if not match.is_player(user_id):
+            raise PermissionDeniedError(_("Accesso negato a questa sfida."))
 
     @staticmethod
     def _set_da_correggere(match: IndividualMatch):

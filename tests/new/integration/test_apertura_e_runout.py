@@ -351,6 +351,7 @@ class TestSfideIndividuali:
         assert match.needs_lag is True
         IndividualRackService.register_lag(
             match_id=match.id,
+            user_id=gioc[0].id,
             lag_winner_id=gioc[1].id,
             first_break_player_id=gioc[0].id,
         )
