@@ -287,6 +287,17 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         than `self.racks`, which would lazy-load the relationship and raise
         `DetachedInstanceError` if the Match instance is detached (relevant for
         future async dispatch where handlers receive detached objects).
+
+        Due correzioni del 2026-11-10, entrambe su «quali triangoli contano»:
+
+        * contano solo quelli **non cancellati**. Un triangolo segnato per
+          sbaglio e poi tolto non è una partita giocata: col forfait sullo
+          0-0 la partita risultava «giocata» e l'ELO si muoveva;
+        * le partite **a set** non hanno righe in `Rack`: i loro triangoli
+          stanno nei set. Guardando `Rack` risultavano tutte a tavolino, e
+          nessuna muoveva l'ELO. Si sommano i triangoli scritti sui set
+          (`Set.player*_racks`) e non le righe `SetRack`, perché la
+          correzione del direttore riscrive i set senza i singoli triangoli.
         """
         if (
             self.status != MatchStatus.CLOSED_UNILATERALLY.value
@@ -297,7 +308,33 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
             return (
                 self.trio_match is not None and self.trio_match.total_racks_played == 0
             )
-        return db.session.query(Rack).filter_by(match_id=self.id).count() == 0
+        if self.is_multi_set:
+            return sum(self.triangoli_dei_set) == 0
+        return (
+            db.session.query(Rack).filter_by(match_id=self.id, is_deleted=False).count()
+            == 0
+        )
+
+    @property
+    def triangoli_dei_set(self) -> tuple[int, int]:
+        """I triangoli vinti dai due giocatori, sommati su tutti i set.
+
+        Nelle partite a set `player*_score` conta i **set**: chi ragiona a
+        triangoli, come il walkover, legge questa somma. Query esplicita per
+        la stessa ragione di `is_walkover`. L'ELO fa la stessa somma per gare
+        e sfide in `RatingCalculationService._triangoli`.
+        """
+        from .set_models import Set
+
+        riga = (
+            db.session.query(
+                db.func.coalesce(db.func.sum(Set.player1_racks), 0),
+                db.func.coalesce(db.func.sum(Set.player2_racks), 0),
+            )
+            .filter(Set.match_id == self.id)
+            .one()
+        )
+        return int(riga[0]), int(riga[1])
 
     @property
     def is_at_distance(self) -> bool:

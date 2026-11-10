@@ -103,11 +103,12 @@ class RatingCalculationService:
             )
             return
 
+        rack1, rack2 = RatingCalculationService._triangoli(individual_match)
         RatingCalculationService._process_two_player(
             individual_match.player1_id,
             individual_match.player2_id,
-            individual_match.player1_score or 0,
-            individual_match.player2_score or 0,
+            rack1,
+            rack2,
             system,
             individual_match_id=individual_match.id,
         )
@@ -333,14 +334,35 @@ class RatingCalculationService:
         match: Match, rating_system: RatingSystem = RatingSystem.ELO
     ) -> None:
         """Handle standard 1v1 (tournament) match per il pool indicato."""
+        rack1, rack2 = RatingCalculationService._triangoli(match)
         RatingCalculationService._process_two_player(
             match.player1_id,
             match.player2_id,
-            match.player1_score or 0,
-            match.player2_score or 0,
+            rack1,
+            rack2,
             rating_system,
             match_id=match.id,
         )
+
+    @staticmethod
+    def _triangoli(partita) -> Tuple[int, int]:
+        """I triangoli vinti dai due giocatori, di gara o di sfida.
+
+        A set unico sono `player*_score`. Nelle partite **a set** quel campo
+        conta i set, e l'ELO è a triangoli (ADR-052): un 2-0 nei set giocato
+        5-4 5-4 non è un cappotto. Si sommano i triangoli scritti sui set.
+
+        Fino al 2026-11-10 qui passavano i set: per le sfide era un errore
+        già in produzione, per le gare era nascosto dal fatto che le partite
+        a set risultavano tutte a tavolino (`Match.is_walkover`).
+        """
+        if getattr(partita, "is_multi_set", False):
+            insiemi = list(partita.sets or [])
+            return (
+                sum(s.player1_racks or 0 for s in insiemi),
+                sum(s.player2_racks or 0 for s in insiemi),
+            )
+        return partita.player1_score or 0, partita.player2_score or 0
 
     @staticmethod
     def _process_two_player(

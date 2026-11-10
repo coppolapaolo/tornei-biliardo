@@ -113,11 +113,20 @@ class TestLaCorrezioneCambiaIlRisultato:
 
         assert traccia.note is None
 
-    def test_i_triangoli_si_cancellano(
+    def test_i_triangoli_di_prima_lasciano_il_posto_a_quelli_del_punteggio_nuovo(
         self, db_session, partita_chiusa, isolated_players
     ):
         """Un punteggio scritto a mano e un elenco di triangoli che dice
-        un'altra cosa sono due segnapunti che si contraddicono."""
+        un'altra cosa sono due segnapunti che si contraddicono.
+
+        Fino al 2026-11-10 questo test si chiamava «i triangoli si
+        cancellano» e pretendeva **zero** triangoli dopo la correzione. Era
+        la deviazione, non la regola: una partita senza triangoli è una
+        partita vinta a tavolino (`Match.is_walkover`), e la partita corretta
+        usciva per sempre dall'ELO. La contraddizione si evita riscrivendo i
+        triangoli, non lasciando la partita vuota — vedi
+        `test_correzione_ricrea_i_triangoli.py`.
+        """
         from models.match.models import Rack
 
         for numero in range(1, 6):
@@ -138,7 +147,10 @@ class TestLaCorrezioneCambiaIlRisultato:
             corrected_by_id=isolated_players[0].id,
         )
 
-        assert Rack.query.filter_by(match_id=partita_chiusa.id).count() == 0
+        nuovi = Rack.query.filter_by(match_id=partita_chiusa.id).all()
+        vinti = [r.winner_id for r in nuovi]
+        assert vinti.count(isolated_players[0].id) == 3
+        assert vinti.count(isolated_players[1].id) == 5
 
 
 class TestIlPunteggioDeveEsserePossibile:
