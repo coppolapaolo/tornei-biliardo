@@ -19,6 +19,126 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Tolti i playoff, il campionato restava «In attesa dei playoff» per
+  sempre.** Se dopo «Passa alla fase playoff» il direttore toglieva l'unica
+  configurazione, il campionato non si chiudeva più e mostrava una linguetta
+  Playoff vuota: una configurazione disattivata contava ancora come un playoff
+  da giocare. Ora contano solo quelle attive, e il campionato terminato risulta
+  completato (PR #733).
+- **La partita riaperta riprende il tavolo.** Annullando l'ultimo triangolo di
+  una partita già chiusa con la doppia conferma, la partita si riapriva senza
+  tavolo — passato nel frattempo alla prima in attesa — e il tabellone lasciava
+  solo annullare, non segnare. Ora riprende il suo tavolo se è libero,
+  altrimenti un altro; e se non ce n'è nessuno continua lo stesso, perché il
+  tavolo serve per cominciare una partita, non per finirla. Quando il tavolo
+  non è quello di prima i direttori ricevono un avviso. Vale anche per il trio
+  (PR #729).
+- **L'admin elimina un utente dalla sua scheda, e la conferma dice chi.** Il
+  cestino stava in fondo a una riga di quindici colonne, dove il nome non si
+  vedeva più, e il dialogo chiedeva di eliminare «questo utente» senza
+  nominarlo: sbagliare riga era facile e niente lo faceva notare. Ora l'elenco
+  non scorre di lato — sul telefono è una pila di card — e il nome porta alla
+  scheda, dove sta l'eliminazione: il foglio di conferma dice chi è, quante
+  iscrizioni e partite ha e che cosa succede, e il pulsante porta il suo nome.
+  Anche i messaggi dopo unione, promozione e verifica dell'email nominano
+  l'account (PR #728).
+- **La registrazione non rivela più quali email sono sul sito.** Registrandosi
+  con un indirizzo già presente la pagina rispondeva «email già in uso», e
+  chiunque poteva scoprire chi ha un account. Ora risponde come a una
+  registrazione riuscita e non crea niente: è al proprietario dell'indirizzo
+  che arriva una mail, con scritto che qualcuno ha provato a registrarsi e i
+  collegamenti per entrare o recuperare la password. Dal profilo, inoltre, non
+  si può più prendere l'email di un altro account: prima nessuno controllava, e
+  nascevano due account con lo stesso indirizzo (PR #719).
+- **Chi si registrava non riceveva la mail di verifica.** Il codice di verifica
+  veniva creato, ma la mail partiva solo modificando l'email dal profilo. Ora
+  parte alla registrazione (PR #708).
+- **Sul telefono «Inizia a segnare» era alto 23 pixel invece di 56.** Nella
+  barra in fondo alla pagina i pulsanti messi in colonna si schiacciavano; sul
+  desktop non si vedeva. Lo stesso difetto stava in altre quattro pagine:
+  proposta e modifica di una sfida, modulo e dettaglio di un esercizio (PR
+  #696).
+- **La vetrina della gara mostrava solo il co-direttore sotto «Organizza»**,
+  senza il titolare; e il riquadro delle informazioni, nelle gare di
+  campionato, faceva il contrario e taceva i co-direttori. Ora tutte e due
+  elencano chi dirige davvero: prima i titolari, poi i co-direttori (PR #694).
+- **La classifica decisa dalla finale dei playoff mostra i numeri della
+  finale.** Dove è la finale a decidere la classifica del campionato, la pagina
+  mostrava solo vittorie e differenza della stagione, e l'ordine dei primi non
+  si spiegava. Ora chi ha giocato la finale sta in una fascia propria, «Decisa
+  dalla finale», con le colonne della finale, e sotto c'è «Poi l'ordine del
+  campionato» con le colonne di sempre. Chi è pari merito in finale resta pari
+  merito anche nel campionato: prima li separava un numero interno, senza
+  nessun significato di gioco (PR #690).
+- **Il tabellone non si accavalla più.** Sul desktop la casella «chi vince A –
+  B» sbordava su quella accanto, sul telefono l'ultima colonna restava
+  tagliata, e sullo schermo in sala, a gironi finiti, le classifiche dei gironi
+  si sovrapponevano sotto il tabellone. Nello stesso giro: un campionato a
+  piazzamenti si presenta come «A piazzamenti» invece che col formato di una
+  sola delle sue serate, e la sua classifica non ha più la colonna della
+  differenza triangoli, che lì non decide niente; sulla card di una partita a
+  tempo scaduto il tavolo resta al suo posto (PR #686).
+- **Quattro difetti visti guardando le schermate della guida.** Il trio diceva
+  «2 gironi» per i suoi giri, la stessa parola dei gironi della gara. In
+  inglese le posizioni uscivano senza suffisso («You are 2 of 6»): ora «2nd»,
+  «3rd», «11th». Il riquadro degli orari di una partita rimetteva nei campi
+  l'ora UTC e salvava come UTC quella digitata, due ore fuori d'estate
+  (ADR-043). E la stessa quota si leggeva «€30.00» in una pagina e «30 €» in
+  un'altra (PR #684).
+- **Chi usa l'app in inglese leggeva ancora molto italiano.** I nomi dei
+  formati uscivano grezzi («Round Robin», «Direct Elimination») o diversi dalla
+  guida («Random» dove dappertutto si dice «Casuale»); i messaggi della
+  gestione di una gara — avvio dei turni, iscrizioni, spareggio, ritiri, trio —
+  erano frasi italiane composte a mano, e così l'errore generico del server.
+  Ora passano tutti dal catalogo delle traduzioni, e i formati hanno un nome
+  solo in ogni pagina. Per strada: nella gara singola a triangoli spariva la
+  voce dei dispari che il server avrebbe rifiutato, e l'editor delle catene
+  degli spareggi sul telefono non spezza più i nomi lettera per lettera (PR
+  #605, #651, #653, #655).
+- **Una gara coi turni tutti modificati si presentava col formato che nessun
+  turno gioca.** Testata, card, elenchi e storico dicevano disciplina e
+  distanza con cui la gara era nata, anche quando i tre turni giocavano altro.
+  Ora il formato si ricava dai turni: se sono uguali fra loro si dice quello,
+  se cambiano si elencano le discipline e si scrive «distanze diverse per
+  turno». Il formato della gara resta dove è davvero un valore predefinito: nei
+  moduli (PR #634, #635).
+- **Un aggiornamento interrotto a metà lasciava il sito mezzo vecchio e mezzo
+  nuovo.** L'8 ottobre l'aggiornamento notturno ha scaricato il codice nuovo e
+  poi si è fermato, correttamente, perché il servizio che ferma il sito non
+  rispondeva. Ma un sito non riavviato non resta sul codice vecchio: usa i
+  moduli già caricati e legge dal disco i template nuovi, e tre pagine davano
+  errore. Ora ogni uscita anticipata riporta il disco al codice di prima, e il
+  giro successivo riparte da capo (PR #632).
+- **Il girone all'italiana tiene il calendario fissato all'avvio.** Il
+  calendario si rifaceva a ogni turno a partire dagli iscritti rimasti: il
+  primo turno ignorava il sorteggio appena fatto, e se un giocatore veniva
+  escluso le coppie dei turni dopo cambiavano, con reincontri e incontri mai
+  giocati. Ora l'ordine è quello dell'avvio e chi esce resta al suo posto nel
+  calendario. Inoltre un girone con la classifica a triangoli si ordinava sulle
+  vittorie, come ogni altro girone: ora sui triangoli (PR #612, #614).
+- **«Valida risultato» mancava sulle partite finite in pareggio.** Con
+  «esattamente N» e N pari una partita può finire 3-3: la card della gara la
+  dava «da validare», ma nella pagina della partita il pulsante compariva solo
+  se c'era un vincitore (PR #615).
+- **Gli avvisi dei traguardi KPI non arrivavano a nessun admin**, e il
+  traguardo risultava comunque già segnalato: l'avviso era perso per sempre. La
+  ricerca degli admin a cui mandarlo non trovava mai nessuno, e per lo stesso
+  motivo una scheda della pagina KPI mostrava sempre zero utenti (PR #603).
+- **Il direttore di un campionato poteva toccare i playoff di un altro.** Sei
+  azioni dei playoff — aggiungere o togliere un giocatore, rispondere per suo
+  conto, cambiare punteggio o configurazione, disattivare — verificavano il
+  permesso sul campionato dell'indirizzo, ma non che la configurazione fosse la
+  sua: bastava cambiare un numero. Ora una configurazione di un altro
+  campionato risulta non trovata (PR #583).
+- **Le conferme non passano più dal dialogo del browser.** Il 27 settembre, in
+  produzione, un «Accetta» non faceva niente, con i log puliti: dopo qualche
+  conferma di fila il browser aveva offerto «impedisci altre finestre di
+  dialogo», e da lì ogni conferma rispondeva di no in silenzio. Ora la forma
+  della conferma la decide l'azione: se è frequente e si può disfare parte dopo
+  tre secondi con «Annulla» accanto; se tocca altri o non si disfa apre un
+  foglio dell'app, e il pulsante porta il nome dell'azione invece di «OK». In
+  tre pagine di schede e gruppi, poi, la conferma non compariva affatto e
+  l'azione partiva al primo tocco (ADR-074, PR #559).
 - **Le pagine in inglese si dichiaravano italiane.** L'attributo `lang` era
   fisso su `it`: chi aveva scelto l'inglese se lo sentiva leggere dal lettore
   di schermo con la pronuncia italiana, e il browser gli proponeva di tradurre
@@ -85,7 +205,261 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
   subito. In produzione non era capitato: l'interfaccia manda i valori
   giusti (#466).
 
+### Modificato
+
+- **Il pari merito si mostra sempre sulla posizione più alta.** Chi è pari col
+  primo è «1° pari merito», non secondo: le posizioni si leggono 1, 1, 3. Sono
+  pari merito due giocatori uguali su tutti i criteri tranne il sorteggio, che
+  continua a ordinare le righe e a decidere dove il posto è uno solo —
+  abbinamenti, inviti e zona playoff, punti del piazzamento non cambiano. Lo
+  dicono classifiche, schermo in sala, tessera («Sei 1° pari merito su 4»),
+  podi, storico e profilo. Anche le bande del tabellone seguono la regola: i
+  quattro usciti ai quarti leggono «5° pari merito» invece di «5°–8°» (PR #661,
+  #667; ADR-078 e ADR-040 emendati).
+- **Nel girone all'italiana il riposo non vale niente.** Con un numero dispari
+  di giocatori chi riposava riceveva la X, cioè una vittoria: fra gironi di
+  taglia diversa era una vittoria regalata a chi stava nel girone dispari. Ora
+  il riposo è un turno senza partita — zero vittorie, zero punti, zero
+  triangoli — e ognuno ne fa uno. Chi doveva incontrare un giocatore escluso
+  vince a tavolino, alla distanza del turno. La X con esercizio nel girone non
+  si può più scegliere. In produzione non c'erano gironi già giocati, quindi
+  nessuna classifica è cambiata (PR #637).
+
 ### Aggiunto
+
+- **I playoff si cambiano dal modulo di modifica del campionato.** In fondo al
+  modulo c'è il riquadro «Playoff finali»: finché il campionato è in corso il
+  direttore modifica una configurazione, la toglie o ne aggiunge una, per
+  allargare o restringere i playoff secondo la partecipazione, oppure toglierli
+  e chiudere il campionato sulle sole gare. Le regole lo permettevano già prima
+  degli inviti; mancava un posto da cui farlo (#732, PR #734).
+- **Il testo segue «Dimensioni testo» dell'iPhone.** Ogni misura del testo era
+  scritta in pixel, e una pagina web segue quell'impostazione solo se lo
+  chiede: chi alzava il cursore per leggere senza occhiali doveva zoomare a due
+  dita. Ora il testo cresce col cursore fino a un terzo in più; titoli e cifre
+  grandi crescono meno, come nelle app native, e oltre quel tetto resta lo
+  zoom. Alla misura normale l'app è identica a prima. Perché le pagine
+  reggessero col testo grande pulsanti e pillole hanno un'altezza minima invece
+  che fissa, e tre difetti che si vedevano già prima sono spariti: il punteggio
+  «4 – 3» spezzato accanto a un nome lungo, «Iscrizioni aperte» fuori dalla sua
+  pillola, l'etichetta su due righe fuori dal pulsante (PR #723).
+- **Il campionato propone il primo abbinamento delle gare.** Un campionato
+  Amalfi può far partire il primo turno di ogni gara dalla classifica generale
+  scegliendolo una volta sola, invece che gara per gara: è un valore proposto
+  come gli altri, che la gara riceve quando nasce e può cambiare. La partenza
+  «dalla classifica» legge ora la stessa classifica generale della pagina, e
+  non più una sua copia che poteva essere rimasta indietro (PR #692; ADR-073,
+  ADR-075).
+
+#### Sfide, certificazione e giocatori senza account (16–25/10/2026)
+
+In sala si gioca spesso con qualcuno che l'app non la usa. Fino a ottobre
+quella partita o non si poteva segnare, o restava appesa a una firma che non
+sarebbe mai arrivata, bloccando anche le successive; e il profilo non
+distingueva un risultato garantito da un direttore di gara da uno dichiarato da
+un giocatore solo. I casi d'uso stanno in
+[`sfide-e-certificazione.md`](docs/usecases/sfide-e-certificazione.md).
+
+- **I numeri del profilo dicono quanto sono certificati.** Un risultato vale
+  quanto chi lo garantisce: un direttore di gara, i due giocatori che firmano,
+  o solo chi l'ha segnato. In testa al profilo, proprio e altrui, il selettore
+  **Tornei · Confermate · Tutte** cambia insieme ELO, vittorie, sconfitte,
+  pareggi, TPA, runout e partite recenti; le viste sono cumulative e la
+  predefinita è «Confermate», cioè quello che il profilo mostrava già. Una
+  sfida firmata da uno solo entra in «Tutte» col risultato dichiarato, e
+  «Tutte» ha un ELO suo. Per strada: TPA e runout contavano anche sfide
+  annullate o mai firmate (PR #698, #700; ADR-083).
+- **Una firma che non arriva non blocca più.** Chi ha firmato una sfida può
+  aprirne un'altra con lo stesso avversario, mentre chi deve ancora firmare
+  viene riportato a quella da chiudere; e una sfida rimasta senza seconda firma
+  si può **ritirare**, con un avviso all'altro. Alla prima firma parte la
+  richiesta di conferma a chi manca, e una sfida giocata fino in fondo non si
+  chiama più «in corso»: sta in una sezione sua, «In attesa di conferma». Dopo
+  la doppia firma, invece, la sfida non si tocca più — né ritiro né triangoli
+  tolti — perché l'ELO si è già mosso. La doppia conferma resta la difesa
+  contro chi bara: nessuno firma al posto di un altro (PR #697, #703, #716,
+  #717; ADR-051 emendato).
+- **Il video della partita e una riga che dice che partita è.** Sfide e partite
+  di gara possono avere un collegamento a YouTube, che si apre in una scheda
+  nuova e si aggiunge anche a partita chiusa. Le sfide hanno in più una
+  descrizione di una riga, che si legge nella testata, negli elenchi e nello
+  storico del profilo (PR #705).
+- **Istruttori e direttori tengono il TPA della partita di altri due.** Da
+  «Segna la partita di altri due» si scelgono i due giocatori e la partita
+  nasce col referto aperto. Chi segna non firma per nessuno: chiudere il
+  referto dichiara il risultato, e ciascuno dei due lo conferma o lo rifiuta
+  per sé. Se uno rifiuta vale il rifiuto: la partita sparisce ai due giocatori,
+  tutti vengono avvisati, e chi l'ha segnata la corregge — e la conferma si
+  richiede da capo — o la cancella. L'admin non segna partite, per la regola di
+  sempre: nell'app l'admin non è un giocatore (PR #706, #710; ADR-084).
+- **Il referto TPA a tutto schermo.** Mentre si compila, la testata della
+  pagina sparisce: chi è al tavolo lo dicono già le card dei giocatori. Alla
+  distanza il referto si chiude da solo, e se la chiusura era sbagliata
+  «Annulla l'ultima e riapri il referto» la disfa. L'ultima annotazione si
+  annulla toccando le sue caselle o con «Annulla l'ultima», fra Indietro e
+  Avanti; per tre secondi una riga dice che cosa è stato tolto e offre
+  «Rimetti». Prima un tavolo passato per sbaglio non aveva un rimedio rapido
+  (PR #714; ADR-044 emendato).
+- **Si gioca anche con chi non ha un account.** Direttori e istruttori creano
+  un **giocatore non ancora registrato** scrivendo nome e cognome: iscrivendolo
+  a una gara, direttamente dalla ricerca degli iscrivibili, o mettendolo in una
+  partita. Non entra nell'app e non riceve notifiche, ma le sue partite, le
+  classifiche e l'ELO sono veri, e accanto al nome c'è il segno «non
+  registrato». Chiunque può sceglierlo come avversario dell'avvio rapido — non
+  di una proposta, a cui non potrebbe rispondere — e quella sfida si chiude con
+  la sola firma di chi l'ha aperta: è «registrata da uno», e conta solo nella
+  vista «Tutte» (PR #707, #712, #716, #720, #730; ADR-085).
+- **Chi si registra riscatta il suo giocatore.** Accanto a un non registrato le
+  pagine pubbliche mostrano «Sei tu? Riscatta»: si crea l'account o si entra, e
+  la richiesta parte da sola. Decide chi aveva creato quel giocatore, e l'admin
+  può sempre farlo; confermare porta sul nuovo account iscrizioni, partite,
+  classifiche ed ELO. Chi ha chiesto può ritirare la richiesta. Dopo il
+  riscatto il giocatore rivede le partite che altri avevano registrato per lui,
+  e le riconosce — diventano confermate — o le contesta. Chi invece ha già la
+  sua email scritta sul giocatore lo **attiva** da un collegamento ricevuto per
+  posta, scegliendo nome utente e password: nessuna unione, le partite sono già
+  sue. Per chi era già in archivio — iscritto a qualche gara ma mai entrato
+  nell'app — c'è uno script, da lanciare in produzione, che lo segna come non
+  registrato e ricostruisce dalla sua prima gara chi può confermarne il
+  riscatto (PR #708, #709, #716, #717, #719, #720, #725; ADR-086).
+
+#### Gironi, tempo, quote, spareggi e preset (6–12/10/2026)
+
+Un piano solo, nato da una formula vera: la serata del lunedì di una sala, a
+gironi con le finali, che l'app non sapeva condurre. Per arrivarci sono serviti
+i gironi multipli, il limite di tempo, il listino delle quote, pari merito che
+il direttore potesse decidere, e un campionato capace di mettere insieme serate
+di formato diverso.
+
+- **Più gironi nel girone all'italiana.** Il direttore fissa un tetto, «fino a
+  N gironi», e come comporli — sorteggio, per ELO, per categoria; il numero
+  esatto lo sceglie all'avvio, quando sa quanti sono venuti, e il foglio gli
+  mostra per ogni scelta taglie e turni («2 gironi · 5 turni — Girone A: 6 ·
+  Girone B: 5»). I gironi giocano in parallelo, ognuno con la sua classifica
+  nelle pagine della gara e sullo schermo in sala; la tessera dice «Sei 2° su 6
+  nel girone B». La classifica della gara mette prima tutti i primi e poi tutti
+  i secondi, confrontati **per partita giocata**: in un girone da sei si gioca
+  una partita in più che in uno da cinque (PR #639, #641, #643; ADR-076).
+- **Dopo i gironi, il tabellone o le finali per piazzamento.** Con più gironi
+  la gara può avere una fase finale. Col **tabellone** passano i primi K di
+  ogni girone, con le teste di serie distribuite perché chi viene dallo stesso
+  girone si ritrovi il più tardi possibile; a gironi finiti le classifiche
+  dicono chi va «al tabellone» e chi è «fuori». Con le **finali per
+  piazzamento**, per due gironi, il primo dell'uno incontra il primo
+  dell'altro, il secondo il secondo, e ogni posto lo assegna una partita;
+  accanto a ogni nome c'è già la finale che giocherà. Fase finale e finale
+  possono avere distanza e limite di tempo propri («finale al 7, senza
+  limite»), e la tessera dice il nome del turno: «La tua partita · Semifinale».
+  Con una fase finale lo spareggio non si gioca (PR #656, #662, #665, #669,
+  #671, #673, #675; ADR-081).
+- **Il campionato a piazzamenti accoglie serate di ogni formato.** Sommare
+  vittorie e triangoli di gironi di taglia diversa non è giusto: chi sta nel
+  girone più numeroso gioca una partita in più. Per questo il campionato ora
+  sceglie *come le gare entrano* in classifica: sommando i totali, e allora
+  tutte le gare hanno lo stesso sistema e un girone solo, oppure **a
+  piazzamenti**, dove ogni serata dà i punti del posto finale e può essere
+  Amalfi, casuale, a gironi o a tabellone — formato e classifica si scelgono
+  nel modale «Nuova gara». A pari punti decide chi ha più primi posti, poi più
+  secondi, e così via: non più vittorie e triangoli sommati, per la stessa
+  ragione (PR #645, #647, #649; ADR-080).
+- **Il limite di tempo.** Accanto alla distanza una gara può avere un limite in
+  minuti, anche diverso turno per turno. Il conto alla rovescia parte
+  all'acchito o con «Avvia partita» e si vede sotto il punteggio, sul
+  tabellone, sulla card del direttore e sullo schermo in sala. È **solo
+  visivo**: a tempo scaduto la partita resta in corso, e la card sale fra
+  quelle che il direttore deve guardare. È lui, se vuole, a interromperla:
+  vince chi è avanti, a parità è un pareggio — nel tabellone indica chi passa —
+  e la partita porta il segno «a tempo» (PR #617, #619, #621; ADR-077).
+- **Il listino delle quote per categoria.** Oltre alla quota unica, una gara
+  singola o un campionato possono avere un listino («Serie A 30 € · Serie B e C
+  20 € · Amatori 15 €») che prende il suo posto su vetrina, tessere e
+  informazioni. È solo informazione: niente incassi, niente «ha pagato». Per
+  averlo le categorie esistono ora anche senza handicap, e lì non toccano l'ELO
+  (PR #622; ADR-079).
+- **I pari merito li decide una catena di criteri che il direttore sceglie.**
+  Turno, gara e campionato hanno ciascuno la sua: differenza, triangoli vinti,
+  vittorie, scontri diretti, spareggio fino al N° posto, posizione precedente,
+  e in fondo un sorteggio. Si compone nei moduli spostando i criteri, e il
+  regolamento ne scrive la frase («A pari vittorie conta …»). Prima le regole
+  erano fisse, e l'ultima risorsa era l'ordine di registrazione dei giocatori;
+  ora è un sorteggio che dà sempre lo stesso esito. Lo scontro diretto ordina
+  solo ciò che i risultati dicono: fra tre giocatori che si sono battuti in
+  cerchio non decide, e si passa al criterio successivo. Le gare esistenti
+  hanno ricevuto la catena che riproduce il loro comportamento di prima (PR
+  #624, #626, #628; ADR-078).
+- **La classifica a punti.** Un sistema nuovo accanto a vittorie e triangoli:
+  ogni partita dà i punti del suo esito, di norma 3 per la vittoria, 1 per il
+  pareggio e 0 per la sconfitta, e si ordina solo su quelli; i pari li scioglie
+  la catena. I valori si scelgono sulla gara, proposti dal campionato (PR #630;
+  ADR-078 emendato).
+- **I preset dei direttori.** Chi organizza ogni settimana la stessa serata
+  salva la configurazione — «Salva come preset» — e la volta dopo riparte da lì
+  con «Parti da un preset», nei moduli della gara e del campionato, playoff
+  compresi. Il preset precompila soltanto: nome, data, sala e tavoli restano da
+  scrivere, il modulo si controlla come sempre e nessuna gara resta legata al
+  preset da cui è nata. In «I miei preset» si rinominano, duplicano e
+  cancellano; condividerne uno con un altro direttore gliene dà una **copia**,
+  che da lì è sua (PR #679, #681, #688; ADR-082).
+
+#### Le impostazioni si correggono, e resta scritto (29/09/2026)
+
+Una gara con gli iscritti dentro non si poteva più toccare. Il 28 settembre, in
+produzione, della finale dei playoff appena creata — che nasce con dentro chi
+ha accettato l'invito — non si riusciva a cambiare né la sala né chi spacca. Un
+solo blocco chiudeva insieme una ventina di campi diversi: le correzioni oneste
+erano impossibili, e l'aggiramento, cancellare e rifare, era peggio, perché un
+blocco si vede e un aggiramento no. La scelta è stata rovesciare il mezzo:
+quasi tutto si può correggere, e ogni correzione **resta scritta** — chi,
+quando, da cosa a cosa — dove tutti la leggono. Resta fermo solo ciò che non
+può cambiare davvero, come le regole di una partita già giocata (ADR-075,
+[`docs/usecases/regolamento-di-gara.md`](docs/usecases/regolamento-di-gara.md)).
+
+- **La gara si corregge anche con gli iscritti, e anche a gara avviata.** Fino
+  all'avvio si cambia tutto. Dopo, sala, orario e quota cambiano subito; le
+  regole di gioco — distanza, disciplina, chi spacca — valgono **dal turno
+  successivo**; la struttura, cioè formato e numero di turni, solo annullando
+  l'avvio. La pagina mostra ciò che si può ancora cambiare ed elenca col motivo
+  ciò che non si cambia più; in fondo c'è la storia delle modifiche. Se due
+  direttori salvano insieme, il secondo non cancella più la modifica del primo
+  (PR #585, #588).
+- **Una partita giocata resta con le regole con cui è stata giocata.** Chi
+  apre, chi spacca, la distanza del set e le categorie dei giocatori si fissano
+  sulla partita quando nasce. Prima la partita le rileggeva dalla gara ogni
+  volta: cambiare una regola avrebbe riscritto anche le partite di ieri, ELO
+  compreso (PR #586).
+- **Il campionato propone, la gara decide.** I valori del campionato si copiano
+  sulla gara quando nasce. Cambiandoli dopo, una pagina elenca le gare non
+  ancora avviate, campo per campo: già spuntate quelle che avevano il valore
+  vecchio, non quelle che ne avevano scelto uno proprio. Il campionato non si
+  blocca più con gli iscritti (PR #589).
+- **Anche i playoff.** A inviti partiti si bloccano solo i criteri di
+  qualificazione — chi entra non si ridiscute — mentre come si gioca la finale
+  si corregge fino al suo avvio, e se la finale esiste già la correzione le
+  viene proposta (PR #591).
+- **A gara finita si corregge quanto conta.** Di una gara conclusa in un
+  campionato si può ancora cambiare il peso, e così i punti per posizione: la
+  classifica si ricalcola e lo dice, col peso di prima barrato accanto al nuovo
+  e una riga «Classifica ricalcolata il …» con autore e motivo. Se il ricalcolo
+  cambia chi rientra nei posti dei playoff, il direttore riceve una proposta —
+  chi perde l'invito, chi lo riceve — che può eseguire o lasciar cadere (PR
+  #592).
+- **Gli iscritti lo sanno, con una notifica sola.** Le modifiche a una gara si
+  raccolgono e partono mezz'ora dopo l'ultima, o subito con «Invia ora», o
+  subito se la gara è entro tre ore: sala A → B → C arriva come «A → C», e A →
+  B → A non manda niente. Si annuncia ciò che cambia la serata di un giocatore,
+  non un ritocco al nome. E se cambiano data, sala, orario o la quota sale,
+  l'iscritto trova «La gara è cambiata: ci sei ancora?»: finché non risponde il
+  direttore lo vede «da riconfermare», e nessuno viene ritirato in automatico
+  (PR #594, #595).
+- **Una data che scavalca le gare successive propone di spostarle.** Prima
+  c'era solo il rifiuto; ora il modulo mostra quali gare si sposterebbero e a
+  quando, e il direttore sceglie. Alzando la capienza, poi, chi è in lista
+  d'attesa entra da solo, in ordine (PR #596; ADR-016 emendato).
+- **Il regolamento è una pagina pubblica.** «Regolamento di gara» e
+  «Regolamento del campionato», aperte anche a chi non ha un account, mostrano
+  le regole in vigore — turno per turno, se cambiano — e la storia delle
+  modifiche; un campo nuovo permette di collegare il documento completo (PR
+  #597, #599).
 
 #### Allenarsi nell'app (19–20/09/2026)
 
