@@ -100,6 +100,7 @@ class AmalfiStrategy(BaseStrategy):
                 raise ValueError(
                     f"Classificazione del round {round_number - 1} non trovata"
                 )
+            classification = self._solo_chi_e_in_gara(gara.id, classification)
         else:
             # Primo round: usa la policy configurata
             classification = self._get_first_round_classification(gara)
@@ -112,6 +113,32 @@ class AmalfiStrategy(BaseStrategy):
             pairings = self._apply_bye_preference(gara, pairings)
 
         return pairings
+
+    @staticmethod
+    def _solo_chi_e_in_gara(
+        gara_id: int, classification: List["RoundClassification"]
+    ) -> List["RoundClassification"]:
+        """Toglie dalla classifica da abbinare chi non è più iscritto.
+
+        L'escluso della regola EXCLUDE resta nelle righe di classifica — è
+        giusto: «resta in classifica con i punti accumulati» — ma «viene
+        eliminato dagli abbinamenti futuri» (SPECIFICHE.md, «policy per il
+        forfait»). Si toglie **prima** dell'abbinamento, così se i rimasti
+        sono dispari decide la gestione dispari della gara, X o trio. Fino al
+        2026-11-10 la classifica passava intera e nasceva una partita contro
+        l'escluso, in attesa e ingiocabile.
+
+        Chi si è ritirato con la regola FORFEIT ha ancora l'iscrizione attiva
+        e resta negli abbinamenti, come vuole la specifica.
+        """
+        from models.competition.withdraw_policy_service import WithdrawPolicyService
+
+        fuori = WithdrawPolicyService.fuori_dalla_gara(
+            gara_id, [riga.user_id for riga in classification]
+        )
+        if not fuori:
+            return classification
+        return [riga for riga in classification if riga.user_id not in fuori]
 
     def _apply_bye_preference(
         self, gara: Gara, pairings: Sequence[Pairing]

@@ -4766,3 +4766,72 @@ class TestAttivazioneDallEmail:
                 send_verification_email=False,
             )
         assert User.query.count() == prima
+
+
+# ══ Ritiri: l'escluso esce dagli abbinamenti ═════════════════════════════
+
+
+@pytest.mark.unit
+class TestEsclusoFuoriDagliAbbinamenti:
+    """`SPECIFICHE.md`, «policy per il forfait», EXCLUDE.
+
+    > **EXCLUDE**: il giocatore viene eliminato dagli abbinamenti futuri (ma
+    > resta in classifica con i punti accumulati). Se questo cambia la parità
+    > dei giocatori, si applica la gestione dispari configurata.
+
+    Fino al 2026-11-10 Amalfi abbinava il turno dopo sulle righe di classifica
+    del turno precedente, dove l'escluso c'è ancora: nasceva una partita
+    contro di lui, in attesa e ingiocabile.
+    """
+
+    def test_quattro_giocatori_un_escluso_una_partita_e_una_x(self, db_session):
+        from models.classification.models import RoundClassification
+        from models.competition.models import WithdrawPolicy
+        from models.competition.round_service import RoundService
+        from models.competition.withdraw_policy_service import WithdrawPolicyService
+
+        gara = _gara(db_session)
+        gara.status = GaraStatus.INSCRIPTION.value
+        gara.current_round = 0
+        gara.withdraw_policy = WithdrawPolicy.EXCLUDE.value
+        gara.min_participants = 2
+        giocatori = [_utente(db_session) for _ in range(4)]
+        for giocatore in giocatori:
+            db_session.add(Inscription(user_id=giocatore.id, gara_id=gara.id))
+        db_session.commit()
+        gara_id = gara.id
+
+        RoundService.start_first_round(gara_id)
+        for partita in Match.query.filter_by(gara_id=gara_id, round_number=1):
+            partita.player1_score, partita.player2_score = 3, 2
+            partita.winner_id = partita.player1_id
+            partita.status = MatchStatus.CLOSED_UNILATERALLY.value
+        db_session.commit()
+        RoundClassification.calculate_classification_after_round(gara_id, 1)
+        db_session.commit()
+
+        escluso = giocatori[0].id
+        assert WithdrawPolicyService.handle_forfeit(gara_id, escluso) == "excluded"
+        db_session.commit()
+        RoundService.start_next_round(gara_id, 2)
+        db_session.commit()
+
+        turno_2 = Match.query.filter_by(gara_id=gara_id, round_number=2).all()
+        in_campo = [
+            giocatore
+            for partita in turno_2
+            for giocatore in (partita.player1_id, partita.player2_id)
+            if giocatore is not None
+        ]
+        # Eliminato dagli abbinamenti futuri…
+        assert escluso not in in_campo
+        # …la parità è cambiata, e la gestione dispari della gara è la X…
+        assert sorted(in_campo) == sorted(g.id for g in giocatori[1:])
+        assert sum(1 for partita in turno_2 if partita.is_bye) == 1
+        # …ma resta in classifica.
+        assert (
+            RoundClassification.query.filter_by(
+                gara_id=gara_id, round_number=1, user_id=escluso
+            ).count()
+            == 1
+        )
