@@ -305,6 +305,24 @@ def poll_trio(trio_id: int):
 @sse_bp.route("/poll/gara/<int:gara_id>")
 @_poll_login_required
 def poll_gara(gara_id: int):
+    """Le gare sono pubbliche; una prova (ADR-058) no.
+
+    Il poll non carica la gara, quindi il filtro delle prove non lo vedeva:
+    gli eventi di una prova uscivano per chiunque ne indovinasse l'id. Una
+    prova che il lettore non dirige risponde 404, come la sua pagina.
+    """
+    from sqlalchemy import select
+
+    from models.competition.models import Gara
+    from models.prova.guard import gara_e_di_prova
+
+    if gara_e_di_prova(gara_id):
+        # Query esplicita: è lì che agisce il filtro di visibilità.
+        visibile = db.session.execute(
+            select(Gara.id).where(Gara.id == gara_id)
+        ).scalar()
+        if visibile is None:
+            abort(404)
     return _poll_response(EventScope.GARA, gara_id)
 
 
@@ -338,6 +356,24 @@ def poll_user(user_id: int):
 @sse_bp.route("/poll/individual_match/<int:match_id>")
 @_poll_login_required
 def poll_individual_match(match_id: int):
+    """Solo chi può leggere la sfida ne riceve gli eventi.
+
+    La stessa regola di `individual_match.match_detail` — i due giocatori e
+    chi segna la partita di altri due, mai chi ne è stato escluso — più chi
+    può guardare il referto TPA, la cui pagina usa questo stesso poll
+    (ADR-069). Fino al 2026-11-10 rispondeva a ogni utente collegato.
+    """
+    from models.individual_match.match_models import IndividualMatch
+    from models.tpa.services import TpaRefertoService
+
+    match = db.session.get(IndividualMatch, match_id)
+    if match is None:
+        abort(404)
+    della_partita = (
+        match.is_player(current_user.id) or match.scorer_id == current_user.id
+    ) and not match.is_hidden_from(current_user.id)
+    if not (della_partita or TpaRefertoService.can_read(match, current_user)):
+        abort(403)
     return _poll_response(EventScope.INDIVIDUAL_MATCH, match_id)
 
 
