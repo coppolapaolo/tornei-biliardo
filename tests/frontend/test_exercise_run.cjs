@@ -25,6 +25,18 @@ const SRC = fs.readFileSync(
   "utf8"
 );
 
+// La risposta che `fetch` consegna a sessione scaduta: ha seguito il 302 verso
+// il login e porta il 200 di quella pagina, HTML al posto del JSON.
+const LOGIN = {
+  __grezza: {
+    status: 200,
+    ok: true,
+    redirected: true,
+    headers: { get: () => "text/html; charset=utf-8" },
+    json: () => Promise.reject(new SyntaxError("Unexpected token '<'")),
+  },
+};
+
 function pagina({ passFail = false, max = 3, risposte = [] } = {}) {
   const comandi = passFail
     ? `<button data-outcome="true"></button><button data-outcome="false"></button>`
@@ -37,7 +49,8 @@ function pagina({ passFail = false, max = 3, risposte = [] } = {}) {
     `<div data-run data-pass-fail="${passFail}" data-max-score="${max}"
           data-record-url="/train" data-undo-url="/undo"
           data-msg-recording="Registro…" data-msg-error="errore"
-          data-msg-network="rete" data-msg-undo-error="annulla-errore">
+          data-msg-network="rete" data-msg-undo-error="annulla-errore"
+          data-msg-session="sessione scaduta">
        <label><input type="radio" name="variant_id" value="" checked></label>
        <label><input type="radio" name="variant_id" value="7"></label>
        <div data-run-progress>prima</div>
@@ -57,7 +70,7 @@ function pagina({ passFail = false, max = 3, risposte = [] } = {}) {
     const r = coda.shift();
     return r instanceof Error
       ? Promise.reject(r)
-      : Promise.resolve({ json: () => Promise.resolve(r) });
+      : Promise.resolve(r.__grezza || { json: () => Promise.resolve(r) });
   };
   w.eval(SRC);
   const $ = (s) => w.document.querySelector(s);
@@ -150,6 +163,24 @@ const ok = (extra) => Object.assign(
     assert.ok(
       p.w.document.documentElement.style.getPropertyValue("--c7-run-dock-h").endsWith("px")
     );
+  }
+
+  // 10. a sessione scaduta il messaggio dice di rientrare (2026-11-10), sia
+  //     registrando sia annullando: non «errore di rete», non il testo grezzo
+  //     del JSON mancato
+  {
+    const p = pagina({ risposte: [LOGIN, ok(), LOGIN] });
+    p.$("[data-record]").click();
+    await p.attesa();
+    assert.strictEqual(p.w.__errore, "sessione scaduta");
+    assert.strictEqual(p.$("[data-run-progress]").innerHTML, "prima");
+    assert.strictEqual(p.$("[data-record]").disabled, false);
+    p.$("[data-record]").click();
+    await p.attesa();
+    p.w.__errore = null;
+    p.$("[data-undo]").click();
+    await p.attesa();
+    assert.strictEqual(p.w.__errore, "sessione scaduta");
   }
 
   console.log("test_exercise_run: ok");

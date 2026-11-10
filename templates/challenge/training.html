@@ -62,6 +62,7 @@
      data-msg-error="{{ _('Non è stato possibile registrare la prova.') }}"
      data-msg-network="{{ _('Non è stato possibile registrare la prova. Riprova.') }}"
      data-msg-undo-error="{{ _('Non è stato possibile annullare la prova.') }}"
+     data-msg-session="{{ _('La sessione è scaduta: accedi di nuovo e riprova.') }}"
      {% if is_shots %}
      data-shot-url="{{ url_for('challenge.training_shot', challenge_id=challenge.id) }}"
      data-shot-undo-url="{{ url_for('challenge.training_shot_undo', challenge_id=challenge.id) }}"

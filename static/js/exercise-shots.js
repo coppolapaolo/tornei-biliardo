@@ -23,7 +23,11 @@
 
   var TABLE_W = 800;
   var TABLE_H = 400;
-  var msg = { error: root.dataset.msgError, network: root.dataset.msgNetwork };
+  var msg = {
+    error: root.dataset.msgError,
+    network: root.dataset.msgNetwork,
+    session: root.dataset.msgSession
+  };
 
   function q(selector) { return root.querySelector(selector); }
   function fail(message) {
@@ -90,6 +94,18 @@
     };
   }
 
+  /* A sessione scaduta `fetch` segue il 302 verso il login e consegna il 200 di
+     quella pagina: HTML al posto del JSON. Stesso criterio di `polling.js` — il
+     401, la risposta `redirected` — più il 200 che non è JSON, che è lo stesso
+     fatto visto da un proxy che nasconde il redirect. */
+  function sessioneScaduta(risposta) {
+    if (risposta.status === 401 || risposta.redirected === true) return true;
+    var tipo = risposta.headers && typeof risposta.headers.get === 'function'
+      ? (risposta.headers.get('Content-Type') || '')
+      : null;
+    return risposta.ok === true && tipo !== null && tipo.indexOf('json') === -1;
+  }
+
   function post(url, payload) {
     if (busy) return;
     busy = true;
@@ -101,11 +117,20 @@
       options.headers['Content-Type'] = 'application/json';
       options.body = JSON.stringify(payload);
     }
-    window.fetch(url, options).then(function (r) { return r.json(); }).then(function (data) {
+    window.fetch(url, options).then(function (r) {
+      if (sessioneScaduta(r)) {
+        var scaduta = new Error('session-expired');
+        scaduta.sessioneScaduta = true;
+        throw scaduta;
+      }
+      return r.json();
+    }).then(function (data) {
       if (!data.success) { fail(data.error || msg.error); return; }
       if (data.redirect_url) { window.location.href = data.redirect_url; return; }
       redraw(data);
-    }).catch(function () { fail(msg.network); }).then(function () { busy = false; });
+    }).catch(function (e) {
+      fail(e && e.sessioneScaduta && msg.session ? msg.session : msg.network);
+    }).then(function () { busy = false; });
   }
 
   function redraw(data) {
