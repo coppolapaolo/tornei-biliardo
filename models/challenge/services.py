@@ -417,7 +417,11 @@ class ChallengeService:
 
             AchievementService.reconcile_achievements(attempt.user_id)
         except Exception:
-            pass
+            logger.exception(
+                "Achievement non riconciliati dopo la prova %s dell'utente %s",
+                attempt.id,
+                attempt.user_id,
+            )
 
         # Una prova nata in una scheda lo dice (ADR-072): le serie la contano,
         # l'XP no — lo paga la seduta.
