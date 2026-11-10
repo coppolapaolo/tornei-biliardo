@@ -23,6 +23,26 @@ from sqlalchemy.orm import SessionTransaction
 # Setup logging
 logger = logging.getLogger(__name__)
 
+
+def _registra_rollback(messaggio: str, errore: Exception) -> None:
+    """Scrive il rollback al livello che la sua causa merita.
+
+    Un `DomainError` è il sistema che funziona: l'utente ha chiesto una cosa
+    che non si può fare e gli è stato detto. Va a INFO, sotto la soglia
+    dell'error log di produzione, che altrimenti si riempie di rifiuti e
+    nasconde i guasti. Ogni altra eccezione è un guasto: WARNING, e col
+    traceback, perché è da lì che la si trova (#257).
+    """
+    # Import locale: `models.exceptions` non deve dipendere dall'ordine con
+    # cui si carica il gestore delle transazioni.
+    from models.exceptions import DomainError
+
+    if isinstance(errore, DomainError):
+        logger.info(messaggio)
+    else:
+        logger.warning(messaggio, exc_info=errore)
+
+
 # Thread-local storage for transaction context
 _transaction_local = local()
 
@@ -389,21 +409,23 @@ class TransactionManager:
                     # si perdeva anche quello, in silenzio, quando il chiamante
                     # catturava l'eccezione e andava avanti (EventBus).
                     _chiudi_savepoint(savepoint, transaction_id, salva=False)
-                    logger.warning(
+                    _registra_rollback(
                         f"Nested transaction {transaction_id} rolled back to "
-                        f"savepoint: {str(e)}"
+                        f"savepoint: {str(e)}",
+                        e,
                     )
                 elif is_pseudo_nested:
                     # Rollback to savepoint and parent: e' la transazione esterna
                     db.session.rollback()
-                    logger.warning(
+                    _registra_rollback(
                         f"Pseudo-nested transaction {transaction_id} rolled back: "
-                        f"{str(e)}"
+                        f"{str(e)}",
+                        e,
                     )
                 else:
                     db.session.rollback()
-                    logger.warning(
-                        f"Transaction {transaction_id} rolled back: {str(e)}"
+                    _registra_rollback(
+                        f"Transaction {transaction_id} rolled back: {str(e)}", e
                     )
             except Exception as rollback_error:
                 logger.error(
