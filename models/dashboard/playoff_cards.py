@@ -198,7 +198,11 @@ def _coda_degli_esclusi(config: Any, con_invito: Set[int]) -> List[int]:
     from models.classification.models import Classification
 
     righe = Classification.query.filter_by(campionato_id=config.campionato_id).count()
-    valutati = config.evaluate_qualifications(posti=max(righe, config.max_participants))
+    from models.playoff.services import PlayoffService
+
+    valutati = PlayoffService.esclusi_in_ordine(
+        config, max(righe, config.max_participants)
+    )
     return [d["user_id"] for d in valutati if d["user_id"] not in con_invito]
 
 

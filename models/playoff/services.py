@@ -640,7 +640,9 @@ class PlayoffService:
         posti_da_guardare = configuration.max_participants + len(
             existing_qualifications
         )
-        all_qualified = configuration.evaluate_qualifications(posti=posti_da_guardare)
+        all_qualified = PlayoffService.esclusi_in_ordine(
+            configuration, posti_da_guardare
+        )
 
         for player_data in all_qualified:
             if player_data["user_id"] not in current_players:
@@ -649,9 +651,7 @@ class PlayoffService:
                     configuration_id=configuration_id,
                     user_id=player_data["user_id"],
                     qualifying_position=player_data["position"],
-                    qualification_reason=(
-                        f"Replacement - {player_data['qualification_reason']}"
-                    ),
+                    qualification_reason=player_data["qualification_reason"],
                 )
                 db.session.add(replacement)
                 if sostituisce is not None:
@@ -660,6 +660,63 @@ class PlayoffService:
                 return replacement
 
         return None
+
+    @staticmethod
+    def esclusi_in_ordine(
+        configuration: PlayoffConfiguration, posti: int
+    ) -> List[Dict[str, Any]]:
+        """Chi può subentrare in un playoff, nell'ordine in cui va chiamato.
+
+        Ogni voce ha `user_id`, `position` e `qualification_reason`. La lista
+        **non** toglie chi ha già un invito: lo fa chi la legge, la cascata
+        (`find_replacement_player`) e la coda mostrata in dashboard.
+
+        Con una **fascia di posizioni** il primo degli esclusi è il primo che
+        viene dopo la fascia (SPECIFICHE.md, «Playoff»: «la notifica passa al
+        primo degli esclusi»), con le gare minime giocate: la stessa regola
+        con cui `candidati_per_posizione` copre un posto rimasto vuoto
+        all'avvio. La lista parte da `positions_from` e non da dopo
+        `positions_to`: di norma chi sta nella fascia ha già un invito e chi
+        legge lo scarta, ma se un posto della fascia è rimasto senza invito
+        tocca a lui prima che a chi viene dopo. Chi sta **sopra** la fascia
+        non entra mai. Fino al 2026-11-10 la cascata passava sempre da
+        `evaluate_qualifications`, che scorre la classifica dal primo posto e
+        la fascia non la conosce: al rifiuto di un invitato dell'Academy 5–8
+        veniva chiamato il primo in classifica invece del nono.
+
+        Senza fascia (criteri JSON storici) resta `evaluate_qualifications`
+        con la finestra allargata a `posti`.
+        """
+        if configuration.positions_from is None or configuration.positions_to is None:
+            return [
+                {
+                    **voce,
+                    "qualification_reason": (
+                        f"Replacement - {voce['qualification_reason']}"
+                    ),
+                }
+                for voce in configuration.evaluate_qualifications(posti=posti)
+            ]
+
+        from ..classification.models import Classification
+
+        righe = (
+            Classification.query.filter_by(campionato_id=configuration.campionato_id)
+            .order_by(Classification.position)
+            .all()
+        )
+        minimo = configuration.min_garas_played or 0
+        return [
+            {
+                "user_id": riga.user_id,
+                "position": riga.position,
+                "qualification_reason": f"Rimpiazzo — posizione {riga.position}",
+            }
+            for riga in righe
+            if riga.position is not None
+            and riga.position >= configuration.positions_from
+            and (riga.gare_played or 0) >= minimo
+        ]
 
     @staticmethod
     @transactional(domain="playoff")

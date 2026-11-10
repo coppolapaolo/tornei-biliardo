@@ -4835,3 +4835,53 @@ class TestEsclusoFuoriDagliAbbinamenti:
             ).count()
             == 1
         )
+
+
+# ══ Playoff: il primo degli esclusi di una fascia ════════════════════════
+
+
+@pytest.mark.unit
+class TestPrimoDegliEsclusiDiUnaFascia:
+    """`SPECIFICHE.md`, «Playoff».
+
+    > se un giocatore rifiuta, la notifica passa al primo degli esclusi e così
+    > via fino a quando un numero di giocatori pari ai posti disponibili ha
+    > dato l'ok oppure sono finiti i giocatori.
+
+    Per un playoff su una fascia che non parte dal primo posto, il primo degli
+    esclusi viene **dopo** la fascia. Fino al 2026-11-10 la cascata scorreva
+    la classifica dal primo posto, e al rifiuto di un invitato della fascia
+    5–8 veniva chiamato il primo in classifica.
+    """
+
+    def test_dalla_fascia_5_8_il_sostituto_e_il_nono(self, db_session):
+        campionato, configurazione, giocatori = (
+            TestCascataDeiRifiutiAiPlayoff._campionato_con_playoff(
+                db_session, posti=4, iscritti=10
+            )
+        )
+        configurazione.name = "Academy"
+        configurazione.positions_from = 5
+        configurazione.positions_to = 8
+        db_session.commit()
+        PlayoffService.start_playoff(campionato.id)
+        db_session.commit()
+        invitati = PlayoffQualification.query.filter_by(
+            configuration_id=configurazione.id
+        ).all()
+        assert {q.user_id for q in invitati} == {g.id for g in giocatori[4:8]}
+
+        primo = PlayoffService.decline_qualification(
+            invitati[0].id, invitati[0].user_id
+        )
+        secondo = PlayoffService.decline_qualification(
+            invitati[1].id, invitati[1].user_id
+        )
+        terzo = PlayoffService.decline_qualification(
+            invitati[2].id, invitati[2].user_id
+        )
+
+        assert primo is not None and primo.user_id == giocatori[8].id
+        assert secondo is not None and secondo.user_id == giocatori[9].id
+        # «…oppure sono finiti i giocatori»: chi sta sopra la fascia non entra.
+        assert terzo is None
