@@ -139,6 +139,11 @@ def set_inscription_squadra(gara_id, inscription_id):
     try:
         squadra_id = None
 
+        # Prima di tutto: qui sotto può nascere una voce nuova dell'elenco, e
+        # quella creazione si salva da sola. Chi non può cambiare la squadra
+        # di questa iscrizione si ferma qui, senza lasciare niente.
+        SquadraService.assert_can_edit_inscription(gara, inscription, current_user)
+
         if scelta == NEW_SQUADRA or (not scelta and nuovo_nome):
             if not nuovo_nome:
                 raise ValueError(_("Scrivi il nome della squadra da aggiungere"))
