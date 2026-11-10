@@ -256,15 +256,33 @@ class RackService:
             if (match.player1_score + match.player2_score) < distance.racks:
                 should_clear_winner = True
 
+        # «Chiusa» sono tutte e due le chiusure. Fino al 2026-11-10 qui si
+        # guardava solo `CLOSED_UNILATERALLY`: una partita confermata dai due
+        # giocatori restava «conclusa» sul 4-3, senza vincitore e con l'ELO
+        # del risultato di prima.
+        era_chiusa = MatchStatus.is_finished(match.status)
+
         if should_clear_winner:
             match.winner_id = None
             match.reset_confirmations()
-            # Se era completed, rimettilo in playing (to_playing emette il
-            # revert dei rating centralmente).
-            if match.status == MatchStatus.CLOSED_UNILATERALLY.value:
+            # Se era chiusa, torna in corso (to_playing emette il revert dei
+            # rating centralmente).
+            if era_chiusa:
                 from .match_service import MatchService
 
                 MatchService.to_playing(match.id)
+        elif era_chiusa:
+            # Il triangolo tolto era del perdente: 5-3 diventa 5-2, il
+            # vincitore non cambia e la partita resta chiusa. Ma l'ELO è a
+            # triangoli (ADR-052), quindi il delta di prima non vale più: si
+            # annulla e si riapplica con gli stessi due mattoni della
+            # correzione del direttore (`MatchCorrectionService`). La
+            # richiude il direttore, che è chi ha appena messo mano al
+            # punteggio: da qui è agli atti.
+            from .state_service import MatchStateService
+
+            MatchStateService.to_playing(match.id)
+            MatchStateService.to_completed(match.id, closed_by_director=True)
 
         return {
             "success": True,
