@@ -476,6 +476,28 @@ class ChallengeService:
         )
 
     @staticmethod
+    def catalog_attempts_query(user_id: int, challenge_id: int):
+        """Le prove concluse fatte **dal catalogo**, e solo quelle.
+
+        Fuori restano le prove nate in una scheda e quella giocata al posto
+        della X: sono le sole che «Annulla l'ultima» può togliere, quindi è da
+        qui che la schermata di allenamento sceglie quale.
+        """
+        from models.competition.gara_bye_challenge import GaraByeChallenge
+
+        di_gara = db.session.query(GaraByeChallenge.challenge_attempt_id).filter(
+            GaraByeChallenge.challenge_attempt_id.isnot(None)
+        )
+        return ChallengeAttempt.query.filter(
+            ChallengeAttempt.user_id == user_id,
+            ChallengeAttempt.challenge_id == challenge_id,
+            ChallengeAttempt.completed.is_(True),
+            ChallengeAttempt.training_entry_id.is_(None),
+            ChallengeAttempt.gara_id.is_(None),
+            ChallengeAttempt.id.notin_(di_gara),
+        )
+
+    @staticmethod
     def refuse_unless_catalog_total(attempt: ChallengeAttempt) -> None:
         """La chiusura col totale digitato vale solo per le prove del catalogo.
 
@@ -558,6 +580,7 @@ class ChallengeService:
         Raises:
             NotFoundError: la prova non esiste
             PermissionDeniedError: non e' la prova di chi la sta cancellando
+            ConflictError: la prova e' nata in una scheda o appartiene a una gara
         """
         from ..exceptions import PermissionDeniedError
 
@@ -566,6 +589,19 @@ class ChallengeService:
             raise NotFoundError("Prova non trovata")
         if attempt.user_id != actor_id and not actor_is_admin:
             raise PermissionDeniedError("Questa prova non è tua")
+        # Di qui si tolgono solo le prove del catalogo. Quella nata in una
+        # scheda sta sotto una casella che la rilegge (ADR-072): toglierla da
+        # fuori lascerebbe «4 su 5» con quattro prove dietro, e si corregge
+        # dalla seduta. Quella giocata al posto della X vale per la classifica
+        # di una gara, e la tocca chi dirige.
+        if attempt.training_entry_id is not None:
+            raise ConflictError(
+                _("Questa prova appartiene a una scheda: si corregge dalla seduta.")
+            )
+        if ChallengeService.is_gara_attempt(attempt):
+            raise ConflictError(
+                _("Questa prova appartiene a una gara: non si cancella da qui.")
+            )
 
         challenge_id = attempt.challenge_id
         user_id = attempt.user_id

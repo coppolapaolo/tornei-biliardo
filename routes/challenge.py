@@ -1011,10 +1011,10 @@ def training_undo(challenge_id):
     La restituzione dell'XP la fa il servizio: senza, registra-e-annulla
     sarebbe un modo banale di salire di livello.
     """
+    # Solo fra le prove del catalogo: quelle nate in una scheda e quella della
+    # X stanno sullo stesso esercizio, ma non si tolgono da qui.
     ultima = (
-        ChallengeAttempt.query.filter_by(
-            user_id=current_user.id, challenge_id=challenge_id, completed=True
-        )
+        ChallengeService.catalog_attempts_query(current_user.id, challenge_id)
         .order_by(ChallengeAttempt.attempted_at.desc(), ChallengeAttempt.id.desc())
         .first()
     )
@@ -1464,11 +1464,12 @@ def _recent_attempts(challenge_id, limit=10):
     Sopravvive a un ricaricamento della pagina proprio perché è ricavata dai
     tentativi e non da uno stato di sessione: chi torna sul drill domani
     ritrova comunque com'era andata.
+
+    Sono le prove **del catalogo**, le stesse fra cui sceglie «Annulla
+    l'ultima»: così il tasto è acceso solo quando c'è qualcosa da annullare.
     """
     return (
-        ChallengeAttempt.query.filter_by(
-            user_id=current_user.id, challenge_id=challenge_id, completed=True
-        )
+        ChallengeService.catalog_attempts_query(current_user.id, challenge_id)
         .order_by(ChallengeAttempt.attempted_at.desc(), ChallengeAttempt.id.desc())
         .limit(limit)
         .all()
