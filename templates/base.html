@@ -837,7 +837,10 @@
             {% for category, message in all_messages %}
             {% if category == 'gamification_event' %}
             try {
-                const eventData = {{ message | safe }};
+                {# `fromjson|tojson` e non `|safe`: json.dumps non neutralizza
+                   `</script>`, e nel payload ci sono testi scelti dagli
+                   utenti. `tojson` codifica <, > e &: il valore non cambia. #}
+                const eventData = {{ message | fromjson | tojson }};
                 setTimeout(function () {
                     if (window.showGamificationEvent) {
                         window.showGamificationEvent(eventData.type, eventData.data);
