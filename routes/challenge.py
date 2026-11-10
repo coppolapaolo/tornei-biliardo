@@ -23,7 +23,11 @@ from models import (
     Challenge,
     ChallengeAttempt,
 )
-from models.exceptions import ConflictError, ValidationError
+from models.exceptions import (
+    ConflictError,
+    ValidationError,
+    http_status_for_exception,
+)
 from utils import (
     director_required,
     challenge_player_required,
@@ -653,15 +657,12 @@ def start_attempt(challenge_id):
         return render_template("challenge/start_attempt.html", challenge=challenge)
 
     try:
-        data = request.get_json() if request.is_json else request.form
-
+        # Gara e turno **non** si leggono dal modulo: il legame fra una prova
+        # e una gara nasce solo da `create_x_replacement`, che verifica che il
+        # giocatore abbia davvero la X in quel turno.
         attempt = ChallengeService.start_challenge_attempt(
             user_id=current_user.id,
             challenge_id=challenge_id,
-            gara_id=int(data["gara_id"]) if data.get("gara_id") else None,
-            round_number=(
-                int(data["round_number"]) if data.get("round_number") else None
-            ),
         )
 
         if request.is_json:
@@ -1616,6 +1617,10 @@ def complete_attempt(attempt_id):
         if attempt.user_id != current_user.id:
             return jsonify({"success": False, "error": "Access denied"}), 403
 
+        # Questa porta chiude solo le prove del catalogo col totale digitato:
+        # gara, scheda e sequenza di colpi hanno ciascuna la sua.
+        ChallengeService.refuse_unless_catalog_total(attempt)
+
         data = request.get_json() if request.is_json else request.form
         score, passed, notes = _parse_complete_attempt_payload(data)
 
@@ -1647,7 +1652,10 @@ def complete_attempt(attempt_id):
     except ValueError as e:
         error_msg = f"Error completing attempt: {str(e)}"
         if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
+            return (
+                jsonify({"success": False, "error": error_msg}),
+                http_status_for_exception(e),
+            )
         else:
             flash(error_msg, "danger")
             return redirect(url_for("challenge.attempt_detail", attempt_id=attempt_id))
@@ -1838,7 +1846,10 @@ def complete_x_replacement(attempt_id):
     except ValueError as e:
         error_msg = f"Error completing X replacement: {str(e)}"
         if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
+            return (
+                jsonify({"success": False, "error": error_msg}),
+                http_status_for_exception(e),
+            )
         else:
             flash(error_msg, "danger")
             return redirect(url_for("challenge.attempt_detail", attempt_id=attempt_id))

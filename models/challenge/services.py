@@ -12,7 +12,7 @@ from flask_babel import gettext as _
 from sqlalchemy import desc
 
 from ..base import db
-from ..exceptions import NotFoundError, ValidationError
+from ..exceptions import ConflictError, NotFoundError, ValidationError
 from ..transaction.manager import transactional
 from .events import DrillOrigin
 from .models import Challenge, ChallengeAttempt, ChallengeFavorite
@@ -400,10 +400,35 @@ class ChallengeService:
         passed: Optional[bool] = None,
         notes: Optional[str] = None,
     ) -> ChallengeAttempt:
-        """Complete a challenge attempt with results."""
+        """Chiude una prova aperta col suo risultato.
+
+        Una prova si chiude **una volta sola**: richiuderla ne riscriverebbe il
+        punteggio e ripubblicherebbe l'evento, cioè XP e serie pagati di nuovo
+        per la stessa prova. Chi deve correggere una prova sbagliata la toglie
+        (`delete_attempt`) e la rifà.
+
+        Il massimo dell'esercizio vale anche qui, e non solo in
+        `record_attempt`: questa è la porta da cui passa ogni chiusura. Sugli
+        esercizi a sequenza il punteggio discende dai colpi già registrati
+        (ADR-066) e non c'è un numero digitato da verificare.
+
+        Raises:
+            ConflictError: la prova è già stata chiusa
+            ValidationError: il punteggio supera il massimo dell'esercizio
+        """
         attempt = db.session.get(ChallengeAttempt, attempt_id)
         if not attempt:
             raise ValueError("Tentativo challenge non trovato")
+        if attempt.completed:
+            raise ConflictError(_("Questa prova è già stata registrata."))
+
+        challenge = attempt.challenge
+        if (
+            not challenge.pass_fail_only
+            and score is not None
+            and not RecordingMode.parse(challenge.recording_mode).is_sequence
+        ):
+            ChallengeService._validate_score_against_max(challenge, score)
 
         attempt.complete_attempt(score=score, passed=passed)
         if notes:
@@ -431,6 +456,51 @@ class ChallengeService:
         )
 
         return attempt
+
+    @staticmethod
+    def is_gara_attempt(attempt: ChallengeAttempt) -> bool:
+        """La prova è legata a una gara: è quella giocata al posto della X.
+
+        Il legame sta nel ponte `GaraByeChallenge`; `gara_id` sulla prova è la
+        colonna di prima, che i dati vecchi portano ancora.
+        """
+        from models.competition.gara_bye_challenge import GaraByeChallenge
+
+        if attempt.gara_id is not None:
+            return True
+        return (
+            db.session.query(GaraByeChallenge.id)
+            .filter_by(challenge_attempt_id=attempt.id)
+            .first()
+            is not None
+        )
+
+    @staticmethod
+    def refuse_unless_catalog_total(attempt: ChallengeAttempt) -> None:
+        """La chiusura col totale digitato vale solo per le prove del catalogo.
+
+        Le altre hanno ciascuna la sua porta, con i suoi controlli, e questa
+        non deve diventarne una seconda: la prova della X si chiude col limite
+        del turno (`complete_x_replacement_attempt`), quella nata in una scheda
+        la scrive la seduta (ADR-072), e in una prova a sequenza il punteggio
+        discende dai colpi (ADR-066).
+
+        Raises:
+            ConflictError: prova di gara o di scheda
+            ValidationError: esercizio che si registra colpo per colpo
+        """
+        if attempt.training_entry_id is not None:
+            raise ConflictError(
+                _("Questa prova appartiene a una scheda: si segna dalla seduta.")
+            )
+        if ChallengeService.is_gara_attempt(attempt):
+            raise ConflictError(
+                _("Questa prova appartiene a una gara: si registra da lì.")
+            )
+        if RecordingMode.parse(attempt.challenge.recording_mode).is_sequence:
+            raise ValidationError(
+                _("Questo esercizio si registra colpo per colpo, non col totale.")
+            )
 
     @staticmethod
     @transactional(domain="challenge")
@@ -802,6 +872,11 @@ class ChallengeService:
         attempt = db.session.get(ChallengeAttempt, attempt_id)
         if not attempt:
             raise ValueError("Tentativo challenge non trovato")
+        # Il giocatore dichiara il punteggio una volta sola: richiudere
+        # ripubblicherebbe l'evento. Chi corregge dopo è il direttore, da
+        # `validate_x_replacement`.
+        if attempt.completed:
+            raise ConflictError(_("Questa prova è già stata registrata."))
 
         # Mark GaraByeChallenge as completed (new pattern)
         bye_challenge = GaraByeChallenge.query.filter_by(
