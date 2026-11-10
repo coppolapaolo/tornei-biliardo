@@ -1008,14 +1008,18 @@ class SpareggioService:
                     gara_class = GaraClassification(
                         gara_id=gara_id,
                         user_id=round_class.user_id,
-                        # `total_racks_value`, non `ranking_rack_value`: qui si
-                        # **persiste** un totale.
-                        racks_won=round_class.total_racks_value,
-                        rack_difference=round_class.rack_difference or 0,
-                        matches_won=round_class.matches_won,
-                        points=round_class.points,
                     )
                     db.session.add(gara_class)
+                # I numeri si riscrivono **sempre** dalla riga di turno, anche
+                # su una riga che esiste già: può essere nata registrando uno
+                # spareggio poi annullato, e nel frattempo il direttore può
+                # aver corretto un risultato. Fino al 2026-11-10 si scrivevano
+                # solo alla creazione, e la riga teneva i numeri di prima.
+                # `total_racks_value`, non `ranking_rack_value`: qui si
+                # **persiste** un totale.
+                gara_class.racks_won = round_class.total_racks_value
+                gara_class.rack_difference = round_class.rack_difference or 0
+                gara_class.matches_won = round_class.matches_won
                 gara_class.position = position
                 gara_class.points = round_class.points
                 # Anche la classifica di turno, perché è quella che la pagina
