@@ -121,9 +121,12 @@
         // poll a ricaricamento in corso lo annullava e lo faceva ripartire.
         var mio = evento.data && evento.data.autore === GARA_CONFIG.utenteId;
         if (mio && (evento.type === 'match_updated' || evento.type === 'match_completed')) return;
-        location.reload();
+        // Non sotto il dito: durante una gara l'evento e' ogni triangolo di
+        // ogni tavolo, e su iPhone ricaricare mentre si scorre lasciava la
+        // barra in basso a meta' schermo.
+        window.Polling.ricaricaQuandoFermo();
       },
-      onGap: function () { location.reload(); }
+      onGap: function () { window.Polling.ricaricaQuandoFermo(); }
     }).start();
   })();
 </script>
