@@ -417,8 +417,10 @@ può cambiare davvero, come le regole di una partita già giocata (ADR-075,
 - **La gara si corregge anche con gli iscritti, e anche a gara avviata.** Fino
   all'avvio si cambia tutto. Dopo, sala, orario e quota cambiano subito; le
   regole di gioco — distanza, disciplina, chi spacca — valgono **dal turno
-  successivo**; la struttura, cioè formato e numero di turni, solo annullando
-  l'avvio. La pagina mostra ciò che si può ancora cambiare ed elenca col motivo
+  successivo**, finché ce n'è uno da avviare: con la strategia casuale i turni
+  nascono tutti insieme, e lì le regole non si cambiano più dopo l'avvio. La
+  struttura, cioè formato e numero di turni, solo annullando l'avvio. La
+  pagina mostra ciò che si può ancora cambiare ed elenca col motivo
   ciò che non si cambia più; in fondo c'è la storia delle modifiche. Se due
   direttori salvano insieme, il secondo non cancella più la modifica del primo
   (PR #585, #588).
@@ -447,10 +449,12 @@ può cambiare davvero, come le regole di una partita già giocata (ADR-075,
   raccolgono e partono mezz'ora dopo l'ultima, o subito con «Invia ora», o
   subito se la gara è entro tre ore: sala A → B → C arriva come «A → C», e A →
   B → A non manda niente. Si annuncia ciò che cambia la serata di un giocatore,
-  non un ritocco al nome. E se cambiano data, sala, orario o la quota sale,
-  l'iscritto trova «La gara è cambiata: ci sei ancora?»: finché non risponde il
-  direttore lo vede «da riconfermare», e nessuno viene ritirato in automatico
-  (PR #594, #595).
+  non un ritocco al nome. E se prima dell'avvio cambiano data o sala, l'orario
+  si sposta di più di un'ora o la quota sale, l'iscritto trova «La gara è
+  cambiata: ci sei ancora?»: finché non risponde il direttore lo vede «da
+  riconfermare», e nessuno viene ritirato in automatico. Uno spostamento più
+  piccolo, o una modifica a gara avviata, manda solo la notifica (PR #594,
+  #595).
 - **Una data che scavalca le gare successive propone di spostarle.** Prima
   c'era solo il rifiuto; ora il modulo mostra quali gare si sposterebbero e a
   quando, e il direttore sceglie. Alzando la capienza, poi, chi è in lista
