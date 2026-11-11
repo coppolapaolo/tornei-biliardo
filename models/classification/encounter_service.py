@@ -99,27 +99,57 @@ class PlayerEncounterService:
             )
 
     @staticmethod
-    @cached(ttl_seconds=600, tags=["encounter", "gara"], key_generator="gara")
     def get_encounter_matrix(gara_id: int) -> Dict[Tuple[int, int], bool]:
+        """Chi ha già giocato con chi, in questa gara.
+
+        Le chiavi sono le coppie nei due versi, il valore è sempre `True`.
+
+        Due fonti, unite. Le righe `PlayerEncounter`, e le **partite
+        concluse**: una partita finita è un incontro avvenuto, qualunque
+        strada l'abbia chiusa. Fino al 2026-11-12 contavano solo le righe, e
+        le scriveva una strada sola (`MatchStateService.to_completed`): una
+        partita chiusa dalla doppia firma dei giocatori non lasciava traccia,
+        e l'abbinamento Amalfi rimetteva di fronte gli stessi due (gara 54).
+        Leggere le partite ripara anche le gare già in corso, senza script.
+
+        Niente cache. In produzione i processi sono tre e la memoria non è
+        condivisa: l'invalidazione arriva solo al processo che ha chiuso la
+        partita, e gli altri abbinerebbero su una matrice vecchia. Sono due
+        query a ogni turno generato.
         """
-        Get encounter matrix for all players in a gara with caching.
-        Cached for 10 minutes as encounter data is relatively stable.
+        from ..match.models import Match, TrioMatch
+        from ..status_enum import MatchStatus
 
-        Returns a dictionary where keys are (player1_id, player2_id) tuples
-        and values are True if they have played.
+        matrix: Dict[Tuple[int, int], bool] = {}
 
-        Args:
-            gara_id: ID of the gara
+        def segna(a: Any, b: Any) -> None:
+            if a and b and a != b:
+                matrix[(a, b)] = True
+                matrix[(b, a)] = True
 
-        Returns:
-            Dictionary mapping player pairs to encounter status
-        """
-        encounters = db.session.query(PlayerEncounter).filter_by(gara_id=gara_id).all()
+        for encounter in (
+            db.session.query(PlayerEncounter).filter_by(gara_id=gara_id).all()
+        ):
+            segna(encounter.player1_id, encounter.player2_id)
 
-        matrix = {}
-        for encounter in encounters:
-            matrix[(encounter.player1_id, encounter.player2_id)] = True
-            matrix[(encounter.player2_id, encounter.player1_id)] = True
+        concluse = (
+            db.session.query(Match)
+            .filter(
+                Match.gara_id == gara_id,
+                Match.status.in_(MatchStatus.finished_values()),
+                Match.is_bye.isnot(True),
+            )
+            .all()
+        )
+        for match in concluse:
+            if match.is_trio:
+                trio = db.session.query(TrioMatch).filter_by(match_id=match.id).first()
+                if trio:
+                    segna(trio.player1_id, trio.player2_id)
+                    segna(trio.player1_id, trio.player3_id)
+                    segna(trio.player2_id, trio.player3_id)
+            else:
+                segna(match.player1_id, match.player2_id)
 
         return matrix
 
