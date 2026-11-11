@@ -682,7 +682,9 @@
             // sta per salvare il contrario. Lì la voce non si mostra (#236).
             const summaryAntiRematch = document.getElementById('summary-anti-rematch');
             const sulTabellone = ['direct_elimination', 'double_knockout'].indexOf(strategySelect.value) >= 0;
-            summaryAntiRematch.hidden = sulTabellone;
+            // `d-none` e non `hidden`: `.badge` ha un `display` suo nel tema,
+            // che vince sull'attributo e lasciava la pillola in vista.
+            summaryAntiRematch.classList.toggle('d-none', sulTabellone);
             summaryAntiRematch.textContent =
                 document.getElementById('anti_rematch_enabled').checked ? i18n.antiRematchOn : i18n.antiRematchOff;
 

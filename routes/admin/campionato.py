@@ -270,7 +270,11 @@ def wizard_create():
 
     # Step 2 default-gare settings (single source shared with edit_campionato)
     try:
-        settings = CampionatoFormParser.parse_default_settings(request.form)
+        # Il tipo è del passo 1: nel modulo del passo 2 non c'è, e senza
+        # passarlo il tabellone salverebbe la casella nascosta (#236).
+        settings = CampionatoFormParser.parse_default_settings(
+            request.form, wizard_data.get("campionato_type")
+        )
         settings.update(CampionatoFormParser.parse_gironi(request.form))
     except ValueError as errore:
         # Il campo ha già min e max nel browser: qui arriva solo un invio

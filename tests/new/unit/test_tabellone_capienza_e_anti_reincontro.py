@@ -128,7 +128,10 @@ def test_la_scheda_del_campionato_a_tabellone_tace_sull_anti_reincontro():
 def test_il_riepilogo_della_creazione_non_legge_la_casella_nascosta():
     html = _template("admin/gara_create_standalone.html")
 
-    assert "summaryAntiRematch.hidden = sulTabellone;" in html
+    # `d-none`, non l'attributo `hidden`: `.badge` ha un `display` suo nel
+    # tema 7c e lo vince, lasciando la pillola in vista.
+    assert "summaryAntiRematch.classList.toggle('d-none', sulTabellone);" in html
+    assert "summaryAntiRematch.hidden" not in html
 
 
 @pytest.mark.parametrize(

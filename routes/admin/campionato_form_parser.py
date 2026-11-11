@@ -329,8 +329,13 @@ class CampionatoFormParser:
         return valori
 
     @staticmethod
-    def parse_default_settings(form: MultiDict) -> Dict[str, Any]:
+    def parse_default_settings(
+        form: MultiDict, campionato_type: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Parse the default-settings block shared by create-wizard and edit.
+
+        ``campionato_type`` è il tipo quando il modulo non lo porta: al passo 2
+        del wizard sta in sessione dal passo 1. Senza, si legge dal modulo.
 
         Returns kwargs ready for ``TournamentService.update_campionato`` /
         ``create_campionato_with_director``:
@@ -386,7 +391,8 @@ class CampionatoFormParser:
             # invia: nascondere non è imporre (#236).
             "default_anti_rematch": (
                 "default_anti_rematch" in form
-                and form.get("campionato_type") not in BRACKET_STRATEGIES
+                and (campionato_type or form.get("campionato_type"))
+                not in BRACKET_STRATEGIES
             ),
             # Come si comincia e chi apre poi (ADR-056). Radice della catena:
             # un valore ignoto ricade sul default del progetto — che è il
