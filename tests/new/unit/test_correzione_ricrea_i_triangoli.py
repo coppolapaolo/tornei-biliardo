@@ -70,3 +70,51 @@ def test_la_partita_corretta_non_e_a_tavolino_e_muove_l_elo(
     ).all()
     assert len(righe) == 2
     assert {r.robustness_increment for r in righe} == {9}
+
+
+def test_una_correzione_che_fallisce_non_lascia_niente_a_meta(
+    db_session, isolated_players, monkeypatch
+):
+    """La correzione è una transazione sola.
+
+    Senza, ogni triangolo riscritto si salvava per conto suo: un rifiuto
+    arrivato dopo lasciava la partita riaperta, coi triangoli nuovi e un
+    punteggio di passaggio che sommava i vecchi ai nuovi.
+    """
+    import pytest
+
+    from models.match.state_service import MatchStateService
+
+    p = isolated_players
+    gara = crea_gara(db_session)
+    partita = crea_partita(
+        db_session,
+        gara,
+        p,
+        player1_score=5,
+        player2_score=3,
+        winner_id=p[0].id,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
+    )
+    segna_triangoli(db_session, partita, [p[0]] * 5 + [p[1]] * 3)
+    partita_id = partita.id
+
+    def rifiuta(*args, **kwargs):
+        raise ValueError("chiusura rifiutata")
+
+    monkeypatch.setattr(MatchStateService, "to_completed", staticmethod(rifiuta))
+    with pytest.raises(ValueError):
+        MatchCorrectionService.correct_result(
+            match_id=partita_id,
+            player1_score=5,
+            player2_score=4,
+            corrected_by_id=p[2].id,
+        )
+    db_session.rollback()
+    db_session.expire_all()
+
+    partita = db_session.get(Match, partita_id)
+    assert (partita.player1_score, partita.player2_score) == (5, 3)
+    assert partita.status == MatchStatus.CLOSED_UNILATERALLY.value
+    attivi = Rack.query.filter_by(match_id=partita_id, is_deleted=False).count()
+    assert attivi == 8

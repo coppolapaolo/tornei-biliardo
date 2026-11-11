@@ -58,6 +58,7 @@ from flask_babel import lazy_gettext as _
 
 from models.base import db
 from models.status_enum import MatchStatus
+from models.transaction.manager import transactional
 
 from .models import Match, MatchCorrection, Rack
 
@@ -91,6 +92,7 @@ class MatchCorrectionService:
         return True, ""
 
     @staticmethod
+    @transactional(domain="match")
     def correct_result(
         match_id: int,
         player1_score: int,
@@ -105,6 +107,12 @@ class MatchCorrectionService:
         `player3_score` serve solo al trio, e lì è obbligatorio. `sets` serve
         solo alla partita a set, e lì è obbligatorio: i triangoli di ogni set
         giocato, in ordine. I set vinti e il vincitore discendono da quelli.
+
+        È una transazione sola: riapertura, triangoli riscritti e chiusura
+        si salvano insieme o per niente. Senza, ogni triangolo riscritto si
+        salvava per conto suo, e un rifiuto arrivato dopo lasciava la partita
+        riaperta con un punteggio di passaggio — i triangoli nuovi sommati a
+        quelli vecchi, 10-7 correggendo un 5-3 in 5-4.
 
         Raises:
             ValueError: se la partita non è correggibile o il punteggio non è
