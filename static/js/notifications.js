@@ -66,7 +66,9 @@ function clearErrorToasts() {
   const container = document.getElementById('toast-container');
   if (!container) return;
 
-  container.querySelectorAll('.text-bg-danger').forEach(toast => {
+  // Il selettore segue ciò che showToast crea: `bg-danger`, non `text-bg-*`
+  // (vedi la nota sulla compatibilità con Bootstrap 5.1 lì sopra).
+  container.querySelectorAll('.toast.bg-danger').forEach(toast => {
     const bsToast = bootstrap.Toast.getInstance(toast);
     if (bsToast) {
       bsToast.hide();

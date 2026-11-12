@@ -29,12 +29,25 @@ const SRC = fs.readFileSync(
 // una unità del disegnatore = un pixel e l'origine del panno sta a (30, 30).
 const VB = "-30 -30 860 460";
 
+// La risposta che `fetch` consegna a sessione scaduta: ha seguito il 302 verso
+// il login e porta il 200 di quella pagina, HTML al posto del JSON.
+const LOGIN = {
+  __grezza: {
+    status: 200,
+    ok: true,
+    redirected: true,
+    headers: { get: () => "text/html; charset=utf-8" },
+    json: () => Promise.reject(new SyntaxError("Unexpected token '<'")),
+  },
+};
+
 function pagina({ risposte = [] } = {}) {
   const dom = new JSDOM(
     `<div data-run data-shot-url="/shot" data-shot-undo-url="/shot/undo"
           data-shot-close-url="/shot/close" data-shot-restart-url="/shot/restart"
           data-draw-url="/draw" data-outcome-url="/outcome"
-          data-msg-error="errore" data-msg-network="rete">
+          data-msg-error="errore" data-msg-network="rete"
+          data-msg-session="sessione scaduta">
        <div data-run-progress>
          <div class="c7-cloth" data-cloth>
            <svg data-cloth-full data-vb="${VB}"></svg>
@@ -68,7 +81,7 @@ function pagina({ risposte = [] } = {}) {
     const r = coda.shift();
     return r instanceof Error
       ? Promise.reject(r)
-      : Promise.resolve({ json: () => Promise.resolve(r) });
+      : Promise.resolve(r.__grezza || { json: () => Promise.resolve(r) });
   };
   // jsdom non calcola i riquadri: li dichiariamo noi, uno a uno.
   const riquadro = (el, box) => { el.getBoundingClientRect = () => box; };
@@ -206,6 +219,19 @@ const ok = () => ({
       url: "/outcome",
       body: { outcome_index: "2" },
     });
+  }
+
+  // 10. a sessione scaduta il messaggio dice di rientrare (2026-11-10)
+  {
+    const p = pagina({ risposte: [LOGIN, ok()] });
+    p.$("[data-shot-miss]").click();
+    await p.attesa();
+    assert.strictEqual(p.w.__errore, "sessione scaduta");
+    assert.ok(p.$("[data-run-progress]").innerHTML.includes("c7-cloth"));
+    // e dopo si può riprovare
+    p.$("[data-shot-miss]").click();
+    await p.attesa();
+    assert.strictEqual(p.chiamate.length, 2);
   }
 
   console.log("test_exercise_shots: ok");

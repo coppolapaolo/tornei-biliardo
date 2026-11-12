@@ -27,11 +27,24 @@
     scoreUndo: root.dataset.scoreUndoUrl
   };
   var msgError = root.dataset.msgError;
+  var msgSession = root.dataset.msgSession || msgError;
   var at = parseInt(root.dataset.at, 10) || 0;
   var inCorso = false;
 
   function fail(message) {
     if (typeof window.showError === 'function') window.showError(message || msgError);
+  }
+
+  /* A sessione scaduta `fetch` segue il 302 verso il login e consegna il 200 di
+     quella pagina: HTML al posto del JSON. Stesso criterio di `polling.js` — il
+     401, la risposta `redirected` — più il 200 che non è JSON, che è lo stesso
+     fatto visto da un proxy che nasconde il redirect. */
+  function sessioneScaduta(risposta) {
+    if (risposta.status === 401 || risposta.redirected === true) return true;
+    var tipo = risposta.headers && typeof risposta.headers.get === 'function'
+      ? (risposta.headers.get('Content-Type') || '')
+      : null;
+    return risposta.ok === true && tipo !== null && tipo.indexOf('json') === -1;
   }
 
   function cella(nodo) {
@@ -69,6 +82,7 @@
       body: JSON.stringify(corpo)
     })
       .then(function (risposta) {
+        if (sessioneScaduta(risposta)) throw new Error(msgSession);
         return risposta.json().then(function (dati) {
           if (!risposta.ok || !dati.success) throw new Error(dati.error || msgError);
           return dati;

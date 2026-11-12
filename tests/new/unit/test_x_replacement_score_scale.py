@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import date
+from typing import Optional
 
 import pytest
 
@@ -88,7 +89,12 @@ def _bye(db_session, gara: Gara, player: User) -> Match:
     return match
 
 
-def _attempt(db_session, gara: Gara, player: User, score: int) -> ChallengeAttempt:
+def _attempt(
+    db_session, gara: Gara, player: User, score: Optional[int]
+) -> ChallengeAttempt:
+    """La prova della X. Con `score=None` è ancora **aperta**: il giocatore non
+    ha dichiarato niente, ed è lo stato in cui la chiusura la trova davvero.
+    Una prova già chiusa non si richiude (2026-11-10)."""
     challenge = Challenge(
         description="Spot shot",
         image_path="x.png",
@@ -104,7 +110,7 @@ def _attempt(db_session, gara: Gara, player: User, score: int) -> ChallengeAttem
         gara_id=gara.id,
         round_number=1,
         score=score,
-        completed=True,
+        completed=score is not None,
     )
     db_session.add(attempt)
     db_session.flush()
@@ -165,7 +171,7 @@ def test_un_punteggio_oltre_la_distanza_viene_rifiutato(db_session):
     gara = _gara(db_session, distance=5)
     player = _user(db_session)
     _bye(db_session, gara, player)
-    attempt = _attempt(db_session, gara, player, score=0)
+    attempt = _attempt(db_session, gara, player, score=None)
 
     with pytest.raises(ValidationError):
         ChallengeService.complete_x_replacement_attempt(attempt.id, score=12)
@@ -177,7 +183,7 @@ def test_un_punteggio_negativo_viene_rifiutato(db_session):
     gara = _gara(db_session, distance=5)
     player = _user(db_session)
     _bye(db_session, gara, player)
-    attempt = _attempt(db_session, gara, player, score=0)
+    attempt = _attempt(db_session, gara, player, score=None)
 
     with pytest.raises(ValidationError):
         ChallengeService.complete_x_replacement_attempt(attempt.id, score=-1)
@@ -198,7 +204,7 @@ def test_il_limite_segue_la_distanza_del_turno_non_quella_della_gara(db_session)
     db_session.flush()
     assert match.effective_distance == 3
 
-    attempt = _attempt(db_session, gara, player, score=0)
+    attempt = _attempt(db_session, gara, player, score=None)
 
     with pytest.raises(ValidationError):
         ChallengeService.complete_x_replacement_attempt(attempt.id, score=5)

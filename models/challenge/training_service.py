@@ -105,20 +105,32 @@ class TrainingHistoryService:
             )
             .all()
         )
+        gare_della_x = TrainingHistoryService._gare_delle_prove_della_x(user_id)
         for attempt in catalog:
             if attempt.challenge is None:
                 continue
             casella = attempt.training_entry
             scheda = casella.session.sheet if casella and casella.session else None
+            # La prova giocata al posto della X sta in questa tabella, ma non
+            # è una prova del catalogo: vale per la classifica di una gara, e
+            # come le altre prove di gara non si cancella dal profilo.
+            della_x = attempt.id in gare_della_x or attempt.gara_id is not None
+            if casella is not None:
+                source = "sheet"
+            elif della_x:
+                source = "x"
+            else:
+                source = "catalog"
             entries.append(
                 _entry(
                     challenge=attempt.challenge,
                     score=attempt.score,
                     passed=attempt.passed,
                     attempted_at=attempt.attempted_at,
-                    source="sheet" if casella is not None else "catalog",
-                    attempt_id=None if casella is not None else attempt.id,
+                    source=source,
+                    attempt_id=attempt.id if source == "catalog" else None,
                     sheet_name=scheda.name if scheda is not None else None,
+                    gara_name=gare_della_x.get(attempt.id) if della_x else None,
                 )
             )
 
@@ -159,6 +171,24 @@ class TrainingHistoryService:
         entries.sort(key=lambda e: (e["attempted_at"] is not None, e["attempted_at"]))
         entries.reverse()
         return entries
+
+    @staticmethod
+    def _gare_delle_prove_della_x(user_id: int) -> Dict[int, Optional[str]]:
+        """Per ogni prova giocata al posto della X, il nome della sua gara."""
+        from ..competition.gara_bye_challenge import GaraByeChallenge
+
+        ponti = (
+            GaraByeChallenge.query.options(joinedload(GaraByeChallenge.gara))
+            .filter(
+                GaraByeChallenge.user_id == user_id,
+                GaraByeChallenge.challenge_attempt_id.isnot(None),
+            )
+            .all()
+        )
+        return {
+            ponte.challenge_attempt_id: getattr(ponte.gara, "name", None)
+            for ponte in ponti
+        }
 
     @staticmethod
     def get_drill_summary(user_id: int) -> List[Dict[str, Any]]:

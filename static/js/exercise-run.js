@@ -26,7 +26,8 @@
     recording: root.dataset.msgRecording,
     error: root.dataset.msgError,
     network: root.dataset.msgNetwork,
-    undoError: root.dataset.msgUndoError
+    undoError: root.dataset.msgUndoError,
+    session: root.dataset.msgSession
   };
 
   function all(selector) {
@@ -94,6 +95,18 @@
     });
   }
 
+  /* A sessione scaduta `fetch` segue il 302 verso il login e consegna il 200 di
+     quella pagina: HTML al posto del JSON. Stesso criterio di `polling.js` — il
+     401, la risposta `redirected` — più il 200 che non è JSON, che è lo stesso
+     fatto visto da un proxy che nasconde il redirect. */
+  function sessioneScaduta(risposta) {
+    if (risposta.status === 401 || risposta.redirected === true) return true;
+    var tipo = risposta.headers && typeof risposta.headers.get === 'function'
+      ? (risposta.headers.get('Content-Type') || '')
+      : null;
+    return risposta.ok === true && tipo !== null && tipo.indexOf('json') === -1;
+  }
+
   function post(url, payload) {
     var options = {
       method: 'POST',
@@ -103,7 +116,14 @@
       options.headers['Content-Type'] = 'application/json';
       options.body = JSON.stringify(payload);
     }
-    return window.fetch(url, options).then(function (r) { return r.json(); });
+    return window.fetch(url, options).then(function (r) {
+      if (sessioneScaduta(r)) {
+        var scaduta = new Error('session-expired');
+        scaduta.sessioneScaduta = true;
+        throw scaduta;
+      }
+      return r.json();
+    });
   }
 
   function record(payload) {
@@ -128,7 +148,9 @@
       redraw(data);
       score = 0;
       showScore();
-    }).catch(function () { fail(msg.network); }).then(done);
+    }).catch(function (e) {
+      fail(e && e.sessioneScaduta && msg.session ? msg.session : msg.network);
+    }).then(done);
   }
 
   // Superato / non superato: un tocco, una prova. Niente conferma: la via
@@ -149,7 +171,9 @@
       post(root.dataset.undoUrl, null).then(function (data) {
         if (!data.success) { fail(data.error || msg.undoError); return; }
         redraw(data);
-      }).catch(function () { fail(msg.undoError); }).then(function () { lock(false); });
+      }).catch(function (e) {
+        fail(e && e.sessioneScaduta && msg.session ? msg.session : msg.undoError);
+      }).then(function () { lock(false); });
     });
   });
 
