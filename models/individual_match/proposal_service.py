@@ -6,6 +6,7 @@ Sprint 13: IndividualMatchService decomposition
 
 from __future__ import annotations
 
+import logging
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta, date, time as time_obj
 
@@ -24,6 +25,8 @@ from .models import (
 from .pending_confirmation import PendingConfirmationService
 from ..location.models import UserLocationAvailability
 
+logger = logging.getLogger(__name__)
+
 
 def _reconcile_user_achievements(user_id: int) -> None:
     """Riconcilia gli achievement dell'utente dopo un'azione sulle proposte.
@@ -39,7 +42,11 @@ def _reconcile_user_achievements(user_id: int) -> None:
 
         AchievementService.reconcile_achievements(user_id)
     except Exception:
-        pass
+        logger.exception(
+            "Achievement non riconciliati per l'utente %s dopo un'azione "
+            "sulle proposte",
+            user_id,
+        )
 
 
 class ProposalService:
@@ -863,7 +870,11 @@ class ProposalService:
                     continue_on_error=True,
                 )
             except Exception:
-                pass
+                logger.exception(
+                    "Avviso di proposta conclusa non inviato agli altri "
+                    "invitati della proposta %s",
+                    proposal.id,
+                )
 
         return {
             "success": True,

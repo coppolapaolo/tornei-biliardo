@@ -26,6 +26,7 @@ Created: 2025-10-07
 
 from __future__ import annotations
 
+import logging
 from typing import Optional, List, Tuple
 
 from sqlalchemy import func
@@ -35,6 +36,8 @@ from models.match.models import Match
 from models.location.models import BilliardHall
 from models.status_enum import MatchStatus
 from models.matchmaking.configuration import MatchmakingStrategy
+
+logger = logging.getLogger(__name__)
 
 
 class TableAssignmentService:
@@ -513,6 +516,25 @@ class TableAssignmentService:
         return None
 
     @staticmethod
+    def _avvia_col_tavolo(match_id: int) -> None:
+        """Mette in gioco la partita che ha appena ricevuto un tavolo.
+
+        Se il passaggio di stato viene rifiutato il tavolo resta assegnato:
+        è il comportamento di sempre. Ma una partita col tavolo e ferma è
+        un'incoerenza che il direttore vede senza poterla spiegare, quindi il
+        rifiuto resta scritto nel log.
+        """
+        from models.match.services import MatchService
+
+        try:
+            MatchService.to_playing(match_id)
+        except Exception:
+            logger.exception(
+                "Tavolo assegnato al match %s, ma la partita non è passata " "in gioco",
+                match_id,
+            )
+
+    @staticmethod
     @transactional(domain="match")
     def reassign_table(
         match_id: int, new_table: Optional[str]
@@ -539,7 +561,7 @@ class TableAssignmentService:
             - removed_match_id: ID of match whose table is removed, or None
         """
         from models.competition.round_manager import AdvancedRoundManager
-        from models.match.services import MatchService, RackService
+        from models.match.services import RackService
 
         match = db.session.get(Match, match_id)
         if not match:
@@ -625,10 +647,7 @@ class TableAssignmentService:
                 if (
                     occupying_match.status or MatchStatus.PENDING.value
                 ) != MatchStatus.PLAYING.value:
-                    try:
-                        MatchService.to_playing(occupying_match.id)
-                    except Exception:
-                        pass
+                    TableAssignmentService._avvia_col_tavolo(occupying_match.id)
                 swapped = True
             else:
                 # No old_table to swap - would evict occupying match
@@ -655,10 +674,7 @@ class TableAssignmentService:
 
             match.table_assignment = new_table
             if (match.status or MatchStatus.PENDING.value) != MatchStatus.PLAYING.value:
-                try:
-                    MatchService.to_playing(match.id)
-                except Exception:
-                    pass
+                TableAssignmentService._avvia_col_tavolo(match.id)
 
             db.session.add(occupying_match)
             db.session.add(match)
@@ -679,10 +695,7 @@ class TableAssignmentService:
             # Simple assignment (table is free in this round)
             match.table_assignment = new_table
             if (match.status or MatchStatus.PENDING.value) != MatchStatus.PLAYING.value:
-                try:
-                    MatchService.to_playing(match.id)
-                except Exception:
-                    pass
+                TableAssignmentService._avvia_col_tavolo(match.id)
             db.session.add(match)
 
             msg = f"Tavolo assegnato: Match #{match_id} → '{new_table}'"

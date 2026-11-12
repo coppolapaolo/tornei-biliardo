@@ -7,6 +7,7 @@ Inherits statistics methods from TournamentStatisticsService.
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 from models.user.models import User
@@ -30,6 +31,8 @@ from models.events.competition_events import (
     CampionatoCreatedEvent,
 )
 from .statistics_service import TournamentStatisticsService, compute_campionato_status
+
+logger = logging.getLogger(__name__)
 
 
 class TournamentService(TournamentStatisticsService):
@@ -1120,7 +1123,14 @@ class TournamentService(TournamentStatisticsService):
 
             ClassificationService.update_campionato_classification(campionato_id)
         except Exception:
-            pass
+            # La terminazione vale comunque: `start_playoff` ricalcola prima di
+            # invitare. Ma profilo ed export leggono queste righe, e se restano
+            # vecchie deve esserci scritto perché.
+            logger.exception(
+                "Ricalcolo della classifica fallito alla terminazione del "
+                "campionato %s",
+                campionato_id,
+            )
 
         campionato.terminated_at = utc_now()
         campionato.updated_at = utc_now()
