@@ -192,7 +192,7 @@ GitHub (main) → scheduled task auto_deploy.py su PythonAnywhere, una volta al 
 
 | Job | Trigger | Azioni |
 |-----|---------|--------|
-| `test-and-typecheck` | Push/PR su main | pytest + pyright |
+| `test-and-typecheck` | Push/PR su main | pytest (unit, integrazione, e2e) + test frontend + pyright |
 | `pr-title` | PR su main | Titolo in formato Conventional Commits |
 
 Fino al 2026-09-14 la CI faceva anche un reload della web app a ogni merge:
