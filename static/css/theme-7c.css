@@ -2615,7 +2615,7 @@ button.c7-tpa-sheet__rack > span:first-child { flex: 1; }
 }
 
 /* `contain`, mai `cover`: un esercizio ritagliato perde i bordi del tavolo,
-   che sono l'informazione (ADR-044). Meglio la cornice vuota del taglio. */
+   che sono l'informazione (ADR-087). Meglio la cornice vuota del taglio. */
 .c7-drillboard__shot {
   flex: 1; min-height: 0; border-radius: 14px;
   background: rgba(242, 248, 247, .10);
