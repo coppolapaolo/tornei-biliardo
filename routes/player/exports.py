@@ -6,7 +6,7 @@ import io
 import json
 import threading
 import zipfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, cast
 
@@ -158,13 +158,24 @@ def _get_export_dir() -> Path:
     return export_path
 
 
+def _file_mtime_utc(file: Path) -> datetime:
+    """Data di modifica del file, naive-UTC come `utc_now()`.
+
+    `datetime.fromtimestamp` senza fuso dà l'ora **locale** del server: fuori
+    da un server in UTC il file sembrerebbe più giovane di quanto è, e ogni
+    confronto con `utc_now()` sarebbe sfasato di quello scarto.
+    """
+    return datetime.fromtimestamp(file.stat().st_mtime, timezone.utc).replace(
+        tzinfo=None
+    )
+
+
 def _cleanup_old_exports(export_dir: Path) -> None:
     """Remove export files older than GDPR_EXPORT_MAX_AGE_HOURS."""
     cutoff = utc_now() - timedelta(hours=GDPR_EXPORT_MAX_AGE_HOURS)
     for file in export_dir.glob("*.zip"):
         try:
-            # Extract timestamp from filename: {user_id}_{timestamp}.zip
-            mtime = datetime.fromtimestamp(file.stat().st_mtime)
+            mtime = _file_mtime_utc(file)
             if mtime < cutoff:
                 file.unlink()
         except (ValueError, OSError):
@@ -526,7 +537,7 @@ def request_gdpr_export():
     export_dir = _get_export_dir()
     for file in export_dir.glob(f"{user.id}_*.zip"):
         # If export created in last 5 minutes, don't allow another
-        mtime = datetime.fromtimestamp(file.stat().st_mtime)
+        mtime = _file_mtime_utc(file)
         if utc_now() - mtime < timedelta(minutes=5):
             flash(
                 _(
@@ -598,7 +609,7 @@ def download_gdpr_export(filename: str):
         return redirect(url_for("player.privacy_settings"))
 
     # Check if file is expired
-    mtime = datetime.fromtimestamp(filepath.stat().st_mtime)
+    mtime = _file_mtime_utc(filepath)
     if utc_now() - mtime > timedelta(hours=GDPR_EXPORT_MAX_AGE_HOURS):
         filepath.unlink()  # Delete expired file
         flash(_("Il file di export è scaduto. Richiedi un nuovo export."), "warning")

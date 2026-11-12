@@ -29,13 +29,10 @@ Distribution:
 
 The remaining local imports are intentional and represent the minimum necessary
 to break the circular dependency while keeping related code together.
-
-See also: ADR-XXX (planned) for detailed architecture decision.
 """
 
 from flask import current_app
 
-from models.competition.services import GaraService
 from models.transaction.manager import transactional
 from models.user.role_enum import UserRole
 
@@ -74,110 +71,6 @@ from .permissions import (  # noqa: F401  (re-export di compatibilita', vedi sop
 # --------------------------------------------------------------------------
 # Funzioni di bootstrap / sample data
 # --------------------------------------------------------------------------
-
-
-@transactional(domain="utils")
-def create_default_users():
-    """Crea tre utenti di base (admin + 2 player)."""
-    from models import User, db  # Local import to avoid circular dependency
-
-    admin = User(username="admin", email="admin@campionato.com", role="admin")
-    admin.set_password("admin123")
-
-    mario = User(username="mario", email="mario@test.com", role="player")
-    mario.set_password("mario123")
-
-    pino = User(username="pino", email="pino@test.com", role="player")
-    pino.set_password("pino123")
-
-    db.session.add_all([admin, mario, pino])
-    return admin, mario, pino
-
-
-@transactional(domain="utils")
-def create_sample_campionato():
-    """Crea due campionati di esempio con gare collegate."""
-    from models import Campionato, db  # Local import to avoid circular dependency
-
-    tournament1 = Campionato(
-        name="Campionato Primavera 2025",
-        campionato_type="Amalfi",
-        without_x=False,
-        final_playoffs=True,
-        challenge_mode=False,
-        is_active=True,
-    )
-    db.session.add(tournament1)
-
-    tournament2 = Campionato(
-        name="Coppa Estate 2025",
-        campionato_type="Amalfi",
-        without_x=True,
-        final_playoffs=False,
-        challenge_mode=True,
-        is_active=True,
-    )
-    db.session.add(tournament2)
-
-    from datetime import date, timedelta
-
-    today = date.today()
-
-    GaraService.create_gara(
-        campionato_id=tournament1.id,
-        number=1,
-        name="Prima Gara",
-        date=today + timedelta(days=7),
-        location="Circolo Biliardo Centro",
-        description="Prima gara del campionato primaverile",
-        rounds_count=3,
-        min_participants=4,
-        max_participants=16,
-        entry_fee=15.0,
-        discipline="palla 9",
-        distance=7,
-        is_race_to=True,
-        status="setup",
-    )
-
-    GaraService.create_gara(
-        campionato_id=tournament1.id,
-        number=2,
-        name="Seconda Gara",
-        date=today + timedelta(days=14),
-        location="Circolo Biliardo Centro",
-        description="Seconda gara del campionato primaverile",
-        rounds_count=3,
-        min_participants=4,
-        max_participants=16,
-        entry_fee=15.0,
-        discipline="palla 8",
-        distance=5,
-        is_race_to=False,
-        status="setup",
-    )
-
-    GaraService.create_gara(
-        campionato_id=tournament2.id,
-        number=1,
-        name="Coppa Opening",
-        date=today + timedelta(days=21),
-        location="Sala Biliardo Elite",
-        description="Gara di apertura della coppa estiva",
-        rounds_count=2,
-        min_participants=6,
-        max_participants=12,
-        entry_fee=20.0,
-        discipline="palla 10",
-        distance=9,
-        is_race_to=True,
-        status="setup",
-    )
-
-    print("✅ Creati 2 campionati di esempio:")
-    print(f"   - {tournament1.name} (ID: {tournament1.id}) con 2 gare")
-    print(f"   - {tournament2.name} (ID: {tournament2.id}) con 1 gara")
-    return tournament1, tournament2
 
 
 @transactional(domain="utils")
