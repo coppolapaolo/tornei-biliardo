@@ -95,9 +95,6 @@ class TestCampionatoWizardRouteRegression:
             "matchmaking_systems" not in html
         ), "Broken matchmaking_systems reference still in template"
 
-    @pytest.mark.skip(
-        reason="Session isolation issue with Flask-Login in test environment"
-    )
     def test_wizard_requires_authentication(self, app):
         """Wizard should redirect unauthenticated users to login."""
         # Use fresh client without any session state

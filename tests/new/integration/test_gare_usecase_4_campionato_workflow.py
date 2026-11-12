@@ -158,7 +158,6 @@ class TestUseCaseCampionatoWorkflow:
             "players": players,
         }
 
-    @pytest.mark.skip(reason="Intermittent infinite loop - SQLite concurrency issue")
     def test_complete_campionato_with_multiple_gare_and_strategies(
         self,
         all_test_users: Dict[str, Any],
@@ -310,7 +309,9 @@ class TestUseCaseCampionatoWorkflow:
             matchmaking_strategy="amalfi",
             first_round_policy="random",
             odd_number_policy="bye",
-            anti_rematch_enabled=False,  # Not applicable for round-robin
+            # La strategia è Amalfi, che l'anti-reincontro lo richiede: con
+            # False la gara viene rifiutata alla creazione.
+            anti_rematch_enabled=True,
         )
 
         # 6 best players from campionato classification qualify

@@ -10,6 +10,20 @@ from models.competition.models import Gara, Inscription
 from models.gamification.models import UserLevel, XPTransaction, XPTransactionType
 
 
+@pytest.fixture(autouse=True)
+def cartella_export_isolata(tmp_path, monkeypatch):
+    """Gli export dei test vanno in una cartella temporanea.
+
+    Senza, finivano in `instance/gdpr_exports` — la cartella vera, quella del
+    server di sviluppo — e ci restavano. Un file lasciato da un giro
+    precedente col prefisso dell'utente 1 bastava a far rispondere alla route
+    «un export è già in corso»: il test dipendeva da cosa era girato prima.
+    """
+    from routes.player import exports
+
+    monkeypatch.setattr(exports, "_get_export_dir", lambda: tmp_path)
+
+
 @pytest.fixture
 def player_with_data(db_session):
     """Create a player with some test data."""
@@ -116,11 +130,31 @@ class TestGDPRExport:
             # Should redirect to login
             assert response.status_code in [302, 401]
 
-    @pytest.mark.skip(
-        reason="Background thread causes SQLite savepoint issues in parallel testing"
-    )
-    def test_request_export_starts_background_task(self, client, app, player_with_data):
-        """Test that export request starts a background task."""
+    def test_request_export_starts_background_task(
+        self, client, app, player_with_data, monkeypatch
+    ):
+        """La richiesta avvia l'export in background, per l'utente giusto.
+
+        Il thread vero non parte: nei test tutte le connessioni condividono
+        lo stesso SQLite in memoria (StaticPool), e un secondo thread
+        chiuderebbe i savepoint di quello della richiesta. È un limite
+        dell'ambiente di test, non dell'export — in produzione il thread ha
+        la sua connessione. Qui si verifica ciò che la route decide: che cosa
+        lancia, e con quali argomenti.
+        """
+        from routes.player import exports
+
+        avviati = []
+
+        class ThreadFinto:
+            def __init__(self, target, args, daemon):
+                self.target, self.args, self.daemon = target, args, daemon
+
+            def start(self):
+                avviati.append(self)
+
+        monkeypatch.setattr(exports.threading, "Thread", ThreadFinto)
+
         with app.app_context():
             # Login as the player
             client.post(
@@ -136,6 +170,11 @@ class TestGDPRExport:
             assert response.status_code == 200
             # Should show info message about export starting
             assert b"Export avviato" in response.data or b"in corso" in response.data
+
+        assert len(avviati) == 1
+        assert avviati[0].target is exports._generate_gdpr_export
+        assert avviati[0].args[2] == "gdpr_test_user"
+        assert avviati[0].daemon is True
 
     def test_download_export_wrong_user_forbidden(
         self, client, app, db_session, player_with_data
