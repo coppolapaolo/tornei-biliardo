@@ -312,7 +312,17 @@ Quando il numero di giocatori è **pari** e l'opzione `anti_rematch_enabled` è 
 - **Pesi per spirito Amalfi** — gli archi sono pesati per minimizzare lo scostamento dal salto target (`max_turni - turno + 1`): tra tutti i matching perfetti possibili, viene scelto quello che meglio rispetta il salto Amalfi.
 - **Fallback** — quando il matching perfetto sul complementare non esiste (rematch matematicamente inevitabile), l'algoritmo accetta il numero minimo di rematch e usa il greedy salto come tie-breaker.
 
-Per il caso **dispari** la priorità è descritta nella sezione successiva (selezione trio): la rotazione equa dei trii vince sull'anti-rematch.
+Per il caso **dispari con il trio** la priorità è descritta nella sezione successiva (selezione trio): la rotazione equa dei trii vince sull'anti-rematch.
+
+#### Caso dispari con la X
+
+_Nota del 2026-11-12._ Quando il numero di giocatori è **dispari** e i dispari si gestiscono con la X, la X entra nell'abbinamento come un posto in più in fondo alla classifica, e si usa lo stesso _maximum weighted matching_ del caso pari. Ne discendono tre regole:
+
+- **Una X sola a turno, sempre.** Tutti gli altri giocano.
+- **Zero eccezioni quando è possibile.** Le eccezioni sono due: un reincontro, e una seconda X a chi l'ha già avuta. Se esiste un abbinamento che le evita tutte, è quello scelto; altrimenti si sceglie quello che ne ha il numero minimo.
+- **A parità, lo spirito Amalfi.** Fra gli abbinamenti con lo stesso numero di eccezioni vince quello più vicino al salto, e la X resta a chi dista dal fondo esattamente il salto.
+
+Fino a questa data il caso dispari usava il greedy del salto, che non segnava la X come assegnata: quando il primo giocatore ci arrivava scartando un reincontro, ci arrivavano anche altri, e nello stesso turno uscivano più X con una partita in meno.
 
 #### Selezione trio nell'algoritmo Amalfi
 
