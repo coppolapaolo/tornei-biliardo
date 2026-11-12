@@ -29,17 +29,16 @@ blocks:
   - type: text
     text: >-
       Se l'avversario ce l'hai davanti e le stecche sono già in mano, non serve
-      proporre niente: tocca **Avvio rapido** nella sezione Sfide, scegli chi
+      proporre niente: tocca **Giochi adesso?** nella sezione Sfide, scegli chi
       hai davanti e sei al segnapunti. Non si chiede quando (è adesso), e sala,
       disciplina e distanza arrivano già scritte, riprese dall'ultima partita
       che hai giocato.
 
   - type: steps
     items:
-      - title: "Apri Sfide e tocca «Avvio rapido»"
+      - title: "Apri Sfide e tocca «Giochi adesso?»"
         text: >-
-          È la prima voce della sezione, e la trovi anche in fondo alla pagina
-          fra i collegamenti.
+          È la tessera scura in cima alla sezione: porta all'avvio rapido.
       - title: "Scegli chi hai davanti"
         text: >-
           Gli avversari con cui giochi più spesso sono già in elenco: un tocco
