@@ -23,6 +23,10 @@ concurrency:
 jobs:
   test-and-typecheck:
     runs-on: ubuntu-latest
+    # Il job dura un quarto d'ora. Senza un tetto, un test che resta in un
+    # ciclo terrebbe occupato il runner per le sei ore predefinite di GitHub,
+    # e la PR resterebbe «in corso» senza dire niente.
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v7
