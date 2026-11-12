@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-12 12:45+0100\n"
+"POT-Creation-Date: 2026-11-12 14:39+0100\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -3645,7 +3645,7 @@ msgstr "%(nome)s is available to play at %(luogo)s"
 #: models/individual_match/availability_service.py:288
 #: models/individual_match/proposal_service.py:253
 #: models/individual_match/proposal_service.py:579
-#: models/individual_match/quick_match_service.py:520
+#: models/individual_match/quick_match_service.py:522
 #: models/individual_match/services.py:194 models/notification/factory.py:264
 #: models/notification/factory.py:265
 msgid "Un giocatore"
@@ -3859,7 +3859,7 @@ msgstr ""
 
 #: models/individual_match/proposal_service.py:284
 #: models/individual_match/proposal_service.py:566
-#: models/individual_match/quick_match_service.py:515
+#: models/individual_match/quick_match_service.py:517
 #: models/individual_match/services.py:191
 #, python-format
 msgid "a %(loc)s"
@@ -3942,7 +3942,7 @@ msgstr "Match proposal concluded"
 msgid "La proposta di sfida '%(title)s' è stata accettata da un altro giocatore."
 msgstr "The match proposal '%(title)s' has been accepted by another player."
 
-#: models/individual_match/quick_match_service.py:233
+#: models/individual_match/quick_match_service.py:236
 msgid ""
 "Un giocatore non registrato lo aggiungono direttori e istruttori: cercalo"
 " fra i giocatori, se c'è già."
@@ -3950,38 +3950,38 @@ msgstr ""
 "Unregistered players are added by competition directors and instructors: "
 "search for them among the players, if they are already there."
 
-#: models/individual_match/quick_match_service.py:244
+#: models/individual_match/quick_match_service.py:247
 msgid "Non puoi giocare contro te stesso."
 msgstr "You can't play against yourself."
 
-#: models/individual_match/quick_match_service.py:247
+#: models/individual_match/quick_match_service.py:250
 #: models/individual_match/scored_match_service.py:96
 #: models/user/claim_service.py:185
 msgid "Giocatore non trovato."
 msgstr "Player not found."
 
-#: models/individual_match/quick_match_service.py:254
+#: models/individual_match/quick_match_service.py:256
 #, python-format
-msgid "%(name)s non ha ancora sbloccato le sfide individuali."
-msgstr "%(name)s has not unlocked individual matches yet."
+msgid "%(name)s non si può scegliere come avversario."
+msgstr "%(name)s can't be chosen as an opponent."
 
-#: models/individual_match/quick_match_service.py:403
+#: models/individual_match/quick_match_service.py:405
 msgid "Disciplina non riconosciuta."
 msgstr "Unknown discipline."
 
-#: models/individual_match/quick_match_service.py:408
+#: models/individual_match/quick_match_service.py:410
 msgid "Formato di gioco non riconosciuto."
 msgstr "Unknown match format."
 
-#: models/individual_match/quick_match_service.py:417
+#: models/individual_match/quick_match_service.py:419
 msgid "triangoli per set"
 msgstr "racks per set"
 
-#: models/individual_match/quick_match_service.py:421
+#: models/individual_match/quick_match_service.py:423
 msgid "set da vincere"
 msgstr "sets to win"
 
-#: models/individual_match/quick_match_service.py:426
+#: models/individual_match/quick_match_service.py:428
 #: templates/components/_multi_set_score_display.html:117
 #: templates/direttore/_modali_gioco.html:47
 #: templates/direttore/_modali_gioco.html:50
@@ -3989,17 +3989,17 @@ msgstr "sets to win"
 msgid "triangoli"
 msgstr "racks"
 
-#: models/individual_match/quick_match_service.py:479
+#: models/individual_match/quick_match_service.py:481
 #, python-format
 msgid "Valore non valido per %(field)s."
 msgstr "Invalid value for %(field)s."
 
-#: models/individual_match/quick_match_service.py:482
+#: models/individual_match/quick_match_service.py:484
 #, python-format
 msgid "Il numero di %(field)s deve essere almeno 1."
 msgstr "The number of %(field)s must be at least 1."
 
-#: models/individual_match/quick_match_service.py:518
+#: models/individual_match/quick_match_service.py:520
 #, python-format
 msgid ""
 "%(player)s ha aperto una partita con te%(location)s. A fine partita "
@@ -4008,11 +4008,11 @@ msgstr ""
 "%(player)s opened a match with you%(location)s. You will have to confirm "
 "the result when it ends."
 
-#: models/individual_match/quick_match_service.py:527
+#: models/individual_match/quick_match_service.py:529
 msgid "Partita iniziata!"
 msgstr "Match started!"
 
-#: models/individual_match/quick_match_service.py:531
+#: models/individual_match/quick_match_service.py:533
 #: templates/components/_match_card.html:247
 #: templates/individual_match/proposal_detail.html:111
 msgid "Vai alla partita"

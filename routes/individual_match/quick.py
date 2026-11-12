@@ -151,8 +151,8 @@ def _quick_match_form():
 
     # Gli avversari abituali sono la scorciatoia vera: in sala si rigioca quasi
     # sempre con le stesse persone. La ricerca completa resta per gli altri.
-    # `can_access` come nell'elenco avversari e nella ricerca: proporre qualcuno
-    # che poi il servizio rifiuta sarebbe una porta dipinta sul muro.
+    # Lo stesso filtro del servizio e della ricerca: proporre qualcuno che poi
+    # il servizio rifiuta sarebbe una porta dipinta sul muro.
     frequent = [
         player
         for player in IndividualMatchStatisticsService.get_frequent_opponents(

@@ -28,6 +28,8 @@ Un **direttore** (o l'admin) e un **istruttore** possono creare un giocatore che
 - Accanto al suo nome, negli iscritti, nelle classifiche e nel profilo, c'è il segno **«non registrato»**.
 - Chi poi si registra lo **riscatta**: le partite passano al nuovo account con la conferma di chi l'ha creato — per i giocatori senza creatore, dei direttori della loro prima gara —, o dell'admin (vedi «Il riscatto»).
 
+_Nota del 2026-11-12 (issue #601)._ Nell'avvio rapido si può scegliere come avversario **ogni giocatore registrato**, oltre ai non registrati: non l'admin, che non gioca. Fino a questa data un registrato compariva solo se aveva sbloccato le sfide individuali, e chi aveva giocato molti tornei senza sbloccarle non si trovava. Lo sblocco decide chi può **avviare** una sfida, non chi può esserne l'avversario: chi viene scelto conferma o rifiuta il risultato come sempre. La **proposta per una data** resta riservata a chi ha sbloccato le sfide, perché va accettata da lì.
+
 _Regola nuova del 2026-10-17, decisa dall'utente (ADR-085)._
 
 _Nota del 2026-10-19, richiesta dall'utente («quando un direttore di gara iscrive gli utenti alla gara, può contestualmente alla ricerca creare un nuovo utente placeholder e aggiungerlo alla gara?», ADR-085): fino a questa data il modulo stava a parte, sotto la ricerca, e andava aperto e riempito da capo._

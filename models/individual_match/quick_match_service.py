@@ -191,18 +191,21 @@ class QuickMatchService:
     def can_be_opponent(user: Any) -> bool:
         """Se ``user`` si può scegliere come avversario dell'avvio rapido.
 
-        Chi ha sbloccato le sfide individuali — lo stesso filtro dell'elenco
-        avversari e della ricerca — **oppure un giocatore non registrato**:
-        non ha un account, quindi non sblocca niente e non riceve niente, ma
-        gioca davvero. Lo può scegliere chiunque giochi: la sfida resta *In
-        attesa* finché qualcuno non lo riscatta, e chi lo riscatta la conferma
-        o la rifiuta come qualunque avversario.
+        Chiunque giochi: ogni giocatore registrato, e i giocatori non
+        registrati (ADR-085). Non l'admin, che non gioca, né i giocatori
+        fittizi delle competizioni di prova.
+
+        Fino al 2026-11-12 un registrato doveva aver **sbloccato** le sfide
+        individuali. Ma lo sblocco dice chi può *avviare* una sfida, non chi
+        può *esserci dentro*: chi aveva giocato dieci tornei non si trovava,
+        mentre chi non aveva nemmeno un account sì (issue #601). Chi viene
+        scelto conferma o rifiuta il risultato come ogni avversario.
         """
         if user is None or getattr(user, "deleted_at", None) is not None:
             return False
-        if getattr(user, "is_fittizio", False):
+        if getattr(user, "is_fittizio", False) or getattr(user, "is_admin", False):
             return False
-        return bool(user.is_placeholder or user.can_access("create_match_direct"))
+        return True
 
     @staticmethod
     def can_create_opponent(user: Any) -> bool:
@@ -246,12 +249,11 @@ class QuickMatchService:
         if avversario is None or avversario.deleted_at is not None:
             raise NotFoundError(_("Giocatore non trovato."))
 
-        # Stesso filtro dell'elenco avversari e della ricerca giocatori: chi non
-        # ha sbloccato le sfide individuali non le vedrebbe nemmeno arrivare.
+        # Stesso filtro dell'elenco avversari e della ricerca giocatori.
         if not QuickMatchService.can_be_opponent(avversario):
             raise ConflictError(
                 _(
-                    "%(name)s non ha ancora sbloccato le sfide individuali.",
+                    "%(name)s non si può scegliere come avversario.",
                     name=avversario.username,
                 )
             )
