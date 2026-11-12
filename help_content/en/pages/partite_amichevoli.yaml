@@ -45,6 +45,7 @@ blocks:
           the **break**. They come pre-filled from the last match you played.
           Happy with them? Touch nothing. Otherwise tap the tile to fix: it
           opens right below, and when you are done it shows the new value.
+        shot: avvio-rapido-a-cosa-giocate
       - title: "Pick who you are playing"
         text: >-
           The opponents you play most often are already listed: one tap and they

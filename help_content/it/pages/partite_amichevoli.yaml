@@ -46,6 +46,7 @@ blocks:
           compilate con l'ultima partita che hai giocato. Vanno bene? Non
           toccare niente. Altrimenti tocca la tessera da correggere: si apre lì
           sotto, e quando hai finito mostra il valore nuovo.
+        shot: avvio-rapido-a-cosa-giocate
       - title: "Scegli chi hai davanti"
         text: >-
           Gli avversari con cui giochi più spesso sono già in elenco: un tocco
