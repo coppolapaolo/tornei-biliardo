@@ -671,6 +671,13 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         super()._complete_match_after_confirmation()
         if not self.gara_id:
             return
+        # L'incontro va agli atti anche da qui: fino al 2026-11-12 lo scriveva
+        # solo la chiusura del direttore, e chi aveva firmato in due poteva
+        # ritrovarsi di fronte due turni dopo (gara 54).
+        from models.classification.encounter_service import PlayerEncounterService
+
+        PlayerEncounterService.record_match_encounters(self)
+
         from .table_assignment_service import TableAssignmentService
 
         TableAssignmentService.release_and_reassign_table(self.id)
