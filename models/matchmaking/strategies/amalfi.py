@@ -354,8 +354,18 @@ class AmalfiStrategy(BaseStrategy):
                 # (handled below in the while loop)
                 players = players + [self.BYE_PLAYER_ID]
             else:
-                # Bye: add BYE_PLAYER_ID sentinel
-                players = players + [self.BYE_PLAYER_ID]
+                # Dispari con la X: la X è un posto in fondo alla classifica,
+                # e l'abbinamento è lo stesso matching del caso pari. Il greedy
+                # qui sotto non segnava la X come presa: bastava che il primo
+                # ci arrivasse scartando un reincontro perché ci arrivassero
+                # anche altri — tre X nello stesso turno e una partita in meno.
+                return self._match_with_bye(
+                    players,
+                    encounter_matrix,
+                    salto_iniziale,
+                    players_with_bye,
+                    turno,
+                )
 
         # --- Salto loop (same logic for both bye and trio modes) ---
         # When use_trio=True, produces intermediate representation
@@ -569,6 +579,65 @@ class AmalfiStrategy(BaseStrategy):
                 a, b = b, a
             pairs.append(Pairing(players=(a, b), is_bye=False, round_number=turno))
         pairs.sort(key=lambda p: player_to_index[p.players[0]])
+        return pairs
+
+    def _match_with_bye(
+        self,
+        players: List[int],
+        encounter_matrix: Dict[Tuple[int, int], bool],
+        salto_target: int,
+        players_with_bye: set[int],
+        turno: int,
+    ) -> List[Pairing]:
+        """Abbinamento del caso dispari con la X: una X sola, sempre.
+
+        La X entra nel grafo come un giocatore in più, ultimo in classifica.
+        Due archi sono «da evitare»: quello fra due che si sono già incontrati
+        e quello fra la X e chi l'ha già avuta. Il grafo è completo e i nodi
+        sono pari, quindi un abbinamento di tutti esiste sempre; i pesi
+        scelgono prima quello con meno archi da evitare — zero, quando è
+        possibile — e a parità quello più vicino al salto Amalfi.
+        """
+        import networkx as nx
+
+        bye = self.BYE_PLAYER_ID
+        nodes = list(players) + [bye]
+        index = {node: i for i, node in enumerate(nodes)}
+        n = len(nodes)
+        max_weight_offset = n + 1
+        # Un arco «buono» vale più di tutti gli scostamenti dal salto messi
+        # insieme: il numero di archi da evitare si minimizza per primo.
+        bonus = (2 * max_weight_offset + 2) * n
+
+        graph: nx.Graph = nx.Graph()
+        graph.add_nodes_from(nodes)
+        for i, a in enumerate(nodes):
+            for b in nodes[i + 1 :]:
+                if b == bye:
+                    da_evitare = a in players_with_bye
+                else:
+                    da_evitare = bool(encounter_matrix.get((a, b), False))
+                position_diff = abs(index[a] - index[b])
+                weight = 2 * max(
+                    1, max_weight_offset - abs(position_diff - salto_target)
+                )
+                # A parità di scostamento complessivo la X resta dove la
+                # metteva il salto: a chi dista dal fondo esattamente il salto.
+                if b == bye and position_diff == salto_target:
+                    weight += 1
+                graph.add_edge(a, b, weight=weight + (0 if da_evitare else bonus))
+
+        matching = nx.max_weight_matching(graph, maxcardinality=True)
+
+        pairs: List[Pairing] = []
+        for a, b in matching:
+            if index[a] > index[b]:
+                a, b = b, a
+            if b == bye:
+                pairs.append(Pairing(players=(a,), is_bye=True, round_number=turno))
+            else:
+                pairs.append(Pairing(players=(a, b), is_bye=False, round_number=turno))
+        pairs.sort(key=lambda p: index[p.players[0]])
         return pairs
 
     def _get_players_with_bye(self, gara_id: int) -> set[int]:

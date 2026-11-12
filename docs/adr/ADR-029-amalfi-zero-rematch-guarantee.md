@@ -67,3 +67,19 @@ Per il caso **dispari** (con bye sentinel o trio) il comportamento resta invaria
 - Test contract: `tests/new/unit/test_anti_rematch_regression.py::TestAntiRematchRegression::test_anti_rematch_prevents_*_3_rounds`.
 - Test rifrasato: `tests/new/unit/test_amalfi_algorithm_implementation.py::test_amalfi_round1_of_3_produces_wide_spread_pairings`.
 - ADR correlato: ADR-001 (Amalfi strategy unification), ADR-002 (anti-rematch encounter cleanup).
+
+## Emendamento del 2026-11-12: anche il dispari con la X
+
+L'estensione prevista nelle conseguenze è stata fatta. Non per una flakiness,
+ma per un difetto: il greedy del salto non segnava la X come assegnata, e
+quando il primo giocatore ci arrivava scartando un reincontro ci arrivavano
+anche altri. Nello stesso turno uscivano più X e una partita in meno. È
+rimasto coperto finché la matrice degli incontri era incompleta (le partite
+chiuse dalla doppia firma non vi comparivano); corretta quella, un test di
+conformità è diventato intermittente e lo ha mostrato.
+
+Ora la X è un nodo del grafo, ultimo in classifica (`_match_with_bye`). Il
+grafo è completo: gli archi da evitare, cioè un reincontro o una seconda X,
+pesano meno di qualunque arco buono, quindi il matching ne sceglie il numero
+minimo e a parità sta vicino al salto. Il greedy resta per il trio e come
+ripiego del caso pari.
