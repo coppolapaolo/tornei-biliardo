@@ -287,15 +287,14 @@ class SquadraService:
         return actor.id == inscription.user_id or actor.can_manage_competition(gara.id)
 
     @staticmethod
-    @transactional(domain="squadra")
-    def set_inscription_squadra(
-        gara, inscription, squadra_id: Optional[int], actor=None
-    ):
-        """Assegna (o toglie) la squadra di un iscritto per **questa** gara.
+    def assert_can_edit_inscription(gara, inscription, actor=None) -> None:
+        """Rifiuta, col suo motivo, chi non può cambiare questa squadra.
 
-        ``squadra_id`` a ``None`` non e' un errore: e' "gioco senza squadra
-        qui", uno stato legittimo e distinto dal non aver ancora scelto
-        (US-8). La scelta non tocca il profilo del giocatore.
+        È la stessa regola di ``can_edit_inscription`` detta per esteso, e va
+        chiesta **prima** di ogni scrittura che l'assegnazione si porta
+        dietro: la route crea la voce nuova dell'elenco prima di assegnarla,
+        e quella creazione si salva da sola. ``actor`` assente = chiamata di
+        servizio, il permesso lo ha già controllato chi chiama.
         """
         if not gara.separate_teammates:
             raise ValidationError(
@@ -313,6 +312,19 @@ class SquadraService:
                 raise PermissionDeniedError(
                     _("Puoi cambiare solo la squadra della tua iscrizione")
                 )
+
+    @staticmethod
+    @transactional(domain="squadra")
+    def set_inscription_squadra(
+        gara, inscription, squadra_id: Optional[int], actor=None
+    ):
+        """Assegna (o toglie) la squadra di un iscritto per **questa** gara.
+
+        ``squadra_id`` a ``None`` non e' un errore: e' "gioco senza squadra
+        qui", uno stato legittimo e distinto dal non aver ancora scelto
+        (US-8). La scelta non tocca il profilo del giocatore.
+        """
+        SquadraService.assert_can_edit_inscription(gara, inscription, actor)
 
         inscription.squadra_id = (
             SquadraService._owned(gara, squadra_id).id

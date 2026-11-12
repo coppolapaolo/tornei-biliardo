@@ -32,14 +32,17 @@ def salva_immagine_ridimensionata(
     max_size: Tuple[int, int] = (400, 300),
     quality: int = 80,
 ) -> None:
-    """Ridimensiona e salva l'immagine caricata, con ripiego sul file grezzo.
+    """Ridimensiona e salva l'immagine caricata; se non ci riesce, non salva.
 
     `thumbnail` mantiene le proporzioni e non ingrandisce mai: `max_size` è un
     tetto, non una misura da raggiungere.
 
-    Se Pillow non riesce ad aprire il file lo si scrive comunque così com'è e
-    **poi** si rilancia: chi chiama deve sapere che il ridimensionamento non è
-    avvenuto, ma l'immagine resta a disposizione invece di sparire.
+    Se Pillow non riesce a leggere o a salvare il file si rilancia e **su
+    disco non resta niente**. Fino al 2026-11-10 il contenuto grezzo veniva
+    scritto comunque: nessun chiamante lo usava — tutti mostrano l'errore e
+    non salvano il percorso — ma restava nella cartella servita dal sito, col
+    contenuto scelto da chi l'aveva caricato. È Pillow, non l'estensione, a
+    dire che cos'è un'immagine.
     """
     try:
         image = Image.open(file.stream)
@@ -70,7 +73,8 @@ def salva_immagine_ridimensionata(
             image.save(save_path, format=formato)
 
     except Exception:
-        file.seek(0)
-        with open(save_path, "wb") as destinazione:
-            destinazione.write(file.read())
+        # Niente resta su disco: un salvataggio interrotto a metà lascerebbe
+        # un file monco, e quello che Pillow non sa leggere non è un'immagine.
+        if os.path.exists(save_path):
+            os.remove(save_path)
         raise

@@ -167,8 +167,14 @@ class TestLAggiornamento:
             issue=[_issue_json(55, state="closed", state_reason="completed")],
             commenti={
                 55: [
-                    {"body": "nota interna, non pubblicare"},
-                    {"body": "@utente: corretto nella versione di stasera"},
+                    {
+                        "body": "nota interna, non pubblicare",
+                        "author_association": "OWNER",
+                    },
+                    {
+                        "body": "@utente: corretto nella versione di stasera",
+                        "author_association": "OWNER",
+                    },
                 ]
             },
         )

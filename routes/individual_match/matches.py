@@ -15,6 +15,7 @@ from flask_login import current_user
 
 from models import IndividualMatch
 from models.base import db
+from models.exceptions import PermissionDeniedError
 from models.individual_match.services import IndividualMatchService
 from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
 from models.status_enum import Discipline, MatchStatus
@@ -298,6 +299,7 @@ def register_lag(match_id):
 
         IndividualMatchService.register_lag(
             match_id=match_id,
+            user_id=current_user.id,
             lag_winner_id=int(data["lag_winner_id"]),
             first_break_player_id=int(data["first_break_player_id"]),
         )
@@ -306,7 +308,12 @@ def register_lag(match_id):
         return redirect(url_for("individual_match.match_detail", match_id=match_id))
     except ValueError as e:
         if request.is_json:
-            return jsonify({"success": False, "error": str(e)}), 400
+            return (
+                jsonify({"success": False, "error": str(e)}),
+                # Il rifiuto per chi non c'entra è un 403; il resto resta il
+                # 400 che il tabellone conosce.
+                403 if isinstance(e, PermissionDeniedError) else 400,
+            )
         flash(str(e), "danger")
         return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
@@ -319,7 +326,7 @@ def toggle_run_out(match_id, rack_id):
     """Marca (o smarca) un triangolo come chiuso in una visita (ADR-056)."""
     try:
         stato = IndividualMatchService.toggle_run_out(
-            match_id=match_id, rack_id=rack_id
+            match_id=match_id, user_id=current_user.id, rack_id=rack_id
         )
         if request.is_json:
             # `letter`: la sigla la decide il server, non il tabellone —
@@ -333,7 +340,12 @@ def toggle_run_out(match_id, rack_id):
         return redirect(url_for("individual_match.match_detail", match_id=match_id))
     except ValueError as e:
         if request.is_json:
-            return jsonify({"success": False, "error": str(e)}), 400
+            return (
+                jsonify({"success": False, "error": str(e)}),
+                # Il rifiuto per chi non c'entra è un 403; il resto resta il
+                # 400 che il tabellone conosce.
+                403 if isinstance(e, PermissionDeniedError) else 400,
+            )
         flash(str(e), "danger")
         return redirect(url_for("individual_match.match_detail", match_id=match_id))
 

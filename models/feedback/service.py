@@ -50,6 +50,11 @@ ETICHETTA_SEGNALAZIONE = "segnalazione"
 #: Un commento arriva all'utente **solo** se comincia così.
 MARCATORE_PUBBLICO = "@utente:"
 
+# Chi può rispondere all'utente a nome nostro: i valori di `author_association`
+# che GitHub mette sui commenti di proprietario, membri dell'organizzazione e
+# collaboratori. Gli altri (CONTRIBUTOR, NONE, …) commentano, ma non per noi.
+AUTORI_CHE_RISPONDONO = frozenset({"OWNER", "MEMBER", "COLLABORATOR"})
+
 #: Etichette che dichiarano «non la faremo», anche a issue ancora aperta.
 ETICHETTE_NON_PREVISTA = {"wontfix", "duplicate", "invalid"}
 
@@ -232,11 +237,18 @@ class FeedbackService:
 
         L'ultima e non la prima: se il maintainer torna sulla issue e corregge
         quello che aveva detto, all'utente deve arrivare la versione buona.
+
+        Conta solo ciò che ha scritto chi mantiene il progetto: il repository
+        è pubblico, sulla issue commenta chiunque, e questo testo arriva
+        all'utente come «La nostra risposta». GitHub dice su ogni commento
+        che rapporto ha l'autore col repository (`author_association`); un
+        commento che non lo porta non è di nessuno, quindi non è nostro.
         """
         marcate = [
             c.get("body", "")
             for c in commenti
-            if (c.get("body") or "").lstrip().startswith(MARCATORE_PUBBLICO)
+            if (c.get("author_association") or "").upper() in AUTORI_CHE_RISPONDONO
+            and (c.get("body") or "").lstrip().startswith(MARCATORE_PUBBLICO)
         ]
         if not marcate:
             return None

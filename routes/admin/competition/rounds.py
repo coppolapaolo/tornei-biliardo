@@ -19,6 +19,7 @@ from models import (
     Inscription,
     Match,
 )
+from models.exceptions import NotFoundError
 from models.status_enum import (
     Discipline,
     GaraStatus,
@@ -939,12 +940,18 @@ def reset_match_advanced(gara_id, match_id):
     from models.competition.round_manager import AdvancedRoundManager
 
     try:
-        success, message = AdvancedRoundManager.reset_match_with_validation(match_id)
+        # Il permesso è stato verificato sulla gara dell'indirizzo: il servizio
+        # rifiuta la partita che non le appartiene.
+        success, message = AdvancedRoundManager.reset_match_with_validation(
+            match_id, gara_id=gara_id
+        )
 
         if success:
             flash(message, "success")
         else:
             flash(message, "danger")
+    except NotFoundError:
+        abort(404)
     except Exception as e:
         logger.error(f"Error resetting match: {e}", exc_info=True)
         flash(_("Errore interno del server"), "danger")
@@ -1007,9 +1014,15 @@ def bulk_reset_round_matches(gara_id, round_number):
 @competition_bp.route("/<int:gara_id>/match/<int:match_id>/modification_check")
 @login_required
 @gara_manager_required
-def check_match_modification(_gara_id, match_id):
+def check_match_modification(gara_id, match_id):
     """AJAX endpoint to check if a match can be modified."""
     from models.competition.round_manager import AdvancedRoundManager
+
+    # Il permesso vale per la gara dell'indirizzo: della partita di un'altra
+    # gara non si dice niente.
+    match = db.session.get(Match, match_id)
+    if match is None or match.gara_id != gara_id:
+        abort(404)
 
     can_modify, reason = AdvancedRoundManager.can_modify_match(match_id)
 
