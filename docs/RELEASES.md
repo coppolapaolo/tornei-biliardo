@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.86.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.86.0...v1.86.1) (2026-11-12)
+
+
+### Correzioni
+
+* in inglese il pulsante Continua non dice più Solid, e la guida mostra le sfide di oggi ([#766](https://github.com/coppolapaolo/tornei-biliardo/issues/766)) ([6a5381d](https://github.com/coppolapaolo/tornei-biliardo/commit/6a5381dc84293fdc83945a0c21ec0905069d60af))
+
 ## [1.86.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.85.1...v1.86.0) (2026-11-12)
 
 
