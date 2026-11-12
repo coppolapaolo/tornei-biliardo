@@ -954,8 +954,8 @@ hints:
     section: altri-due
 
   - id: sfida.riepilogo_rapido
-    label: "Come si gioca"
-    short: "Sala, disciplina e distanza sono già quelle dell'ultima partita. Se vanno bene non tocchi niente; «Cambia» le apre."
+    label: "A cosa giocate"
+    short: "Disciplina, distanza e sala sono già quelle dell'ultima partita. Se vanno bene non tocchi niente; ogni tessera si tocca per cambiarla."
     anchor: sfida-riepilogo-rapido
     screens: [individual_match.quick_match]
     page: partite_amichevoli

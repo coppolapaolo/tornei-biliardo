@@ -25,9 +25,13 @@
 {% endblock %}
 
 {% block content %}
-{# La schermata piu' vicina nel prototipo e' 9a·2: sezioni intitolate, il luogo
-   come riga con "Cambia", barra d'azione appiccicata in fondo con la frase che
-   dice cosa succede dopo. Qui pero' non si propone niente: si comincia. #}
+{# La schermata piu' vicina nel prototipo e' 9a·2: sezioni intitolate, barra
+   d'azione appiccicata in fondo con la frase che dice cosa succede dopo. Qui
+   pero' non si propone niente: si comincia.
+
+   L'ordine e' «a cosa giocate», poi «chi hai davanti» (12/11/2026). Prima il
+   gioco stava in una scheda sotto l'avversario: su un telefono finiva dietro
+   il pulsante, e si partiva senza aver letto a cosa. #}
 
 {% set fmt = defaults.match_format %}
 {% set format_summary %}
@@ -71,6 +75,121 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="opponent_id" id="opponentId" value="{{ preselected_id or '' }}">
 
+    {# ---------- A cosa giocate: gia' deciso, ma si legge e si tocca ----------
+       Tre tessere dicono disciplina, distanza e sala; una riga dice
+       l'apertura. Ognuna apre sotto di se' i propri campi, una alla volta. I
+       valori arrivano dall'ultima partita giocata (o dalla sala in cui sei
+       disponibile): chi non tocca niente gioca con quelli. #}
+    <div class="c7-card" id="gioco">
+      <div class="c7-sechead mb-3"><h2 data-help="sfida-riepilogo-rapido">{{ _("A cosa giocate") }}</h2></div>
+
+      <div class="c7-recap">
+        <button type="button" class="c7-recap__cell" data-tile="discipline" aria-expanded="false" aria-controls="panel-discipline">
+          <span class="c7-recap__label">{{ _("Disciplina") }}</span>
+          <span class="c7-recap__value" id="tileDiscipline">{{ defaults.discipline|discipline_display }}</span>
+          <span class="c7-recap__more">{{ _("Cambia") }}</span>
+        </button>
+        <button type="button" class="c7-recap__cell" data-tile="format" aria-expanded="false" aria-controls="panel-format">
+          <span class="c7-recap__label">{{ _("Distanza") }}</span>
+          <span class="c7-recap__value" id="tileFormat">{{ format_summary }}</span>
+          <span class="c7-recap__more">{{ _("Cambia") }}</span>
+        </button>
+        <button type="button" class="c7-recap__cell" data-tile="location" aria-expanded="false" aria-controls="panel-location">
+          <span class="c7-recap__label">{{ _("Sala") }}</span>
+          <span class="c7-recap__value" id="tileLocation">{{ defaults.location or _("Non indicata") }}</span>
+          <span class="c7-recap__more">{{ _("Cambia") }}</span>
+        </button>
+        <button type="button" class="c7-recap__cell c7-recap__cell--wide" data-tile="opening" aria-expanded="false" aria-controls="panel-opening">
+          <span class="c7-recap__label">{{ _("Apertura") }}</span>
+          {# Testo semplice, senza elementi dentro: lo script lo riscrive, e un
+             nodo tolto sotto il dito farebbe perdere il tocco. #}
+          <span class="c7-recap__value" id="tileOpening">
+            {%- for rule in StartRule if rule.value == defaults.start_rule %}{{ rule.display_name }}{% endfor %} · {% for rule in BreakRule if rule.value == defaults.break_rule %}{{ rule.display_name }}{% endfor -%}
+          </span>
+          <span class="c7-recap__more">{{ _("Cambia") }}</span>
+        </button>
+      </div>
+
+      <div id="panel-discipline" class="c7-recap__panel d-none" data-panel="discipline">
+        <div class="form-label">{{ _("Disciplina") }}</div>
+        <div class="c7-recap__pills">
+          {% for value, label in Discipline.get_choices() %}
+          <label class="c7-pill">
+            <input type="radio" name="discipline" value="{{ value }}" data-label="{{ label }}"
+                   {% if defaults.discipline == value %}checked{% endif %}>
+            {{ label }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div id="panel-format" class="c7-recap__panel d-none" data-panel="format">
+        {{ choice('match_format', _("Formato"), [
+             {'value': 'single', 'title': _("Set singolo"), 'desc': _("Una partita sola, alla distanza scelta."), 'icon': 'fa-dice-one'},
+             {'value': 'multi', 'title': _("Multi-set"), 'desc': _("Più set: vince chi ne conquista N."), 'icon': 'fa-layer-group'},
+             {'value': 'free', 'title': _("Libero"), 'desc': _("Senza limite: la partita si chiude quando volete."), 'icon': 'fa-infinity'}
+           ], selected=fmt) }}
+
+        {# La distanza del set vale per il set singolo e per il multi-set: sta
+           fuori dai due blocchi, e sparisce solo nel formato libero. #}
+        <div id="distanceConfig" class="{{ 'd-none' if fmt == 'free' }}">
+          {{ stepper('distance', _("Distanza"), value=(defaults.distance or 5),
+               min=1, max=25, hint=_("triangoli per vincere")) }}
+        </div>
+
+        <div id="singleSetConfig" class="{{ 'd-none' if fmt != 'single' }}">
+          {{ choice('is_race_to', _("Come si chiude"), [
+               {'value': 'true', 'title': _("Al N"), 'desc': _("Vince chi arriva primo alla distanza.")},
+               {'value': 'false', 'title': _("Esattamente N"), 'desc': _("Si giocano tutti i triangoli: vince chi ne ha di più.")}
+             ], selected=('true' if defaults.is_race_to else 'false')) }}
+        </div>
+
+        <div id="multiSetConfig" class="{{ 'd-none' if fmt != 'multi' }}">
+          {{ stepper('match_distance', _("Set da vincere"), value=(defaults.match_distance or 3),
+               min=1, max=11, hint=_("set per vincere la sfida")) }}
+        </div>
+      </div>
+
+      <div id="panel-location" class="c7-recap__panel d-none" data-panel="location">
+        <label for="location" class="form-label">{{ _("Sala biliardo") }}</label>
+        <input type="text" class="form-control" id="location" name="location"
+               placeholder="{{ _('es. Sala Regina, Udine') }}"
+               list="venue-suggestions" autocomplete="off"
+               value="{{ defaults.location }}">
+        <datalist id="venue-suggestions">
+          {% for venue in verified_venues or [] %}
+          <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or _('Città non specificata') }}</option>
+          {% endfor %}
+        </datalist>
+      </div>
+
+      <div id="panel-opening" class="c7-recap__panel d-none" data-panel="opening">
+        {# Le opzioni le detta l'enum, non questo file: `BreakRule` e
+           `StartRule` sono iniettati nel contesto Jinja (`app.py`), e i form
+           di gara e campionato iterano gli stessi. Scritte a mano qui, lo
+           stesso formato finiva per chiamarsi in due modi a seconda della
+           schermata, e «a turno ogni due» non era raggiungibile (ADR-056).
+           Qui non c'è la voce «eredita»: una sfida non ha una gara sopra, il
+           match **è** la radice. #}
+        <div class="mb-3">
+          <label for="start_rule" class="form-label">{{ _("Regola di inizio") }}</label>
+          <select class="form-select" id="start_rule" name="start_rule">
+            {% for rule in StartRule %}
+            <option value="{{ rule.value }}" {% if defaults.start_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="break_rule" class="form-label">{{ _("Chi spacca") }}</label>
+          <select class="form-select" id="break_rule" name="break_rule">
+            {% for rule in BreakRule %}
+            <option value="{{ rule.value }}" {% if defaults.break_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
     {# ---------- Chi gioca ---------- #}
     <div class="c7-card">
       <div class="c7-sechead mb-3"><h2 data-help="sfida-chi-hai-davanti">{{ _("Chi hai davanti") }}</h2></div>
@@ -113,120 +232,11 @@
       <div class="form-text" data-help="sfida-avversario-non-registrato">{{ _("La partita finisce nel suo storico e nel tuo. Se non è registrato si chiude con la tua firma e conta fra «Tutte».") }}</div>
     </div>
 
-    {# ---------- Come si gioca: gia' deciso, si cambia solo se serve ---------- #}
-    <div class="c7-card">
-      <div class="c7-sechead mb-3">
-        <h2 data-help="sfida-riepilogo-rapido">{{ _("Come si gioca") }}</h2>
-        <button type="button" class="c7-sechead__more" id="toggleSettings"
-                style="background:none;border:0;padding:0;color:var(--c7-accent)">{{ _("Cambia") }}</button>
-      </div>
-
-      {# Riepilogo: quello che il modulo di proposta chiederebbe, gia' risposto
-         con l'ultima partita giocata (o con la sala in cui sei disponibile). #}
-      <div id="settingsSummary" class="c7-rows">
-        <div class="c7-rows__row">
-          <i class="fas fa-clock" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
-          <div class="c7-rows__main">
-            <div class="c7-rows__title">{{ _("Adesso") }}</div>
-            <div class="c7-rows__sub">{{ _("La partita parte appena tocchi il pulsante") }}</div>
-          </div>
-        </div>
-        <div class="c7-rows__row">
-          <i class="fas fa-location-dot" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
-          <div class="c7-rows__main">
-            <div class="c7-rows__title" id="summaryLocation">
-              {{ defaults.location or _("Sala non indicata") }}
-            </div>
-            <div class="c7-rows__sub">{{ _("Dove state giocando") }}</div>
-          </div>
-        </div>
-        <div class="c7-rows__row">
-          <i class="fas fa-dice-one" style="font-size:calc(14 * var(--c7-tpx));color:var(--c7-accent);width:18px"></i>
-          <div class="c7-rows__main">
-            <div class="c7-rows__title" id="summaryFormat">
-              {{ defaults.discipline|discipline_display }} <span class="c7-sep">·</span> {{ format_summary }}
-            </div>
-            <div class="c7-rows__sub">{{ _("Disciplina e distanza") }}</div>
-          </div>
-        </div>
-      </div>
-
-      {# Gli stessi campi del modulo di proposta, ma chiusi: chi non li apre
-         gioca comunque. #}
-      <div id="settingsDetail" class="d-none" style="margin-top:16px">
-        <div class="mb-3">
-          <label for="location" class="form-label">{{ _("Sala biliardo") }}</label>
-          <input type="text" class="form-control" id="location" name="location"
-                 placeholder="{{ _('es. Sala Regina, Udine') }}"
-                 list="venue-suggestions" autocomplete="off"
-                 value="{{ defaults.location }}">
-          <datalist id="venue-suggestions">
-            {% for venue in verified_venues or [] %}
-            <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or _('Città non specificata') }}</option>
-            {% endfor %}
-          </datalist>
-        </div>
-
-        <div class="mb-3">
-          <label for="discipline" class="form-label">{{ _("Disciplina") }}</label>
-          <select class="form-select" id="discipline" name="discipline">
-            {% for value, label in Discipline.get_choices() %}
-            <option value="{{ value }}" {% if defaults.discipline==value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        {{ choice('match_format', _("Formato"), [
-             {'value': 'single', 'title': _("Set singolo"), 'desc': _("Una partita sola, alla distanza scelta."), 'icon': 'fa-dice-one'},
-             {'value': 'multi', 'title': _("Multi-set"), 'desc': _("Più set: vince chi ne conquista N."), 'icon': 'fa-layer-group'},
-             {'value': 'free', 'title': _("Libero"), 'desc': _("Senza limite: la partita si chiude quando volete."), 'icon': 'fa-infinity'}
-           ], selected=fmt) }}
-
-        <div id="singleSetConfig" class="{{ 'd-none' if fmt != 'single' }}">
-          {{ stepper('distance', _("Distanza"), value=(defaults.distance or 5),
-               min=1, max=25, hint=_("triangoli per vincere")) }}
-          {{ choice('is_race_to', _("Come si chiude"), [
-               {'value': 'true', 'title': _("Al N"), 'desc': _("Vince chi arriva primo alla distanza.")},
-               {'value': 'false', 'title': _("Esattamente N"), 'desc': _("Si giocano tutti i triangoli: vince chi ne ha di più.")}
-             ], selected=('true' if defaults.is_race_to else 'false')) }}
-        </div>
-
-        <div id="multiSetConfig" class="{{ 'd-none' if fmt != 'multi' }}">
-          {{ stepper('match_distance', _("Set da vincere"), value=(defaults.match_distance or 3),
-               min=1, max=11, hint=_("set per vincere la sfida")) }}
-        </div>
-
-        <div>
-          {# Le opzioni le detta l'enum, non questo file: `BreakRule` e
-             `StartRule` sono iniettati nel contesto Jinja (`app.py`), e i form
-             di gara e campionato iterano gli stessi. Scritte a mano qui, lo
-             stesso formato finiva per chiamarsi in due modi a seconda della
-             schermata, e «a turno ogni due» non era raggiungibile (ADR-056).
-             Qui non c'è la voce «eredita»: una sfida non ha una gara sopra, il
-             match **è** la radice. #}
-          <label for="start_rule" class="form-label">{{ _("Regola di inizio") }}</label>
-          <select class="form-select" id="start_rule" name="start_rule">
-            {% for rule in StartRule %}
-            <option value="{{ rule.value }}" {% if defaults.start_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label for="break_rule" class="form-label">{{ _("Chi spacca") }}</label>
-          <select class="form-select" id="break_rule" name="break_rule">
-            {% for rule in BreakRule %}
-            <option value="{{ rule.value }}" {% if defaults.break_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>
-    </div>
-
     {# ---------- Il referto TPA: si sceglie adesso o non si sceglie ----------
 
-       Fuori da `settingsDetail` di proposito. Tutto il resto di «come si
-       gioca» si può cambiare anche dopo, quindi sta bene chiuso dietro
-       «Cambia»; il referto no: va aperto **prima del primo triangolo**
+       Fuori dalle tessere di proposito. Tutto il resto di «a cosa giocate»
+       si può cambiare anche dopo, quindi sta bene dietro un tocco; il
+       referto no: va aperto **prima del primo triangolo**
        (ADR-044) e l'avvio rapido porta dritti al segnapunti, dove la prima
        cosa che si fa è segnare. Nascosto qui dentro, la domanda arriverebbe
        sempre troppo tardi — che è esattamente com'è andata.
@@ -284,7 +294,12 @@
         typeMore: {{ _("Scrivi almeno due lettere.")|tojson }},
         notRegistered: {{ _("non registrato")|tojson }},
         change: {{ _("Cambia")|tojson }},
-        close: {{ _("Chiudi")|tojson }}
+        close: {{ _("Chiudi")|tojson }},
+        noVenue: {{ _("Non indicata")|tojson }},
+        free: {{ _("Senza limite")|tojson }},
+        raceTo: {{ _("Al {n}")|tojson }},
+        exactly: {{ _("Esattamente {n}")|tojson }},
+        sets: {{ _("{sets} set da {n}")|tojson }}
     };
 
     const opponentId = document.getElementById('opponentId');
@@ -357,9 +372,59 @@
     // Una sola configurazione visibile alla volta: quella del formato scelto.
     function syncMatchFormat() {
         const format = currentValue('match_format') || 'single';
+        document.getElementById('distanceConfig').classList.toggle('d-none', format === 'free');
         document.getElementById('singleSetConfig').classList.toggle('d-none', format !== 'single');
         document.getElementById('multiSetConfig').classList.toggle('d-none', format !== 'multi');
         syncTpaChoice();
+    }
+
+    // Le tessere dicono sempre quello che partirebbe adesso: si riscrivono a
+    // ogni campo che cambia. Il testo e' lo stesso che il server scrive al
+    // primo caricamento.
+    function testoDelFormato() {
+        const format = currentValue('match_format') || 'single';
+        const n = document.getElementById('f-distance').value;
+        if (format === 'free') return i18n.free;
+        if (format === 'multi') {
+            return i18n.sets
+                .replace('{sets}', document.getElementById('f-match_distance').value)
+                .replace('{n}', n);
+        }
+        return (currentValue('is_race_to') === 'false' ? i18n.exactly : i18n.raceTo).replace('{n}', n);
+    }
+
+    function scelta(id) {
+        const select = document.getElementById(id);
+        return select.options[select.selectedIndex].text;
+    }
+
+    // Si riscrive solo cio' che e' cambiato: uscendo dal campo della sala
+    // toccando una tessera, il browser manda `change` fra il dito giu' e il
+    // dito su, e sostituire il testo proprio li' sotto faceva perdere il tocco.
+    function scrivi(id, testo) {
+        const nodo = document.getElementById(id);
+        if (nodo.textContent.trim() !== testo) nodo.textContent = testo;
+    }
+
+    function syncTiles() {
+        const disciplina = document.querySelector('input[name="discipline"]:checked');
+        if (disciplina) scrivi('tileDiscipline', disciplina.dataset.label);
+        scrivi('tileFormat', testoDelFormato());
+        scrivi('tileLocation', document.getElementById('location').value.trim() || i18n.noVenue);
+        scrivi('tileOpening', scelta('start_rule') + ' · ' + scelta('break_rule'));
+    }
+
+    // Una tessera alla volta: toccarne un'altra chiude quella aperta, toccare
+    // la stessa la richiude.
+    function apriTessera(tile) {
+        const apre = tile.getAttribute('aria-expanded') !== 'true';
+        document.querySelectorAll('#gioco .c7-recap__cell').forEach(function (altra) {
+            const aperta = apre && altra === tile;
+            altra.setAttribute('aria-expanded', aperta ? 'true' : 'false');
+            altra.querySelector('.c7-recap__more').textContent = aperta ? i18n.close : i18n.change;
+            document.getElementById('panel-' + altra.dataset.tile).classList.toggle('d-none', !aperta);
+        });
+        if (apre && tile.dataset.tile === 'location') document.getElementById('location').focus();
     }
 
     // Il referto TPA non copre tutto: a One Pocket, Straight Pool e Bank Pool
@@ -372,7 +437,7 @@
 
     function syncTpaChoice() {
         if (!tpaChoice) return;
-        const discipline = document.getElementById('discipline').value;
+        const discipline = currentValue('discipline');
         const format = currentValue('match_format') || 'single';
         const ok = tpaDiscipline.indexOf(discipline) !== -1 && format !== 'multi';
         tpaChoice.classList.toggle('d-none', !ok);
@@ -390,19 +455,14 @@
 
         document.querySelectorAll('input[name="match_format"]').forEach(r =>
             r.addEventListener('change', syncMatchFormat));
-        document.getElementById('discipline').addEventListener('change', syncTpaChoice);
+        document.querySelectorAll('input[name="discipline"]').forEach(r =>
+            r.addEventListener('change', syncTpaChoice));
 
-        // Il riepilogo e i campi sono due viste della stessa cosa: o l'una o
-        // l'altra, mai il doppione.
-        const toggle = document.getElementById('toggleSettings');
-        const summary = document.getElementById('settingsSummary');
-        const detail = document.getElementById('settingsDetail');
-        toggle.addEventListener('click', function () {
-            const opening = detail.classList.contains('d-none');
-            detail.classList.toggle('d-none', !opening);
-            summary.classList.toggle('d-none', opening);
-            toggle.textContent = opening ? i18n.close : i18n.change;
-        });
+        const gioco = document.getElementById('gioco');
+        gioco.querySelectorAll('.c7-recap__cell').forEach(tile =>
+            tile.addEventListener('click', () => apriTessera(tile)));
+        gioco.addEventListener('change', syncTiles);
+        gioco.addEventListener('input', syncTiles);
 
         syncMatchFormat();
 

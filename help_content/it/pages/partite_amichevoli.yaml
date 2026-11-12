@@ -39,6 +39,13 @@ blocks:
       - title: "Apri Sfide e tocca «Giochi adesso?»"
         text: >-
           È la tessera scura in cima alla sezione: porta all'avvio rapido.
+      - title: "Guarda a cosa giocate"
+        text: >-
+          In cima, sotto «A cosa giocate», ci sono tre tessere: **disciplina**,
+          **distanza** e **sala**, e sotto una riga con l'**apertura**. Sono già
+          compilate con l'ultima partita che hai giocato. Vanno bene? Non
+          toccare niente. Altrimenti tocca la tessera da correggere: si apre lì
+          sotto, e quando hai finito mostra il valore nuovo.
       - title: "Scegli chi hai davanti"
         text: >-
           Gli avversari con cui giochi più spesso sono già in elenco: un tocco
@@ -47,12 +54,10 @@ blocks:
           Se chi hai davanti non ha un account e sei **istruttore** o
           **direttore di gara**, tocca **Non ha un account? Aggiungilo** sotto
           la ricerca e scrivi nome e cognome.
-      - title: "Se serve, cambia come si gioca"
+      - title: "Se la partita ha un nome, scrivilo"
         text: >-
-          Sotto «Come si gioca» c'è il riepilogo di sala, disciplina e distanza.
-          Vanno bene? Non toccare niente. Altrimenti tocca **Cambia** e correggi
-          quello che serve. Se la partita ha un nome — una finale, una giornata
-          di campionato — tocca **Aggiungi una descrizione** e scrivilo.
+          Una finale, una giornata di campionato: tocca **Aggiungi una
+          descrizione** e scrivilo. Si corregge anche dopo.
       - title: "Decidi se tenere il referto TPA"
         text: >-
           Se hai sbloccato il referto, sopra il pulsante c'è **Tengo il referto
@@ -247,8 +252,8 @@ blocks:
 
   - type: text
     text: >-
-      Sotto «Come si gioca», insieme a disciplina e distanza, ci sono due
-      scelte che riguardano il **tiro di apertura**. Non sono obbligatorie: se
+      Sotto «A cosa giocate» la riga **Apertura** tiene due scelte che
+      riguardano il **tiro di apertura**: toccala per cambiarle. Non sono obbligatorie: se
       non le tocchi, si tira l'acchito e poi ci si alterna.
 
   - type: options
@@ -330,7 +335,7 @@ blocks:
 
   - type: text
     text: >-
-      L'avvio rapido è veloce perché non chiede niente: sala, disciplina e
+      L'avvio rapido è veloce perché propone già tutto: sala, disciplina e
       distanza le riprende dall'ultima partita. Il rovescio è che ogni tanto
       riprende quella sbagliata — avevate deciso «al 7» e vi ritrovate un «al
       5» — oppure hai scelto l'avversario di fianco invece di quello davanti.
