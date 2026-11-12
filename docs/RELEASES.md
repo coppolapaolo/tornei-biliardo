@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.86.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.85.1...v1.86.0) (2026-11-12)
+
+
+### Funzioni nuove
+
+* l'avvio rapido dice a cosa si gioca prima di chiedere con chi ([#764](https://github.com/coppolapaolo/tornei-biliardo/issues/764)) ([ad4b92f](https://github.com/coppolapaolo/tornei-biliardo/commit/ad4b92f53254ee253f26133b9040f90ab7eb81b0))
+
+
+### Correzioni
+
+* nell'avvio rapido si sceglie ogni giocatore registrato ([#762](https://github.com/coppolapaolo/tornei-biliardo/issues/762)) ([80723a8](https://github.com/coppolapaolo/tornei-biliardo/commit/80723a8a67fea26c66a1301ecaa818334f8b7f45))
+* nella pagina Sfide un solo ingresso all'avvio rapido, e si legge ([#763](https://github.com/coppolapaolo/tornei-biliardo/issues/763)) ([4d84a65](https://github.com/coppolapaolo/tornei-biliardo/commit/4d84a65b15d7770cca69a2044a249433a8671c0d))
+
 ## [1.85.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.85.0...v1.85.1) (2026-11-12)
 
 
