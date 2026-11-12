@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.85.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.85.0...v1.85.1) (2026-11-12)
+
+
+### Correzioni
+
+* a partita chiusa non si segna, e l'ELO conta le partite a set e quelle corrette ([#752](https://github.com/coppolapaolo/tornei-biliardo/issues/752)) ([e799e99](https://github.com/coppolapaolo/tornei-biliardo/commit/e799e990c06eb4629020cce20f7c7a0fedee6360))
+* chi ha già giocato insieme non si reincontra, comunque si sia chiusa la partita ([#754](https://github.com/coppolapaolo/tornei-biliardo/issues/754)) ([354a955](https://github.com/coppolapaolo/tornei-biliardo/commit/354a9551b867b28a5e34b1c4843a95fbc250d2a9))
+* con Amalfi a giocatori dispari esce una X sola per turno ([#757](https://github.com/coppolapaolo/tornei-biliardo/issues/757)) ([c240ab1](https://github.com/coppolapaolo/tornei-biliardo/commit/c240ab1fa507f9111ca3bc6a6315939a97ba4257))
+* gli errori isolati restano scritti nel log ([#743](https://github.com/coppolapaolo/tornei-biliardo/issues/743)) ([1afecab](https://github.com/coppolapaolo/tornei-biliardo/commit/1afecaba6049931397a3bf795358b893fcddd37a))
+* gli esclusi fuori dagli abbinamenti, il sostituto di fascia ai playoff e l'azzera turno ([#751](https://github.com/coppolapaolo/tornei-biliardo/issues/751)) ([9221990](https://github.com/coppolapaolo/tornei-biliardo/commit/9221990ea6abd6dc878595d251236823914533a6))
+* la fascia oraria scritta male si interpreta o si rifiuta, non sparisce ([#747](https://github.com/coppolapaolo/tornei-biliardo/issues/747)) ([ff71bbd](https://github.com/coppolapaolo/tornei-biliardo/commit/ff71bbd9b3fa5590c0ae030f0a1aef654968e774))
+* la pagina non si ricarica mentre la stai scorrendo ([#755](https://github.com/coppolapaolo/tornei-biliardo/issues/755)) ([385ec01](https://github.com/coppolapaolo/tornei-biliardo/commit/385ec017ad4f6bac78e089256fb4386bb57f2ee5))
+* le azioni controllano che l'oggetto sia di chi le chiede ([#758](https://github.com/coppolapaolo/tornei-biliardo/issues/758)) ([2cccf29](https://github.com/coppolapaolo/tornei-biliardo/commit/2cccf295f9705b092dd6e1afbec3df0ac5120afa))
+* sul tabellone la capienza è obbligatoria e l'anti-reincontro non si salva ([#746](https://github.com/coppolapaolo/tornei-biliardo/issues/746)) ([c5fdf7f](https://github.com/coppolapaolo/tornei-biliardo/commit/c5fdf7f6c2bab6d6ef77d3b5c268220737216dff))
+* un rollback per un rifiuto di dominio non è più un allarme nel log ([#750](https://github.com/coppolapaolo/tornei-biliardo/issues/750)) ([dcde95b](https://github.com/coppolapaolo/tornei-biliardo/commit/dcde95b676fd91f93811674549871f29cef7d08e))
+* una prova si chiude una volta sola, e l'XP restituito torna indietro davvero ([#759](https://github.com/coppolapaolo/tornei-biliardo/issues/759)) ([5125575](https://github.com/coppolapaolo/tornei-biliardo/commit/51255752dbdb18e489fdc4c6e565360a544ad9ac))
+
 ## [1.85.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.84.2...v1.85.0) (2026-10-31)
 
 
