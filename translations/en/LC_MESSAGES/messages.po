@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-12 12:27+0100\n"
+"POT-Creation-Date: 2026-11-12 12:45+0100\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -831,17 +831,41 @@ msgstr[1] "At this pace you finish at %(proj)s: %(num)s points below your usual.
 msgid "A questo ritmo chiudi a %(proj)s: il tuo solito."
 msgstr "At this pace you finish at %(proj)s: your usual."
 
-#: models/challenge/services.py:449 models/prova/service.py:249
+#: models/challenge/services.py:423 models/challenge/services.py:926
+msgid "Questa prova è già stata registrata."
+msgstr "This attempt has already been recorded."
+
+#: models/challenge/services.py:516
+msgid "Questa prova appartiene a una scheda: si segna dalla seduta."
+msgstr "This attempt belongs to a training sheet: score it from the session."
+
+#: models/challenge/services.py:520
+msgid "Questa prova appartiene a una gara: si registra da lì."
+msgstr "This attempt belongs to a competition: record it from there."
+
+#: models/challenge/services.py:524 models/challenge/services.py:1370
+msgid "Questo esercizio si registra colpo per colpo, non col totale."
+msgstr "This exercise is recorded shot by shot, not with the total."
+
+#: models/challenge/services.py:541 models/prova/service.py:249
 #: models/prova/service.py:481 models/prova/service.py:492
 #: models/training_sheet/session_service.py:386
 msgid "Prova non trovata"
 msgstr "Attempt not found"
 
-#: models/challenge/services.py:451
+#: models/challenge/services.py:543
 msgid "Questa prova non è tua"
 msgstr "This attempt is not yours"
 
-#: models/challenge/services.py:778
+#: models/challenge/services.py:599
+msgid "Questa prova appartiene a una scheda: si corregge dalla seduta."
+msgstr "This attempt belongs to a training sheet: correct it from the session."
+
+#: models/challenge/services.py:603
+msgid "Questa prova appartiene a una gara: non si cancella da qui."
+msgstr "This attempt belongs to a competition: it can't be deleted from here."
+
+#: models/challenge/services.py:890
 msgid ""
 "Il direttore non ha ancora scelto l'esercizio da giocare al posto della X"
 " in questa gara."
@@ -849,7 +873,7 @@ msgstr ""
 "The director has not yet chosen the drill to play in place of the X in "
 "this competition."
 
-#: models/challenge/services.py:824 models/challenge/services.py:958
+#: models/challenge/services.py:946 models/challenge/services.py:1080
 #, python-format
 msgid ""
 "Il punteggio della prova deve essere compreso fra 0 e %(massimo)s, la "
@@ -858,15 +882,11 @@ msgstr ""
 "The challenge score must be between 0 and %(massimo)s, the widest rack "
 "difference achievable in this round."
 
-#: models/challenge/services.py:949
+#: models/challenge/services.py:1071
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr "A score is needed: none has been recorded for this drill yet."
 
-#: models/challenge/services.py:1248
-msgid "Questo esercizio si registra colpo per colpo, non col totale."
-msgstr "This exercise is recorded shot by shot, not with the total."
-
-#: models/challenge/services.py:1266 models/challenge/shot_service.py:162
+#: models/challenge/services.py:1388 models/challenge/shot_service.py:162
 #: models/training_sheet/session_service.py:580
 msgid "Questa variante non è di questo esercizio"
 msgstr "This variant does not belong to this drill"
@@ -7153,64 +7173,64 @@ msgstr ""
 "Account activated! Log in with the username and password you chose: your "
 "matches are waiting for you."
 
-#: routes/challenge.py:93 routes/challenge.py:158
+#: routes/challenge.py:97 routes/challenge.py:162
 #: templates/direttore/preparazione/_esercizi.html:117
 msgid "Non è stato possibile caricare gli esercizi."
 msgstr "The drills could not be loaded."
 
-#: routes/challenge.py:194
+#: routes/challenge.py:198
 msgid "Non è stato possibile caricare l'andamento."
 msgstr "Your training trends could not be loaded."
 
-#: routes/challenge.py:257
+#: routes/challenge.py:261
 msgid "Obiettivo salvato."
 msgstr "Goal saved."
 
-#: routes/challenge.py:264
+#: routes/challenge.py:268
 msgid "Non è stato possibile salvare l'obiettivo."
 msgstr "The goal could not be saved."
 
-#: routes/challenge.py:343
+#: routes/challenge.py:347
 msgid "Obiettivo lasciato."
 msgstr "Goal left."
 
-#: routes/challenge.py:426
+#: routes/challenge.py:430
 msgid "La foto non è un'immagine che si possa leggere"
 msgstr "The photo is not a readable image"
 
-#: routes/challenge.py:458
+#: routes/challenge.py:462
 msgid "Ho creato una copia con le tue modifiche: l'originale è rimasto com'era."
 msgstr "I created a copy with your changes: the original is untouched."
 
-#: routes/challenge.py:462
+#: routes/challenge.py:466
 msgid "Esercizio aggiornato."
 msgstr "Drill updated."
 
-#: routes/challenge.py:477
+#: routes/challenge.py:481
 msgid "Serve la foto della disposizione"
 msgstr "A photo of the layout is required"
 
-#: routes/challenge.py:485
+#: routes/challenge.py:489
 msgid "Copia creata."
 msgstr "Copy created."
 
-#: routes/challenge.py:485 routes/challenge.py:861
+#: routes/challenge.py:489 routes/challenge.py:862
 msgid "Esercizio creato."
 msgstr "Drill created."
 
-#: routes/challenge.py:642 routes/challenge.py:929
+#: routes/challenge.py:646 routes/challenge.py:930
 msgid "Questo esercizio non è più disponibile."
 msgstr "This drill is no longer available."
 
-#: routes/challenge.py:647
+#: routes/challenge.py:651
 msgid "Gli amministratori non possono provare gli esercizi."
 msgstr "Administrators cannot attempt drills."
 
-#: routes/challenge.py:676
+#: routes/challenge.py:677
 msgid "Tentativo iniziato."
 msgstr "Attempt started."
 
-#: routes/challenge.py:790
+#: routes/challenge.py:791
 msgid ""
 "Questo esercizio si registra colpo per colpo: il bersaglio serve. Per "
 "toglierlo, cambia prima «Come si registra»."
@@ -7218,7 +7238,7 @@ msgstr ""
 "This exercise is recorded shot by shot: the target is needed. To remove "
 "it, change «How it is recorded» first."
 
-#: routes/challenge.py:825
+#: routes/challenge.py:826
 msgid ""
 "Questo esercizio ha già delle prove: istruzioni e punteggio si cambiano "
 "da «Modifica l'esercizio», qui salva solo il disegno."
@@ -7226,68 +7246,68 @@ msgstr ""
 "This drill already has attempts: change instructions and scoring from "
 "“Edit drill”; here, save the diagram only."
 
-#: routes/challenge.py:886
+#: routes/challenge.py:887
 msgid "Questo esercizio nasce da una foto: non c'è un disegno da modificare."
 msgstr "This drill comes from a photo: there is no drawing to edit."
 
-#: routes/challenge.py:905
+#: routes/challenge.py:906
 msgid "Disegno aggiornato."
 msgstr "Drawing updated."
 
-#: routes/challenge.py:933
+#: routes/challenge.py:934
 msgid "Gli amministratori non provano gli esercizi."
 msgstr "Administrators do not attempt drills."
 
-#: routes/challenge.py:990 routes/challenge.py:1382
+#: routes/challenge.py:991 routes/challenge.py:1383
 msgid "Prova registrata."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:1021
+#: routes/challenge.py:1022
 msgid "Non c'è nessuna prova da annullare."
 msgstr "There is no attempt to undo."
 
-#: routes/challenge.py:1043 routes/challenge.py:1314
+#: routes/challenge.py:1044 routes/challenge.py:1315
 msgid "Prova annullata."
 msgstr "Attempt undone."
 
-#: routes/challenge.py:1189
+#: routes/challenge.py:1190
 msgid "Il punto sul panno non è leggibile."
 msgstr "The point on the cloth cannot be read."
 
-#: routes/challenge.py:1347
+#: routes/challenge.py:1348
 msgid "Non c'è nessuna prova aperta da chiudere."
 msgstr "There is no open attempt to close."
 
-#: routes/challenge.py:1439 routes/sheet/run.py:274
+#: routes/challenge.py:1440 routes/sheet/run.py:274
 msgid "Note salvate."
 msgstr "Notes saved."
 
-#: routes/challenge.py:1639
+#: routes/challenge.py:1645
 msgid "Tentativo registrato."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:1680 templates/challenge/catalog.html:140
+#: routes/challenge.py:1689 templates/challenge/catalog.html:140
 #: templates/challenge/today.html:171
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr "The favourites could not be updated."
 
-#: routes/challenge.py:1717
+#: routes/challenge.py:1726
 msgid "Voto registrato."
 msgstr "Rating saved."
 
-#: routes/challenge.py:1780
+#: routes/challenge.py:1789
 msgid "Esercizio di gara avviato."
 msgstr "Tournament drill started."
 
-#: routes/challenge.py:1833
+#: routes/challenge.py:1842
 msgid "Esercizio di gara registrato."
 msgstr "Tournament drill recorded."
 
-#: routes/challenge.py:1866
+#: routes/challenge.py:1878
 msgid "Esercizio non trovato."
 msgstr "Drill not found."
 
-#: routes/challenge.py:1876
+#: routes/challenge.py:1888
 msgid "Non hai i permessi per questo esercizio."
 msgstr "You do not have permission for this drill."
 
@@ -14772,7 +14792,7 @@ msgstr "Update Password"
 
 #: templates/challenge/_challenge_detail.html:25
 #: templates/challenge/_training_board.html:27
-#: templates/challenge/training.html:91 templates/sheet/_run_progress.html:23
+#: templates/challenge/training.html:92 templates/sheet/_run_progress.html:23
 msgid "Disposizione dell'esercizio"
 msgstr "Drill layout"
 
@@ -14979,7 +14999,7 @@ msgstr "How did it go?"
 
 #: templates/challenge/_run_progress.html:51
 #: templates/challenge/_training_board.html:65
-#: templates/challenge/training.html:139
+#: templates/challenge/training.html:140
 #: templates/components/_history_drills_tab.html:133
 #: templates/components/_match_challenge_input.html:54
 #: templates/components/_player_challenge_statistics.html:55
@@ -14994,7 +15014,7 @@ msgstr "Passed"
 
 #: templates/challenge/_run_progress.html:51
 #: templates/challenge/_training_board.html:68
-#: templates/challenge/training.html:142
+#: templates/challenge/training.html:143
 #: templates/components/_history_drills_tab.html:133
 #: templates/components/_match_challenge_input.html:55
 #: templates/components/_player_challenge_statistics.html:55
@@ -15074,7 +15094,7 @@ msgstr "Back to the session"
 
 #: templates/challenge/_run_shots_dock.html:59
 #: templates/challenge/_training_board.html:95
-#: templates/challenge/summary.html:124 templates/challenge/training.html:178
+#: templates/challenge/summary.html:124 templates/challenge/training.html:179
 #: templates/sheet/_run_dock.html:156 templates/sheet/summary.html:142
 msgid "Ho finito"
 msgstr "I'm done"
@@ -16517,15 +16537,15 @@ msgid "Alla fine registri il punteggio"
 msgstr "At the end you record your score"
 
 #: templates/challenge/start_attempt.html:43
-#: templates/challenge/training.html:128
+#: templates/challenge/training.html:129
 msgid "Puoi riprovare quante volte vuoi: resta il tuo risultato migliore."
 msgstr "You can try as often as you like: your best result is the one that stays."
 
-#: templates/challenge/start_attempt.html:67
+#: templates/challenge/start_attempt.html:60
 msgid "Inizia ora"
 msgstr "Start now"
 
-#: templates/challenge/start_attempt.html:100
+#: templates/challenge/start_attempt.html:93
 msgid "Non è stato possibile iniziare il tentativo. Riprova."
 msgstr "The attempt could not be started. Try again."
 
@@ -16566,7 +16586,7 @@ msgid "Punteggio della prova"
 msgstr "Score of the attempt"
 
 #: templates/challenge/summary.html:30 templates/challenge/training.html:40
-#: templates/challenge/training.html:151 templates/exam/session.html:238
+#: templates/challenge/training.html:152 templates/exam/session.html:238
 #: templates/sheet/_run_dock.html:75 templates/sheet/_run_dock.html:89
 #, python-format
 msgid "su %(n)s"
@@ -16702,35 +16722,39 @@ msgstr "The attempt could not be recorded. Try again."
 msgid "Non è stato possibile annullare la prova."
 msgstr "The attempt could not be undone."
 
-#: templates/challenge/training.html:87
+#: templates/challenge/training.html:65 templates/sheet/run.html:50
+msgid "La sessione è scaduta: accedi di nuovo e riprova."
+msgstr "Your session has expired: log in again and retry."
+
+#: templates/challenge/training.html:88
 msgid "Rivedi la disposizione"
 msgstr "Look at the layout again"
 
-#: templates/challenge/training.html:108 templates/sheet/compose.html:241
+#: templates/challenge/training.html:109 templates/sheet/compose.html:241
 msgid "Da che parte"
 msgstr "Which side"
 
-#: templates/challenge/training.html:110
+#: templates/challenge/training.html:111
 msgid "senza dirlo"
 msgstr "unspecified"
 
-#: templates/challenge/training.html:148 templates/exam/session.html:231
+#: templates/challenge/training.html:149 templates/exam/session.html:231
 #: templates/sheet/_run_dock.html:70 templates/sheet/_run_dock.html:85
-#: templates/sheet/run.html:92
+#: templates/sheet/run.html:93
 msgid "Uno in meno"
 msgstr "One less"
 
-#: templates/challenge/training.html:154 templates/exam/session.html:240
+#: templates/challenge/training.html:155 templates/exam/session.html:240
 #: templates/sheet/_run_dock.html:78 templates/sheet/_run_dock.html:92
-#: templates/sheet/run.html:99
+#: templates/sheet/run.html:100
 msgid "Uno in più"
 msgstr "One more"
 
-#: templates/challenge/training.html:165
+#: templates/challenge/training.html:166
 msgid "Registra la prova"
 msgstr "Record the attempt"
 
-#: templates/challenge/training.html:176 templates/sheet/_run_dock.html:101
+#: templates/challenge/training.html:177 templates/sheet/_run_dock.html:101
 msgid "Annulla l'ultima"
 msgstr "Undo the last one"
 
@@ -31849,11 +31873,11 @@ msgstr "Missed"
 msgid "Annulla il tiro"
 msgstr "Undo the shot"
 
-#: templates/sheet/_run_dock.html:63 templates/sheet/run.html:86
+#: templates/sheet/_run_dock.html:63 templates/sheet/run.html:87
 msgid "Scrivi il totale"
 msgstr "Write the total"
 
-#: templates/sheet/_run_dock.html:80 templates/sheet/run.html:102
+#: templates/sheet/_run_dock.html:80 templates/sheet/run.html:103
 msgid "Segna"
 msgstr "Record"
 
@@ -32471,15 +32495,15 @@ msgstr "item %(n)s of %(tot)s"
 msgid "Non è stato possibile segnare la casella."
 msgstr "The box could not be recorded."
 
-#: templates/sheet/run.html:55
+#: templates/sheet/run.html:56
 msgid "Le voci della scheda"
 msgstr "The items of the sheet"
 
-#: templates/sheet/run.html:87
+#: templates/sheet/run.html:88
 msgid "Quanti ne sono riusciti, se li hai contati da te."
 msgstr "How many were made, if you counted them yourself."
 
-#: templates/sheet/run.html:95
+#: templates/sheet/run.html:96
 msgid "Quanti riusciti"
 msgstr "How many made"
 
