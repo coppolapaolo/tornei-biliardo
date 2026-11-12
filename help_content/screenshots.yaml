@@ -936,11 +936,17 @@ shots:
     caption: "Le partite da rivedere dopo il riscatto: per ciascuna chi l'ha registrata, il punteggio e la casella «La contesto»; sotto, «Le riconosco tutte», «Contesto solo quelle spuntate» e «Le contesto tutte»."
     full_page: true
 
+  - id: avvio-rapido-a-cosa-giocate
+    route: /match/quick
+    as: Marco Rossi
+    caption: "L'avvio rapido: la scheda «A cosa giocate», con le tessere di disciplina, distanza e sala e la riga dell'apertura; sotto, «Chi hai davanti»."
+
   - id: avvio-rapido-non-registrato
     route: /match/quick
     as: Andrea Ferri
     caption: "L'avvio rapido visto da un istruttore: sotto la ricerca dell'avversario si apre «Non ha un account? Aggiungilo», con nome e cognome."
     click: ['details[data-nuovo="opponent"] summary']
+    clip: ".c7-card:has(#opponentSearch)"
 
   - id: partita-altri-due
     route: /match/scored

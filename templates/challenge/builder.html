@@ -284,7 +284,11 @@
       <div class="sec" id="sec-linea">
         <h2>{{ _("Linea libera") }}</h2>
         <div class="row">
-          <button class="btn wide" data-lstyle="solid">{{ _("Continua") }}</button>
+          {# «Linea continua» e non «Continua»: il secondo msgid è lo stesso del
+             pulsante che riprende una partita o un esercizio, e in inglese
+             quel pulsante diceva «Solid». Stesso rimedio di «Orari della
+             partita»: il progetto non usa `pgettext`. #}
+          <button class="btn wide" data-lstyle="solid">{{ _("Linea continua") }}</button>
           <button class="btn wide" data-lstyle="dashed">{{ _("Tratteggiata") }}</button>
         </div>
         <div class="field">
