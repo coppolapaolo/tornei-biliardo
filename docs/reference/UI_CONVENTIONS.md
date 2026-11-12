@@ -667,7 +667,7 @@ dipende dalla **fase** e dal **ruolo**:
 
 ---
 
-### Immagini dei drill: mostrare, non riempire (ADR-044)
+### Immagini dei drill: mostrare, non riempire (ADR-087)
 
 L'immagine di un drill **è** l'esercizio: dice dove stanno le bilie e dov'è la
 battente. Riempire il riquadro ritagliandola toglie le teste del tavolo, cioè
@@ -1329,7 +1329,7 @@ Principi, in ordine di importanza:
 | 2026-01-24 | Sezione Mobile-First Design | Linee guida complete DO/DON'T per interfacce mobile-first: header layout, azioni distruttive, tabelle responsive, touch target, statistiche, form, navigazione |
 | 2026-06-10 | Principio "l'azionabile va prima" (mobile) | Decisione utente da test manuale: l'interfaccia mostra prima ciò che serve in quel momento. Applicato in gara_detail.html fase gioco (Partite→Turni→Gestione collassata→Direttori via flex order-*) e turni attivi crescenti in _match_cards_mobile.html |
 | 2026-06-10 | fa-8-ball per "Ai tavoli adesso" | Card "In diretta ora": era fa-table-tennis-paddle-ball (racchetta ping pong!) — allineata alla convenzione biliardo |
-| 2026-08-16 | Immagini dei drill mai ritagliate (`.c7-diagram`) | L'immagine **è** l'esercizio: `object-fit: cover` toglieva fino al 43% della foto, cioè le teste del tavolo. Cinque superfici passano a `contain` su riquadro affossato, regola unica nel tema (ADR-044) |
+| 2026-08-16 | Immagini dei drill mai ritagliate (`.c7-diagram`) | L'immagine **è** l'esercizio: `object-fit: cover` toglieva fino al 43% della foto, cioè le teste del tavolo. Cinque superfici passano a `contain` su riquadro affossato, regola unica nel tema (ADR-087) |
 | 2026-10-06 | Pastiglia `.c7-timer` per il limite di tempo | Il conto alla rovescia è un'informazione di stato, non un comando: stessa forma di `.c7-state`, cifre di servizio in mono, avviso giallo allo scadere perché il tempo scaduto non chiude niente da sé (ADR-077). `fa-stopwatch`: il cronometro, anche sul pulsante «Avvia partita» |
 | 2026-10-06 | Foglio «Interrompi partita» e segno «a tempo» | Interrompere chiude una partita sotto la distanza e non si disfa con un tocco: foglio col nome dell'azione e l'esito scritto (ADR-074). Il segno nei risultati imita «corretto»: è un'informazione su com'è finita, non uno stato da guardare (ADR-077) |
 | 2026-09-11 | Segmenti (`.c7-seg`), ricerca con chip (`.c7-search`, `.c7-chips`) e chip di posizione (`.c7-pos`) nello storico | Introdotti con lo storico delle gare (#333): i segmenti scelgono fra Gare e Campionati, i chip sono filtri persistiti nell'URL, il chip di posizione è lo stesso del podio (#332). Linguette e chip sono controlli frequenti e rispettano `--c7-touch` (48px), il minimo del design system; i 44px della sezione «Touch Target» sono il limite storico Bootstrap, il token vince |

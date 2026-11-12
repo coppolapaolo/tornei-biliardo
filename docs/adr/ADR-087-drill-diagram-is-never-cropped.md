@@ -1,8 +1,12 @@
-# ADR-044 L'immagine di un drill è un diagramma, e un diagramma non si taglia
+# ADR-087 L'immagine di un drill è un diagramma, e un diagramma non si taglia
 
 **Data**: 2026-08-16
 **Stato**: Accepted
 **Decisori**: Paolo Coppola
+
+> **Numero.** Nato come ADR-044 il 2026-08-16, lo stesso numero del referto TPA
+> (`ADR-044-tpa-scoresheet.md`). Rinumerato 087 il 2026-11-12: due decisioni
+> con lo stesso numero rendevano ambigua ogni citazione nel codice.
 
 ## Contesto
 
