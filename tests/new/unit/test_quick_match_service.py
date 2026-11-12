@@ -238,9 +238,25 @@ class TestStart:
     def test_avversario_che_non_ha_sbloccato_le_sfide(
         self, app, db_session, isolated_players
     ):
-        """Stesso filtro dell'elenco avversari: chi non ce l'ha non si sceglie."""
+        """Si sceglie lo stesso: lo sblocco serve per avviare, non per esserci.
+
+        Fino al 2026-11-12 questo test difendeva il contrario («chi non ce
+        l'ha non si sceglie»): è cambiata la regola, decisa dall'utente sulla
+        issue #601, non il codice sotto la regola.
+        """
         player1, player2 = isolated_players[:2]
         player2.gamification_override = False
+        db_session.commit()
+
+        match = QuickMatchService.start(player1.id, player2.id)
+
+        assert {match.player1_id, match.player2_id} == {player1.id, player2.id}
+
+    def test_l_admin_non_si_sceglie(self, app, db_session, isolated_players):
+        from models.user.role_enum import UserRole
+
+        player1, player2 = isolated_players[:2]
+        player2.role = UserRole.ADMIN.value
         db_session.commit()
 
         with pytest.raises(ConflictError):

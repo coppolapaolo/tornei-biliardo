@@ -538,18 +538,24 @@ class TestDopoLaPartita:
 
 @pytest.mark.e2e
 class TestChiPuoGiocare:
-    def test_non_si_sfida_chi_non_ha_sbloccato_le_sfide(self, sfida: SfidaDriver):
-        """Stesso filtro dell'elenco avversari: una porta dipinta sul muro no."""
+    def test_con_l_avvio_rapido_si_sfida_anche_chi_non_ha_sbloccato_le_sfide(
+        self, sfida: SfidaDriver
+    ):
+        """Issue #601, regola del 2026-11-12: lo sblocco serve per avviare una
+        sfida, non per esserne l'avversario. Prima la risposta era 409."""
         io_ = sfida.crea_giocatore()
         novellino = sfida.crea_giocatore(sbloccato=False)
         sfida.entra(io_)
 
         risposta = sfida.avvio_rapido(novellino)
 
-        assert risposta.status_code == 409
-        assert sfida.quante_partite() == 0
+        assert risposta.status_code < 400
+        assert sfida.quante_partite() == 1
 
-    def test_il_novellino_non_compare_fra_gli_avversari(self, sfida: SfidaDriver):
+    def test_il_novellino_non_compare_fra_chi_riceve_una_proposta(
+        self, sfida: SfidaDriver
+    ):
+        """La proposta per una data si accetta dalle sfide: resta a chi le ha."""
         io_ = sfida.crea_giocatore()
         novellino = sfida.crea_giocatore(sbloccato=False)
         sfida.entra(io_)
