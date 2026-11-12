@@ -28,17 +28,16 @@ blocks:
   - type: text
     text: >-
       If your opponent is right there and the cues are already in your hands,
-      there is nothing to propose: tap **Quick start** in the Matches section,
+      there is nothing to propose: tap **Playing right now?** in the Matches section,
       pick who you are playing, and you are at the scoreboard. Nobody asks you
       when (it is now), and venue, discipline and distance come pre-filled from
       the last match you played.
 
   - type: steps
     items:
-      - title: "Open Matches and tap «Quick start»"
+      - title: "Open Matches and tap «Playing right now?»"
         text: >-
-          It is the first item in the section, and you will also find it among
-          the links at the bottom of the page.
+          It is the dark card at the top of the section: it opens the quick start.
       - title: "Pick who you are playing"
         text: >-
           The opponents you play most often are already listed: one tap and they
