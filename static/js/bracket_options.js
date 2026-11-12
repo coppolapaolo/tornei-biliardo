@@ -128,6 +128,17 @@
        * e' obbligatorio. Fuori dal tabellone resta facoltativo. */
       if (maxParticipants) {
         maxParticipants.required = isBracket;
+        /* L'obbligo deve anche vedersi (#238): l'asterisco nella label, e via
+         * il segnaposto «nessun limite», che sul tabellone promette una cosa
+         * che non esiste. Il segnaposto si mette da parte per rimetterlo. */
+        var segno = (maxParticipants.closest('form') || document)
+          .querySelector('[data-capienza-obbligatoria]');
+        if (segno) { segno.hidden = !isBracket; }
+        if (maxParticipants.dataset.segnaposto === undefined) {
+          maxParticipants.dataset.segnaposto = maxParticipants.placeholder || '';
+        }
+        maxParticipants.placeholder = isBracket ? '' : maxParticipants.dataset.segnaposto;
+        if (!isBracket) { maxParticipants.classList.remove('is-invalid'); }
       }
 
       /* Il default del form e' 6, che per il doppio KO (che ne vuole 8) darebbe

@@ -193,11 +193,11 @@ class TestGaraOpzioniTabellone:
         gara.matchmaking_strategy = "direct_elimination"
         gara.max_participants = None
         errors = gara.validate_strategy_configuration()
-        assert any("massimo di partecipanti" in e for e in errors)
+        assert any("massimo di iscritti" in e for e in errors)
 
         gara.max_participants = 16
         errors = gara.validate_strategy_configuration()
-        assert not any("massimo di partecipanti" in e for e in errors)
+        assert not any("massimo di iscritti" in e for e in errors)
 
     def test_max_participants_non_richiesto_per_le_altre_strategie(self, db_session):
         director = _director(db_session, "maxp_other")

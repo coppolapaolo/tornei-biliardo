@@ -130,7 +130,8 @@
                 <span>{{ valore_storia('max_groups', campionato.default_max_groups|string) }} · {{ valore_storia('group_seeding', campionato.default_group_seeding) }}</span>
             </div>
             {% endif %}
-            {% if campionato.default_anti_rematch is not none %}
+            {# Sul tabellone l'anti-reincontro non è un'impostazione: la riga non si mostra (#236). #}
+            {% if campionato.default_anti_rematch is not none and campionato.campionato_type not in bracket_minimum_players %}
             <div class="col-md-2">
                 <small class="text-muted">{{ _("Anti-rematch") }}:</small><br>
                 {% if campionato.default_anti_rematch %}

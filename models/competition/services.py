@@ -491,6 +491,8 @@ class GaraService:
             )
 
         GaraService._dispari_ammessi_dalla_strategia(gara)
+        if {"matchmaking_strategy", "max_participants"} & kwargs.keys():
+            GaraService._verifica_capienza_del_tabellone(gara)
         if "max_groups" in kwargs or "matchmaking_strategy" in kwargs:
             GaraService._verifica_gironi_ammessi(gara)
         if {
@@ -1059,8 +1061,30 @@ class GaraService:
     # VALIDAZIONE DATI (type-safe)
     # -----------------------------
     @staticmethod
+    def _verifica_capienza_del_tabellone(gara: Gara) -> None:
+        """In modifica, il tabellone non resta senza capienza (#238).
+
+        Alla creazione lo dice `validate_strategy_configuration`; la modifica
+        non la attraversa, e una gara nata Amalfi senza massimo poteva
+        diventare un tabellone senza posti dichiarati.
+        """
+        from models.matchmaking.configuration import BRACKET_STRATEGIES
+
+        if gara.matchmaking_strategy in BRACKET_STRATEGIES and not (
+            gara.max_participants
+        ):
+            raise ValueError(
+                _(
+                    "Sul tabellone il numero massimo di iscritti è obbligatorio: "
+                    "dichiara quanti posti ha il tabellone."
+                )
+            )
+
+    @staticmethod
     def validate_gara_data(data: dict) -> dict:
         """Valida i campi della Gara e restituisce errori per campo."""
+        from models.matchmaking.configuration import BRACKET_STRATEGIES
+
         errors: dict = {}
 
         # name
@@ -1124,6 +1148,15 @@ class GaraService:
                     errors["max_participants"] = "Max participants deve essere >= min"
             except (TypeError, ValueError):
                 errors["max_participants"] = "Numero partecipanti massimo non valido"
+        elif data.get("matchmaking_strategy") in BRACKET_STRATEGIES:
+            # Sul tabellone il massimo non è un tetto facoltativo: è la
+            # capienza, da cui si ricavano i posti e la stima dei turni. Senza,
+            # la gara nasceva lo stesso e l'errore arrivava più avanti parlando
+            # di turni, un campo che sul tabellone non si chiede (#238).
+            errors["max_participants"] = _(
+                "Sul tabellone il numero massimo di iscritti è obbligatorio: "
+                "dichiara quanti posti ha il tabellone."
+            )
 
         # inscription dates (opzionali): end deve essere >= start
         start_raw = data.get("inscription_start")

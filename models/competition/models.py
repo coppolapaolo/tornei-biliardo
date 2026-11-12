@@ -886,8 +886,15 @@ class Gara(SoftDeleteMixin, db.Model):
             self.matchmaking_strategy in BRACKET_STRATEGIES
             and not self.max_participants
         ):
+            from flask_babel import gettext as _
+
+            # È il controllo che le route attraversano davvero, in creazione
+            # e in modifica: il messaggio dice quale campo manca (#238).
             errors.append(
-                "Le gare a tabellone richiedono un numero massimo di partecipanti"
+                _(
+                    "Sul tabellone il numero massimo di iscritti è obbligatorio: "
+                    "dichiara quanti posti ha il tabellone."
+                )
             )
 
         return errors

@@ -284,9 +284,12 @@
                                         name="min_participants" value="6" min="2" required>
                                 </div>
                                 <div class="col-sm-6 mb-3">
-                                    <label for="max_participants" class="form-label">{{ _("Max Partecipanti") }}</label>
+                                    {# Sul tabellone è obbligatorio: asterisco e spiegazione li
+                                       accende `bracket_options.js` (#238). #}
+                                    <label for="max_participants" class="form-label">{{ _("Max Partecipanti") }} <span class="text-danger" data-capienza-obbligatoria hidden>*</span></label>
                                     <input type="number" class="form-control" id="max_participants"
                                         name="max_participants" placeholder="{{ _('Nessun limite') }}" min="2">
+                                    <div class="invalid-feedback">{{ _("Sul tabellone il numero massimo di iscritti è obbligatorio: dichiara quanti posti ha il tabellone.") }}</div>
                                 </div>
                             </div>
 
@@ -674,8 +677,16 @@
             document.getElementById('summary-fee').textContent = i18n.fee.replace('{value}', feeInput.value || '0');
 
             // Advanced settings
-            const antiRematch = document.getElementById('anti_rematch_enabled').checked ? i18n.antiRematchOn : i18n.antiRematchOff;
-            document.getElementById('summary-anti-rematch').textContent = antiRematch;
+            // Sul tabellone la casella è nascosta ma resta spuntata: leggerla
+            // farebbe dire al riepilogo «anti-rematch attivo» mentre il server
+            // sta per salvare il contrario. Lì la voce non si mostra (#236).
+            const summaryAntiRematch = document.getElementById('summary-anti-rematch');
+            const sulTabellone = ['direct_elimination', 'double_knockout'].indexOf(strategySelect.value) >= 0;
+            // `d-none` e non `hidden`: `.badge` ha un `display` suo nel tema,
+            // che vince sull'attributo e lasciava la pillola in vista.
+            summaryAntiRematch.classList.toggle('d-none', sulTabellone);
+            summaryAntiRematch.textContent =
+                document.getElementById('anti_rematch_enabled').checked ? i18n.antiRematchOn : i18n.antiRematchOff;
 
             const firstRound = document.getElementById('first_round_policy');
             document.getElementById('summary-first-round').textContent =

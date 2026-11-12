@@ -327,7 +327,7 @@
                value="{{ gara.min_participants }}" required>
       </div>
       <div style="width:150px">
-        <label for="max_participants" class="form-label">{{ _('Max iscritti') }}</label>
+        <label for="max_participants" class="form-label">{{ _('Max iscritti') }} <span class="text-danger" data-capienza-obbligatoria hidden>*</span></label>
         <input type="number" class="form-control" id="max_participants" name="max_participants" min="2" max="64"
                value="{{ gara.max_participants or '' }}" placeholder="{{ _('Illimitato') }}">
       </div>
