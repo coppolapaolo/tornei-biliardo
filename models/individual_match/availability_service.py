@@ -10,10 +10,14 @@ rimosso.
 from __future__ import annotations
 
 import json
-from datetime import datetime
+import re
+from datetime import datetime, time
 from typing import List, Optional, Dict, Any
 
+from flask_babel import gettext as _
+
 from models.base import db, transactional, utc_now
+from models.exceptions import ValidationError
 from models.individual_match.models import MatchProposal
 from models.location.models import BilliardHall, UserLocationAvailability
 from models.status_enum import Discipline
@@ -29,6 +33,39 @@ def _format_time_range(start, end) -> Optional[str]:
     return None
 
 
+# Un orario: ore, e i minuti se ci sono, separati da due punti o da un punto.
+_ORARIO = r"(\d{1,2})(?:[:.](\d{2}))?"
+# Il trattino può essere quello della tastiera o uno dei due lunghi che il
+# telefono sostituisce da solo; attorno, gli spazi che uno vuole.
+_FASCIA = re.compile(rf"^\s*{_ORARIO}\s*[-–—]\s*{_ORARIO}\s*$")
+
+
+def parse_fascia_oraria(testo: Optional[str]) -> Optional[tuple[time, time]]:
+    """Legge «18:00-22:00» e le sue scritture ragionevoli.
+
+    Vuoto vuol dire nessuna fascia. Ciò che non si capisce si rifiuta con una
+    `ValidationError`: fino al 2026-11-10 veniva scartato in silenzio, e chi
+    scriveva «18:00 - 22:00» — il suggerimento del campo, con gli spazi —
+    vedeva «salvato» e poi il campo vuoto (#216).
+    """
+    if not testo or not testo.strip():
+        return None
+    trovato = _FASCIA.match(testo)
+    try:
+        if trovato is None:
+            raise ValueError(testo)
+        h1, m1, h2, m2 = (int(g) if g else 0 for g in trovato.groups())
+        return time(h1, m1), time(h2, m2)
+    except ValueError:
+        raise ValidationError(
+            _(
+                "Non ho capito la fascia oraria «%(testo)s». Scrivila come "
+                "18:00-22:00.",
+                testo=testo.strip(),
+            )
+        ) from None
+
+
 class AvailabilityService:
     """Service for managing player availability and match requests."""
 
@@ -42,20 +79,8 @@ class AvailabilityService:
         preferred_times: Optional[str] = None,
     ) -> UserLocationAvailability:
         """Set player availability for a specific venue."""
-        from datetime import time
-
-        # Parse preferred_times if provided (format: "HH:MM-HH:MM")
-        preferred_time_start = None
-        preferred_time_end = None
-        if preferred_times:
-            try:
-                start_str, end_str = preferred_times.split("-")
-                start_hour, start_min = map(int, start_str.split(":"))
-                end_hour, end_min = map(int, end_str.split(":"))
-                preferred_time_start = time(start_hour, start_min)
-                preferred_time_end = time(end_hour, end_min)
-            except (ValueError, AttributeError):
-                pass  # Invalid format, ignore
+        fascia = parse_fascia_oraria(preferred_times)
+        preferred_time_start, preferred_time_end = fascia or (None, None)
 
         # Check for existing availability
         existing = UserLocationAvailability.query.filter_by(
