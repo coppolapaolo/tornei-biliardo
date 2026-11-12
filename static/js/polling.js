@@ -74,6 +74,55 @@ window.Polling = (function() {
         document.body.appendChild(avviso);
     }
 
+    // --- Ricaricare, ma non sotto il dito -------------------------------
+    //
+    // Una pagina che si ricarica da sola lo fa quando arriva l'evento, cioe'
+    // in un momento qualunque: anche mentre chi la guarda sta scorrendo. Sul
+    // telefono la pagina sparisce sotto il dito, e su iPhone un ricaricamento
+    // a scorrimento in corso lasciava la barra di navigazione in basso a meta'
+    // schermo, sopra il contenuto (pagina gara del direttore, 12/11/2026: li'
+    // l'evento e' ogni triangolo segnato a ogni tavolo).
+    //
+    // Si aspetta che il dito sia alzato e che la pagina sia ferma da QUIETE
+    // millisecondi: l'inerzia continua a scorrere dopo il `touchend`, e la
+    // dicono gli eventi `scroll`. I listener nascono col modulo perche' la
+    // domanda «sta toccando?» va saputa prima che arrivi l'evento.
+    var QUIETE = 400;        // ms senza toccare ne' scorrere
+    var CONTROLLO = 100;     // ms fra un controllo e l'altro
+    var dita = false;
+    var ultimoMovimento = 0;
+    var ricaricaInAttesa = false;
+
+    function siMuove() { ultimoMovimento = Date.now(); }
+    var passivo = { passive: true, capture: true };
+    document.addEventListener('touchstart', function() { dita = true; siMuove(); }, passivo);
+    document.addEventListener('touchmove', siMuove, passivo);
+    document.addEventListener('touchend', function() { dita = false; siMuove(); }, passivo);
+    document.addEventListener('touchcancel', function() { dita = false; siMuove(); }, passivo);
+    document.addEventListener('scroll', siMuove, passivo);
+
+    /**
+     * Ricarica la pagina appena nessuno la sta toccando o scorrendo.
+     *
+     * Chiamata piu' volte ricarica una volta sola: dieci eventi arrivati
+     * durante uno scorrimento sono un ricaricamento, non dieci.
+     *
+     * @param {function} [ricarica] - come ricaricare (default `location.reload`)
+     */
+    function ricaricaQuandoFermo(ricarica) {
+        if (ricaricaInAttesa) return;
+        ricaricaInAttesa = true;
+        var esegui = ricarica || function() { location.reload(); };
+
+        (function controlla() {
+            if (!dita && Date.now() - ultimoMovimento >= QUIETE) {
+                esegui();
+                return;
+            }
+            setTimeout(controlla, CONTROLLO);
+        })();
+    }
+
     /**
      * Crea un poller per uno scope.
      *
@@ -195,10 +244,12 @@ window.Polling = (function() {
      * @param {string} config.url - endpoint di poll
      * @param {string[]} config.reloadOn - tipi di evento che ricaricano
      * @param {number} [config.interval=3000]
+     * @param {function} [config.ricarica] - come ricaricare (per i test)
      * @returns {Object} poller
      */
     function reloadOnEvents(config) {
         var reloadEvents = config.reloadOn || [];
+        var ricarica = config.ricarica;
 
         var poller = create({
             url: config.url,
@@ -206,12 +257,12 @@ window.Polling = (function() {
             onEvent: function(event) {
                 if (reloadEvents.includes(event.type)) {
                     console.log('[Polling] ' + event.type + ', reloading...');
-                    location.reload();
+                    ricaricaQuandoFermo(ricarica);
                 }
             },
             onGap: function() {
                 console.log('[Polling] tab hidden longer than retention, reloading...');
-                location.reload();
+                ricaricaQuandoFermo(ricarica);
             }
         });
 
@@ -221,6 +272,7 @@ window.Polling = (function() {
 
     return {
         create: create,
-        reloadOnEvents: reloadOnEvents
+        reloadOnEvents: reloadOnEvents,
+        ricaricaQuandoFermo: ricaricaQuandoFermo
     };
 })();
