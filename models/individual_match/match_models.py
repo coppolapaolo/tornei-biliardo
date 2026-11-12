@@ -1289,11 +1289,13 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         For multi-set matches, delegates to the current set.
         For single-set matches, directly removes the last rack.
         """
-        # Multi-set: delegate to current set
+        # Multi-set: il triangolo appartiene a un set. Fino al 2026-11-10 qui
+        # si guardava solo il set **in corso**, e a sfida finita non ce n'è
+        # nessuno: «Rifiuta» azzerava le firme e lasciava il triangolo.
         if self.is_multi_set:
-            current_set = self.get_current_set()
-            if current_set:
-                current_set.remove_last_rack(user_id)
+            insieme = self.set_da_correggere()
+            if insieme:
+                insieme.remove_last_rack(user_id)
             return
 
         # Single-set: existing logic
@@ -1333,6 +1335,22 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
 
         # No playing set - return None (need to start next set)
         return None
+
+    def set_da_correggere(self) -> Optional["IndividualSet"]:
+        """Il set su cui agisce un annulla: quello in corso, o l'ultimo chiuso.
+
+        Fra un set e l'altro — e a sfida finita — non c'è nessun set «in
+        corso», ed è proprio il momento in cui un triangolo di troppo fa più
+        danno: ha appena chiuso un set. Si torna indietro sull'ultimo che ne
+        ha uno. Lo usano l'annulla del segnapunti e il rifiuto del risultato.
+        """
+        corrente = self.get_current_set()
+        if corrente is not None:
+            return corrente
+        chiusi = [s for s in (self.sets or []) if s.racks]
+        if not chiusi:
+            return None
+        return max(chiusi, key=lambda s: s.set_number)
 
     def start_first_set(self) -> "IndividualSet":
         """Create and start the first set for a multi-set match.

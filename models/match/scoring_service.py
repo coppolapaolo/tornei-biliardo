@@ -14,7 +14,7 @@ from typing import Optional, Tuple
 from flask_babel import gettext as _
 
 from models.base import db, utc_now
-from models.exceptions import NotFoundError
+from models.exceptions import ConflictError, NotFoundError
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
 from .models import Match, Rack
@@ -65,6 +65,17 @@ class ScoringService:
         match = db.session.get(Match, match_id)
         if match is None:
             raise ValueError("Match non trovato")
+
+        # A partita chiusa non si segna più, da nessuna delle due chiusure, e
+        # la X a tavolino non ha triangoli. Fino al 2026-11-10 l'unico freno
+        # era la distanza qui sotto: una partita chiusa **sotto** la distanza
+        # — interrotta a tempo sul 3-2 — accettava un altro triangolo, e il
+        # punteggio cambiava a risultato già agli atti, senza riapertura e
+        # senza revert dell'ELO. La rimozione il controllo l'ha sempre avuto.
+        if match.is_bye or MatchStatus.is_finished(match.status):
+            raise ConflictError(
+                _("La partita è già finita, non è possibile aggiungere altri punti")
+            )
 
         # Validate winner
         if winner_id not in (match.player1_id, match.player2_id):
@@ -307,10 +318,14 @@ class ScoringService:
         ScoringService._apply_forfeit_scores(match, forfeit_player, winning_score)
         match.winner_id = winner_id
 
-        # Complete the match
+        # Complete the match. `closed_by_director=True`: il forfait è una
+        # chiusura d'ufficio, e vale anche per la partita che non è mai
+        # cominciata — chi non si presenta è proprio quel caso. Fino al
+        # 2026-11-10 su una partita ancora PENDING la transizione rifiutava
+        # («non è ancora iniziata»), e con lei il ritiro deciso dal direttore.
         from .state_service import MatchStateService
 
-        match = MatchStateService.to_completed(match_id)
+        match = MatchStateService.to_completed(match_id, closed_by_director=True)
 
         # Handle gara-level forfait policy
         from models.competition.withdraw_policy_service import WithdrawPolicyService
@@ -498,7 +513,6 @@ class ScoringService:
         # lo rifiutava solo il ritiro deciso dal direttore, mentre il forfait
         # dichiarato dal giocatore passava.
         from models.competition.round_manager import AdvancedRoundManager
-        from models.exceptions import ConflictError
 
         motivo = AdvancedRoundManager.motivo_turno_superato(match)
         if motivo:

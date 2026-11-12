@@ -39,9 +39,14 @@ def _rack_counts():
     """Mappa {match_id: n_rack} in UNA query aggregata.
 
     Evita l'N+1 di `Match.is_walkover`, che farebbe un COUNT separato per ogni
-    match. Come `is_walkover`, NON filtra `is_deleted` (conta tutti i rack).
+    match. Come `is_walkover` (dal 2026-11-10) conta solo i rack non
+    cancellati.
     """
-    rows = db.session.query(Rack.match_id, func.count(Rack.id)).group_by(Rack.match_id)
+    rows = (
+        db.session.query(Rack.match_id, func.count(Rack.id))
+        .filter(Rack.is_deleted.is_(False))
+        .group_by(Rack.match_id)
+    )
     return {match_id: n for match_id, n in rows}
 
 
@@ -55,6 +60,10 @@ def _is_walkover(match, rack_counts):
         return False
     if match.is_trio:
         return match.trio_match is not None and match.trio_match.total_racks_played == 0
+    if match.is_multi_set:
+        # I triangoli delle partite a set stanno nei set, non in `Rack`: qui
+        # si chiede al modello (sono poche, la query in più non pesa).
+        return match.is_walkover
     return rack_counts.get(match.id, 0) == 0
 
 

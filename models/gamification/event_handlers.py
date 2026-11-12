@@ -128,6 +128,30 @@ class GamificationEventHandlers:
     # ========================================
 
     @staticmethod
+    def _xp_di_partita_gia_dati(match_id: int) -> bool:
+        """Se questa partita di gara ha già dato i suoi XP a qualcuno.
+
+        Il confronto è sul testo esatto che `award_xp` scrive per le righe di
+        questo gestore: `related_entities` è JSON in una colonna di testo.
+        """
+        import json
+
+        from models.base import db as _db
+        from models.gamification.models import XPTransaction
+
+        return (
+            _db.session.query(XPTransaction.id)
+            .filter(
+                XPTransaction.transaction_type.in_(
+                    [XPTransactionType.MATCH_WIN, XPTransactionType.MATCH_LOSS]
+                ),
+                XPTransaction.related_entities == json.dumps({"match_id": match_id}),
+            )
+            .first()
+            is not None
+        )
+
+    @staticmethod
     def handle_match_completed_for_xp(event: MatchCompletedEvent) -> None:
         """
         Award XP for match completion (winner and loser).
@@ -179,6 +203,23 @@ class GamificationEventHandlers:
             forfeit_ids |= WithdrawPolicyService.fuori_dalla_gara(
                 match.gara_id, (event.player1_id, event.player2_id)
             )
+
+        # Una partita può chiudersi più volte — corretta dal direttore, tolto
+        # un triangolo, azzerata e rigiocata — e ogni chiusura riemette
+        # l'evento: l'ELO si annulla alla riapertura e si riapplica, XP e
+        # missioni no. Si danno alla prima chiusura e basta; i traguardi si
+        # riconciliano comunque, perché si contano e non si sommano.
+        if GamificationEventHandlers._xp_di_partita_gia_dati(event.match_id):
+            for player_id in event.get_all_player_ids():
+                if player_id and player_id not in forfeit_ids:
+                    try:
+                        AchievementService.reconcile_achievements(player_id)
+                    except Exception as ach_error:
+                        logger.warning(
+                            f"Error reconciling achievements for user "
+                            f"{player_id}: {ach_error}"
+                        )
+            return
 
         try:
             # Determine loser

@@ -645,7 +645,14 @@ class TpaRefertoService:
             return
         # Stessa regola del segnapunti normale: chi e' avanti conferma da solo
         # e l'avversario deve accettare. In parita' conferma chi tiene il referto.
-        if match.is_ready_for_validation():
+        #
+        # `distance is not None`: nel formato libero non c'e' un traguardo e
+        # `is_ready_for_validation()` e' vera dal primo triangolo. Senza la
+        # guardia ogni triangolo firmava d'ufficio, e contro un giocatore non
+        # registrato la sfida si chiudeva al primo. Stessa guardia, e stessa
+        # ragione, di `IndividualRackService.add_rack_for_player`; qui mancava
+        # fino al 2026-11-10.
+        if match.distance is not None and match.is_ready_for_validation():
             # Un avversario non registrato non firma: firma chi tiene il
             # referto (ADR-085, emendamento del 2026-10-18).
             if match.player1_score > match.player2_score:

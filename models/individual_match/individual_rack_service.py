@@ -243,17 +243,10 @@ class IndividualRackService:
     def _set_da_correggere(match: IndividualMatch):
         """Il set su cui agisce l'annulla: quello in corso, o l'ultimo chiuso.
 
-        Fra un set e l'altro non c'è nessun set «in corso», ed è proprio il
-        momento in cui un triangolo di troppo fa più danno: ha appena chiuso
-        un set. Si torna indietro sull'ultimo che ne ha uno.
+        La scelta sta sul modello (`IndividualMatch.set_da_correggere`), dove
+        la usa anche il rifiuto del risultato.
         """
-        corrente = match.get_current_set()
-        if corrente is not None:
-            return corrente
-        chiusi = [s for s in (match.sets or []) if s.racks]
-        if not chiusi:
-            return None
-        return max(chiusi, key=lambda s: s.set_number)
+        return match.set_da_correggere()
 
     @staticmethod
     @transactional(domain="individual_match")

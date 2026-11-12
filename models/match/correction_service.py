@@ -19,12 +19,17 @@ Quando il lucchetto scatta la via d'uscita esiste ed è esplicita — annullare
 il turno successivo e rifarlo — ma va detta a chi la deve percorrere, ed è per
 questo che il rifiuto porta con sé il motivo.
 
-**I triangoli si cancellano.** Un punteggio corretto a mano e un elenco di
+**I triangoli si riscrivono.** Un punteggio corretto a mano e un elenco di
 triangoli che dice un'altra cosa sono due segnapunti che si contraddicono, ed
-è la contraddizione che l'ADR-044 evita per il referto TPA. Vale la pena
-dirlo chiaro a chi corregge: il dettaglio triangolo per triangolo — con i
-runout e i break and run che ne discendono — non è ricostruibile da un
-punteggio finale, e va perso.
+è la contraddizione che l'ADR-044 evita per il referto TPA. Quelli di prima si
+cancellano e se ne scrivono tanti quanti ne dice il punteggio nuovo, come fa
+il risultato secco del direttore. Vale la pena dirlo chiaro a chi corregge:
+il dettaglio triangolo per triangolo — con i runout e i break and run che ne
+discendono — non è ricostruibile da un punteggio finale, e va perso.
+
+Fino al 2026-11-10 si cancellavano soltanto, e una partita senza triangoli è
+una partita vinta a tavolino (`Match.is_walkover`): ogni partita corretta
+usciva dall'ELO.
 
 **L'Elo si annulla e si riapplica** senza logica nuova: la correzione passa
 per `to_playing` (che emette `MatchReopenedEvent`, cioè il revert dei delta) e
@@ -53,6 +58,7 @@ from flask_babel import lazy_gettext as _
 
 from models.base import db
 from models.status_enum import MatchStatus
+from models.transaction.manager import transactional
 
 from .models import Match, MatchCorrection, Rack
 
@@ -86,6 +92,7 @@ class MatchCorrectionService:
         return True, ""
 
     @staticmethod
+    @transactional(domain="match")
     def correct_result(
         match_id: int,
         player1_score: int,
@@ -100,6 +107,12 @@ class MatchCorrectionService:
         `player3_score` serve solo al trio, e lì è obbligatorio. `sets` serve
         solo alla partita a set, e lì è obbligatorio: i triangoli di ogni set
         giocato, in ordine. I set vinti e il vincitore discendono da quelli.
+
+        È una transazione sola: riapertura, triangoli riscritti e chiusura
+        si salvano insieme o per niente. Senza, ogni triangolo riscritto si
+        salvava per conto suo, e un rifiuto arrivato dopo lasciava la partita
+        riaperta con un punteggio di passaggio — i triangoli nuovi sommati a
+        quelli vecchi, 10-7 correggendo un 5-3 in 5-4.
 
         Raises:
             ValueError: se la partita non è correggibile o il punteggio non è
@@ -146,8 +159,16 @@ class MatchCorrectionService:
         if MatchStatus.is_finished(match.status):
             MatchStateService.to_playing(match.id)
 
-        # I triangoli non sopravvivono a un punteggio scritto a mano.
+        # I triangoli di prima non sopravvivono a un punteggio scritto a mano;
+        # al loro posto si scrivono quelli del punteggio nuovo, come fa il
+        # risultato secco del direttore. Fino al 2026-11-10 si cancellavano e
+        # basta: la partita corretta restava con zero triangoli, `is_walkover`
+        # la dava per vinta a tavolino e l'ELO — annullato qui sopra dalla
+        # riapertura — non veniva più riapplicato.
+        from .scoring_service import ScoringService
+
         Rack.query.filter_by(match_id=match.id).delete()
+        ScoringService._replace_all_racks(match, player1_score, player2_score)
 
         vincitore_prima = match.winner_id
         match.player1_score = player1_score
