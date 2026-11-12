@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-12 14:39+0100\n"
+"POT-Creation-Date: 2026-11-12 15:14+0100\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -166,11 +166,11 @@ msgstr "Winner: %(nome)s"
 #: templates/components/_tessera_gara.html:38
 #: templates/direttore/_card_partita.html:213
 #: templates/direttore/_menu_turno.html:24 templates/direttore/_partite.html:91
-#: templates/individual_match/dashboard.html:125
-#: templates/individual_match/dashboard.html:182
+#: templates/individual_match/dashboard.html:130
+#: templates/individual_match/dashboard.html:187
 #: templates/individual_match/matches.html:73
 #: templates/individual_match/matches.html:171
-#: templates/individual_match/quick_match.html:61
+#: templates/individual_match/quick_match.html:65
 #: templates/istruttore/gruppi.html:54
 #: templates/player/challenge_attempt_detail.html:24
 #: templates/public/campionatos_list.html:27
@@ -202,7 +202,7 @@ msgstr "%(n)s registered"
 #: templates/components/_match_status_labels.html:22
 #: templates/direttore/_card_partita.html:215
 #: templates/direttore/_partite.html:93
-#: templates/individual_match/dashboard.html:167
+#: templates/individual_match/dashboard.html:172
 #: templates/individual_match/matches.html:72
 #: templates/individual_match/matches.html:179 utils/status_ui.py:192
 msgid "Da giocare"
@@ -2198,7 +2198,7 @@ msgstr "Where"
 #: templates/individual_match/create_proposal.html:119
 #: templates/individual_match/edit_match.html:71
 #: templates/individual_match/match_detail.html:271
-#: templates/individual_match/quick_match.html:179
+#: templates/individual_match/quick_match.html:127
 #: templates/individual_match/scored_match.html:95
 msgid "Formato"
 msgstr "Format"
@@ -3734,7 +3734,7 @@ msgstr ""
 #: templates/components/_history_matches_tab.html:103
 #: templates/components/_player_recent_matches.html:77
 #: templates/components/_sfide_in_corso.html:78
-#: templates/individual_match/dashboard.html:242
+#: templates/individual_match/dashboard.html:247
 msgid "Apri la sfida"
 msgstr "Open the match"
 
@@ -3767,7 +3767,7 @@ msgstr ""
 #: templates/components/_history_matches_tab.html:108
 #: templates/components/_match_result_row.html:184
 #: templates/components/_player_recent_matches.html:82
-#: templates/individual_match/dashboard.html:200
+#: templates/individual_match/dashboard.html:205
 #: templates/individual_match/matches.html:209
 #: templates/individual_match/pending_confirmations.html:80
 #: templates/individual_match/revisione.html:83
@@ -5442,7 +5442,7 @@ msgstr ""
 #: templates/gamification/admin/feature_detail.html:35
 #: templates/gamification/admin/features.html:26
 #: templates/gamification/admin/quests.html:22
-#: templates/individual_match/quick_match.html:107
+#: templates/individual_match/quick_match.html:226
 #: templates/individual_match/scored_match.html:47
 #: templates/individual_match/scored_match.html:60 templates/onboarding.html:95
 #: templates/player/profile_edit.html:25 templates/player/venue_detail.html:49
@@ -5463,6 +5463,7 @@ msgstr "Name"
 #: templates/direttore/_fase_preparazione.html:188
 #: templates/exam/request_detail.html:96 templates/exam/request_form.html:63
 #: templates/individual_match/match_detail.html:283
+#: templates/individual_match/quick_match.html:98
 #: templates/player/my_venue_requests.html:21
 #: templates/public/garas_list.html:12 templates/public/garas_list.html:33
 msgid "Sala"
@@ -5516,7 +5517,7 @@ msgstr "Tables"
 #: templates/gamification/admin/level_config.html:214
 #: templates/gamification/admin/quest_form.html:24
 #: templates/gamification/admin/xp_config.html:33
-#: templates/individual_match/quick_match.html:253
+#: templates/individual_match/quick_match.html:263
 msgid "Descrizione"
 msgstr "Description"
 
@@ -5554,7 +5555,8 @@ msgstr "Fee list"
 #: templates/individual_match/create_proposal.html:105
 #: templates/individual_match/edit_match.html:63
 #: templates/individual_match/match_detail.html:268
-#: templates/individual_match/quick_match.html:171
+#: templates/individual_match/quick_match.html:88
+#: templates/individual_match/quick_match.html:114
 #: templates/individual_match/scored_match.html:87
 #: templates/public/garas_list.html:10 templates/public/garas_list.html:27
 msgid "Disciplina"
@@ -5568,7 +5570,8 @@ msgstr "Discipline"
 #: templates/individual_match/create_proposal.html:127
 #: templates/individual_match/edit_match.html:78
 #: templates/individual_match/proposal_detail.html:55
-#: templates/individual_match/quick_match.html:186
+#: templates/individual_match/quick_match.html:93
+#: templates/individual_match/quick_match.html:136
 #: templates/individual_match/scored_match.html:101
 msgid "Distanza"
 msgstr "Distance"
@@ -5615,7 +5618,7 @@ msgstr "Who opens"
 #: templates/direttore/_dal_campionato.html:38
 #: templates/individual_match/create_proposal.html:176
 #: templates/individual_match/edit_match.html:108
-#: templates/individual_match/quick_match.html:215
+#: templates/individual_match/quick_match.html:183
 #: templates/individual_match/scored_match.html:124
 msgid "Chi spacca"
 msgstr "Who breaks"
@@ -7453,7 +7456,7 @@ msgstr "Reference"
 #: templates/components/_history_filters.html:125
 #: templates/components/_history_filters.html:156
 #: templates/exam/catalog.html:64 templates/gamification/dashboard.html:150
-#: templates/individual_match/dashboard.html:289
+#: templates/individual_match/dashboard.html:294
 #: templates/individual_match/matches.html:71
 #: templates/istruttore/allievi.html:101
 #: templates/public/campionatos_list.html:26
@@ -9940,7 +9943,7 @@ msgstr "Information"
 #: templates/individual_match/create_proposal.html:17
 #: templates/individual_match/edit_match.html:12
 #: templates/individual_match/quick_match.html:17
-#: templates/individual_match/quick_match.html:287
+#: templates/individual_match/quick_match.html:297
 #: templates/individual_match/scored_match.html:18
 #: templates/player/_change_password_modal.html:8
 #: templates/player/venues.html:77 templates/public_base.html:51
@@ -10294,8 +10297,8 @@ msgstr "Group %(nome)s"
 #: templates/components/_unified_cards.html:110
 #: templates/components/_unified_cards.html:122
 #: templates/gamification/dashboard.html:51 templates/gara_detail.html:18
-#: templates/individual_match/dashboard.html:156
-#: templates/individual_match/dashboard.html:338
+#: templates/individual_match/dashboard.html:161
+#: templates/individual_match/dashboard.html:340
 #: templates/individual_match/matches.html:211
 #: templates/individual_match/matches.html:214
 #: templates/player/challenge_attempt_detail.html:165
@@ -10673,7 +10676,7 @@ msgstr ""
 #: templates/components/_gara_inscriptions.html:91
 #: templates/components/_user_info_card.html:118
 #: templates/components/_user_info_card.html:120
-#: templates/individual_match/quick_match.html:109
+#: templates/individual_match/quick_match.html:228
 #: templates/individual_match/scored_match.html:49
 #: templates/individual_match/scored_match.html:62
 #: templates/onboarding.html:101 templates/player/profile_edit.html:30
@@ -11584,7 +11587,7 @@ msgstr "the direction"
 #: templates/components/_trio_rack_input.html:209
 #: templates/components/_unified_rack_input.html:263
 #: templates/components/_unified_rack_input.html:269
-#: templates/individual_match/dashboard.html:153
+#: templates/individual_match/dashboard.html:158
 #: templates/individual_match/match_detail.html:182
 #: templates/individual_match/proposal_detail.html:134
 #: templates/individual_match/proposals.html:106
@@ -12526,7 +12529,7 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:368
 #: templates/individual_match/create_proposal.html:168
 #: templates/individual_match/edit_match.html:99
-#: templates/individual_match/quick_match.html:207
+#: templates/individual_match/quick_match.html:175
 #: templates/individual_match/scored_match.html:116
 msgid "Regola di inizio"
 msgstr "Start rule"
@@ -12871,7 +12874,7 @@ msgstr "e.g. Milan Billiards Club"
 #: templates/components/_gara_edit_form.html:286
 #: templates/individual_match/create_proposal.html:94
 #: templates/individual_match/edit_match.html:57
-#: templates/individual_match/quick_match.html:165
+#: templates/individual_match/quick_match.html:161
 msgid "Città non specificata"
 msgstr "City not specified"
 
@@ -14084,7 +14087,7 @@ msgstr "Back to the venues"
 #: templates/individual_match/availability.html:125
 #: templates/individual_match/create_proposal.html:87
 #: templates/individual_match/edit_match.html:50
-#: templates/individual_match/quick_match.html:158
+#: templates/individual_match/quick_match.html:154
 #: templates/individual_match/scored_match.html:110
 #: templates/player/venue_detail.html:12
 msgid "Sala biliardo"
@@ -14249,7 +14252,7 @@ msgstr "Select user..."
 #: templates/challenge/statistics.html:13
 #: templates/components/_campionato_statistics.html:4
 #: templates/components/_player_statistics.html:29
-#: templates/individual_match/dashboard.html:397
+#: templates/individual_match/dashboard.html:393
 #: templates/player/challenge_detail.html:207
 #: templates/player/privacy_settings.html:42
 #: templates/player/venue_detail.html:194
@@ -14498,7 +14501,7 @@ msgstr "Approved"
 #: templates/admin/venue_manager_requests.html:81
 #: templates/components/_match_status_labels.html:27
 #: templates/components/_proposal_labels.html:20
-#: templates/individual_match/dashboard.html:121
+#: templates/individual_match/dashboard.html:126
 #: templates/player/my_venue_requests.html:45 utils/status_ui.py:196
 msgid "Rifiutata"
 msgstr "Declined"
@@ -15187,7 +15190,6 @@ msgid "Su quale vocabolario"
 msgstr "Which vocabulary"
 
 #: templates/challenge/andamento.html:80 templates/challenge/andamento.html:116
-#: templates/individual_match/quick_match.html:130
 msgid "Adesso"
 msgstr "Now"
 
@@ -15667,7 +15669,7 @@ msgstr "Free line"
 #: templates/challenge/builder.html:287
 #: templates/components/_bye_challenges.html:52
 #: templates/components/_player_challenges.html:47
-#: templates/individual_match/dashboard.html:200
+#: templates/individual_match/dashboard.html:205
 #: templates/individual_match/matches.html:213
 msgid "Continua"
 msgstr "Solid"
@@ -17718,7 +17720,8 @@ msgstr ""
 
 #: templates/components/_campo_limite_fase_finale.html:42
 #: templates/direttore/preparazione/_turni.html:121
-#: templates/individual_match/quick_match.html:34
+#: templates/individual_match/quick_match.html:38
+#: templates/individual_match/quick_match.html:299
 msgid "Senza limite"
 msgstr "No limit"
 
@@ -18572,7 +18575,7 @@ msgid "Aggiungi iscritto"
 msgstr "Add participant"
 
 #: templates/components/_gara_inscriptions.html:74
-#: templates/individual_match/quick_match.html:283
+#: templates/individual_match/quick_match.html:293
 #: templates/individual_match/scored_match.html:152
 msgid "Nessun giocatore con questo nome."
 msgstr "No player with that name."
@@ -19134,12 +19137,12 @@ msgstr "Where from"
 #: templates/components/_history_filters.html:77
 #: templates/components/_user_recent_matches_table.html:16
 #: templates/individual_match/dashboard.html:39
-#: templates/individual_match/dashboard.html:298
+#: templates/individual_match/dashboard.html:303
 #: templates/individual_match/match_detail.html:153
 #: templates/individual_match/matches.html:189
 #: templates/individual_match/pending_confirmations.html:47
 #: templates/individual_match/pending_confirmations.html:58
-#: templates/individual_match/quick_match.html:55
+#: templates/individual_match/quick_match.html:59
 #: templates/individual_match/revisione.html:56
 msgid "Avversario"
 msgstr "Opponent"
@@ -19741,8 +19744,8 @@ msgstr "Assign"
 #: templates/components/_playoff_invitations.html:23
 #: templates/components/_proposal_labels.html:18
 #: templates/individual_match/admin_overview.html:37
-#: templates/individual_match/dashboard.html:253
-#: templates/individual_match/dashboard.html:273
+#: templates/individual_match/dashboard.html:258
+#: templates/individual_match/dashboard.html:278
 #: templates/player/my_venue_requests.html:41
 msgid "In attesa"
 msgstr "Pending"
@@ -19891,9 +19894,9 @@ msgid "Registrata da un solo giocatore"
 msgstr "Recorded by one player only"
 
 #: templates/components/_match_status_labels.html:52
-#: templates/individual_match/dashboard.html:123
-#: templates/individual_match/dashboard.html:215
-#: templates/individual_match/dashboard.html:223
+#: templates/individual_match/dashboard.html:128
+#: templates/individual_match/dashboard.html:220
+#: templates/individual_match/dashboard.html:228
 #: templates/individual_match/matches.html:169
 #: templates/individual_match/pending_confirmations.html:39
 #: utils/status_ui.py:181
@@ -19942,7 +19945,7 @@ msgstr "Edit the video"
 
 #: templates/components/_match_video.html:60
 #: templates/individual_match/create_proposal.html:192
-#: templates/individual_match/quick_match.html:255
+#: templates/individual_match/quick_match.html:265
 #: templates/individual_match/scored_match.html:76
 msgid "Es. Finale della prima giornata, serie C"
 msgstr "E.g. Final of the first matchday, Serie C"
@@ -20234,7 +20237,7 @@ msgstr ""
 "account yet"
 
 #: templates/components/_nome_giocatore.html:31
-#: templates/individual_match/quick_match.html:285
+#: templates/individual_match/quick_match.html:295
 #: templates/individual_match/scored_match.html:156
 msgid "non registrato"
 msgstr "not registered"
@@ -20393,6 +20396,8 @@ msgid "Non indicato"
 msgstr "Not given"
 
 #: templates/components/_player_personal_info.html:25
+#: templates/individual_match/quick_match.html:99
+#: templates/individual_match/quick_match.html:298
 msgid "Non indicata"
 msgstr "Not given"
 
@@ -21085,7 +21090,7 @@ msgstr "Head-to-head match"
 
 #: templates/components/_sfide_in_corso.html:46
 #: templates/components/_tessera_gara.html:213
-#: templates/individual_match/dashboard.html:112
+#: templates/individual_match/dashboard.html:117
 msgid "vs"
 msgstr "vs"
 
@@ -21094,7 +21099,7 @@ msgid "In attesa di un avversario"
 msgstr "Waiting for an opponent"
 
 #: templates/components/_sfide_in_corso.html:62
-#: templates/individual_match/dashboard.html:181
+#: templates/individual_match/dashboard.html:186
 #: templates/individual_match/matches.html:167
 #, python-format
 msgid "La segna %(name)s"
@@ -25184,7 +25189,7 @@ msgstr "(default)"
 #: templates/direttore/preparazione/_turni.html:111
 #: templates/individual_match/create_proposal.html:121
 #: templates/individual_match/edit_match.html:73
-#: templates/individual_match/quick_match.html:181
+#: templates/individual_match/quick_match.html:129
 msgid "Multi-set"
 msgstr "Multi-set"
 
@@ -25209,7 +25214,7 @@ msgstr "Different minutes"
 #: templates/direttore/preparazione/_turni.html:143
 #: templates/individual_match/create_proposal.html:133
 #: templates/individual_match/edit_match.html:81
-#: templates/individual_match/quick_match.html:189
+#: templates/individual_match/quick_match.html:142
 #: templates/individual_match/scored_match.html:104
 msgid "Al N"
 msgstr "Race to N"
@@ -25217,7 +25222,6 @@ msgstr "Race to N"
 #: templates/direttore/preparazione/_turni.html:164
 #: templates/individual_match/create_proposal.html:102
 #: templates/individual_match/edit_match.html:47
-#: templates/individual_match/quick_match.html:119
 #: templates/individual_match/scored_match.html:84
 msgid "Come si gioca"
 msgstr "How it is played"
@@ -25232,7 +25236,7 @@ msgstr ""
 " round, while the others finish, and have separate standings."
 
 #: templates/direttore/preparazione/_turni.html:206
-#: templates/individual_match/quick_match.html:36
+#: templates/individual_match/quick_match.html:40
 #, python-format
 msgid "Al %(n)s"
 msgstr "Race to %(n)s"
@@ -27770,7 +27774,7 @@ msgstr "Recent matches"
 
 #: templates/individual_match/availability.html:3
 #: templates/individual_match/availability.html:9
-#: templates/individual_match/dashboard.html:385
+#: templates/individual_match/dashboard.html:381
 #: templates/individual_match/discover_players.html:161
 msgid "Le mie disponibilità"
 msgstr "My availability"
@@ -27787,7 +27791,7 @@ msgid "Dove e quando sei disponibile a giocare"
 msgstr "Where and when you are available to play"
 
 #: templates/individual_match/availability.html:13
-#: templates/individual_match/dashboard.html:391
+#: templates/individual_match/dashboard.html:387
 #: templates/individual_match/discover_players.html:3
 #: templates/individual_match/discover_players.html:9
 msgid "Trova giocatori"
@@ -27911,7 +27915,7 @@ msgstr "Find available players"
 #: templates/individual_match/create_proposal.html:4
 #: templates/individual_match/create_proposal.html:19
 #: templates/individual_match/dashboard.html:21
-#: templates/individual_match/dashboard.html:367
+#: templates/individual_match/dashboard.html:363
 #: templates/individual_match/matches.html:18
 #: templates/individual_match/proposals.html:15
 msgid "Nuova proposta"
@@ -28002,7 +28006,7 @@ msgstr "After that moment nobody can accept it"
 
 #: templates/individual_match/create_proposal.html:89
 #: templates/individual_match/edit_match.html:52
-#: templates/individual_match/quick_match.html:160
+#: templates/individual_match/quick_match.html:156
 #: templates/individual_match/scored_match.html:112
 msgid "es. Sala Regina, Udine"
 msgstr "e.g. Sala Regina, Udine"
@@ -28013,27 +28017,27 @@ msgstr "Choose a verified venue or write a new one"
 
 #: templates/individual_match/create_proposal.html:120
 #: templates/individual_match/edit_match.html:72
-#: templates/individual_match/quick_match.html:180
+#: templates/individual_match/quick_match.html:128
 msgid "Set singolo"
 msgstr "Single set"
 
 #: templates/individual_match/create_proposal.html:120
 #: templates/individual_match/edit_match.html:72
-#: templates/individual_match/quick_match.html:180
+#: templates/individual_match/quick_match.html:128
 #: templates/individual_match/scored_match.html:96
 msgid "Una partita sola, alla distanza scelta."
 msgstr "A single match, to the chosen distance."
 
 #: templates/individual_match/create_proposal.html:121
 #: templates/individual_match/edit_match.html:73
-#: templates/individual_match/quick_match.html:181
+#: templates/individual_match/quick_match.html:129
 msgid "Più set: vince chi ne conquista N."
 msgstr "Several sets: the first to win N takes it."
 
 #: templates/individual_match/create_proposal.html:122
 #: templates/individual_match/edit_match.html:74
 #: templates/individual_match/match_detail.html:273
-#: templates/individual_match/quick_match.html:182
+#: templates/individual_match/quick_match.html:130
 #: templates/individual_match/scored_match.html:97
 #: templates/public/schermo_sala.html:139
 msgid "Libero"
@@ -28041,54 +28045,54 @@ msgstr "Open"
 
 #: templates/individual_match/create_proposal.html:122
 #: templates/individual_match/edit_match.html:74
-#: templates/individual_match/quick_match.html:182
+#: templates/individual_match/quick_match.html:130
 msgid "Senza limite: la partita si chiude quando volete."
 msgstr "No limit: the match ends when you decide."
 
 #: templates/individual_match/create_proposal.html:129
 #: templates/individual_match/edit_match.html:79
-#: templates/individual_match/quick_match.html:187
+#: templates/individual_match/quick_match.html:137
 #: templates/individual_match/scored_match.html:102
 msgid "triangoli per vincere"
 msgstr "racks to win"
 
 #: templates/individual_match/create_proposal.html:132
 #: templates/individual_match/edit_match.html:80
-#: templates/individual_match/quick_match.html:188
+#: templates/individual_match/quick_match.html:141
 #: templates/individual_match/scored_match.html:103
 msgid "Come si chiude"
 msgstr "How it ends"
 
 #: templates/individual_match/create_proposal.html:133
 #: templates/individual_match/edit_match.html:81
-#: templates/individual_match/quick_match.html:189
+#: templates/individual_match/quick_match.html:142
 #: templates/individual_match/scored_match.html:104
 msgid "Vince chi arriva primo alla distanza."
 msgstr "The first to reach the distance wins."
 
 #: templates/individual_match/create_proposal.html:134
 #: templates/individual_match/edit_match.html:82
-#: templates/individual_match/quick_match.html:190
+#: templates/individual_match/quick_match.html:143
 #: templates/individual_match/scored_match.html:105
 msgid "Esattamente N"
 msgstr "Exactly N"
 
 #: templates/individual_match/create_proposal.html:134
 #: templates/individual_match/edit_match.html:82
-#: templates/individual_match/quick_match.html:190
+#: templates/individual_match/quick_match.html:143
 #: templates/individual_match/scored_match.html:105
 msgid "Si giocano tutti i triangoli: vince chi ne ha di più."
 msgstr "Every rack is played: whoever wins the most takes it."
 
 #: templates/individual_match/create_proposal.html:140
 #: templates/individual_match/edit_match.html:87
-#: templates/individual_match/quick_match.html:195
+#: templates/individual_match/quick_match.html:148
 msgid "Set da vincere"
 msgstr "Sets to win"
 
 #: templates/individual_match/create_proposal.html:142
 #: templates/individual_match/edit_match.html:88
-#: templates/individual_match/quick_match.html:196
+#: templates/individual_match/quick_match.html:149
 msgid "set per vincere la sfida"
 msgstr "sets to win the match"
 
@@ -28144,106 +28148,105 @@ msgid "Non hai ancora giocato con nessuno. Crea prima una proposta aperta!"
 msgstr "You haven't played with anyone yet. Create an open proposal first!"
 
 #: templates/individual_match/dashboard.html:18
-#: templates/individual_match/dashboard.html:361
 #: templates/individual_match/matches.html:15
 #: templates/individual_match/quick_match.html:5
 #: templates/individual_match/quick_match.html:19
 msgid "Avvio rapido"
 msgstr "Quick start"
 
-#: templates/individual_match/dashboard.html:64
+#: templates/individual_match/dashboard.html:69
 msgid "Giochi adesso?"
 msgstr "Playing right now?"
 
-#: templates/individual_match/dashboard.html:66
+#: templates/individual_match/dashboard.html:71
 msgid "Scegli l'avversario e sei al segnapunti"
 msgstr "Pick your opponent and you are at the scoreboard"
 
-#: templates/individual_match/dashboard.html:84
+#: templates/individual_match/dashboard.html:89
 #: templates/individual_match/scored_match.html:4
 #: templates/individual_match/scored_match.html:20
 msgid "Segna la partita di altri due"
 msgstr "Score a match between two others"
 
-#: templates/individual_match/dashboard.html:86
+#: templates/individual_match/dashboard.html:91
 msgid "Tieni tu il referto TPA: a fine partita confermano loro"
 msgstr "You keep the TPA scoresheet: they confirm when it ends"
 
-#: templates/individual_match/dashboard.html:97
+#: templates/individual_match/dashboard.html:102
 msgid "Partite che segni"
 msgstr "Matches you are scoring"
 
-#: templates/individual_match/dashboard.html:138
+#: templates/individual_match/dashboard.html:143
 msgid "Attendono la tua risposta"
 msgstr "Waiting for your answer"
 
-#: templates/individual_match/dashboard.html:144
+#: templates/individual_match/dashboard.html:149
 msgid "Attende la tua risposta"
 msgstr "Waiting for your answer"
 
-#: templates/individual_match/dashboard.html:148
+#: templates/individual_match/dashboard.html:153
 msgid "Data da concordare"
 msgstr "Date to agree"
 
-#: templates/individual_match/dashboard.html:182
+#: templates/individual_match/dashboard.html:187
 msgid "Data confermata"
 msgstr "Date confirmed"
 
-#: templates/individual_match/dashboard.html:199
+#: templates/individual_match/dashboard.html:204
 #: templates/individual_match/matches.html:212
 msgid "Segui la partita"
 msgstr "Follow the match"
 
-#: templates/individual_match/dashboard.html:228
+#: templates/individual_match/dashboard.html:233
 #, python-format
 msgid "Segnata da %(name)s: manca la tua conferma"
 msgstr "Scored by %(name)s: waiting for your confirmation"
 
-#: templates/individual_match/dashboard.html:229
+#: templates/individual_match/dashboard.html:234
 msgid "Hai confermato: manca la decisione dell'avversario"
 msgstr "You confirmed: waiting for your opponent's decision"
 
-#: templates/individual_match/dashboard.html:232
+#: templates/individual_match/dashboard.html:237
 msgid "Manca la tua firma"
 msgstr "Your signature is missing"
 
-#: templates/individual_match/dashboard.html:232
+#: templates/individual_match/dashboard.html:237
 msgid "Manca la firma dell'avversario"
 msgstr "Your opponent's signature is missing"
 
-#: templates/individual_match/dashboard.html:266
+#: templates/individual_match/dashboard.html:271
 #: templates/individual_match/proposal_detail.html:184
 msgid "Proposta aperta"
 msgstr "Open proposal"
 
-#: templates/individual_match/dashboard.html:279
-#: templates/individual_match/dashboard.html:373
+#: templates/individual_match/dashboard.html:284
+#: templates/individual_match/dashboard.html:369
 msgid "Tutte le proposte"
 msgstr "Every proposal"
 
-#: templates/individual_match/dashboard.html:288
+#: templates/individual_match/dashboard.html:293
 #: templates/individual_match/matches.html:75
 msgid "Giocati"
 msgstr "Played"
 
-#: templates/individual_match/dashboard.html:302
+#: templates/individual_match/dashboard.html:307
 msgid "hai vinto"
 msgstr "you won"
 
-#: templates/individual_match/dashboard.html:302
+#: templates/individual_match/dashboard.html:307
 msgid "hai perso"
 msgstr "you lost"
 
-#: templates/individual_match/dashboard.html:303
+#: templates/individual_match/dashboard.html:308
 msgid "senza vincitore"
 msgstr "no winner"
 
-#: templates/individual_match/dashboard.html:318
+#: templates/individual_match/dashboard.html:323
 #: templates/individual_match/matches.html:230
 msgid "Nessuna sfida ancora"
 msgstr "No match yet"
 
-#: templates/individual_match/dashboard.html:320
+#: templates/individual_match/dashboard.html:325
 #: templates/individual_match/matches.html:232
 msgid ""
 "Proponi una data a un altro giocatore: quando accetta, la sfida compare "
@@ -28252,33 +28255,28 @@ msgstr ""
 "Propose a date to another player: when they accept, the match appears "
 "here."
 
-#: templates/individual_match/dashboard.html:324
-#: templates/individual_match/matches.html:236
-msgid "Sto giocando adesso"
-msgstr "I'm playing right now"
-
-#: templates/individual_match/dashboard.html:327
+#: templates/individual_match/dashboard.html:329
 #: templates/individual_match/matches.html:239
 msgid "Proponi una data"
 msgstr "Propose a date"
 
-#: templates/individual_match/dashboard.html:337
+#: templates/individual_match/dashboard.html:339
 #: templates/individual_match/statistics.html:3
 #: templates/individual_match/statistics.html:9
 msgid "Le tue statistiche"
 msgstr "Your statistics"
 
-#: templates/individual_match/dashboard.html:343
+#: templates/individual_match/dashboard.html:345
 #: templates/individual_match/statistics.html:147
 msgid "Sfide vinte"
 msgstr "Matches won"
 
-#: templates/individual_match/dashboard.html:347
+#: templates/individual_match/dashboard.html:349
 #: templates/individual_match/statistics.html:151
 msgid "Sfide giocate"
 msgstr "Matches played"
 
-#: templates/individual_match/dashboard.html:379
+#: templates/individual_match/dashboard.html:375
 #: templates/individual_match/statistics.html:13
 msgid "Tutte le sfide"
 msgstr "All matches"
@@ -28492,17 +28490,17 @@ msgid "La contesto"
 msgstr "I dispute it"
 
 #: templates/individual_match/match_detail.html:130
-#: templates/individual_match/quick_match.html:238
+#: templates/individual_match/quick_match.html:248
 msgid "Tengo il referto TPA"
 msgstr "I'll keep the TPA scoresheet"
 
 #: templates/individual_match/match_detail.html:131
-#: templates/individual_match/quick_match.html:239
+#: templates/individual_match/quick_match.html:249
 msgid "Si annota turno per turno e il punteggio viene da lì: niente «+1» a mano."
 msgstr "Scored visit by visit, with the score derived from it: no manual “+1”."
 
 #: templates/individual_match/match_detail.html:133
-#: templates/individual_match/quick_match.html:241
+#: templates/individual_match/quick_match.html:251
 msgid "Va deciso adesso: a triangoli già segnati il referto non si apre più."
 msgstr ""
 "Decide now: once racks have been scored the scoresheet can no longer be "
@@ -28775,6 +28773,10 @@ msgstr "No matches found"
 msgid "Prova a togliere qualche filtro."
 msgstr "Try removing a filter or two."
 
+#: templates/individual_match/matches.html:236
+msgid "Sto giocando adesso"
+msgstr "I'm playing right now"
+
 #: templates/individual_match/pending_confirmations.html:11
 #: templates/individual_match/pending_confirmations.html:17
 msgid "Partite da confermare"
@@ -28983,59 +28985,75 @@ msgstr ""
 msgid "La partita che state giocando adesso"
 msgstr "The match you are playing right now"
 
-#: templates/individual_match/quick_match.html:35
+#: templates/individual_match/quick_match.html:39
 #, python-format
 msgid "%(sets)s set da %(racks)s"
 msgstr "%(sets)s sets to %(racks)s"
 
-#: templates/individual_match/quick_match.html:37
+#: templates/individual_match/quick_match.html:41
 #, python-format
 msgid "Esattamente %(n)s"
 msgstr "Exactly %(n)s"
 
-#: templates/individual_match/quick_match.html:45
+#: templates/individual_match/quick_match.html:49
 msgid "Stai già giocando"
 msgstr "You are already playing"
 
-#: templates/individual_match/quick_match.html:66
+#: templates/individual_match/quick_match.html:70
 msgid "Se cercavi una di queste, torna lì invece di aprirne un'altra."
 msgstr "If you meant one of these, go back to it instead of opening another one."
 
-#: templates/individual_match/quick_match.html:76
+#: templates/individual_match/quick_match.html:84
+msgid "A cosa giocate"
+msgstr "What you are playing"
+
+#: templates/individual_match/quick_match.html:90
+#: templates/individual_match/quick_match.html:95
+#: templates/individual_match/quick_match.html:100
+#: templates/individual_match/quick_match.html:109
+#: templates/individual_match/quick_match.html:296
+msgid "Cambia"
+msgstr "Change"
+
+#: templates/individual_match/quick_match.html:103
+msgid "Apertura"
+msgstr "Break"
+
+#: templates/individual_match/quick_match.html:195
 msgid "Chi hai davanti"
 msgstr "Who is across the table"
 
-#: templates/individual_match/quick_match.html:95
+#: templates/individual_match/quick_match.html:214
 msgid "Un altro giocatore"
 msgstr "Another player"
 
-#: templates/individual_match/quick_match.html:95
+#: templates/individual_match/quick_match.html:214
 msgid "Cerca il giocatore"
 msgstr "Search for the player"
 
-#: templates/individual_match/quick_match.html:97
-#: templates/individual_match/quick_match.html:282
+#: templates/individual_match/quick_match.html:216
+#: templates/individual_match/quick_match.html:292
 #: templates/individual_match/scored_match.html:42
 #: templates/individual_match/scored_match.html:55
 #: templates/individual_match/scored_match.html:151
 msgid "Cerca per nome..."
 msgstr "Search by name..."
 
-#: templates/individual_match/quick_match.html:104
+#: templates/individual_match/quick_match.html:223
 #: templates/individual_match/scored_match.html:44
 #: templates/individual_match/scored_match.html:57
 msgid "Non ha un account? Aggiungilo"
 msgstr "No account? Add them"
 
-#: templates/individual_match/quick_match.html:107
+#: templates/individual_match/quick_match.html:226
 msgid "Nome del giocatore da aggiungere"
 msgstr "First name of the player to add"
 
-#: templates/individual_match/quick_match.html:109
+#: templates/individual_match/quick_match.html:228
 msgid "Cognome del giocatore da aggiungere"
 msgstr "Last name of the player to add"
 
-#: templates/individual_match/quick_match.html:113
+#: templates/individual_match/quick_match.html:232
 msgid ""
 "La partita finisce nel suo storico e nel tuo. Se non è registrato si "
 "chiude con la tua firma e conta fra «Tutte»."
@@ -29043,47 +29061,41 @@ msgstr ""
 "The match goes into their history and yours. If they are not registered, "
 "it closes with your signature and counts in «All»."
 
-#: templates/individual_match/quick_match.html:121
-#: templates/individual_match/quick_match.html:286
-msgid "Cambia"
-msgstr "Change"
-
-#: templates/individual_match/quick_match.html:131
-msgid "La partita parte appena tocchi il pulsante"
-msgstr "The match starts as soon as you tap the button"
-
-#: templates/individual_match/quick_match.html:138
-msgid "Sala non indicata"
-msgstr "Venue not set"
-
-#: templates/individual_match/quick_match.html:140
-msgid "Dove state giocando"
-msgstr "Where you are playing"
-
-#: templates/individual_match/quick_match.html:149
-msgid "Disciplina e distanza"
-msgstr "Discipline and distance"
-
-#: templates/individual_match/quick_match.html:251
+#: templates/individual_match/quick_match.html:261
 msgid "Aggiungi una descrizione"
 msgstr "Add a description"
 
-#: templates/individual_match/quick_match.html:264
+#: templates/individual_match/quick_match.html:274
 msgid "Inizia a segnare"
 msgstr "Start scoring"
 
-#: templates/individual_match/quick_match.html:267
+#: templates/individual_match/quick_match.html:277
 msgid "Nessuno deve accettare: a fine partita confermate il risultato in due."
 msgstr "Nobody has to accept: you both confirm the result at the end."
 
-#: templates/individual_match/quick_match.html:281
+#: templates/individual_match/quick_match.html:291
 msgid "Scegli chi hai davanti prima di iniziare."
 msgstr "Choose who you are playing before you start."
 
-#: templates/individual_match/quick_match.html:284
+#: templates/individual_match/quick_match.html:294
 #: templates/individual_match/scored_match.html:153
 msgid "Scrivi almeno due lettere."
 msgstr "Type at least two letters."
+
+#: templates/individual_match/quick_match.html:300
+#, python-brace-format
+msgid "Al {n}"
+msgstr "Race to {n}"
+
+#: templates/individual_match/quick_match.html:301
+#, python-brace-format
+msgid "Esattamente {n}"
+msgstr "Exactly {n}"
+
+#: templates/individual_match/quick_match.html:302
+#, python-brace-format
+msgid "{sets} set da {n}"
+msgstr "{sets} sets to {n}"
 
 #: templates/individual_match/revisione.html:12
 #: templates/individual_match/revisione.html:18

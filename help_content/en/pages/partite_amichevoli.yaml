@@ -38,6 +38,13 @@ blocks:
       - title: "Open Matches and tap «Playing right now?»"
         text: >-
           It is the dark card at the top of the section: it opens the quick start.
+      - title: "Check what you are playing"
+        text: >-
+          At the top, under «What you are playing», there are three tiles:
+          **discipline**, **distance** and **venue**, and below them a row with
+          the **break**. They come pre-filled from the last match you played.
+          Happy with them? Touch nothing. Otherwise tap the tile to fix: it
+          opens right below, and when you are done it shows the new value.
       - title: "Pick who you are playing"
         text: >-
           The opponents you play most often are already listed: one tap and they
@@ -46,12 +53,10 @@ blocks:
           the person in front of you has no account and you are an
           **instructor** or a **competition director**, tap **No account? Add
           them** under the search and write first and last name.
-      - title: "Change how you play, if you need to"
+      - title: "If the match has a name, write it"
         text: >-
-          Under «How it is played» you get a summary of venue, discipline and
-          distance. Happy with it? Touch nothing. Otherwise tap **Change** and
-          fix what you need. If the match has a name — a final, a championship
-          matchday — tap **Add a description** and write it.
+          A final, a championship matchday: tap **Add a description** and write
+          it. You can fix it later too.
       - title: "Decide whether to keep the TPA scoresheet"
         text: >-
           If you have unlocked the scoresheet, **I'll keep the TPA scoresheet**
@@ -251,8 +256,8 @@ blocks:
 
   - type: text
     text: >-
-      Under «How you play», next to discipline and distance, there are two
-      choices about the **break shot**. Neither is compulsory: leave them alone
+      Under «What you are playing» the **Break** row holds two choices about
+      the **break shot**: tap it to change them. Neither is compulsory: leave them alone
       and you lag for the break, then it alternates.
 
   - type: options
