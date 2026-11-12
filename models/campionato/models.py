@@ -294,10 +294,13 @@ class Campionato(db.Model):
         for gara in gare:
             matches = getattr(gara, "matches", [])
             for match in matches:
-                if match.status in [
-                    MatchStatus.CLOSED_UNILATERALLY.value,
-                    MatchStatus.PLAYING.value,
-                ]:
+                # Giocata è anche la partita chiusa dai due giocatori: fino al
+                # 2026-11-10 non contava, e un campionato giocato così
+                # risultava eliminabile per sempre.
+                if (
+                    MatchStatus.is_finished(match.status)
+                    or match.status == MatchStatus.PLAYING.value
+                ):
                     return False
         return True
 

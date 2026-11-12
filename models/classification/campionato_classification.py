@@ -52,13 +52,22 @@ class ClassificationService:
 
         Finché la gara di playoff non è chiusa la lista è vuota, e la
         classifica generale resta quella del campionato: è il comportamento
-        giusto, non un caso da gestire a parte.
+        giusto, non un caso da gestire a parte. «Chiusa» è lo stato della
+        gara, non l'esistenza delle righe: registrare uno spareggio le crea
+        per i soli giocatori a pari merito, con la finale ancora in
+        `AWAITING_SSR`. Fino al 2026-11-10 bastavano le righe, e la classifica
+        generale metteva in cima i finalisti di una finale ancora aperta.
         """
+        from models.status_enum import GaraStatus
+
         configurations = getattr(campionato, "playoff_configurations", None) or []
         candidate = [
             cfg
             for cfg in configurations
-            if cfg.is_active and cfg.decides_final_ranking and cfg.gara is not None
+            if cfg.is_active
+            and cfg.decides_final_ranking
+            and cfg.gara is not None
+            and cfg.gara.status == GaraStatus.COMPLETED.value
         ]
         if not candidate:
             return []

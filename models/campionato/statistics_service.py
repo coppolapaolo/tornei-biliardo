@@ -135,13 +135,15 @@ class TournamentStatisticsService:
         )
         currently_inscribed_players = active_inscriptions_query.scalar() or 0
 
-        # Match totali completati in tutte le gare
+        # Match totali completati in tutte le gare. «Completato» sono entrambe
+        # le chiusure: del direttore e dei due giocatori. Fino al 2026-11-10
+        # si contava solo la prima, e qui sotto anche per i rack.
         completed_matches_query = (
             db.session.query(func.count(Match.id))
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
+                Match.status.in_(MatchStatus.finished_values()),
             )
         )
         total_completed_matches = completed_matches_query.scalar() or 0
@@ -152,7 +154,7 @@ class TournamentStatisticsService:
             .join(Gara, Match.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
-                Match.status == MatchStatus.CLOSED_UNILATERALLY.value,
+                Match.status.in_(MatchStatus.finished_values()),
             )
         )
         total_racks_played = rack_sum_query.scalar() or 0

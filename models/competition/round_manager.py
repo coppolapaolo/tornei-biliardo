@@ -434,11 +434,16 @@ class AdvancedRoundManager:
         if blocked_reason:
             return False, blocked_reason, {"reset_count": 0, "error_count": 0}
 
-        # Get all completed matches in the round
-        completed_matches = Match.query.filter_by(
-            gara_id=gara_id,
-            round_number=round_number,
-            status=MatchStatus.CLOSED_UNILATERALLY.value,
+        # Tutte le partite concluse del turno: chiuse dal direttore **e**
+        # chiuse dai due giocatori, che fino al 2026-11-10 restavano fuori.
+        # La X no: nasce conclusa, ma non c'è niente da rigiocare e il reset
+        # della partita la rifiuta — contarla voleva dire «errori: 1» a ogni
+        # turno dispari. Resta com'è; la toglie solo `cancel_round`.
+        completed_matches = Match.query.filter(
+            Match.gara_id == gara_id,
+            Match.round_number == round_number,
+            Match.status.in_(MatchStatus.finished_values()),
+            Match.is_bye == False,  # noqa: E712
         ).all()
 
         if not completed_matches:
