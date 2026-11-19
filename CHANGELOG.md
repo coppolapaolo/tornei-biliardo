@@ -32,6 +32,13 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
   senza scrivere, e si rifiuta se lo stato salvato non coincide già con quello
   che il codice ricalcolerebbe: così una correzione non si mescola mai con un
   guasto preesistente.
+- **Lo spareggio di quel pari merito, anche dopo.** Se i giocatori rimasti
+  pari spareggiano a una serata successiva, lo stesso script registra lo SSR
+  con `--gara … --ssr id=punti …`: stesse regole dell'app, stesse prove a
+  vuoto e stessi controlli di coerenza. Le posizioni si separano, la
+  classifica del campionato segue e l'XP di podio resta solo a chi è ancora
+  sul podio; l'ELO non si muove, perché nessuna partita cambia. `--elenca`
+  mostra ora anche i pari merito da spareggiare, con gli id da usare.
 
 ### Corretto
 

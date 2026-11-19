@@ -3,6 +3,11 @@
     venv/bin/python scripts/recalc_elo.py             # prova generale
     venv/bin/python scripts/recalc_elo.py --commit    # scrive davvero
 
+    # sulla copia del database, per vedere prima cosa succede
+    venv/bin/python scripts/recalc_elo.py --database sqlite:////tmp/prova.db --commit
+
+Prima di chiedere conferma lo script stampa il database su cui lavora.
+
 L'Elo è **path-dependent**: il ricalcolo azzera e rigioca tutto in ordine
 cronologico, quindi non è mai un'operazione locale. Cambiare quali partite sono
 eleggibili — per esempio assegnando le categorie di una gara con handicap
@@ -53,7 +58,7 @@ def matches_to_process():
     )
 
 
-def recalculate_elo(commit=False):
+def recalculate_elo(commit=False, chiedi_conferma=True):
     # Import ritardati di proposito: l'app (e con lei `config`) va costruita
     # dopo che `bootstrap_and_create_app` ha popolato l'ambiente.
     app = bootstrap_and_create_app()
@@ -62,6 +67,17 @@ def recalculate_elo(commit=False):
     from models.rating.calculation_service import RatingCalculationService
 
     with app.app_context():
+        # Il database si dice prima della domanda: chi risponde «y» deve sapere
+        # se sta toccando la copia o quello vero.
+        print(f"Database: {app.config.get('SQLALCHEMY_DATABASE_URI')}")
+        if chiedi_conferma:
+            confirm = input(
+                "This will RESET all Elo ratings and recalculate them. "
+                "Are you sure? [y/N] "
+            )
+            if confirm.lower() != "y":
+                print("Aborted.")
+                return
         logger.info("Starting Elo recalculation...")
 
         if commit:
@@ -96,13 +112,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--commit", action="store_true", help="Commit changes to database"
     )
-    args = parser.parse_args()
-
-    confirm = input(
-        "This will RESET all Elo ratings and recalculate them. Are you sure? [y/N] "
+    parser.add_argument(
+        "--database", help="URI SQLAlchemy alternativo, per la prova su una copia"
     )
-    if confirm.lower() != "y":
-        print("Aborted.")
-        sys.exit(0)
+    args = parser.parse_args()
+    if args.database:
+        # Prima di costruire l'app: la config legge l'ambiente all'avvio.
+        os.environ["DATABASE_URL"] = args.database
 
     recalculate_elo(commit=args.commit)

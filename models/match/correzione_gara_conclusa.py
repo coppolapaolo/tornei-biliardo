@@ -41,6 +41,12 @@ uno, per un 3-2 che era un 2-3. Si sceglie l'ultimo triangolo del giocatore
 che ne perde, preferendo quelli senza runout; se il triangolo girato aveva un
 runout, il runout si toglie, perché era di chi l'aveva vinto.
 
+**Lo spareggio a gara conclusa** (`registra_ssr`). Un pari merito che la
+correzione apre resta pari; se i giocatori lo spareggiano dopo, qui si
+registra con le regole dell'app e con gli stessi controlli: le posizioni si
+separano, l'XP di podio resta solo a chi è ancora sul podio, l'ELO non si
+muove (nessuna partita cambia).
+
 **Cosa resta fuori, e viene rifiutato.** Gare non concluse (si corregge
 dall'app), trio, partite a set, la X, partite con un numero di triangoli
 diverso da quello giocato, gare con uno spareggio registrato, campionati con
@@ -126,28 +132,9 @@ def _esegui(
     _verifica_ammissibile(match, gara, autore, player1_score, player2_score)
     assert gara is not None
 
-    prima = _fotografia(gara)
-
     # 1. Fedeltà: sui dati invariati il ricalcolo deve rifare lo stato salvato.
-    _ricalcola(gara)
-    rifatto = _fotografia(gara)
-    differenze = _differenze(prima, rifatto)
-    if differenze:
-        raise CorrezioneRifiutata(
-            "Lo stato salvato non coincide con quello che il codice ricalcola "
-            "sui dati invariati, quindi la correzione non parte.\n  "
-            + "\n  ".join(differenze)
-        )
-    podi_della_chiusura = _podio_della_chiusura(gara)
-    if prima["podi"] != podi_della_chiusura:
-        raise CorrezioneRifiutata(
-            "L'XP di podio della gara non corrisponde alla classifica salvata: "
-            f"registro {sorted(prima['podi'])}, "
-            f"classifica {sorted(podi_della_chiusura)}"
-        )
+    prima = _verifica_fedelta(gara)
     vincitore_gara = _vincitore_gara(gara)
-    if vincitore_gara is None:
-        raise CorrezioneRifiutata("Il primo posto è a pari merito: non gestito")
 
     # 2. La partita.
     vincitore_prima = match.winner_id
@@ -195,7 +182,7 @@ def _esegui(
 
     rapporto = {
         "match_id": match.id,
-        "gara": {"id": gara.id, "name": gara.name, "campionato_id": gara.campionato_id},
+        "gara": _intestazione(gara),
         "giocatori": {
             "player1": _nome(match.player1_id),
             "player2": _nome(match.player2_id),
@@ -226,7 +213,177 @@ def _esegui(
     return rapporto
 
 
+# ---------------------------------------------------------------- spareggio
+
+
+def registra_ssr(
+    gara_id: int, punteggi: Dict[int, int], *, scrivi: bool = False
+) -> Dict[str, Any]:
+    """Registra lo spareggio SSR di un pari merito, a gara già conclusa.
+
+    Il caso è quello della Ronin Cup 2, gara 3: la correzione di un risultato
+    apre un pari merito sul terzo posto quando la gara è già chiusa, e i due
+    lo spareggiano la volta dopo. Nell'app lo spareggio si registra solo a gara
+    in corso (`save_ssr_group`); qui si registra con le **stesse** regole —
+    `save_ssr_scores_for_group` valida i punteggi e l'appartenenza al gruppo —
+    e poi si rifà ciò che ne discende: posizioni, classifica del campionato,
+    podio della gamification.
+
+    `punteggi` va da user_id a punteggio SSR, e deve nominare **tutti e soli**
+    i giocatori di un gruppo di pari merito. Gli stessi controlli della
+    correzione: lo stato salvato deve essere quello che il codice ricalcola,
+    tutto in una transazione, e con `scrivi=False` si annulla alla fine.
+
+    Raises:
+        CorrezioneRifiutata: se lo spareggio non è ammesso, o se un controllo
+            di coerenza fallisce. Non resta scritto niente.
+    """
+    try:
+        return _esegui_ssr(gara_id, punteggi, scrivi)
+    except _SoloProva as prova:
+        return prova.rapporto
+
+
+def gruppi_da_spareggiare(gara) -> List[Dict[str, Any]]:
+    """I pari merito che lo spareggio della gara deciderebbe, per l'elenco."""
+    from models.competition.spareggio_service import SpareggioService
+
+    return [dict(g) for g in SpareggioService.get_all_ssr_groups(gara.id)]
+
+
+@transactional(domain="competition")
+def _esegui_ssr(gara_id: int, punteggi: Dict[int, int], scrivi: bool) -> Dict[str, Any]:
+    from models.competition.models import Gara
+    from models.competition.spareggio_service import SpareggioService
+
+    gara = db.session.get(Gara, gara_id)
+    if gara is None:
+        raise CorrezioneRifiutata(f"Gara {gara_id} non trovata")
+    if gara.status != GaraStatus.COMPLETED.value:
+        raise CorrezioneRifiutata(
+            "La gara non è conclusa: lo spareggio si registra dall'app"
+        )
+    if SpareggioService.has_recorded_ssr(gara.id):
+        raise CorrezioneRifiutata("La gara ha già uno spareggio registrato")
+    if gara.campionato_id and _inviti_playoff(gara.campionato_id):
+        raise CorrezioneRifiutata(
+            "Il campionato ha già inviti ai playoff, fatti sulla classifica di prima"
+        )
+
+    prima = _verifica_fedelta(gara)
+    vincitore_gara = _vincitore_gara(gara)
+    gruppo = _gruppo_dei_punteggi(gara, punteggi)
+
+    salvato, messaggio = SpareggioService.save_ssr_scores_for_group(
+        gara.id, gruppo["position"], punteggi
+    )
+    if not salvato:
+        raise CorrezioneRifiutata(str(messaggio))
+
+    _ricalcola(gara)
+    if _vincitore_gara(gara) != vincitore_gara:
+        raise CorrezioneRifiutata("Lo spareggio cambierebbe il vincitore della gara")
+    if any(
+        g["position"] == gruppo["position"]
+        for g in SpareggioService.detect_tiebreakers(gara.id)
+    ):
+        raise CorrezioneRifiutata("Questi punteggi non sciolgono il pari merito")
+
+    podio = _sposta_podio(gara, prima["podi"])
+    traguardi = _riallinea_traguardi(perdono=podio["tolti"], guadagnano=podio["dati"])
+
+    dopo = _fotografia(gara)
+    if dopo["podi"] != _podio_atteso(gara):
+        raise CorrezioneRifiutata("Dopo lo spareggio il podio non torna")
+    # Lo spareggio ordina dei pari: nessuna partita cambia, e l'ELO, che
+    # nasce dalle partite, deve restare identico. Se si muove, qualcosa
+    # d'altro è cambiato.
+    for chiave in ("elo_utenti", "rating", "storia_rating"):
+        if prima[chiave] != dopo[chiave]:
+            raise CorrezioneRifiutata(f"Lo spareggio ha toccato l'ELO ({chiave})")
+
+    rapporto = {
+        "gara": _intestazione(gara),
+        "posizione": gruppo["position"],
+        "punteggi": sorted(
+            ((_nome(u), p) for u, p in punteggi.items()), key=lambda x: -x[1]
+        ),
+        "classifica_gara_prima": _leggibile_gara(prima),
+        "classifica_gara_dopo": _leggibile_gara(dopo),
+        "classifica_campionato_prima": prima["generale"],
+        "classifica_campionato_dopo": dopo["generale"],
+        "podio": {
+            "tolto_a": sorted(_nome(u) for u in podio["tolti"]),
+            "dato_a": sorted(_nome(u) for u in podio["dati"]),
+        },
+        "traguardi": traguardi,
+        "avvisi": _avvisi(gara)[2:],
+        "scritto": scrivi,
+    }
+    if not scrivi:
+        raise _SoloProva(rapporto)
+    return rapporto
+
+
+def _gruppo_dei_punteggi(gara, punteggi: Dict[int, int]) -> Dict[str, Any]:
+    """Il gruppo di pari merito di cui i punteggi nominano tutti i giocatori."""
+    gruppi = gruppi_da_spareggiare(gara)
+    if not gruppi:
+        raise CorrezioneRifiutata(
+            "In questa gara non c'è un pari merito da spareggiare"
+        )
+    for gruppo in gruppi:
+        if {p["user_id"] for p in gruppo["players"]} == set(punteggi):
+            return gruppo
+    elenco = "; ".join(
+        f"{g['position']}º posto: "
+        + ", ".join(f"{p['username']} (id {p['user_id']})" for p in g["players"])
+        for g in gruppi
+    )
+    raise CorrezioneRifiutata(
+        "I punteggi devono nominare tutti e soli i giocatori di un pari merito. "
+        f"Quelli della gara: {elenco}"
+    )
+
+
 # ---------------------------------------------------------------- controlli
+
+
+def _verifica_fedelta(gara) -> Dict[str, Any]:
+    """Rifà i conti sui dati invariati e si ferma se non tornano.
+
+    Restituisce la fotografia dello stato salvato. L'XP di podio deve essere
+    quello della chiusura (le prime tre righe, `_podio_della_chiusura`) o
+    quello che lascia una correzione già fatta (tutti i pari, `_podio_atteso`):
+    i due coincidono quando non c'è un pari merito a cavallo del terzo posto.
+    """
+    prima = _fotografia(gara)
+    _ricalcola(gara)
+    differenze = _differenze(prima, _fotografia(gara))
+    if differenze:
+        raise CorrezioneRifiutata(
+            "Lo stato salvato non coincide con quello che il codice ricalcola "
+            "sui dati invariati, quindi la correzione non parte.\n  "
+            + "\n  ".join(differenze)
+        )
+    ammessi = (_podio_della_chiusura(gara), _podio_atteso(gara))
+    if prima["podi"] not in ammessi:
+        raise CorrezioneRifiutata(
+            "L'XP di podio della gara non corrisponde alla classifica salvata: "
+            f"registro {sorted(prima['podi'])}, "
+            f"classifica {sorted(ammessi[0])}"
+        )
+    if _vincitore_gara(gara) is None:
+        raise CorrezioneRifiutata("Il primo posto è a pari merito: non gestito")
+    return prima
+
+
+def _intestazione(gara) -> Dict[str, Any]:
+    return {
+        "id": gara.id,
+        "name": gara.display_name,
+        "campionato_id": gara.campionato_id,
+    }
 
 
 def _verifica_ammissibile(match, gara, autore, p1: int, p2: int) -> None:
@@ -605,12 +762,21 @@ _RIPIEGHI = {
 }
 
 
+#: Annotazioni di `GaraClassification` che nessuno legge: le scrive solo
+#: `calculate_gara_classification` (chi era pari con chi, se lo spareggio l'ha
+#: sciolto), e né pagine, né servizi, né export le usano — le posizioni e i
+#: punteggi SSR stanno in colonne loro, che restano nel confronto. Una gara
+#: chiusa senza passare da quel calcolo le ha ai valori di default: in
+#: produzione, Ronin Cup 2 gara 3, il 2026-11-19. Non è uno stato diverso.
+_ANNOTAZIONI = {"tied_with_player_ids", "tiebreaker_resolved"}
+
+
 def _riga(oggetto) -> Tuple:
-    """Una riga come tupla confrontabile: niente id né date di calcolo."""
+    """Una riga come tupla confrontabile: niente id, date, né annotazioni."""
     valori = {}
     for colonna in oggetto.__table__.columns:
         nome = colonna.name
-        if nome == "id":
+        if nome == "id" or nome in _ANNOTAZIONI:
             continue
         valore = getattr(oggetto, colonna.key)
         if isinstance(valore, (datetime, date)):
