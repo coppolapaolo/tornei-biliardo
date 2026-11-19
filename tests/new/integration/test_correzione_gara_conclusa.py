@@ -362,6 +362,24 @@ class TestQuandoSiRifiuta:
         assert riga.position == 4  # nemmeno il ricalcolo di prova è rimasto
 
 
+class TestLeAnnotazioniDelloSpareggioNonContano:
+    def test_righe_chiuse_senza_annotazioni_si_correggono(
+        self, db_session, gara, autore
+    ):
+        """In produzione la gara 3 della Ronin Cup aveva le annotazioni ai
+        valori di default: nessuno le legge, e non devono fermare niente."""
+        from models.classification.models import GaraClassification
+
+        g, n, _ = gara
+        for riga in GaraClassification.query.filter_by(gara_id=g.id):
+            riga.tied_with_player_ids = None
+            riga.tiebreaker_resolved = True
+        db_session.commit()
+
+        rapporto = _correggi(gara, autore, scrivi=False)
+        assert rapporto["punteggio_dopo"] == (2, 3)
+
+
 @pytest.fixture
 def gara_di_campionato(db_session, isolated_players):
     from models.campionato.models import Campionato

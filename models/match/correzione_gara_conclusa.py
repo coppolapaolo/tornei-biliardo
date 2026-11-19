@@ -762,12 +762,21 @@ _RIPIEGHI = {
 }
 
 
+#: Annotazioni di `GaraClassification` che nessuno legge: le scrive solo
+#: `calculate_gara_classification` (chi era pari con chi, se lo spareggio l'ha
+#: sciolto), e né pagine, né servizi, né export le usano — le posizioni e i
+#: punteggi SSR stanno in colonne loro, che restano nel confronto. Una gara
+#: chiusa senza passare da quel calcolo le ha ai valori di default: in
+#: produzione, Ronin Cup 2 gara 3, il 2026-11-19. Non è uno stato diverso.
+_ANNOTAZIONI = {"tied_with_player_ids", "tiebreaker_resolved"}
+
+
 def _riga(oggetto) -> Tuple:
-    """Una riga come tupla confrontabile: niente id né date di calcolo."""
+    """Una riga come tupla confrontabile: niente id, date, né annotazioni."""
     valori = {}
     for colonna in oggetto.__table__.columns:
         nome = colonna.name
-        if nome == "id":
+        if nome == "id" or nome in _ANNOTAZIONI:
             continue
         valore = getattr(oggetto, colonna.key)
         if isinstance(valore, (datetime, date)):
