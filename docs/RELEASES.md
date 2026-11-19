@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.88.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.88.0...v1.88.1) (2026-11-19)
+
+
+### Correzioni
+
+* la prova della correzione a gara conclusa non stampa più un traceback ([#776](https://github.com/coppolapaolo/tornei-biliardo/issues/776)) ([2eabe0c](https://github.com/coppolapaolo/tornei-biliardo/commit/2eabe0c0ee214fb32fb700dba3af8a0f498ea997))
+
 ## [1.88.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.87.0...v1.88.0) (2026-11-19)
 
 
