@@ -432,3 +432,148 @@ class TestDentroUnCampionato:
         with pytest.raises(CorrezioneRifiutata, match="inviti ai playoff"):
             _correggi(gara_di_campionato, autore, scrivi=True)
         assert MatchCorrection.query.count() == 0
+
+
+# ------------------------------------------------------------- lo spareggio
+#
+# Nella gara dei test, senza correzione, C, E, F sono 2º pari merito: lo
+# spareggio fino al terzo posto mette in palio il 2º e il 3º. Dopo la
+# correzione il gruppo è D, E, F.
+
+
+def _ssr(gara_tuple, punteggi, *, scrivi=True):
+    from models.match.correzione_gara_conclusa import registra_ssr
+
+    g, n, _ = gara_tuple
+    return registra_ssr(
+        g.id, {n[chi].id: punti for chi, punti in punteggi.items()}, scrivi=scrivi
+    )
+
+
+class TestLoSpareggioAGaraConclusa:
+    def test_separa_le_posizioni_e_il_podio_segue(self, db_session, gara):
+        g, n, _ = gara
+        rapporto = _ssr(gara, {"C": 1, "E": 5, "F": 3})
+
+        assert rapporto["scritto"] is True
+        pos = _posizioni(g.id)
+        assert (pos[n["E"].id], pos[n["F"].id], pos[n["C"].id]) == (2, 3, 4)
+        assert _podi(g.id) == {n["E"].id, n["F"].id}
+
+    def test_la_prova_non_scrive_niente(self, db_session, gara):
+        g, n, _ = gara
+        podi_prima = _podi(g.id)
+
+        rapporto = _ssr(gara, {"C": 1, "E": 5, "F": 3}, scrivi=False)
+
+        assert rapporto["scritto"] is False
+        db_session.expire_all()
+        pos = _posizioni(g.id)
+        assert pos[n["C"].id] == pos[n["E"].id] == pos[n["F"].id] == 2
+        assert _podi(g.id) == podi_prima
+        from models.competition.spareggio_service import SpareggioService
+
+        assert not SpareggioService.has_recorded_ssr(g.id)
+
+    def test_dopo_una_correzione_toglie_il_podio_a_chi_lo_perde(
+        self, db_session, gara, autore
+    ):
+        """Il caso della Ronin Cup: la correzione dà il podio a tutti i pari,
+        lo spareggio lo toglie a chi finisce fuori."""
+        from models.gamification.models import UserLevel, XPTransaction
+        from sqlalchemy import func
+
+        g, n, _ = gara
+        _correggi(gara, autore, scrivi=True)
+        assert _podi(g.id) == {n["D"].id, n["E"].id, n["F"].id}
+
+        _ssr(gara, {"D": 2, "E": 7, "F": 4})
+
+        pos = _posizioni(g.id)
+        assert (pos[n["E"].id], pos[n["F"].id], pos[n["D"].id]) == (2, 3, 4)
+        assert _podi(g.id) == {n["E"].id, n["F"].id}
+        uid = n["D"].id
+        somma = (
+            db.session.query(func.coalesce(func.sum(XPTransaction.xp_amount), 0))
+            .filter(XPTransaction.user_id == uid)
+            .scalar()
+        )
+        livello = db.session.get(UserLevel, uid)
+        assert (livello.total_xp if livello else 0) == max(0, somma)
+
+    def test_dopo_lo_spareggio_il_ricalcolo_non_cambia_niente(self, db_session, gara):
+        from models.match.correzione_gara_conclusa import (
+            _differenze,
+            _fotografia,
+            _ricalcola,
+        )
+
+        g, _n, _ = gara
+        _ssr(gara, {"C": 1, "E": 5, "F": 3})
+
+        prima = _fotografia(g)
+        _ricalcola(g)
+        assert _differenze(prima, _fotografia(g)) == []
+        db_session.rollback()
+
+    def test_le_righe_del_campionato_seguono(self, db_session, gara_di_campionato):
+        from models.classification.models import Classification
+
+        g, n, _ = gara_di_campionato
+        _ssr(gara_di_campionato, {"C": 1, "E": 5, "F": 3})
+        db_session.expire_all()
+        righe = Classification.query.filter_by(campionato_id=g.campionato_id).count()
+        assert righe > 0
+        # Le righe sono la copia della classifica generale: lo stato finale è
+        # un punto fisso del ricalcolo, campionato compreso.
+        from models.match.correzione_gara_conclusa import (
+            _differenze,
+            _fotografia,
+            _ricalcola,
+        )
+
+        prima = _fotografia(g)
+        _ricalcola(g)
+        assert _differenze(prima, _fotografia(g)) == []
+        db_session.rollback()
+
+
+class TestQuandoLoSpareggioSiRifiuta:
+    def _rifiuta(self, db_session, gara, punteggi):
+        from models.competition.spareggio_service import SpareggioService
+        from models.match.correzione_gara_conclusa import CorrezioneRifiutata
+
+        g, _n, _ = gara
+        with pytest.raises(CorrezioneRifiutata) as errore:
+            _ssr(gara, punteggi)
+        db_session.expire_all()
+        assert not SpareggioService.has_recorded_ssr(g.id)
+        return str(errore.value)
+
+    def test_manca_un_giocatore_del_gruppo(self, db_session, gara):
+        messaggio = self._rifiuta(db_session, gara, {"E": 5, "F": 3})
+        assert "tutti e soli" in messaggio
+
+    def test_i_punteggi_non_separano_i_posti_in_palio(self, db_session, gara):
+        # In palio 2º e 3º: i primi due punteggi devono essere diversi.
+        self._rifiuta(db_session, gara, {"C": 1, "E": 5, "F": 5})
+
+    def test_spareggio_gia_registrato(self, db_session, gara):
+        _ssr(gara, {"C": 1, "E": 5, "F": 3})
+        messaggio = self._rifiuta_dopo(db_session, gara)
+        assert "già uno spareggio" in messaggio
+
+    def _rifiuta_dopo(self, db_session, gara):
+        from models.match.correzione_gara_conclusa import CorrezioneRifiutata
+
+        with pytest.raises(CorrezioneRifiutata) as errore:
+            _ssr(gara, {"C": 5, "E": 1, "F": 3})
+        return str(errore.value)
+
+    def test_gara_non_conclusa(self, db_session, gara):
+        g, _n, _ = gara
+        g.status = GaraStatus.PLAYING.value
+        db_session.commit()
+        assert "non è conclusa" in self._rifiuta(
+            db_session, gara, {"C": 1, "E": 5, "F": 3}
+        )

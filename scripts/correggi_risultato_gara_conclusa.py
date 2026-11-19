@@ -39,6 +39,13 @@ che il codice ricalcolerebbe sui dati invariati — classifiche, ELO o XP di
 podio. Vorrebbe dire che qualcosa era già fuori posto, e una correzione fatta
 sopra mescolerebbe due cambiamenti. In quel caso il messaggio dice dove.
 
+**Lo spareggio dopo.** Se la correzione apre un pari merito che i giocatori
+spareggiano più avanti, lo SSR si registra da qui, con le stesse prove. Gli
+id dei giocatori e i posti in palio li dà l'elenco:
+
+    venv/bin/python scripts/correggi_risultato_gara_conclusa.py \\
+        --gara ronin-cup-2-gara-3 --ssr 123=4 456=2
+
 ⚠️  IN PRODUZIONE VA ESEGUITO CON LA WEB APP SU **Disabled**, e riabilitata
 subito dopo: lo storage di PythonAnywhere è NFS e SQLite non regge scritture
 concorrenti; la riabilitazione fa anche ripartire i processi, che così non
@@ -69,6 +76,14 @@ def _punteggio(testo: str):
         raise argparse.ArgumentTypeError("il punteggio si scrive così: 3-2")
 
 
+def _spareggio(testo: str):
+    try:
+        chi, punti = testo.split("=")
+        return int(chi), int(punti)
+    except ValueError:
+        raise argparse.ArgumentTypeError("lo spareggio si scrive id=punti: 123=4")
+
+
 def _trova_gara(db, Gara, valore: str):
     if valore.isdigit():
         return db.session.get(Gara, int(valore))
@@ -76,7 +91,9 @@ def _trova_gara(db, Gara, valore: str):
 
 
 def _elenca(gara, Match) -> None:
-    print(f"Gara {gara.id} «{gara.name}» — stato {gara.status}\n")
+    from models.match.correzione_gara_conclusa import gruppi_da_spareggiare
+
+    print(f"Gara {gara.id} «{gara.display_name}» — stato {gara.status}\n")
     partite = (
         Match.query.filter_by(gara_id=gara.id)
         .order_by(Match.round_number, Match.id)
@@ -97,6 +114,18 @@ def _elenca(gara, Match) -> None:
             f"  partita {m.id:>6}  giocatore1 {p1}  {m.player1_score}-"
             f"{m.player2_score}  giocatore2 {p2}"
         )
+
+    gruppi = gruppi_da_spareggiare(gara)
+    print("\nPari merito che lo spareggio deciderebbe")
+    if not gruppi:
+        print("  (nessuno)")
+    for g in gruppi:
+        posti = ", ".join(f"{p}º" for p in g["posti_in_palio"])
+        print(f"  {g['position']}º posto, in palio {posti}:")
+        for p in g["players"]:
+            ssr = p["current_ssr_score"]
+            gia = f"  (SSR registrato: {ssr})" if ssr else ""
+            print(f"    id {p['user_id']:>6}  {p['username']}{gia}")
 
 
 def _tabella(titolo, righe, colonne) -> None:
@@ -129,6 +158,24 @@ def _stampa(rapporto) -> None:
         extra = "  (runout tolto)" if t["runout_tolto"] else ""
         print(f"  triangolo {t['rack_number']}: {t['da']} → {t['a']}{extra}")
 
+    _stampa_classifiche(rapporto)
+
+    print("\nELO competitivo che cambia")
+    if rapporto["elo"]:
+        for nome, prima, dopo in rapporto["elo"]:
+            print(f"  {nome}: {prima} → {dopo}")
+    else:
+        print("  (nessuno)")
+
+    _stampa_podio(rapporto)
+
+    print("\nDA SAPERE")
+    for avviso in rapporto["avvisi"]:
+        print(f"  - {avviso}")
+
+
+def _stampa_classifiche(rapporto) -> None:
+    g = rapporto["gara"]
     colonne = ("pos", "giocatore", "vinte", "diff")
     _tabella(
         "CLASSIFICA DELLA GARA — prima", rapporto["classifica_gara_prima"], colonne
@@ -147,13 +194,8 @@ def _stampa(rapporto) -> None:
             colonne_c,
         )
 
-    print("\nELO competitivo che cambia")
-    if rapporto["elo"]:
-        for nome, prima, dopo in rapporto["elo"]:
-            print(f"  {nome}: {prima} → {dopo}")
-    else:
-        print("  (nessuno)")
 
+def _stampa_podio(rapporto) -> None:
     podio = rapporto["podio"]
     print("\nXP DI PODIO")
     print(f"  tolto a: {', '.join(podio['tolto_a']) or '(nessuno)'}")
@@ -164,20 +206,39 @@ def _stampa(rapporto) -> None:
     for chi, slugs in trag["sbloccati"].items():
         print(f"  traguardi sbloccati a {chi}: {', '.join(slugs)}")
 
-    print("\nDA SAPERE")
-    for avviso in rapporto["avvisi"]:
-        print(f"  - {avviso}")
+
+def _stampa_ssr(rapporto) -> None:
+    print("=" * 72)
+    print("ESEGUITO" if rapporto["scritto"] else "PROVA (niente è stato scritto)")
+    g = rapporto["gara"]
+    print(f"Gara {g['id']} «{g['name']}», campionato {g['campionato_id']}")
+    print(f"Spareggio del pari merito al {rapporto['posizione']}º posto:")
+    for nome, punti in rapporto["punteggi"]:
+        print(f"  {nome}: {punti}")
+    print("=" * 72)
+    _stampa_classifiche(rapporto)
+    _stampa_podio(rapporto)
+    if rapporto["avvisi"]:
+        print("\nDA SAPERE")
+        for avviso in rapporto["avvisi"]:
+            print(f"  - {avviso}")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("--gara", help="id o slug della gara (con --elenca)")
+    parser.add_argument("--gara", help="id o slug della gara (con --elenca o --ssr)")
     parser.add_argument("--elenca", action="store_true", help="elenca le partite")
     parser.add_argument("--partita", type=int, help="id della partita da correggere")
     parser.add_argument(
         "--punteggio", type=_punteggio, help="giocatore1-giocatore2, per esempio 3-2"
+    )
+    parser.add_argument(
+        "--ssr",
+        nargs="+",
+        type=_spareggio,
+        help="spareggio a gara conclusa: id=punti per ogni giocatore del pari merito",
     )
     parser.add_argument("--by", type=int, help="id dell'admin che corregge")
     parser.add_argument("--nota", default=None, help="perché si corregge")
@@ -189,10 +250,19 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    if args.elenca and not args.gara:
-        parser.error("--elenca vuole --gara")
-    if not args.elenca and not (args.partita and args.punteggio and args.by):
-        parser.error("servono --partita, --punteggio e --by (oppure --gara --elenca)")
+    if (args.elenca or args.ssr) and not args.gara:
+        parser.error("--elenca e --ssr vogliono --gara")
+    if args.elenca and args.ssr:
+        parser.error("--elenca e --ssr non vanno insieme")
+    if (
+        not args.elenca
+        and not args.ssr
+        and not (args.partita and args.punteggio and args.by)
+    ):
+        parser.error(
+            "servono --partita, --punteggio e --by "
+            "(oppure --gara --elenca, oppure --gara --ssr)"
+        )
 
     if args.database:
         # Prima di costruire l'app: la config legge l'ambiente all'avvio.
@@ -203,17 +273,36 @@ def main() -> int:
 
     from models import db
     from models.competition.models import Gara
-    from models.match.correzione_gara_conclusa import CorrezioneRifiutata, correggi
+    from models.match.correzione_gara_conclusa import (
+        CorrezioneRifiutata,
+        correggi,
+        registra_ssr,
+    )
     from models.match.models import Match
 
     with app.app_context():
         print(f"Database: {app.config.get('SQLALCHEMY_DATABASE_URI')}\n")
-        if args.elenca:
+        if args.elenca or args.ssr:
             gara = _trova_gara(db, Gara, args.gara)
             if gara is None:
                 print(f"Gara «{args.gara}» non trovata")
                 return 1
+        if args.elenca:
             _elenca(gara, Match)
+            return 0
+        if args.ssr:
+            punteggi = dict(args.ssr)
+            if len(punteggi) != len(args.ssr):
+                parser.error("un giocatore compare due volte in --ssr")
+            try:
+                rapporto = registra_ssr(gara.id, punteggi, scrivi=args.commit)
+            except CorrezioneRifiutata as motivo:
+                print("Spareggio NON registrato, niente è stato scritto.")
+                print(f"Motivo: {motivo}")
+                return 1
+            _stampa_ssr(rapporto)
+            if not args.commit:
+                print("\nProva: niente è stato scritto. Con --commit si scrive.")
             return 0
 
         p1, p2 = args.punteggio
