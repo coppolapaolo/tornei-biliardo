@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.87.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.86.2...v1.87.0) (2026-11-19)
+
+
+### Funzioni nuove
+
+* correggere un risultato a gara conclusa, con uno script da console ([#772](https://github.com/coppolapaolo/tornei-biliardo/issues/772)) ([be6f8eb](https://github.com/coppolapaolo/tornei-biliardo/commit/be6f8eb81b0df176eb5ecd4d6cb93c4eabc31147))
+
 ## [1.86.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.86.1...v1.86.2) (2026-11-19)
 
 
