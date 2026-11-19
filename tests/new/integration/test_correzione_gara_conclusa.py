@@ -196,6 +196,34 @@ class TestLaProvaNonScriveNiente:
         assert _podi(g.id) == podi_prima
 
 
+class TestLaConsoleNonGrida:
+    def test_prova_e_rifiuto_non_scrivono_un_traceback(
+        self, db_session, gara, autore, caplog
+    ):
+        """L'annullamento della prova e un rifiuto sono voluti: niente WARNING
+        col traceback, che in console li faceva sembrare un guasto."""
+        import logging
+
+        from models.match.correzione_gara_conclusa import (
+            CorrezioneRifiutata,
+            correggi,
+        )
+
+        _g, _n, partite = gara
+        with caplog.at_level(logging.INFO, logger="models.transaction.manager"):
+            _correggi(gara, autore, scrivi=False)
+            with pytest.raises(CorrezioneRifiutata):
+                correggi(partite[("C", "D")].id, 1, 3, autore.id, scrivi=False)
+
+        gridati = [
+            r
+            for r in caplog.records
+            if r.name == "models.transaction.manager"
+            and (r.levelno >= logging.WARNING or r.exc_info)
+        ]
+        assert gridati == []
+
+
 class TestLaCorrezione:
     def test_la_partita_cambia_e_resta_la_traccia(self, db_session, gara, autore):
         from models.match.models import MatchCorrection
