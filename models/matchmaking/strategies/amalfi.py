@@ -12,6 +12,45 @@ if TYPE_CHECKING:
     from models.classification.models import RoundClassification
 
 
+def _scala_della_parita(n: int) -> int:
+    """Di quanto si moltiplica il peso di una coppia per far posto alla parità.
+
+    La parità sta tutta sotto questa soglia (vedi `_con_la_parita_dall_alto`):
+    un'unità di scostamento dal salto vale più di qualunque somma di parità.
+    """
+    return (n + 2) ** (n + 1)
+
+
+def _con_la_parita_dall_alto(
+    peso: int, sopra: int, sotto: int, salto: int, n: int
+) -> int:
+    """Il peso della coppia, con in coda chi sceglie a parità.
+
+    Il matching dell'ADR-029 pesa ogni coppia con lo scostamento dal salto,
+    ma lo scostamento dice *quanto* ci si allontana, non *chi*: con dieci
+    giocatori e salto 2 «1º–3º, …, 9º–10º» e «1º–2º, 3º–5º, …» si scostano
+    di uno entrambi, e `networkx` ne prendeva uno qualsiasi (Ronin Cup 2,
+    gara 3, 18/11/2026: il primo giocò col secondo).
+
+    La specifica dice invece di scorrere la classifica **dall'alto**:
+    l'n-esimo con l'(n+salto)-esimo e, se non si può, col primo libero
+    andando avanti in modo ciclico (SPECIFICHE.md, «Strategia di
+    abbinamento»). Qui lo si scrive come ordine lessicografico: ogni posto
+    `sopra` ha la sua cifra in base `n + 2`, tanto più pesante quanto più è
+    in alto, e la cifra dice quanto vicino al bersaglio cade il compagno
+    scorrendo in avanti — `n` sul bersaglio, `n - 1` sul posto dopo, e così
+    via. Le cifre stanno tutte sotto `_scala_della_parita(n)`, quindi non
+    spostano mai né il numero di reincontri né lo scostamento complessivo:
+    decidono solo fra abbinamenti che quelle regole lasciano pari.
+
+    Gli interi di Python non hanno limite, e `networkx` con pesi interi
+    lavora in aritmetica esatta: con 64 giocatori sono numeri da ~400 bit.
+    """
+    base = n + 2
+    avanti = (sotto - sopra - salto) % n
+    return peso * _scala_della_parita(n) + (n - avanti) * base ** (n - 1 - sopra)
+
+
 class AmalfiStrategy(BaseStrategy):
     """Amalfi tournament pairing strategy.
 
@@ -567,7 +606,17 @@ class AmalfiStrategy(BaseStrategy):
                 weight = max_weight_offset - abs(position_diff - salto_target)
                 if weight < 1:
                     weight = 1
-                graph.add_edge(a, b, weight=weight)
+                graph.add_edge(
+                    a,
+                    b,
+                    weight=_con_la_parita_dall_alto(
+                        weight,
+                        player_to_index[a],
+                        player_to_index[b],
+                        salto_target,
+                        n,
+                    ),
+                )
 
         matching = nx.max_weight_matching(graph, maxcardinality=True)
         if len(matching) != n // 2:
@@ -606,8 +655,9 @@ class AmalfiStrategy(BaseStrategy):
         n = len(nodes)
         max_weight_offset = n + 1
         # Un arco «buono» vale più di tutti gli scostamenti dal salto messi
-        # insieme: il numero di archi da evitare si minimizza per primo.
-        bonus = (2 * max_weight_offset + 2) * n
+        # insieme, parità comprese: il numero di archi da evitare si
+        # minimizza per primo.
+        bonus = (2 * max_weight_offset + 2) * n * _scala_della_parita(n)
 
         graph: nx.Graph = nx.Graph()
         graph.add_nodes_from(nodes)
@@ -625,6 +675,9 @@ class AmalfiStrategy(BaseStrategy):
                 # metteva il salto: a chi dista dal fondo esattamente il salto.
                 if b == bye and position_diff == salto_target:
                     weight += 1
+                weight = _con_la_parita_dall_alto(
+                    weight, index[a], index[b], salto_target, n
+                )
                 graph.add_edge(a, b, weight=weight + (0 if da_evitare else bonus))
 
         matching = nx.max_weight_matching(graph, maxcardinality=True)

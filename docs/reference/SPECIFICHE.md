@@ -312,7 +312,10 @@ Quando il numero di giocatori è **pari** e l'opzione `anti_rematch_enabled` è 
 
 - **Cardinalità massima** — gli archi del grafo sono solo le coppie di giocatori che NON si sono ancora incontrati; un matching perfetto (cardinalità `N/2`) implica zero rematch.
 - **Pesi per spirito Amalfi** — gli archi sono pesati per minimizzare lo scostamento dal salto target (`max_turni - turno + 1`): tra tutti i matching perfetti possibili, viene scelto quello che meglio rispetta il salto Amalfi.
+- **A parità, dall'alto** — fra gli abbinamenti con lo stesso scostamento complessivo vince quello del salto: si scorre la classifica dall'alto e ogni giocatore prende il bersaglio `n+i` o, se non può, il primo libero andando avanti in modo ciclico, come nella regola generale. Quando il salto non incontra reincontri, l'abbinamento **è** quello del salto.
 - **Fallback** — quando il matching perfetto sul complementare non esiste (rematch matematicamente inevitabile), l'algoritmo accetta il numero minimo di rematch e usa il greedy salto come tie-breaker.
+
+_Nota del 2026-11-19: la regola «a parità, dall'alto» è scritta qui per la prima volta. Fino a questa data il matching pesava solo **quanto** ci si scosta dal salto, non **chi** si scosta, e fra abbinamenti di pari peso ne sceglieva uno qualsiasi. Con un numero pari di giocatori e il salto pari capita quasi sempre, perché le coppie esattamente a distanza di salto non bastano per tutti: alla Ronin Cup 2, gara 3 (18/11/2026, dieci giocatori, turno 2 di 3, salto 2) la classifica chiedeva 1º–3º, 2º–4º, 5º–7º, 6º–8º, 9º–10º, senza nessun reincontro, e in sala si è giocato 1º–2º, 3º–5º, 4º–6º, 7º–9º, 8º–10º. Vale anche nel caso dispari con la X, dopo la regola della X (sezione seguente)._
 
 Per il caso **dispari con il trio** la priorità è descritta nella sezione successiva (selezione trio): la rotazione equa dei trii vince sull'anti-rematch.
 
@@ -322,7 +325,7 @@ _Nota del 2026-11-12._ Quando il numero di giocatori è **dispari** e i dispari 
 
 - **Una X sola a turno, sempre.** Tutti gli altri giocano.
 - **Zero eccezioni quando è possibile.** Le eccezioni sono due: un reincontro, e una seconda X a chi l'ha già avuta. Se esiste un abbinamento che le evita tutte, è quello scelto; altrimenti si sceglie quello che ne ha il numero minimo.
-- **A parità, lo spirito Amalfi.** Fra gli abbinamenti con lo stesso numero di eccezioni vince quello più vicino al salto, e la X resta a chi dista dal fondo esattamente il salto.
+- **A parità, lo spirito Amalfi.** Fra gli abbinamenti con lo stesso numero di eccezioni vince quello più vicino al salto, e la X resta a chi dista dal fondo esattamente il salto. Se resta ancora una parità, decide l'ordine dall'alto del caso pari (nota del 2026-11-19).
 
 Fino a questa data il caso dispari usava il greedy del salto, che non segnava la X come assegnata: quando il primo giocatore ci arrivava scartando un reincontro, ci arrivavano anche altri, e nello stesso turno uscivano più X con una partita in meno.
 
