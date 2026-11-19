@@ -62,6 +62,7 @@ from datetime import date, datetime
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from models.base import db, utc_now
+from models.exceptions import DomainError
 from models.status_enum import GaraStatus, MatchStatus
 from models.transaction.manager import transactional
 
@@ -73,12 +74,22 @@ METRICHE_TOCCATE: Tuple[str, ...] = (
 )
 
 
-class CorrezioneRifiutata(ValueError):
-    """La correzione non si può fare: il motivo è nel messaggio."""
+class CorrezioneRifiutata(DomainError):
+    """La correzione non si può fare: il motivo è nel messaggio.
+
+    `DomainError`, non un guasto: il gestore delle transazioni scrive il
+    rollback a INFO, senza traceback (`_registra_rollback`). Fino al
+    2026-11-19 la console di produzione mostrava un traceback sopra il
+    motivo, e il rifiuto sembrava un errore dello script.
+    """
 
 
-class _SoloProva(Exception):
-    """Porta fuori il rapporto della prova, annullando la transazione."""
+class _SoloProva(DomainError):
+    """Porta fuori il rapporto della prova, annullando la transazione.
+
+    `DomainError` per la stessa ragione: l'annullamento è voluto, e il
+    traceback in cima al rapporto lo faceva sembrare un guasto.
+    """
 
     def __init__(self, rapporto: Dict[str, Any]):
         super().__init__("prova")
