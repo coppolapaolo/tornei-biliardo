@@ -17,6 +17,22 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Non rilasciato]
 
+### Aggiunto
+
+- **Correggere un risultato a gara conclusa, da console.** Il giorno dopo la
+  gara 3 della Ronin Cup 2 si è scoperto che al primo turno MARCO–MAX P era
+  3-2 e non 2-3. L'app corregge un risultato solo a gara in corso, e così
+  resta; per i casi rari c'è ora `scripts/correggi_risultato_gara_conclusa.py`.
+  Cambia la partita, che mostra a tutti «corretto» e il risultato di prima, e
+  tutto ciò che ne discende: classifiche di turno, di gara e di campionato,
+  ELO, XP e traguardi del podio. Gli abbinamenti già giocati restano, l'XP
+  della partita resta a chi l'ha ricevuto alla prima chiusura, come per ogni
+  correzione, e un pari merito che si apre a gara chiusa resta pari merito,
+  con il podio a tutti i pari. Lavora in una transazione sola, si prova prima
+  senza scrivere, e si rifiuta se lo stato salvato non coincide già con quello
+  che il codice ricalcolerebbe: così una correzione non si mescola mai con un
+  guasto preesistente.
+
 ### Corretto
 
 - **Amalfi: il primo non gioca più col secondo quando la classifica dice il

@@ -200,6 +200,26 @@ In produzione: **solo con web app Disabled** (tab Web), poi Reload.
 > verificata sul singolo script invece che ricordata a memoria, perché il nome
 > del flag non è lo stesso per tutti.
 
+**Prova su una copia del database di produzione, senza fermare il sito.** Il
+dry-run di uno script che ricalcola (classifiche, ELO) scrive dentro una
+transazione e poi annulla: per quei secondi tiene il lock di scrittura, e la
+web app che prova a scrivere aspetta o fallisce. Per vedere l'esito senza
+toccare niente si fa una copia con il comando di backup di SQLite, che è sicuro
+anche mentre l'app scrive (un `cp` del file no), e si lancia lo script con
+`--database`:
+
+```bash
+sqlite3 instance/billiard_campionato.db ".backup /tmp/prova.db"
+venv/bin/python scripts/<script>.py ... --database sqlite:////tmp/prova.db
+```
+
+`correggi_risultato_gara_conclusa.py` (19/11/2026) corregge un risultato in
+una gara già conclusa, che l'app non permette: prova per default, `--commit`
+per scrivere, e si **rifiuta da solo** se classifiche, ELO o XP di podio
+salvati non coincidono con quelli che il codice ricalcolerebbe sui dati
+invariati. In quel caso non va forzato: il messaggio dice dove sta la
+differenza, che è un guasto da capire prima.
+
 ## Env di produzione negli script da console/task
 
 Console e scheduled task sono processi separati e **non ereditano** le variabili
