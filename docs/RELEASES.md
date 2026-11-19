@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.86.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.86.1...v1.86.2) (2026-11-19)
+
+
+### Correzioni
+
+* Amalfi a parità scorre la classifica dall'alto, come il salto ([#770](https://github.com/coppolapaolo/tornei-biliardo/issues/770)) ([ec6fefa](https://github.com/coppolapaolo/tornei-biliardo/commit/ec6fefa617957cb74c6a9326e7cf6c533c314a9d))
+
 ## [1.86.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.86.0...v1.86.1) (2026-11-12)
 
 
