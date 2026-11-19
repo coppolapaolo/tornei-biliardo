@@ -571,6 +571,50 @@ class TestLoScontroDiretto:
 
 
 @pytest.mark.unit
+class TestAmalfiAParitaDallAlto:
+    """`SPECIFICHE.md`, «Garanzia anti-rematch nel caso pari».
+
+    > **A parità, dall'alto** — fra gli abbinamenti con lo stesso scostamento
+    > complessivo vince quello del salto: si scorre la classifica dall'alto e
+    > ogni giocatore prende il bersaglio `n+i` o, se non può, il primo libero
+    > andando avanti in modo ciclico [...]. Quando il salto non incontra
+    > reincontri, l'abbinamento **è** quello del salto.
+
+    Dieci giocatori, nessun incontro alle spalle, turno 2 di 3: salto 2. Le
+    coppie a distanza esatta 2 non bastano per tutti, e fino al 2026-11-19 il
+    matching sceglieva a caso dove mettere quella a distanza 1 — alla Ronin
+    Cup 2 la mise in cima, 1º contro 2º. La proprietà generale, pari e
+    dispari, è in `tests/new/unit/test_amalfi_parita_dall_alto.py`.
+    """
+
+    def test_il_salto_scorre_dall_alto(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+
+        from models.matchmaking.strategies.amalfi import AmalfiStrategy
+
+        classifica = [
+            SimpleNamespace(user_id=g, position=g, gara_id=1) for g in range(1, 11)
+        ]
+        with patch(
+            "models.classification.encounter_service."
+            "PlayerEncounterService.get_encounter_matrix",
+            return_value={},
+        ), patch.object(AmalfiStrategy, "_get_players_with_bye", return_value=set()):
+            abbinamenti = AmalfiStrategy()._amalfi_pairing(
+                classifica, turno=2, max_turni=3
+            )
+
+        assert sorted(p.players for p in abbinamenti) == [
+            (1, 3),
+            (2, 4),
+            (5, 7),
+            (6, 8),
+            (9, 10),
+        ]
+
+
+@pytest.mark.unit
 class TestAChiToccaLaXNelPrimoTurno:
     """`SPECIFICHE.md` riga 67.
 

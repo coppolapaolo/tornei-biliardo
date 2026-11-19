@@ -19,6 +19,18 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Amalfi: il primo non gioca più col secondo quando la classifica dice il
+  terzo.** Alla Ronin Cup 2, gara 3 (18/11/2026), al turno 2 di 3 con dieci
+  giocatori il salto chiedeva 1º–3º, 2º–4º, 5º–7º, 6º–8º, 9º–10º, senza
+  nessun reincontro, e in sala si è giocato 1º–2º, 3º–5º, 4º–6º, 7º–9º,
+  8º–10º. Il matching che garantisce zero reincontri pesava solo *quanto* un
+  abbinamento si scosta dal salto, non *chi* si scosta, e fra abbinamenti di
+  pari peso ne prendeva uno qualsiasi: con un numero pari di giocatori e il
+  salto pari capita quasi sempre. Ora a parità si scorre la classifica
+  dall'alto, come dice la regola generale: quando il salto non incontra
+  reincontri, l'abbinamento è quello del salto, nel caso pari come nel
+  dispari con la X. Su storie casuali il vecchio criterio divergeva dal salto
+  circa una volta su tre.
 - **Tolti i playoff, il campionato restava «In attesa dei playoff» per
   sempre.** Se dopo «Passa alla fase playoff» il direttore toglieva l'unica
   configurazione, il campionato non si chiudeva più e mostrava una linguetta
