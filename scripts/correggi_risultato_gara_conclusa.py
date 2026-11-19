@@ -39,6 +39,12 @@ che il codice ricalcolerebbe sui dati invariati — classifiche, ELO o XP di
 podio. Vorrebbe dire che qualcosa era già fuori posto, e una correzione fatta
 sopra mescolerebbe due cambiamenti. In quel caso il messaggio dice dove.
 
+Se dice **elo_utenti / rating / storia_rating**, l'ELO salvato non è quello
+che il ricalcolo completo produrrebbe oggi: per esempio perché dopo un cambio
+delle regole (ADR-083) `scripts/recalc_elo.py --commit` non è mai stato
+lanciato. È un riallineamento di tutti, non della gara: si fa **prima e a
+parte**, così la correzione mostra solo i propri effetti.
+
 **Lo spareggio dopo.** Se la correzione apre un pari merito che i giocatori
 spareggiano più avanti, lo SSR si registra da qui, con le stesse prove. Gli
 id dei giocatori e i posti in palio li dà l'elenco:
