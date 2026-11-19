@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.88.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.87.0...v1.88.0) (2026-11-19)
+
+
+### Funzioni nuove
+
+* registrare lo spareggio SSR a gara conclusa, dallo script di correzione ([#774](https://github.com/coppolapaolo/tornei-biliardo/issues/774)) ([1cd2655](https://github.com/coppolapaolo/tornei-biliardo/commit/1cd2655610979fb57dda365b356d71a5dead9dbd))
+
 ## [1.87.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.86.2...v1.87.0) (2026-11-19)
 
 
