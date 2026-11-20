@@ -206,68 +206,11 @@ Configuration in `pytest.ini` (`[pytest]`, `--strict-markers`: an undeclared mar
 - **Integration only**: `pytest tests/new/integration/ -n 4` — con più worker SQLite va in deadlock e i test non finiscono più
 - **E2E only**: `pytest tests/new/e2e/`
 
-## Testing Strategies
-
-### Community-Focused Testing
-Tests organized by platform domains supporting community growth:
-- **User Domain**: Member authentication, profiles, and social features
-- **Competition Domain**: Tournament organization and community events
-- **Match Domain**: Both formal competition and casual social matches
-- **Matchmaking Domain**: Fair pairing algorithms for all skill levels
-- **Individual Match Domain**: Community-driven casual game coordination
-- **Notification Domain**: Community communication and social interaction
-- **Location Domain**: Venue management and community space coordination
-
-### Data Testing Strategies
-- **Model Validation**: Field constraints and relationships
-- **Business Rules**: Domain-specific validation logic
-- **Data Integrity**: Foreign key relationships and cascades
-- **Performance**: Query optimization (caching via `optimized_query`, eager loading via `bulk_load_relationships`)
-
-### Service Layer Testing
-- **Transaction Management**: Rollback and commit behavior
-- **Error Handling**: Exception propagation and recovery
-- **Cross-Domain Operations**: Multi-service coordination
-- **Cache Integration**: Cache invalidation and consistency
-
-## Test Data Management
-
-### Test Data Isolation
-- **Clean schema per test**: `db_session` drops and recreates all tables (see "Key fixture behaviors" above)
-- **Independent Test Data**: No shared state between tests
-- **Predictable Scenarios**: Consistent test data setup
-- **Edge Case Coverage**: Boundary condition testing
-
-## Security Testing
-
-### Authentication Testing
-- **Login Security**: Password validation and session management
-- **Role Enforcement**: Access control across all endpoints
-- **Data Protection**: Personal data encryption/decryption
-- **CSRF Protection**: Form submission security
-
-### Data Security
-- **Input Validation**: SQL injection and XSS prevention
-- **Permission Boundaries**: Role-based data access
-- **Audit Trail**: Security event logging
-- **Encryption**: Personal data protection compliance
-
 ## Development Workflow
-
-### Test-Driven Development
-1. **Write Test**: Define expected behavior
-2. **Implement Feature**: Make test pass
-3. **Refactor**: Improve code quality
-4. **Validate**: Ensure all tests pass
 
 ### Continuous Integration
 - CI (`.github/workflows/ci.yml`, job `test-and-typecheck`) runs the unit tests (`-n auto`), integration and e2e (`-n 4`), `tests/frontend/` (`npm test`) and `pyright`. Until 2026-11 only the unit tests ran there: integration, e2e and frontend failures surfaced only when someone ran them locally.
 - No pre-commit hooks and no coverage gate are configured.
-
-### Test Maintenance
-- **Regular Review**: Update tests with feature changes
-- **Performance Monitoring**: Track test execution time
-- **Flaky Test Management**: Identify and fix unreliable tests
 
 ## Testing Tools and Libraries
 
@@ -286,13 +229,6 @@ Tests organized by platform domains supporting community growth:
 
 ## Best Practices
 
-### Test Writing Guidelines
-1. **Clear Naming**: Test names describe behavior being tested
-2. **Single Responsibility**: Each test validates one specific behavior
-3. **Arrange-Act-Assert**: Clear test structure pattern
-4. **Independent Tests**: No dependencies between tests
-5. **Meaningful Assertions**: Clear validation of expected outcomes
-
 ### Development Workflow Integration
 **Before committing:**
 1. **Run the suite**: `pytest tests/new/ -n 4`
@@ -301,18 +237,6 @@ Tests organized by platform domains supporting community growth:
 4. **Test data isolation**: Fix database state issues, not test logic
 5. **Tutti i test stanno in `tests/new/`**: la vecchia `tests/legacy/` è stata
    cancellata (non si importava più: nessuno di quei test girava)
-
-### Performance Guidelines
-- **Fast Unit Tests**: Optimize for quick feedback
-- **Isolated Integration Tests**: Minimize external dependencies
-- **Efficient E2E Tests**: Focus on critical user paths
-- **Parallel Execution**: Run tests concurrently where possible
-
-### Maintenance Guidelines
-- **Regular Updates**: Keep tests current with features
-- **Documentation**: Clear test purpose and setup
-- **Code Review**: Test code quality standards
-- **Monitoring**: Track test health and performance
 
 ---
 

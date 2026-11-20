@@ -6,10 +6,10 @@ description: Portare il codice in produzione su PythonAnywhere, e diagnosticare 
 # Deploy e operativita' in produzione
 
 Il dettaglio operativo che serve **al momento del deploy** o di una diagnosi in
-produzione. Le tre cose che servono anche fuori da qui — «il merge su `main` non
-deploya», il divieto di push diretti su `main`, e il divieto di rimettere
-`journal_mode=WAL` — restano in `CLAUDE.md`, perche' devono essere in contesto
-sempre, non solo quando si deploya.
+produzione. Le quattro cose che servono anche fuori da qui — «il merge su `main`
+non deploya», il divieto di push diretti su `main`, il divieto di rimettere
+`journal_mode=WAL`, e il titolo della PR che decide la versione — restano in
+`CLAUDE.md`, perche' devono essere in contesto sempre, non solo quando si deploya.
 
 **URL di produzione**: https://www.torneibiliardo.it
 
@@ -159,7 +159,7 @@ opzioni vere e guarda cosa arriva al trasporto.
 
 | Job | Quando gira | Cosa fa |
 |-----|-------------|---------|
-| `test-and-typecheck` | push su `main` **e** PR **verso `main`** | unit test + pyright. Status check richiesto. Il workflow ha `on: push: branches: [main]` e `pull_request: branches: [main]`, quindi **una PR con base diversa da `main` non fa girare nessun check** e resta bloccata per sempre: le PR impilate vanno riportate su `main` prima del merge |
+| `test-and-typecheck` | push su `main` **e** PR **verso `main`** | unit test, integrazione ed e2e, test frontend (`npm test`) e pyright; su una PR di sola documentazione li salta. Status check richiesto. Il workflow ha `on: push: branches: [main]` e `pull_request: branches: [main]`, quindi **una PR con base diversa da `main` non fa girare nessun check** e resta bloccata per sempre: le PR impilate vanno riportate su `main` prima del merge |
 | `pr-title` | PR verso `main` | titolo in formato Conventional Commits. Status check richiesto |
 
 Il codice, le dipendenze, le migration e il reload li porta **solo**
