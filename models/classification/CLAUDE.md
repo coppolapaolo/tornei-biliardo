@@ -200,3 +200,19 @@ mostrata; chi **decide** legge `position`.
 - **Matchmaking**: [../matchmaking/CLAUDE.md](../matchmaking/CLAUDE.md) - Uses RoundClassification for pairing
 - **Competition**: [../competition/CLAUDE.md](../competition/CLAUDE.md) - Gara completion triggers classification
 - **Campionato**: [../campionato/](../campionato/) - Aggregated Classification
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| `campionato_type` per decidere **come si ordina** una classifica | `campionato.classification_system` (`ClassificationSystem`, ADR-047): il tipo dice come si formano le partite, il sistema su cosa si ordina. Sono scelte indipendenti e coincidono abbastanza spesso da rendere il bug invisibile per mesi (issue #89) |
+| Sommare `rack_difference` e chiamarlo "triangoli totali" | `racks_won` è il totale, `rack_difference` la differenza (migration 20260728). Un totale negativo in classifica è la firma esatta di questo scambio |
+| Dare per scontato che `rack_difference` in **produzione** sia sempre una differenza | Su ~400 righe storiche contiene ancora un totale: i dati non sono stati riparati **per scelta** (gare già premiate, nessuna schermata li legge con quel significato — ADR-047, sezione dedicata). Chi ci costruisce sopra qualcosa di nuovo — spareggio, statistica, export — lo trova |
+| Sommare le partite di un campionato in un unico mucchio per fare la classifica | L'aggregazione è **per gara**, poi somma pesata su `Gara.classification_weight` (ADR-053): una gara può valere il doppio delle altre, e quella di playoff può valere **zero** quando è lei a decidere la classifica finale. Con tutti i pesi a 1 il risultato è quello di sempre |
+| Ordinare una classifica a vittorie o a rack con un `sorted()` e una chiave scritta lì | Passa dal motore della catena (`ordinamento.ordina`, ADR-078): lo scontro diretto vale fra i soli pari e lo SSR solo fino al suo posto, e nessuna chiave lo esprime. Chi è pari per lo spareggio lo dice `SpareggioService._fasce`, una volta sola |
+| Calcolare la classifica generale del campionato fuori da `classifica_generale` | Si calcola in **un posto solo**, `TournamentStatisticsService.classifica_generale` (ADR-073): somma le classifiche finali delle gare concluse, come dice `SPECIFICHE.md`, «Classifica». La pagina la legge via `calculate_general_classification`, le righe `Classification` (profilo, export, inviti ai playoff) ne sono la **copia** scritta da `update_campionato_classification`. Fino al 24/09/2026 le righe rifacevano i conti dalle partite con regole loro, e tre regole su tre sono vissute in un percorso solo: peso e playoff (#335), la zona playoff (#433), la X che negli inviti non contava — nel campionato 5 l'ottavo posto è andato al nono (#550). Presidio: `test_classifica_generale_una_sola.py` |
+| Leggere le righe `Classification` per disegnare qualcosa **sopra la classifica in pagina** (zona playoff, evidenze) | Le righe sono ferme all'ultimo evento che le ha ricalcolate, la pagina calcola al volo: fino al 14/09/2026 la barra dei playoff segnava il 14º e saltava il 4º perché le righe erano ferme alla gara 1. Ciò che si disegna sulla classifica in pagina si calcola da quella (`models/playoff/zona.py`, `righe_della_classifica_in_pagina`); le righe le leggono solo profilo, export e `start_playoff`, che le ricalcola prima |

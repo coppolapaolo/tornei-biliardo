@@ -290,3 +290,14 @@ else:
 - **Do not call `db.session.commit()`** - Services handle transactions via `@transactional`
 - **Do not forget soft-delete check** - Deleted users should be treated as not found
 - **Do not assume gara has campionato** - Check `gara.campionato_id` before accessing
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| `Config.DEBUG_MODE` in una route | `current_app.config.get("DEBUG_MODE", False)` — la classe base legge la env var col default `true`, quindi in produzione il guard non scatta |
+| `request.form.get("next")` passato a `redirect()` | `utils.safe_redirect.safe_next_url` — altrimenti è un open redirect |

@@ -237,3 +237,16 @@ in `round_creation.py`. Lo scoring legge poi `match.distance_config` /
 - **Match Execution**: [../match/](../match/) - Match and scoring
 - **Classification**: [../classification/](../classification/) - Rankings
 - **ADR-027**: [../../docs/adr/ADR-027-round-level-configuration-enforcement.md](../../docs/adr/ADR-027-round-level-configuration-enforcement.md) - Round-level configuration enforcement
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| Co-direttore con `role != director` | `GaraService`/`TournamentService.add_director` lo rifiutano (`ValidationError`): i co-direttori sono sempre `role=director` |
+| Dare alla X i triangoli della distanza | La X vale una vittoria e **zero** differenza (SPECIFICHE.md, «Strategia di abbinamento»): nasce con `player1_score = 0` in `round_creation.py`, e `ScoreAggregator._process_bye_match` somma quello zero ai vinti senza contarne di persi. Fino al 2026-08-23 valeva `round_distance`, e con la classifica a vittorie — che ordina per `(vittorie, differenza triangoli)` — chi riposava scavalcava chi aveva vinto giocando. Presidiato da `test_stagione_e2e_x_e_abbinamenti.py` e `test_specifiche_conformita.py` |
+| Assumere che la X con **challenge** segua la stessa regola | Non la segue: lì la differenza è **pari al punteggio della prova** (SPECIFICHE.md, «Strategia di abbinamento»), non zero. Il punteggio arriva grezzo in classifica, ed è sicuro perché `complete_x_replacement_attempt` rifiuta tutto ciò che esce da `[0, effective_distance]` — la scala la impone chi registra il dato, non chi lo legge. Fino al 2026-08-23 il punteggio veniva **scartato** e sostituito dalla distanza, il che rendeva la variante con prova indistinguibile dalla X secca. Presidiato da `test_x_replacement_score_scale.py` |
+| Validare il punteggio della prova contro `gara.distance` | `match.effective_distance` (ADR-027): in un turno «al 3» dentro una gara «al 5» il massimo è 3, e leggere la gara accetterebbe un punteggio che in quel turno nessuno può ottenere giocando |

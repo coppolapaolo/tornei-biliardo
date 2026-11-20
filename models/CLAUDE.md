@@ -284,3 +284,13 @@ For detailed domain-specific documentation, see:
 - `models/match/CLAUDE.md` - Match, Set, Rack models
 - `models/user/CLAUDE.md` - User, roles, permissions
 - `models/gamification/CLAUDE.md` - XP, levels, achievements
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| Rinominare un membro di un enum usato da una colonna `db.Enum(...)` | **Rompe i dati già scritti**: senza `values_callable` SQLAlchemy persiste il *nome* del membro, non il valore. I test non lo vedono (scrivono e rileggono lo stesso nome nello stesso processo). Elenco delle colonne a rischio e presidio in `tests/new/unit/test_enum_columns_store_values.py` — incidente 2026-08-17 |

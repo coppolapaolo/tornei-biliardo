@@ -314,3 +314,13 @@ const config = {{ some_dict|tojson }};
 - Use named placeholders: `{{ _("Hello %(name)s", name=user.username) }}`
 - After adding strings, invoke the `translate` skill (it carries the required pybabel flags)
 - Italian is the source language (the `msgid`); English is the only translation
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| `onclick='return confirm(...)'` | Il browser può zittire i dialoghi («impedisci altre finestre di dialogo»): da lì `confirm()` torna `false` in silenzio e il pulsante non fa nulla, senza traccia nei log (produzione, 27/09/2026). `confirmSubmit(this.form, msg, {confirmText: <nome dell'azione>})`, o l'Annulla in tre secondi se l'azione è frequente e reversibile (ADR-074, presidio `test_nessun_confirm_del_browser.py`) |

@@ -161,3 +161,14 @@ class OddNumberPolicy(str, Enum):
 - **Competition**: [../competition/CLAUDE.md](../competition/CLAUDE.md) - Round management
 - **Match**: [../match/CLAUDE.md](../match/CLAUDE.md) - Match execution
 - **Classification**: [../classification/](../classification/) - Rankings for Amalfi
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| Spostare la X del primo turno riabbinando invece che **rietichettando** | Con la strategia casuale i turni nascono **tutti insieme** (circle method): chi ha la X al turno 1 non la riprende più, e nessuno reincontra nessuno. Toccare il solo turno 1 per dare la X a un altro gli regala una **seconda X** più avanti e introduce un reincontro — e nessun test di quel turno se ne accorge. La mossa giusta è scambiare le **identità** dei due giocatori su tutto lo schedule: è una permutazione dei nomi su una struttura che dipende solo dalle posizioni, quindi conserva ogni garanzia. Per Amalfi lo scambio va fatto anche sulla **classifica di partenza**, che è l'input da cui il turno 1 discende: al turno 1 l'algoritmo dipende solo dalle posizioni (matrice incontri vuota, nessuna X già data), quindi i due sono equivalenti — e lasciare il seeding com'era pubblicherebbe un «ordine sorteggio» che non spiega più gli abbinamenti. Regola in `models/matchmaking/bye_preference.py`, presidio in `test_x_al_ultimo_iscritto.py` |
+| Rimettere un greedy per il caso dispari di Amalfi, o assegnare la X fuori dal matching | Dal 12/11/2026 la X è un nodo del grafo, ultimo in classifica, e il dispari usa lo stesso matching del pari (`_match_with_bye`): una X sola a turno, zero reincontri e zero seconde X quando è possibile, altrimenti il minimo. Il greedy del salto non segnava la X come presa e ne dava anche tre nello stesso turno, con una partita in meno. Il greedy resta solo per il trio e come ripiego del pari. Presidio `test_amalfi_dispari_una_sola_x.py`, regola in SPECIFICHE.md, «Caso dispari con la X» |

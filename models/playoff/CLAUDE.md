@@ -171,3 +171,18 @@ playoff, perché il punteggio non è la qualificazione.
 
 - **Campionato**: [../campionato/CLAUDE.md](../campionato/CLAUDE.md) - Source of playoffs
 - **Classification**: [../classification/](../classification/) - Position-based qualification
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| Cercare il sostituto ai playoff dentro `evaluate_qualifications()` senza `posti` | Quella lista è tagliata a `max_participants`, cioè contiene **solo chi ha già una qualificazione** — declinante incluso, che resta in elenco con status `DECLINED`. Il sostituto non si trovava mai e la finale partiva con un posto vuoto. Serve `evaluate_qualifications(posti=max_participants + qualificazioni_esistenti)`: «chi entra?» e «chi viene dopo?» sono due domande diverse (SPECIFICHE.md, «Playoff») |
+| Cercare il peso del playoff su `PlayoffConfiguration` mentre si calcola una classifica | La fonte letta è `Gara.weight`; `playoff_weight` è il **valore di configurazione**, copiato sulla gara quando nasce (come distanza e turni). Cambiarlo senza propagarlo alla gara già creata è un comando che sembra funzionare e non sposta niente — `PlayoffService.update_scoring` lo fa |
+| Credere che senza playoff-only il playoff «non conti» per il campionato | Conta da sempre: `create_playoff_gara` gli mette `campionato_id`, quindi l'aggregatore lo sommava già con peso 1. Il default `campionato_plus_playoff` **è** il comportamento storico, e la issue #64 proponeva il contrario partendo da questo equivoco |
+| Bloccare modalità e peso del playoff dopo l'avvio, come gli altri campi | A inviti partiti `update_configuration` blocca **solo** i criteri di qualificazione (`CRITERI_DI_QUALIFICAZIONE`); come si gioca la finale si corregge fino al suo avvio e, se la finale esiste, le si **propone** (ADR-075). Modalità e peso sono decisioni di **punteggio** e passano da `update_scoring`, che non è bloccata e ricalcola la classifica |
+| Interrogare `PlayoffQualification` senza far comparire `Campionato` nella query | Il filtro soft-delete è un `with_loader_criteria`: si applica solo alle entità **presenti nella query**. Senza join, un invito rimasto `PENDING` su un campionato eliminato compare in dashboard con due pulsanti che scrivono su dati orfani (`build_playoff_invitations`) |
+| Datare a `today` una gara che il programma crea dentro un campionato | Le gare numerate stanno in ordine cronologico (ADR-016) e il controllo **non** salta le soft-eliminate. La gara di playoff nasceva datata oggi pur essendo l'ultima del calendario: con una gara ancora nel futuro — anche solo una pianificata e mai giocata, che la terminazione cancella — veniva rifiutata, e al posto della finale compariva un messaggio. La data si sceglie a partire dall'ultima gara, non dall'orologio (`test_playoff_gara_date_sequence.py`) |

@@ -527,3 +527,17 @@ Vedi `docs/adr/ADR-027-round-level-configuration-enforcement.md`.
 - **Matchmaking**: [../matchmaking/CLAUDE.md](../matchmaking/CLAUDE.md)
 - **Classification**: [../classification/CLAUDE.md](../classification/CLAUDE.md)
 - **Root**: [../CLAUDE.md](../CLAUDE.md)
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| `match.validated_by_admin` | Non esiste su `Match` (vive su `Rack` e `Set`). La validazione del direttore *è* lo stato; per chiudere una partita mai iniziata si passa `to_completed(..., closed_by_director=True)` |
+| Dedurre chi ha aperto un triangolo a ogni lettura invece di scriverlo sul rack | `break_player_id` si **persiste** alla creazione (ADR-056). Se domani il direttore cambia la regola di apertura della gara, i triangoli già giocati devono continuare a dire chi li ha aperti: dedurli a valle cambierebbe anche quali risultano *break and run*, cioè un numero nel profilo dei giocatori. Stesso schema dell'ADR-027 |
+| Aggiungere un secondo flag `is_break_and_run` accanto a `is_run_out` | Il break and run **si deduce**: è un runout in cui `break_player_id == winner_id` (`Rack.is_break_and_run`). Due flag da tenere allineati a mano sono due flag che prima o poi si contraddicono |
+| Dedurre chi apre dal solo vincitore dell'acchito | Sono **due** fatti: «Regole generali pool» 1.2 dice che chi vince l'acchito **sceglie chi** apre, e può mandare al tavolo l'avversario. Per questo `lag_winner_id` e `first_break_player_id` sono due colonne |
+| `first_break_player_id` NULL trattato come «apre il primo giocatore» | Dipende dalla regola: con `first_player` sì, con `lag` NULL vuol dire **non si sa ancora** — ed è il segnale che fa comparire le due domande sul tabellone (`breaker_of_first_rack`). Un ripiego lì cancellerebbe la domanda |
