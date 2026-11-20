@@ -188,16 +188,24 @@ Per aggiungere una figura, si aggiunge una voce a `help_content/screenshots.yaml
 Poi si rigenera:
 
 ```bash
-# 1. dataset dimostrativo (deterministico, azzera il DB di sviluppo!)
+# 0. database e porta a parte. Il seed fa `drop_all()` sul database della
+#    configurazione corrente: senza questa riga azzera quello di sviluppo.
+#    Quattro slash = percorso assoluto, in una cartella temporanea.
+export DATABASE_URL="sqlite:////<cartella temporanea>/help_demo.db"
+export PORT=5099            # la 5001 è dell'app di sviluppo
+
+# 1. dataset dimostrativo (deterministico)
 python scripts/help_docs/seed_demo.py
 
 # 2. cattura: avvia e chiude l'app da sola, in tutte le lingue dichiarate
-python scripts/help_docs/capture_screenshots.py --serve
+python scripts/help_docs/capture_screenshots.py --serve --base-url http://127.0.0.1:5099
 
-# solo alcune schermate, o solo una lingua
-python scripts/help_docs/capture_screenshots.py --serve --only gara-gestione
-python scripts/help_docs/capture_screenshots.py --serve --lang it
+# solo alcune schermate, o solo una lingua: aggiungi
+#   --only gara-gestione      --lang it
 ```
+
+`--serve` passa l'ambiente all'app che avvia, quindi `DATABASE_URL` vale anche
+per lei, e si rifiuta di partire se la porta è occupata.
 
 Il seed **fissa il generatore casuale** (`SEED`) e **il seme del sorteggio** di
 ogni gara prima di avviarla (`_avvia_primo_turno`, perché l'app lo sceglie con

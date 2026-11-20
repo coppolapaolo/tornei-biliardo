@@ -197,7 +197,7 @@ regole, presidiate da `tests/new/unit/test_motion_tokens.py`:
    esce con `cmd+alt+i`, che li chiude. Le scorciatoie arrivano al browser, ma
    i **controlli dentro il pannello** no (l'input va al tab), quindi la device
    toolbar parte a una larghezza arbitraria che non si può cambiare: se serve
-   davvero un 390px con touch reale, chiedilo all'utente.
+   davvero un 390px con tocco, usa Playwright (punto 4).
 2. **`document.body.scrollWidth`** deve essere uguale alla larghezza del
    viewport: se è maggiore, qualcosa sborda.
 3. **Il CSS è servito con `?v=`**: dopo averlo modificato il browser continua a
@@ -208,13 +208,21 @@ regole, presidiate da `tests/new/unit/test_motion_tokens.py`:
      const u = new URL(l.href); u.searchParams.set('cb', String(performance.now())); l.href = u.toString();
    });
    ```
-4. **Componenti dietro una media query che non riesci a far scattare** (il
-   tabellone `#8b` sta dietro `orientation: landscape` + `pointer: coarse`, e
-   il device mode non è sempre raggiungibile dal browser pilotato): il nodo
-   esiste comunque nel DOM e le regole si applicano lo stesso, quindi puoi
-   leggere `getComputedStyle` sul nodo nascosto per confermare i valori —
-   ma **non è una verifica visiva**. Dichiaralo, e chiedi all'utente il
-   controllo con device mode + touch prima di dire che è chiuso.
+4. **Componenti dietro una media query che il browser pilotato non fa
+   scattare** (il tabellone `#8b` sta dietro `orientation: landscape` +
+   `pointer: coarse`): si provano con Playwright, che il tocco lo emula
+   davvero. Con questo contesto la media query risponde `true` e
+   `locator.tap()` manda tocchi veri (in verticale: 390×844):
+   ```python
+   ctx = browser.new_context(viewport={"width": 844, "height": 390},
+                             has_touch=True, is_mobile=True, device_scale_factor=2)
+   ```
+   L'app per la prova si avvia su un database e una porta a parte, come per
+   le schermate della guida (skill `help-docs`, «Aggiorna le schermate»). Il
+   tour d'aiuto intercetta i tocchi: nascondilo con un `add_init_script` che
+   inietta `.c7-help-tour,.c7-help-pop{display:none!important}`. Resta fuori
+   solo ciò che dipende dalle barre del browser di iOS, che l'emulazione non
+   ha: quello si chiede all'utente su un telefono vero.
 5. **Prova l'azione**, non solo l'aspetto: clicca il comando che hai
    ridisegnato e verifica che l'endpoint risponda (e rimetti a posto il dato
    di prova).

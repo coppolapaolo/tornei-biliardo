@@ -219,9 +219,8 @@ def create_match(
 def to_playing(match_id: int) -> Match:
     """Transition pending → playing"""
 
-@transactional(domain="match")
-def to_completed(match_id: int) -> Match:
-    """Transition playing → completed
+def to_completed(match_id: int, closed_by_director: bool = False) -> Match:
+    """Transition playing → completed (delegates to MatchStateService)
 
     Also records PlayerEncounter for anti-rematch logic.
     """
@@ -409,39 +408,23 @@ add_rack(match.id, winner_id=20, added_by_id=director.id)  # Player 2 wins rack
 
 ```python
 from models.match.services import MatchService
-from models.match.set_models import Set
 
-# 1. Create multi-set match
-match = Match(
-    gara_id=gara.id,
-    round_number=1,
-    player1_id=10,
-    player2_id=20,
-    is_multi_set=True,
-    match_distance=3  # Race to 3 sets
-)
-db.session.add(match)
-db.session.commit()
+# 1. The match is created by round creation with is_multi_set=True and
+#    match_distance=3 (race to 3 sets)
 
-# 2. Create first set
-set1 = Set(match_id=match.id, set_number=1, distance=5, is_race_to=True)
-db.session.add(set1)
-db.session.commit()
+# 2. Start the first set (distance and mode come from the match, ADR-075)
+set1 = MatchService.start_next_set(match.id)
 
-# 3. Add racks to current set
-set1.add_rack_result(winner_id=10)  # Rack 1
-set1.add_rack_result(winner_id=20)  # Rack 2
-set1.add_rack_result(winner_id=10)  # Rack 3
+# 3. Add racks to the current set
+MatchService.add_rack_to_current_set(match.id, winner_id=10)  # Rack 1
+MatchService.add_rack_to_current_set(match.id, winner_id=20)  # Rack 2
 # ...
 
-# 4. When set completes, it updates match scores
-if set1.is_completed():
-    match.complete_set(set1.set_number, set1.winner_id)
+# 4. When the set reaches its distance it closes itself and updates the
+#    match score (Set._complete_set → match.complete_set)
 
-# 5. Start next set if match not finished
-if not match.is_completed():
-    set2 = match.start_next_set()
-    # Continue with set2...
+# 5. Start the next set if the match is not finished
+set2 = MatchService.start_next_set(match.id)
 ```
 
 ---
@@ -459,7 +442,11 @@ if not match.is_completed():
 **Match Status:**
 - `PENDING`: Match created, no racks yet
 - `PLAYING`: At least one rack added
-- `COMPLETED`: Winning score reached or admin marked complete
+- `CLOSED_UNILATERALLY` (value `"completed"`): closed by the director, a forfeit or a bye
+- `CONFIRMED_BY_BOTH` (value `"validated"`): closed by the two players' confirmations
+
+Both closed states mean "played": test them with `MatchStatus.is_finished(...)`.
+`Match.is_completed()` is true only for the first.
 
 **Auto-Transitions:**
 - `RackService.add_rack_result()`: pending → playing (first rack)

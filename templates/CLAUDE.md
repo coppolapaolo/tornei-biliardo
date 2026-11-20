@@ -87,9 +87,9 @@ const i18n = {
 };
 const msg = i18n.confirmDelete.replace('%(count)s', count);
 
-// ✅ CORRECT - Use JS-style placeholder, not translated
+// ✅ CORRECT - JS-style placeholder: Flask-Babel leaves `{count}` alone
 const i18n = {
-    confirmDeleteTemplate: "Elimina {count} elementi?"
+    confirmDeleteTemplate: {{ _("Elimina {count} elementi?")|tojson }}
 };
 const msg = i18n.confirmDeleteTemplate.replace('{count}', count);
 
@@ -297,7 +297,7 @@ const config = {{ some_dict|tojson }};
 ## Do Not
 
 - **Do not write a `<form method="POST">` without `csrf_token()`** - risponde 400 «Sessione scaduta»; i test non lo vedono (`WTF_CSRF_ENABLED = False`)
-- **Do not include twice a component containing `id=` or `<script>`** - duplicate ids break `getElementById` (targets the hidden copy) and scripts run twice. For mobile/desktop reordering use flex `order-*` on a single DOM (see "L'azionabile va prima" in `docs/reference/UI_CONVENTIONS.md`); duplication (`d-md-none` + `d-none d-md-block`) only for id/script-free components (check first!)
+- **Do not include twice a component containing `id=` or `<script>`** - duplicate ids break `getElementById` (targets the hidden copy) and scripts run twice. For mobile/desktop reordering use flex `order-*` on a single DOM (see "L'azionabile va prima" in `docs/reference/UI_CONVENTIONS.md`); duplication (`d-lg-none` + `d-none d-lg-block`: the breakpoint is `lg`) only for id/script-free components (check first!)
 - **Do not embed strings in JS without `|tojson`** - Italian apostrophes break JS strings
 - **Do not use double quotes for onclick with `|tojson`** - JSON produces double quotes internally
 - **Do not use `%(name)s` for JS interpolation** - Flask-Babel tries to substitute at render time
@@ -313,4 +313,4 @@ const config = {{ some_dict|tojson }};
 - Wrap all user-visible strings: `{{ _("Text") }}`
 - Use named placeholders: `{{ _("Hello %(name)s", name=user.username) }}`
 - After adding strings, invoke the `translate` skill (it carries the required pybabel flags)
-- Italian is the primary language; English is fallback
+- Italian is the source language (the `msgid`); English is the only translation

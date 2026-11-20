@@ -85,7 +85,7 @@ venv/bin/python migrations/runner.py
   aggiunge alla mappa `JOBS` dello script — **non** come nuovo task, e **non**
   dentro `auto_deploy`/`backup_db` (il primo esce prima del tempo quando non ci
   sono modifiche, il secondo non deve dipendere dal codice applicativo). Ogni
-  job è isolato; exit code ≠ 0 se almeno uno fallisce. `python
+  job è isolato; exit code ≠ 0 se almeno uno fallisce. `venv/bin/python
   scripts/daily_jobs.py <nome>` per lanciarne uno solo.
 
 **Variabili d'ambiente richieste in produzione** (nel WSGI file
@@ -100,7 +100,7 @@ costruttore. Il singleton eager derivava il cipher all'import di
 env dal WSGI: la chiave usata era quella di sviluppo (nel log "Using default
 encryption key" *precede* la riga delle env lette) e ogni email/telefono si
 decifrava a stringa vuota, senza errori. Gli script da console che toccano PII
-vanno comunque lanciati con `ENCRYPTION_KEY='...' python scripts/...` (la
+vanno comunque lanciati con `ENCRYPTION_KEY='...' venv/bin/python scripts/...` (la
 console non eredita le env del WSGI; `auto_deploy.py` se le legge da solo,
 vedi sopra).
 
@@ -188,7 +188,8 @@ python migrations/runner.py --status            # Show migration status
 python migrations/runner.py --mark-all-applied  # Init existing DB
 ```
 
-In produzione: **solo con web app Disabled** (tab Web), poi Reload.
+In produzione: **solo con web app Disabled** (tab Web), poi Reload — e con
+`venv/bin/python` al posto di `python`, come ogni comando lanciato lì.
 
 ## Script che toccano dati storici: dry-run per default
 
