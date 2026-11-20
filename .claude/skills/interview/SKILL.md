@@ -72,7 +72,7 @@ Come [tipo utente], voglio [azione], in modo da [beneficio].
 
 ## Regole dell'Intervista
 
-1. **Una domanda alla volta** - Non sovraccaricare l'utente
+1. **Poche domande per volta** - Non sovraccaricare l'utente
 2. **Conferma comprensione** - Riformula e chiedi "Ho capito bene?"
 3. **Non assumere** - Se non è esplicito, chiedi
 4. **Esempi concreti** - Usa scenari reali del progetto

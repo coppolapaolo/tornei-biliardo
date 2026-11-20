@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 Questa skill garantisce che ogni bug trovato durante test manuali venga:
 1. **Corretto** secondo le specifiche
-2. **Documentato** con un ADR o bug report
+2. **Documentato** nel docstring del test; con un ADR solo se rivela una decisione architetturale
 3. **Coperto da test automatici** per prevenire regressioni
 
 ## Trigger di Attivazione
@@ -69,7 +69,6 @@ Consulta:
 ```python
 # Commento che spiega il fix
 # Fix: [descrizione breve]
-# Vedi ADR: docs/adr/ADR-NNN-*.md
 ```
 
 ### Dopo la Correzione
@@ -96,7 +95,7 @@ class TestNomeFunzionalitaRegression:
 
         Bug: [comportamento errato osservato]
         Fix: [cosa è stato corretto]
-        Vedi: docs/adr/ADR-NNN-*.md
+        Vedi: docs/adr/ADR-NNN-*.md   (solo se esiste un ADR)
         """
         # GIVEN: setup condizioni che causavano il bug
         ...

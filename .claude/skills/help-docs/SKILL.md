@@ -314,8 +314,9 @@ black . && flake8 && pyright
 pytest tests/new/unit/ -n auto
 ```
 
-Se hai toccato i template o il CSS, guarda le pagine a **390px e 1512px** —
-il mini-sito è mobile first ma vive anche su desktop (vedi la skill `ui-7c`).
+Se hai toccato i template o il CSS, guarda le pagine **su mobile e a 1512px**,
+come si misura nella skill `ui-7c` — il mini-sito è mobile first ma vive anche
+su desktop.
 
 ## Errori da non ripetere
 
