@@ -215,26 +215,6 @@ flash(_("Errore: %(error)s", error=str(e)), "danger")
 flash(_("Attenzione: dati mancanti"), "warning")
 ```
 
-### Pagination
-
-```python
-@bp.route("/matches")
-@login_required
-def match_list():
-    page = request.args.get("page", 1, type=int)
-    per_page = 20
-
-    pagination = Match.query.filter_by(
-        player1_id=current_user.id
-    ).paginate(page=page, per_page=per_page, error_out=False)
-
-    return render_template(
-        "player/matches.html",
-        pagination=pagination,
-        matches=pagination.items
-    )
-```
-
 ---
 
 ## Admin Routes Structure

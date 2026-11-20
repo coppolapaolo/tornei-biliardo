@@ -98,7 +98,7 @@ Esempi corretti:
 class HomepageService:        # Service inglese, dominio Homepage
 class MatchmakingStrategy:    # Strategy inglese, dominio Matchmaking
 class GaraService:            # Service inglese, dominio Gara
-class CampionatoService:      # NOTA: NON CampionatoesService né CampionatiService
+class TournamentService:      # eccezione storica: oggi sarebbe CampionatoService (mai CampionatiService)
 ```
 
 Le **classi `Service`** sono sempre con il modello singolare (`Gara`,
@@ -157,7 +157,7 @@ Mix accettabile (è la norma del codebase):
 
 ```python
 def get_campionati_attivi(user_id: int) -> list[Campionato]: ...
-class CampionatoService:
+class TournamentService:      # nome storico, vedi sopra
     def create_campionato_with_director(...): ...   # dominio italiano + tecnico inglese
 campionati_q = campionatos_q   # legacy alias (debito) — preferire il nome corretto in nuovo codice
 ```
