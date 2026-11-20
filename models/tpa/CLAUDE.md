@@ -209,3 +209,15 @@ lì significa che il motore Python ha cambiato idea su una regola.
 - `models/individual_match/CLAUDE.md` — il match su cui il referto vive
 - `models/gamification/CLAUDE.md` — il gate che lo sblocca
 - `docs/adr/ADR-044-tpa-scoresheet.md` — le decisioni
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| TPA/errori calcolati fuori da `models/tpa/engine.py` | Le regole Accu-Stats stanno **solo** li'. Il resto persiste comandi e li rigioca (ADR-044) |
+| Rack segnati a mano su un match con referto TPA aperto | Il punteggio **discende** dal referto: due segnapunti si contraddicono al primo tocco (ADR-044) |
+| Stampare `tally.run_outs` come «runout totali» | Nel motore TPA i due contatori sono **disgiunti** (`is_run_out = not is_break_and_run and …`): il totale è `run_outs + break_and_runs`. Nel profilo invece runout è l'**insieme** e break and run un sottoinsieme — come parlano i giocatori. Chi confonde i due mondi mostra 17 invece di 26 (`models/user/runout_stats.py`) |

@@ -451,3 +451,16 @@ The between-rounds drill («drill di turno») is a different thing:
 
 - **Competition**: [../competition/CLAUDE.md](../competition/CLAUDE.md) - X-substitution integration
 - **Matchmaking**: [../matchmaking/CLAUDE.md](../matchmaking/CLAUDE.md) - OddNumberPolicy.CHALLENGE
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| Descrivere una variante (destra/sinistra, A/B) creando un secondo esercizio | `ChallengeVariant` + `ChallengeAttempt.variant_id` (ADR-065): due esercizi sono due disegni, due testi e due voti da tenere allineati a mano. E una variante che ha già prove **si rinomina, non si toglie** — la chiave è `SET NULL`, i numeri resterebbero senza più dire di che lato erano |
+| `ChallengeService.record_attempt(score=…)` su un esercizio colpo per colpo | Lo rifiuta: lì il punteggio **discende** dai colpi (`ShotRunService`, ADR-066), come il punteggio della partita dal referto TPA. In esami e gare resta il totale digitato: sono altre tabelle |
+| Ricalcolare i punti di un colpo dal bersaglio, in lettura | `ChallengeShot.points` si persiste al colpo: se l'autore sposta il bersaglio, i colpi già tirati valgono quello che valevano (ADR-066, stesso schema di `break_player_id`). E un colpo non imbucato **non ha** `x`/`y`: chi disegna la nuvola dei punti d'arrivo mostra solo le imbucate, e deve dirlo |
+| Salvare su `challenge` un contatore dei giocatori, o decidere chi può votare con una query propria | `models/challenge/popularity.py`: `popularity_for` conta e `has_tried` decide, sulla stessa definizione di «ha provato» (prove completate, catalogo ∪ gara). Due definizioni danno «14 giocatori» sulla card e un voto rifiutato a uno dei quattordici |

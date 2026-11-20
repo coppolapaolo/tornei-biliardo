@@ -141,3 +141,13 @@ from utils import admin_required, gara_manager_required
 - **Competition Domain**: Inscription, director assignments
 - **Notification Domain**: User notifications
 - **Events Domain**: `DirectorRequestCreatedEvent` (see `models/events/user_events.py`)
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| Chiudere le righe di `user_session` per «buttare fuori» qualcuno | `user_session` è **analitica**: misura le permanenze, non autentica. Il cookie non la consulta, quindi chiuderne le righe cambia le statistiche e lascia l'intruso dov'è (ADR-055) |

@@ -110,3 +110,13 @@ chiama deve aver gia' escluso le partite che non contano.
 - **Categorie**: `models/categoria/`
 - **Events**: `RatingEventHandlers` in `event_handlers.py` (`MatchCompletedEvent`, `IndividualMatchCompletedEvent`)
 - **ADR**: `docs/adr/ADR-049-same-category-restores-elo-in-handicap-events.md`, `docs/adr/ADR-052-rating-model-decided-by-measurement.md`
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| `match.effective_has_handicap` letto per decidere se una partita conta per l'ELO | `RatingEligibility.exclusion_reason(match)` (`models/rating/eligibility.py`): dall'ADR-049 l'handicap **da solo** non basta più a escludere — decide la differenza di **categoria**. Nei cicli passa l'indice di `build_index`, altrimenti il ricalcolo fa due query per match |

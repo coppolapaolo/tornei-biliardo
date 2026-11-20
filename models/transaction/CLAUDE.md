@@ -261,3 +261,14 @@ print(f'Same object: {manager_t is base_t}')  # False = circular import issue!
 
 - **All Domains**: Use `@transactional` for write operations
 - **ADR-012**: `docs/adr/ADR-012-transactional-circular-import-fix.md`
+
+---
+
+## Errori già commessi
+
+Errori capitati davvero in questo dominio, con la strada giusta e il presidio che li tiene fermi.
+
+| Errore | Strada giusta |
+|--------|---------------|
+| Contare su un `@transactional` interno per salvare, o temere di annidarne due | Dal 2026-09-13 l'annidamento è sicuro e **il salvataggio lo fa solo il più esterno**: l'interno apre e chiude un savepoint. Se l'esterno fallisce si annulla anche l'interno; se fallisce l'interno e l'esterno cattura e prosegue, si perde solo il lavoro dell'interno. Prima era il contrario in entrambi i casi — una gara scritta a metà, o il risultato di una partita perso perché un handler dell'EventBus era fallito (ADR-061, presidio `test_transazioni_annidate.py`) |
+| `with db.session.begin_nested():` scritto a mano (schema ADR-025) | `with savepoint():` da `models.transaction.manager`. Fuori da un `@transactional`, dopo sole letture, il driver `sqlite3` non ha ancora aperto la transazione: il `SAVEPOINT` la apre lui e il suo `RELEASE` vale un commit, quindi un annullamento successivo non trova più niente. `savepoint()` emette prima il `BEGIN` (ADR-061, presidio statico in `test_savepoint_a_mano.py`) |
